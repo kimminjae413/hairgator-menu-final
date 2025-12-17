@@ -1649,7 +1649,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 1000);
 });
 
-// ========== 크리스마스 눈 내리는 효과 (성별 선택 화면 + 다크모드 전용) ==========
+// ========== 크리스마스 눈 내리는 효과 (비활성화됨 - 2025-12-17) ==========
 let snowflakeInterval = null;
 
 function isGenderSelectionVisible() {
@@ -1659,122 +1659,15 @@ function isGenderSelectionVisible() {
     return style.display !== 'none' && style.visibility !== 'hidden';
 }
 
+// 눈내리기 효과 비활성화 - 기존 눈송이만 제거
 function createSnowflakes() {
-    // 성별 선택 화면이 아니면 눈 제거
-    if (!isGenderSelectionVisible()) {
-        const existing = document.querySelectorAll('.snowflake');
-        existing.forEach(s => s.remove());
-        if (snowflakeInterval) {
-            clearInterval(snowflakeInterval);
-            snowflakeInterval = null;
-        }
-        return;
+    // 기존 눈송이 모두 제거
+    document.querySelectorAll('.snowflake').forEach(s => s.remove());
+    if (snowflakeInterval) {
+        clearInterval(snowflakeInterval);
+        snowflakeInterval = null;
     }
-
-    // 모바일/앱 감지 - 성능 최적화
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-                     || window.innerWidth < 768;
-    const maxSnowflakes = isMobile ? 8 : 40;   // 모바일: 최대 8개, PC: 최대 40개
-    const initialCount = isMobile ? 4 : 20;    // 초기 생성 수
-    const spawnInterval = isMobile ? 2500 : 700; // 생성 간격 (ms)
-
-    const snowContainer = document.body;
-    const isLightTheme = document.body.classList.contains('light-theme');
-
-    // 다크모드: 흰색 눈송이, 라이트모드: 네온 눈송이
-    const darkModeSnowflakes = ['❄', '❅', '❆', '•', '∘'];
-    const lightModeSnowflakes = ['❄', '❅', '❆', '✧', '✦'];
-
-    function createSnowflake() {
-        // 성별 선택 화면이 아니면 생성 안함
-        if (!isGenderSelectionVisible()) return;
-
-        // 최대 개수 제한
-        const currentCount = document.querySelectorAll('.snowflake').length;
-        if (currentCount >= maxSnowflakes) return;
-
-        const currentIsLight = document.body.classList.contains('light-theme');
-        const snowflake = document.createElement('div');
-        snowflake.className = 'snowflake';
-
-        const currentSnowflakes = currentIsLight ? lightModeSnowflakes : darkModeSnowflakes;
-        snowflake.textContent = currentSnowflakes[Math.floor(Math.random() * currentSnowflakes.length)];
-
-        // 랜덤 시작 위치, 크기, 속도
-        let posX = Math.random() * window.innerWidth;
-        let posY = -20;
-        const size = Math.random() * 10 + 8; // 8px ~ 18px
-        const fallSpeed = isMobile
-            ? Math.random() * 2 + 1.5  // 모바일: 더 빠르게 (1.5~3.5)
-            : Math.random() * 1.5 + 0.5; // PC: 기존 속도 (0.5~2)
-
-        // 라이트모드: 아이스 블루 단일 색상
-        if (currentIsLight) {
-            const opacity = Math.random() * 0.4 + 0.5;
-            snowflake.style.color = '#87CEEB';
-            snowflake.style.textShadow = '0 0 4px rgba(135, 206, 235, 0.6)';
-            snowflake.style.opacity = opacity;
-        } else {
-            // 다크모드: 기존 흰색 눈송이
-            const opacity = Math.random() * 0.5 + 0.3;
-            snowflake.style.opacity = opacity;
-        }
-
-        // 각 눈송이마다 다른 흔들림 설정 - 모바일은 간소화
-        const swayAmplitude = isMobile ? Math.random() * 40 + 20 : Math.random() * 80 + 30;
-        const swaySpeed = Math.random() * 0.02 + 0.01;
-        let swayOffset = Math.random() * Math.PI * 2;
-        const windDrift = (Math.random() - 0.5) * 0.3;
-
-        // GPU 가속을 위한 초기 스타일
-        snowflake.style.position = 'fixed';
-        snowflake.style.left = '0';
-        snowflake.style.top = '0';
-        snowflake.style.fontSize = size + 'px';
-        snowflake.style.willChange = 'transform';
-        snowflake.style.pointerEvents = 'none';
-        snowflake.style.zIndex = '9999';
-        snowflake.style.transform = `translate3d(${posX}px, ${posY}px, 0)`;
-
-        snowContainer.appendChild(snowflake);
-
-        // requestAnimationFrame으로 부드러운 애니메이션
-        let animationId;
-        function animate() {
-            if (posY > window.innerHeight + 20) {
-                cancelAnimationFrame(animationId);
-                if (snowflake.parentNode) snowflake.remove();
-                return;
-            }
-
-            posY += fallSpeed;
-            swayOffset += swaySpeed;
-
-            // sin 곡선으로 자연스러운 좌우 흔들림
-            const swayX = Math.sin(swayOffset) * swayAmplitude;
-            const currentX = posX + swayX + (posY * windDrift);
-
-            // GPU 가속 사용 (translate3d)
-            snowflake.style.transform = `translate3d(${currentX}px, ${posY}px, 0) rotate(${posY * 0.3}deg)`;
-
-            animationId = requestAnimationFrame(animate);
-        }
-
-        animationId = requestAnimationFrame(animate);
-    }
-
-    // 초기 눈송이 생성 (화면에 분산)
-    for (let i = 0; i < initialCount; i++) {
-        setTimeout(() => createSnowflake(), i * 200);
-    }
-
-    // 주기적으로 새 눈송이 생성
-    if (snowflakeInterval) clearInterval(snowflakeInterval);
-    snowflakeInterval = setInterval(() => {
-        if (isGenderSelectionVisible()) {
-            createSnowflake();
-        }
-    }, spawnInterval);
+    // 더 이상 눈송이를 생성하지 않음
 }
 
 // 전역 노출 (menu.js에서 접근 가능하게)
