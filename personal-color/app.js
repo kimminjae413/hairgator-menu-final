@@ -5654,7 +5654,7 @@
 
             if (isCompareMode) {
                 panel.style.display = 'block';
-                btn.textContent = '❌ 비교 종료';
+                btn.textContent = t('personalColor.drapingMode.compareEnd') || '❌ 비교 종료';
                 btn.style.background = 'linear-gradient(135deg, #f44336, #E91E63)';
                 compareIndex = 0;
                 seasonScores = { spring: 0, summer: 0, autumn: 0, winter: 0 };
@@ -5663,7 +5663,7 @@
                 showToast(t('personalColor.toast.compareModeStarted') || '비교 모드가 시작되었습니다. 두 색상 중 더 어울리는 쪽을 선택하세요!', 'info');
             } else {
                 panel.style.display = 'none';
-                btn.textContent = '🔀 비교 모드';
+                btn.textContent = t('personalColor.drapingMode.compareBtn') || '🔀 비교 모드';
                 btn.style.background = 'linear-gradient(135deg, #E91E63, #9C27B0)';
                 // 비교 모드 종료 시 일반 케이프로 복귀
                 if (lastFaceLandmarks && selectedColor) {
@@ -5813,17 +5813,17 @@
             const panel = document.getElementById('compare-mode-panel');
             panel.innerHTML = `
                 <div style="text-align: center; padding: 20px;">
-                    <div style="font-size: 24px; margin-bottom: 15px;">🎉 비교 완료!</div>
-                    <div style="font-size: 18px; color: #E91E63; margin-bottom: 15px;">당신에게 어울리는 톤:</div>
+                    <div style="font-size: 24px; margin-bottom: 15px;">${t('personalColor.drapingMode.compareComplete') || '🎉 비교 완료!'}</div>
+                    <div style="font-size: 18px; color: #E91E63; margin-bottom: 15px;">${t('personalColor.drapingMode.suitableTone') || '당신에게 어울리는 톤:'}</div>
                     <div style="font-size: 22px; color: #fff; font-weight: bold; margin-bottom: 20px;">${resultText}</div>
                     <div style="display: flex; justify-content: space-around; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px;">
-                        <span style="color: #FFCC80;">🌸 봄: ${seasonScores.spring}점</span>
-                        <span style="color: #90CAF9;">🌊 여름: ${seasonScores.summer}점</span>
-                        <span style="color: #FFAB91;">🍂 가을: ${seasonScores.autumn}점</span>
-                        <span style="color: #B39DDB;">❄️ 겨울: ${seasonScores.winter}점</span>
+                        <span style="color: #FFCC80;">🌸 ${t('personalColor.drapingMode.spring') || '봄'}: ${seasonScores.spring}${t('personalColor.drapingMode.points') || '점'}</span>
+                        <span style="color: #90CAF9;">🌊 ${t('personalColor.drapingMode.summer') || '여름'}: ${seasonScores.summer}${t('personalColor.drapingMode.points') || '점'}</span>
+                        <span style="color: #FFAB91;">🍂 ${t('personalColor.drapingMode.autumn') || '가을'}: ${seasonScores.autumn}${t('personalColor.drapingMode.points') || '점'}</span>
+                        <span style="color: #B39DDB;">❄️ ${t('personalColor.drapingMode.winter') || '겨울'}: ${seasonScores.winter}${t('personalColor.drapingMode.points') || '점'}</span>
                     </div>
                     <button onclick="resetCompareMode()" style="padding: 12px 24px; border: none; border-radius: 8px; background: linear-gradient(135deg, #E91E63, #9C27B0); color: white; font-size: 15px; font-weight: bold; cursor: pointer;">🔄 ${t('personalColor.draping.compareAgain') || 'Compare Again'}</button>
-                    <button onclick="toggleCompareMode()" style="margin-left: 10px; padding: 12px 24px; border: none; border-radius: 8px; background: rgba(255,255,255,0.2); color: white; font-size: 15px; cursor: pointer;">닫기</button>
+                    <button onclick="toggleCompareMode()" style="margin-left: 10px; padding: 12px 24px; border: none; border-radius: 8px; background: rgba(255,255,255,0.2); color: white; font-size: 15px; cursor: pointer;">${t('personalColor.drapingMode.closeBtn') || '닫기'}</button>
                 </div>
             `;
 
@@ -5838,7 +5838,7 @@
             const panel = document.getElementById('compare-mode-panel');
             panel.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <span style="font-size: 16px; color: #E91E63; font-weight: bold;">🔥 웜 vs 쿨 비교</span>
+                    <span style="font-size: 16px; color: #E91E63; font-weight: bold;">${t('personalColor.drapingMode.warmVsCool') || '🔥 웜 vs 쿨 비교'}</span>
                     <span id="compare-progress" style="font-size: 14px; color: #CE93D8;">1/${comparePresets.length}</span>
                 </div>
 
@@ -5856,20 +5856,20 @@
                     </div>
                 </div>
 
-                <div style="text-align: center; margin-bottom: 12px; font-size: 15px; color: #E1BEE7;">어느 쪽이 더 어울리나요?</div>
+                <div style="text-align: center; margin-bottom: 12px; font-size: 15px; color: #E1BEE7;">${t('personalColor.drapingMode.whichSuits') || '어느 쪽이 더 어울리나요?'}</div>
 
                 <div style="display: flex; gap: 10px;">
-                    <button onclick="selectCompareColor('left')" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #FF9800, #FF5722); color: white; font-size: 15px; font-weight: bold; cursor: pointer;">👈 왼쪽</button>
-                    <button onclick="selectCompareColor('right')" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #2196F3, #673AB7); color: white; font-size: 15px; font-weight: bold; cursor: pointer;">오른쪽 👉</button>
+                    <button onclick="selectCompareColor('left')" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #FF9800, #FF5722); color: white; font-size: 15px; font-weight: bold; cursor: pointer;">${t('personalColor.drapingMode.leftBtn') || '👈 왼쪽'}</button>
+                    <button onclick="selectCompareColor('right')" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #2196F3, #673AB7); color: white; font-size: 15px; font-weight: bold; cursor: pointer;">${t('personalColor.drapingMode.rightBtn') || '오른쪽 👉'}</button>
                 </div>
 
                 <div id="compare-score-display" style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; display: none;">
-                    <div style="font-size: 14px; color: #CE93D8; margin-bottom: 8px; font-weight: bold;">📊 현재 점수</div>
+                    <div style="font-size: 14px; color: #CE93D8; margin-bottom: 8px; font-weight: bold;">${t('personalColor.drapingMode.currentScore') || '📊 현재 점수'}</div>
                     <div style="display: flex; justify-content: space-around;">
-                        <span style="color: #FFCC80;">🌸 봄: <b id="score-spring">0</b></span>
-                        <span style="color: #90CAF9;">🌊 여름: <b id="score-summer">0</b></span>
-                        <span style="color: #FFAB91;">🍂 가을: <b id="score-autumn">0</b></span>
-                        <span style="color: #B39DDB;">❄️ 겨울: <b id="score-winter">0</b></span>
+                        <span style="color: #FFCC80;">🌸 ${t('personalColor.drapingMode.spring') || '봄'}: <b id="score-spring">0</b></span>
+                        <span style="color: #90CAF9;">🌊 ${t('personalColor.drapingMode.summer') || '여름'}: <b id="score-summer">0</b></span>
+                        <span style="color: #FFAB91;">🍂 ${t('personalColor.drapingMode.autumn') || '가을'}: <b id="score-autumn">0</b></span>
+                        <span style="color: #B39DDB;">❄️ ${t('personalColor.drapingMode.winter') || '겨울'}: <b id="score-winter">0</b></span>
                     </div>
                 </div>
             `;

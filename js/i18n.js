@@ -516,7 +516,18 @@ const HAIRGATOR_I18N = {
         lightness: '명도',
         saturation: '채도',
         warmth: '온도감',
-        recommendProducts: '추천 헤어컬러 제품'
+        recommendProducts: '추천 헤어컬러 제품',
+        compareBtn: '🔀 비교 모드',
+        compareEnd: '❌ 비교 종료',
+        warmVsCool: '🔥 웜 vs 쿨 비교',
+        leftBtn: '👈 왼쪽',
+        rightBtn: '오른쪽 👉',
+        compareComplete: '🎉 비교 완료!',
+        closeBtn: '닫기',
+        suitableTone: '당신에게 어울리는 톤:',
+        whichSuits: '어느 쪽이 더 어울리나요?',
+        currentScore: '📊 현재 점수',
+        points: '점'
       },
 
       // 토스트 메시지
@@ -1371,7 +1382,18 @@ const HAIRGATOR_I18N = {
         lightness: 'Lightness',
         saturation: 'Saturation',
         warmth: 'Warmth',
-        recommendProducts: 'Recommended Hair Color Products'
+        recommendProducts: 'Recommended Hair Color Products',
+        compareBtn: '🔀 Compare Mode',
+        compareEnd: '❌ End Compare',
+        warmVsCool: '🔥 Warm vs Cool Compare',
+        leftBtn: '👈 Left',
+        rightBtn: 'Right 👉',
+        compareComplete: '🎉 Compare Complete!',
+        closeBtn: 'Close',
+        suitableTone: 'Your suitable tone:',
+        whichSuits: 'Which one suits you better?',
+        currentScore: '📊 Current Score',
+        points: 'pts'
       },
 
       toast: {
@@ -2205,7 +2227,18 @@ const HAIRGATOR_I18N = {
         lightness: '明度',
         saturation: '彩度',
         warmth: '温度感',
-        recommendProducts: 'おすすめヘアカラー製品'
+        recommendProducts: 'おすすめヘアカラー製品',
+        compareBtn: '🔀 比較モード',
+        compareEnd: '❌ 比較終了',
+        warmVsCool: '🔥 ウォーム vs クール比較',
+        leftBtn: '👈 左',
+        rightBtn: '右 👉',
+        compareComplete: '🎉 比較完了!',
+        closeBtn: '閉じる',
+        suitableTone: 'あなたに似合うトーン:',
+        whichSuits: 'どちらがお似合いですか?',
+        currentScore: '📊 現在のスコア',
+        points: '点'
       },
 
       toast: {
@@ -3040,7 +3073,18 @@ const HAIRGATOR_I18N = {
         lightness: '明度',
         saturation: '饱和度',
         warmth: '温度感',
-        recommendProducts: '推荐发色产品'
+        recommendProducts: '推荐发色产品',
+        compareBtn: '🔀 对比模式',
+        compareEnd: '❌ 结束对比',
+        warmVsCool: '🔥 暖色调 vs 冷色调对比',
+        leftBtn: '👈 左边',
+        rightBtn: '右边 👉',
+        compareComplete: '🎉 对比完成!',
+        closeBtn: '关闭',
+        suitableTone: '适合您的色调:',
+        whichSuits: '哪边更适合您?',
+        currentScore: '📊 当前分数',
+        points: '分'
       },
 
       toast: {
@@ -3862,7 +3906,18 @@ const HAIRGATOR_I18N = {
         lightness: 'Độ sáng',
         saturation: 'Độ bão hòa',
         warmth: 'Độ ấm',
-        recommendProducts: 'Sản phẩm màu tóc đề xuất'
+        recommendProducts: 'Sản phẩm màu tóc đề xuất',
+        compareBtn: '🔀 Chế độ so sánh',
+        compareEnd: '❌ Kết thúc so sánh',
+        warmVsCool: '🔥 So sánh tông nóng vs tông lạnh',
+        leftBtn: '👈 Trái',
+        rightBtn: 'Phải 👉',
+        compareComplete: '🎉 So sánh hoàn tất!',
+        closeBtn: 'Đóng',
+        suitableTone: 'Tông màu phù hợp với bạn:',
+        whichSuits: 'Bên nào phù hợp với bạn hơn?',
+        currentScore: '📊 Điểm hiện tại',
+        points: 'đ'
       },
 
       toast: {
@@ -4677,7 +4732,18 @@ const HAIRGATOR_I18N = {
         lightness: 'Kecerahan',
         saturation: 'Saturasi',
         warmth: 'Kehangatan',
-        recommendProducts: 'Produk Warna Rambut yang Direkomendasikan'
+        recommendProducts: 'Produk Warna Rambut yang Direkomendasikan',
+        compareBtn: '🔀 Mode Perbandingan',
+        compareEnd: '❌ Akhiri Perbandingan',
+        warmVsCool: '🔥 Perbandingan Warna Hangat vs Dingin',
+        leftBtn: '👈 Kiri',
+        rightBtn: 'Kanan 👉',
+        compareComplete: '🎉 Perbandingan Selesai!',
+        closeBtn: 'Tutup',
+        suitableTone: 'Warna yang cocok untuk Anda:',
+        whichSuits: 'Mana yang lebih cocok untuk Anda?',
+        currentScore: '📊 Skor Saat Ini',
+        points: 'poin'
       },
 
       toast: {
