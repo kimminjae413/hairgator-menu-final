@@ -227,17 +227,19 @@ OUTPUT: The same photo with improved hair-face integration. The hair must look l
         const data = await response.json();
         console.log('📄 Gemini 응답 수신');
 
-        // 응답에서 이미지 추출
+        // 응답에서 이미지 추출 (camelCase: inlineData)
         if (data.candidates && data.candidates[0]?.content?.parts) {
             for (const part of data.candidates[0].content.parts) {
-                if (part.inline_data && part.inline_data.data) {
-                    console.log('🎨 Gemini 이미지 생성 성공');
-                    return part.inline_data.data;
+                // REST API는 camelCase (inlineData) 반환
+                const imageData = part.inlineData || part.inline_data;
+                if (imageData && imageData.data) {
+                    console.log('🎨 Gemini 이미지 생성 성공, mimeType:', imageData.mimeType);
+                    return imageData.data;
                 }
             }
         }
 
-        console.log('⚠️ Gemini 응답에 이미지 없음:', JSON.stringify(data).substring(0, 500));
+        console.log('⚠️ Gemini 응답에 이미지 없음');
         return null;
 
     } catch (error) {
