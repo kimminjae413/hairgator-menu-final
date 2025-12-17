@@ -2818,8 +2818,8 @@ body.light-theme .recipe-formatted .recipe-tip {
 }
 
 .cut-recipe-link-btn {
-  background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%) !important;
+  color: #fff !important;
   border: none;
   padding: 14px 28px;
   border-radius: var(--radius-full);
@@ -2827,7 +2827,7 @@ body.light-theme .recipe-formatted .recipe-tip {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3) !important;
   display: flex;
   align-items: center;
   gap: 8px;

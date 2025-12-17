@@ -2944,6 +2944,13 @@ class AIStudio {
 
     const { textRecipe, diagrams, seriesName } = cutData;
 
+    // 디버그: 텍스트 레시피 길이 확인
+    console.log(`📋 커트 레시피 로드: ${cutStyleId}, 텍스트 길이: ${textRecipe ? textRecipe.length : 0}자`);
+    if (textRecipe) {
+      console.log(`📋 레시피 시작: ${textRecipe.substring(0, 100)}...`);
+      console.log(`📋 레시피 끝: ...${textRecipe.substring(textRecipe.length - 100)}`);
+    }
+
     // 기장 추출 (FAL → A Length)
     const lengthMatch = cutStyleId.match(/F([A-H])L/);
     const lengthCode = lengthMatch ? lengthMatch[1] : '';
