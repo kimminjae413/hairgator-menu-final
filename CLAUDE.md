@@ -186,6 +186,31 @@
 - `document.body.classList.contains('light-theme')`: 다크모드 체크
 
 ## 최근 작업 이력
+- 2025-12-17: 룩북 매거진 스타일 + 헤어체험 전/후 비교 UI
+
+  ### 룩북 에디토리얼 매거진 스타일 적용
+  - **디자인 컨셉**: 고급 패션 매거진 느낌의 미니멀 디자인
+  - **폰트 변경**: Cormorant Garamond (제목) + Libre Franklin (본문)
+  - **레이아웃**: max-width 880px 중앙 정렬, 좌우 흰색 여백
+  - **장식 효과**: 프레임 보더, 노이즈 텍스처 배경
+  - **네비게이션**: backdrop-filter blur 효과
+  - **태그 스타일**: pill 버튼 → 점(·) 구분 텍스트로 변경
+  - **파일 위치**: lookbook.html 전체 재설계
+
+  ### 헤어체험 전/후 비교 UI
+  - **기능**: 원본 사진과 결과 사진을 나란히 비교
+  - **데스크톱**: 좌우 배치 (BEFORE → AFTER)
+  - **모바일**: 세로 배치, 화살표 90도 회전
+  - **애니메이션**: 화살표 pulse 효과 (1.5초 주기)
+  - **i18n 키 추가**: `hairTry.before`, `hairTry.after` (7개국어)
+  - **함수 위치**: menu.js `showHairTryResult()`, `addHairTryResultStyles()`
+
+  ### Veo API 영상 생성 (비활성화)
+  - **이슈**: 1:1 비율 미지원, 504 타임아웃, referenceImages 미지원
+  - **수정**: 2단계 폴링 방식으로 변경, Veo 2.0으로 다운그레이드
+  - **결론**: text-to-video만 지원되어 헤어 메뉴판 이미지 활용 불가 → 사용 안 함
+  - **대안**: Runway ML, Pika Labs, Kling AI (image-to-video 지원)
+
 - 2025-12-16: 커트↔펌 양방향 연결 + Vision 매칭 활성화
 
   ### 커트↔펌 레시피 양방향 연결 버튼
