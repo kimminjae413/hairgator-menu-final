@@ -11086,7 +11086,7 @@ async function generateVideoStart(payload) {
 Style: Premium, professional Korean hair salon atmosphere. Clean, modern interior with soft lighting.
 Target audience: Professional hair designers and stylists.`;
 
-    // Veo 2.0 API 요청 구성 (3.1은 제한된 프리뷰)
+    // Veo 2.0 API 요청 구성 (참고 이미지 미지원)
     const requestBody = {
       instances: [{
         prompt: enhancedPrompt
@@ -11097,14 +11097,9 @@ Target audience: Professional hair designers and stylists.`;
       }
     };
 
-    // 참고 이미지가 있으면 추가 (최대 3개)
+    // 참고: Veo 2.0은 referenceImages를 지원하지 않음
     if (reference_images && reference_images.length > 0) {
-      requestBody.instances[0].referenceImages = reference_images.slice(0, 3).map(img => ({
-        image: {
-          bytesBase64Encoded: img.data,
-          mimeType: img.mimeType || 'image/jpeg'
-        }
-      }));
+      console.log('⚠️ Veo 2.0은 참고 이미지를 지원하지 않습니다. 프롬프트만 사용합니다.');
     }
 
     // Veo 2.0 Long Running Operation 시작
