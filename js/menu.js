@@ -2118,13 +2118,14 @@ async function processAIFaceSwap() {
         tempStoragePath = uploadResult.path; // 삭제용 경로 저장
         console.log('✅ 고객 사진 URL:', customerPhotoUrl);
 
-        // 2. API 호출
+        // 2. API 호출 (성별 정보 포함 - Gemini 후처리 프롬프트용)
         const response = await fetch('/.netlify/functions/hair-change', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 customerPhotoUrl: customerPhotoUrl,
-                styleImageUrl: styleImageUrl
+                styleImageUrl: styleImageUrl,
+                gender: window.currentGender || 'male'
             })
         });
 
