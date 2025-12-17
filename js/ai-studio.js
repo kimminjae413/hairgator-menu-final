@@ -449,7 +449,7 @@ class AIStudio {
 
     } catch (e) {
       console.error('❌ 삭제 실패:', e);
-      alert('삭제에 실패했습니다.');
+      alert(t('aiStudio.deleteFailed') || '삭제에 실패했습니다.');
     }
   }
 
@@ -1167,12 +1167,12 @@ class AIStudio {
 
     // Validate
     if (!file.type.startsWith('image/')) {
-      alert('이미지 파일만 업로드 가능합니다.');
+      alert(t('aiStudio.onlyImageFiles') || '이미지 파일만 업로드 가능합니다.');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('이미지 크기는 5MB 이하여야 합니다.');
+      alert(t('aiStudio.imageSizeLimit5MB') || '이미지 크기는 5MB 이하여야 합니다.');
       return;
     }
 
@@ -1292,7 +1292,7 @@ class AIStudio {
   }
 
   saveResult() {
-    alert('저장 기능은 준비 중입니다.');
+    alert(t('aiStudio.saveComingSoon') || '저장 기능은 준비 중입니다.');
   }
 
   shareResult() {
@@ -1303,7 +1303,7 @@ class AIStudio {
         url: window.location.href
       });
     } else {
-      alert('공유 기능을 지원하지 않는 브라우저입니다.');
+      alert(t('aiStudio.shareNotSupported') || '공유 기능을 지원하지 않는 브라우저입니다.');
     }
   }
 
@@ -2423,7 +2423,7 @@ class AIStudio {
 
     // 이미지 데이터 확인
     if (!this.pendingImageBase64) {
-      alert('이미지 데이터가 없습니다. 이미지를 다시 업로드해주세요.');
+      alert(t('aiStudio.noImageData') || '이미지 데이터가 없습니다. 이미지를 다시 업로드해주세요.');
       return;
     }
 
@@ -2568,13 +2568,13 @@ class AIStudio {
 
     const newStyleCode = selectEl.value;
     if (!newStyleCode) {
-      alert('스타일을 선택해주세요.');
+      alert(t('aiStudio.selectStyleAlert') || '스타일을 선택해주세요.');
       return;
     }
 
     // 현재 분석 데이터가 없으면 리턴
     if (!this.currentMaleAnalysis || !this.pendingImageBase64) {
-      alert('재분석할 이미지 데이터가 없습니다. 이미지를 다시 업로드해주세요.');
+      alert(t('aiStudio.noImageData') || '재분석할 이미지 데이터가 없습니다. 이미지를 다시 업로드해주세요.');
       return;
     }
 
@@ -2611,7 +2611,7 @@ class AIStudio {
       }
     } catch (error) {
       console.error('재분석 오류:', error);
-      alert('재분석 중 오류가 발생했습니다: ' + error.message);
+      alert((t('aiStudio.reanalysisError') || '재분석 중 오류가 발생했습니다') + ': ' + error.message);
       btn.innerHTML = originalText;
       btn.disabled = false;
     }
@@ -2628,13 +2628,13 @@ class AIStudio {
     const newForm = formSelect.value;
 
     if (!newLengthCode || !newForm) {
-      alert('길이와 형태를 모두 선택해주세요.');
+      alert(t('aiStudio.selectLengthAndForm') || '길이와 형태를 모두 선택해주세요.');
       return;
     }
 
     // 현재 분석 데이터가 없으면 리턴
     if (!this.currentFemaleAnalysis || !this.pendingImageBase64) {
-      alert('재분석할 이미지 데이터가 없습니다. 이미지를 다시 업로드해주세요.');
+      alert(t('aiStudio.noImageData') || '재분석할 이미지 데이터가 없습니다. 이미지를 다시 업로드해주세요.');
       return;
     }
 
@@ -2677,7 +2677,7 @@ class AIStudio {
       }
     } catch (error) {
       console.error('여자 스타일 재분석 오류:', error);
-      alert('재분석 중 오류가 발생했습니다: ' + error.message);
+      alert((t('aiStudio.reanalysisError') || '재분석 중 오류가 발생했습니다') + ': ' + error.message);
       btn.innerHTML = originalText;
       btn.disabled = false;
     }
@@ -2694,13 +2694,13 @@ class AIStudio {
     const newPermType = permTypeSelect.value;
 
     if (!newLengthCode || newPermType === '') {
-      alert('기장과 펌 타입을 모두 선택해주세요.');
+      alert(t('aiStudio.selectLengthAndPermType') || '기장과 펌 타입을 모두 선택해주세요.');
       return;
     }
 
     // 현재 분석 데이터가 없으면 리턴
     if (!this.currentFemaleAnalysis || !this.pendingImageBase64) {
-      alert('재분석할 이미지 데이터가 없습니다. 이미지를 다시 업로드해주세요.');
+      alert(t('aiStudio.noImageData') || '재분석할 이미지 데이터가 없습니다. 이미지를 다시 업로드해주세요.');
       return;
     }
 
@@ -2742,7 +2742,7 @@ class AIStudio {
       }
     } catch (error) {
       console.error('펌 스타일 재분석 오류:', error);
-      alert('펌 재분석 중 오류가 발생했습니다: ' + error.message);
+      alert((t('aiStudio.permReanalysisError') || '펌 재분석 중 오류가 발생했습니다') + ': ' + error.message);
       btn.innerHTML = originalText;
       btn.disabled = false;
     }
@@ -2751,7 +2751,7 @@ class AIStudio {
   // ⭐ 커트 스타일의 매칭 펌 레시피 보기
   async showMatchingPermRecipe(cutStyleId) {
     if (!cutStyleId) {
-      alert('스타일 정보가 없습니다.');
+      alert(t('aiStudio.noStyleInfo') || '스타일 정보가 없습니다.');
       return;
     }
 
@@ -2790,7 +2790,7 @@ class AIStudio {
       }
     } catch (error) {
       console.error('펌 레시피 조회 오류:', error);
-      alert('펌 레시피 조회 중 오류가 발생했습니다: ' + error.message);
+      alert((t('aiStudio.permRecipeError') || '펌 레시피 조회 중 오류가 발생했습니다') + ': ' + error.message);
 
       if (btn) {
         btn.innerHTML = t('aiStudio.viewPermRecipe') || '🌀 이 스타일 펌 레시피 보기';
@@ -2889,7 +2889,7 @@ class AIStudio {
   // ⭐ 펌 스타일의 매칭 커트 레시피 보기
   async showMatchingCutRecipe(permStyleId) {
     if (!permStyleId) {
-      alert('스타일 정보가 없습니다.');
+      alert(t('aiStudio.noStyleInfo') || '스타일 정보가 없습니다.');
       return;
     }
 
@@ -2928,7 +2928,7 @@ class AIStudio {
       }
     } catch (error) {
       console.error('커트 레시피 조회 오류:', error);
-      alert('커트 레시피 조회 중 오류가 발생했습니다: ' + error.message);
+      alert((t('aiStudio.cutRecipeError') || '커트 레시피 조회 중 오류가 발생했습니다') + ': ' + error.message);
 
       if (btn) {
         btn.innerHTML = t('aiStudio.viewCutRecipe') || '✂️ 이 스타일 커트 레시피 보기';
@@ -3407,7 +3407,7 @@ function selectService(service) {
     showCategorySelection(selectedGender);
   } else {
     // 남자 펌은 아직 미지원 - 메시지 표시
-    alert('남자 펌 레시피는 준비 중입니다.');
+    alert(t('aiStudio.malePermComingSoon') || '남자 펌 레시피는 준비 중입니다.');
     selectedService = null;
     permBtn.classList.remove('selected');
   }
@@ -3478,12 +3478,12 @@ function handleImageSelect(event) {
 
   // 유효성 검사
   if (!file.type.startsWith('image/')) {
-    alert('이미지 파일만 업로드 가능합니다.');
+    alert(t('aiStudio.onlyImageFiles') || '이미지 파일만 업로드 가능합니다.');
     return;
   }
 
   if (file.size > 10 * 1024 * 1024) {
-    alert('이미지 크기는 10MB 이하여야 합니다.');
+    alert(t('aiStudio.imageSizeLimit10MB') || '이미지 크기는 10MB 이하여야 합니다.');
     return;
   }
 
@@ -3544,14 +3544,14 @@ async function sendImageWithQuestion() {
 
   // 성별 선택 검증
   if (!selectedGender) {
-    alert('성별을 선택해주세요.');
+    alert(t('aiStudio.selectGenderAlert') || '성별을 선택해주세요.');
     return false;
   }
 
   // 카테고리 선택 검증
   if (!selectedCategory) {
-    const categoryType = selectedGender === 'female' ? '기장' : '스타일';
-    alert(`${categoryType}을(를) 선택해주세요.`);
+    const categoryType = selectedGender === 'female' ? (t('aiStudio.selectLength') || '기장') : (t('aiStudio.selectStyle') || '스타일');
+    alert(categoryType.replace(':', '') + ' ' + (t('aiStudio.selectCategoryFormat') || '을(를) 선택해주세요.'));
     return false;
   }
 

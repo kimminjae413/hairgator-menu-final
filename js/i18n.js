@@ -117,6 +117,8 @@ const HAIRGATOR_I18N = {
       // 메시지
       loginSuccess: '로그인 성공',
       logoutSuccess: '로그아웃되었습니다',
+      logoutConfirm: '로그아웃 하시겠습니까?',
+      logoutFailed: '로그아웃 실패',
       loginFailed: '로그인 실패',
       selectGender: '성별을 선택해주세요',
       loading: '로딩 중...',
@@ -212,7 +214,26 @@ const HAIRGATOR_I18N = {
       catMalePB: 'Pushed Back (넘긴머리)',
       catMaleBZ: 'Buzz (삭발형)',
       catMaleCP: 'Crop (크롭)',
-      catMaleMC: 'Mohican (모히칸)'
+      catMaleMC: 'Mohican (모히칸)',
+      // Alert 메시지
+      onlyImageFiles: '이미지 파일만 업로드 가능합니다.',
+      imageSizeLimit5MB: '이미지 크기는 5MB 이하여야 합니다.',
+      imageSizeLimit10MB: '이미지 크기는 10MB 이하여야 합니다.',
+      selectStyleAlert: '스타일을 선택해주세요.',
+      selectGenderAlert: '성별을 선택해주세요.',
+      selectLengthAndForm: '길이와 형태를 모두 선택해주세요.',
+      selectLengthAndPermType: '기장과 펌 타입을 모두 선택해주세요.',
+      noImageData: '재분석할 이미지 데이터가 없습니다. 이미지를 다시 업로드해주세요.',
+      reanalysisError: '재분석 중 오류가 발생했습니다',
+      permReanalysisError: '펌 재분석 중 오류가 발생했습니다',
+      noStyleInfo: '스타일 정보가 없습니다.',
+      permRecipeError: '펌 레시피 조회 중 오류가 발생했습니다',
+      cutRecipeError: '커트 레시피 조회 중 오류가 발생했습니다',
+      malePermComingSoon: '남자 펌 레시피는 준비 중입니다.',
+      selectCategoryFormat: '을(를) 선택해주세요.',
+      deleteFailed: '삭제에 실패했습니다.',
+      saveComingSoon: '저장 기능은 준비 중입니다.',
+      shareNotSupported: '공유 기능을 지원하지 않는 브라우저입니다.'
     },
 
     // ========== 헤어체험 ==========
@@ -961,6 +982,8 @@ const HAIRGATOR_I18N = {
 
       loginSuccess: 'Login successful',
       logoutSuccess: 'Logged out',
+      logoutConfirm: 'Do you want to logout?',
+      logoutFailed: 'Logout failed',
       loginFailed: 'Login failed',
       selectGender: 'Please select gender',
       loading: 'Loading...',
@@ -1054,7 +1077,26 @@ const HAIRGATOR_I18N = {
       catMalePB: 'Pushed Back',
       catMaleBZ: 'Buzz Cut',
       catMaleCP: 'Crop',
-      catMaleMC: 'Mohican'
+      catMaleMC: 'Mohican',
+      // Alert messages
+      onlyImageFiles: 'Only image files can be uploaded.',
+      imageSizeLimit5MB: 'Image size must be 5MB or less.',
+      imageSizeLimit10MB: 'Image size must be 10MB or less.',
+      selectStyleAlert: 'Please select a style.',
+      selectGenderAlert: 'Please select gender.',
+      selectLengthAndForm: 'Please select both length and form.',
+      selectLengthAndPermType: 'Please select both length and perm type.',
+      noImageData: 'No image data for reanalysis. Please upload an image again.',
+      reanalysisError: 'Error during reanalysis',
+      permReanalysisError: 'Error during perm reanalysis',
+      noStyleInfo: 'No style information.',
+      permRecipeError: 'Error fetching perm recipe',
+      cutRecipeError: 'Error fetching cut recipe',
+      malePermComingSoon: 'Male perm recipes are coming soon.',
+      selectCategoryFormat: 'Please select.',
+      deleteFailed: 'Delete failed.',
+      saveComingSoon: 'Save feature is coming soon.',
+      shareNotSupported: 'Share feature is not supported in this browser.'
     },
 
     // ========== Hair Try ==========
@@ -1776,6 +1818,8 @@ const HAIRGATOR_I18N = {
 
       loginSuccess: 'ログイン成功',
       logoutSuccess: 'ログアウトしました',
+      logoutConfirm: 'ログアウトしますか？',
+      logoutFailed: 'ログアウト失敗',
       loginFailed: 'ログイン失敗',
       selectGender: '性別を選択してください',
       loading: '読み込み中...',
@@ -1869,7 +1913,26 @@ const HAIRGATOR_I18N = {
       catMalePB: 'プッシュドバック (後ろ流し)',
       catMaleBZ: 'バズカット (坊主)',
       catMaleCP: 'クロップ',
-      catMaleMC: 'モヒカン'
+      catMaleMC: 'モヒカン',
+      // アラートメッセージ
+      onlyImageFiles: '画像ファイルのみアップロード可能です。',
+      imageSizeLimit5MB: '画像サイズは5MB以下である必要があります。',
+      imageSizeLimit10MB: '画像サイズは10MB以下である必要があります。',
+      selectStyleAlert: 'スタイルを選択してください。',
+      selectGenderAlert: '性別を選択してください。',
+      selectLengthAndForm: '長さと形を両方選択してください。',
+      selectLengthAndPermType: '長さとパーマタイプを両方選択してください。',
+      noImageData: '再分析する画像データがありません。画像を再アップロードしてください。',
+      reanalysisError: '再分析中にエラーが発生しました',
+      permReanalysisError: 'パーマ再分析中にエラーが発生しました',
+      noStyleInfo: 'スタイル情報がありません。',
+      permRecipeError: 'パーマレシピの取得中にエラーが発生しました',
+      cutRecipeError: 'カットレシピの取得中にエラーが発生しました',
+      malePermComingSoon: '男性パーマレシピは準備中です。',
+      selectCategoryFormat: 'を選択してください。',
+      deleteFailed: '削除に失敗しました。',
+      saveComingSoon: '保存機能は準備中です。',
+      shareNotSupported: 'このブラウザでは共有機能がサポートされていません。'
     },
 
     // ========== ヘアトライ ==========
@@ -2587,6 +2650,8 @@ const HAIRGATOR_I18N = {
 
       loginSuccess: '登录成功',
       logoutSuccess: '已登出',
+      logoutConfirm: '您要退出登录吗？',
+      logoutFailed: '退出登录失败',
       loginFailed: '登录失败',
       selectGender: '请选择性别',
       loading: '加载中...',
@@ -2680,7 +2745,26 @@ const HAIRGATOR_I18N = {
       catMalePB: '后梳',
       catMaleBZ: '板寸',
       catMaleCP: '短寸头',
-      catMaleMC: '莫西干'
+      catMaleMC: '莫西干',
+      // 提示消息
+      onlyImageFiles: '只能上传图片文件。',
+      imageSizeLimit5MB: '图片大小必须在5MB以下。',
+      imageSizeLimit10MB: '图片大小必须在10MB以下。',
+      selectStyleAlert: '请选择风格。',
+      selectGenderAlert: '请选择性别。',
+      selectLengthAndForm: '请同时选择长度和形状。',
+      selectLengthAndPermType: '请同时选择长度和烫发类型。',
+      noImageData: '没有可重新分析的图片数据。请重新上传图片。',
+      reanalysisError: '重新分析时发生错误',
+      permReanalysisError: '烫发重新分析时发生错误',
+      noStyleInfo: '没有风格信息。',
+      permRecipeError: '获取烫发配方时发生错误',
+      cutRecipeError: '获取剪发配方时发生错误',
+      malePermComingSoon: '男士烫发配方正在准备中。',
+      selectCategoryFormat: '请选择。',
+      deleteFailed: '删除失败。',
+      saveComingSoon: '保存功能正在准备中。',
+      shareNotSupported: '此浏览器不支持分享功能。'
     },
 
     // ========== 发型体验 ==========
@@ -3401,6 +3485,8 @@ const HAIRGATOR_I18N = {
 
       loginSuccess: 'Đăng nhập thành công',
       logoutSuccess: 'Đã đăng xuất',
+      logoutConfirm: 'Bạn có muốn đăng xuất không?',
+      logoutFailed: 'Đăng xuất thất bại',
       loginFailed: 'Đăng nhập thất bại',
       selectGender: 'Vui lòng chọn giới tính',
       loading: 'Đang tải...',
@@ -3494,7 +3580,26 @@ const HAIRGATOR_I18N = {
       catMalePB: 'Pushed Back (Vuốt ngược)',
       catMaleBZ: 'Buzz Cut (Đầu cua)',
       catMaleCP: 'Crop',
-      catMaleMC: 'Mohican'
+      catMaleMC: 'Mohican',
+      // Thông báo cảnh báo
+      onlyImageFiles: 'Chỉ có thể tải lên tệp hình ảnh.',
+      imageSizeLimit5MB: 'Kích thước hình ảnh phải dưới 5MB.',
+      imageSizeLimit10MB: 'Kích thước hình ảnh phải dưới 10MB.',
+      selectStyleAlert: 'Vui lòng chọn kiểu.',
+      selectGenderAlert: 'Vui lòng chọn giới tính.',
+      selectLengthAndForm: 'Vui lòng chọn cả độ dài và hình dáng.',
+      selectLengthAndPermType: 'Vui lòng chọn cả độ dài và loại uốn.',
+      noImageData: 'Không có dữ liệu hình ảnh để phân tích lại. Vui lòng tải lên hình ảnh lần nữa.',
+      reanalysisError: 'Lỗi trong quá trình phân tích lại',
+      permReanalysisError: 'Lỗi trong quá trình phân tích lại uốn tóc',
+      noStyleInfo: 'Không có thông tin kiểu.',
+      permRecipeError: 'Lỗi khi lấy công thức uốn tóc',
+      cutRecipeError: 'Lỗi khi lấy công thức cắt tóc',
+      malePermComingSoon: 'Công thức uốn tóc nam đang được chuẩn bị.',
+      selectCategoryFormat: 'Vui lòng chọn.',
+      deleteFailed: 'Xóa thất bại.',
+      saveComingSoon: 'Tính năng lưu đang được chuẩn bị.',
+      shareNotSupported: 'Trình duyệt này không hỗ trợ tính năng chia sẻ.'
     },
 
     // ========== Thử kiểu tóc ==========

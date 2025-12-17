@@ -33,7 +33,8 @@
       "Bash(npx netlify-cli:*)",
       "Bash(python scripts/upload-fcl1001.py:*)",
       "Bash(python scripts/upload-perm-thumbnails.py:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []
