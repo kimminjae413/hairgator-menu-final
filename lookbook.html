@@ -72,25 +72,50 @@
 
         body {
             font-family: var(--theme-font, var(--font-sans));
-            background: var(--theme-bg, var(--bg-dark));
+            background: #ffffff;
             color: var(--theme-text, var(--text-primary));
             line-height: 1.6;
             overflow-x: hidden;
             transition: background-color 0.5s ease, color 0.5s ease;
         }
 
+        /* Main Content Wrapper - 좌우 여백 */
+        .lookbook-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--theme-bg, var(--bg-dark));
+            box-shadow: 0 0 80px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        @media (max-width: 960px) {
+            .lookbook-wrapper {
+                max-width: 100%;
+                box-shadow: none;
+            }
+        }
+
         /* Navigation */
         .lookbook-nav {
             position: fixed;
             top: 0;
-            left: 0;
-            right: 0;
-            padding: 1.5rem 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 900px;
+            padding: 1.5rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 100;
             background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
+        }
+
+        @media (max-width: 960px) {
+            .lookbook-nav {
+                max-width: 100%;
+                padding: 1.5rem 1.5rem;
+            }
         }
 
         .nav-logo {
@@ -149,11 +174,12 @@
             color: var(--theme-text, var(--text-primary));
         }
 
-        /* Hero Section - Full Screen */
+        /* Hero Section - 매거진 스타일 */
         .hero-section {
             position: relative;
-            height: 100vh;
-            min-height: 700px;
+            height: 85vh;
+            min-height: 600px;
+            max-height: 800px;
             overflow: hidden;
         }
 
@@ -265,10 +291,10 @@
 
         /* Tags Section */
         .tags-section {
-            padding: 3rem 4rem;
+            padding: 2.5rem 2rem;
             display: flex;
             justify-content: center;
-            gap: 1rem;
+            gap: 0.8rem;
             flex-wrap: wrap;
             border-bottom: 1px solid var(--theme-text-secondary, #222);
             background: var(--theme-bg, transparent);
@@ -291,7 +317,7 @@
 
         /* Variations Section */
         .variations-section {
-            padding: 5rem 4rem;
+            padding: 4rem 2rem;
             background: var(--theme-bg, inherit);
         }
 
@@ -313,8 +339,7 @@
         .variations-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-            max-width: 1200px;
+            gap: 1.5rem;
             margin: 0 auto;
         }
 
@@ -324,12 +349,13 @@
 
         .variation-card img {
             width: 100%;
-            height: 400px;
+            height: 320px;
             object-fit: cover;
             object-position: top center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             filter: grayscale(20%);
             transition: filter 0.3s, transform 0.3s;
+            border-radius: 4px;
         }
 
         .variation-card:hover img {
@@ -353,15 +379,14 @@
 
         /* Info Grid Section */
         .info-section {
-            padding: 5rem 4rem;
+            padding: 3.5rem 2rem;
             background: var(--theme-bg-card, var(--bg-card));
         }
 
         .info-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 4rem;
-            max-width: 1200px;
+            gap: 2rem;
             margin: 0 auto;
         }
 
@@ -592,6 +617,9 @@
     </style>
 </head>
 <body>
+    <!-- Main Wrapper - 좌우 흰색 여백 -->
+    <div class="lookbook-wrapper">
+
     <!-- Navigation -->
     <nav class="lookbook-nav">
         <div class="nav-logo">THE EDIT</div>
@@ -732,6 +760,8 @@
         <div class="footer-logo">HAIRGATOR</div>
         <p class="footer-text">AI-Powered Hair Style Analysis</p>
     </footer>
+
+    </div><!-- /.lookbook-wrapper -->
 
     <script>
         // URL 파라미터에서 데이터 가져오기
