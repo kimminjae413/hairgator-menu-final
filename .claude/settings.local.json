@@ -31,7 +31,9 @@
       "mcp__chrome-devtools__take_screenshot",
       "mcp__chrome-devtools__click",
       "Bash(npx netlify-cli:*)",
-      "Bash(python scripts/upload-fcl1001.py:*)"
+      "Bash(python scripts/upload-fcl1001.py:*)",
+      "Bash(python scripts/upload-perm-thumbnails.py:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

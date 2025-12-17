@@ -6643,7 +6643,8 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
         image_base64,
         mime_type,
         seriesStylesWithImage,
-        geminiKey
+        geminiKey,
+        serviceType  // ⭐ 펌/커트 구분 파라미터 전달
       );
       console.log(`⏱️ [3] Gemini Vision 직접 비교: ${Date.now() - t3}ms`);
       console.log(`🎯 Vision 선택: ${visionResult.selectedStyleId} (신뢰도: ${visionResult.confidence})`);
@@ -6957,6 +6958,91 @@ JSON만 출력:
   }
 }
 
+// ==================== ⭐ 펌 전용 Vision 분석 함수 ====================
+/**
+ * 이미지에서 펌 스타일 특성 분석
+ * - 펌 타입 (매직/로드C컬/로드S컬/볼륨웨이브/트위스트)
+ * - 컬 크기, 컬 시작점, 볼륨 위치
+ */
+async function analyzeRequiredPermTechnique(userImageBase64, mimeType, geminiKey) {
+  console.log(`🔬 펌 전용 Vision 분석 시작`);
+
+  try {
+    const prompt = `당신은 헤어 펌 전문가입니다. 이 헤어스타일 이미지를 분석하여, 이 스타일을 재현하기 위해 필요한 펌 기법을 판단해주세요.
+
+분석 항목:
+1. 펌 타입 (perm_type):
+   - magic: 스트레이트 펌/매직, 직모 처리, 컬 없음
+   - rod_c_curl: C컬, 끝단에만 부드러운 컬 (1~1.5회전)
+   - rod_s_curl: S컬, 중간~끝단 웨이브 (2회전 이상)
+   - volume_wave: 볼륨 웨이브, 전체적으로 부드러운 곡선
+   - twist: 트위스트 펌, 꼬임이 있는 자연스러운 웨이브
+
+2. 컬 크기 (curl_size):
+   - small: 작은 컬 (15mm 이하 로드)
+   - medium: 중간 컬 (17~22mm 로드)
+   - large: 큰 컬/웨이브 (24mm 이상 또는 셋팅롤)
+
+3. 컬 시작점 (curl_start):
+   - root: 뿌리(모근)부터 컬
+   - middle: 중간부터 컬
+   - end: 끝단(모발 끝 1/3)에만 컬
+
+4. 볼륨 위치 (volume_position):
+   - top: 크라운/정수리에 볼륨 집중
+   - middle: 사이드/측면 볼륨
+   - bottom: 끝단에 볼륨/무게감
+   - even: 전체적으로 균일한 볼륨
+
+5. 프린지/앞머리 처리 (fringe_treatment):
+   - curled: 앞머리도 펌
+   - straight: 앞머리는 직모 유지
+   - none: 앞머리 없음
+
+JSON만 출력:
+{"perm_type":"<값>","curl_size":"<값>","curl_start":"<값>","volume_position":"<값>","fringe_treatment":"<값>","analysis_reason":"<1문장 분석 근거>"}`;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { inline_data: { mime_type: mimeType, data: userImageBase64 } },
+              { text: prompt }
+            ]
+          }],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 300 }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('펌 분석 API 오류:', response.status, errorText);
+      return null;
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    console.log(`🔬 펌 분석 원문:`, text.substring(0, 150));
+
+    const jsonMatch = text.match(/\{[\s\S]*?\}/);
+    if (jsonMatch) {
+      const result = JSON.parse(jsonMatch[0]);
+      console.log(`✅ 펌 기법 분석 완료:`, JSON.stringify(result));
+      return result;
+    }
+    console.log(`⚠️ 펌 분석 JSON 파싱 실패`);
+    return null;
+  } catch (error) {
+    console.error('펌 기법 분석 오류:', error.message);
+    return null;
+  }
+}
+
 /**
  * 레시피 텍스트(caption/textRecipe)와 필요한 커팅 기법을 매칭하여 점수 계산
  * ⭐ diagrams 메타데이터 대신 실제 레시피 텍스트 분석으로 정확도 향상
@@ -7080,12 +7166,183 @@ function calculateTechniqueMatchScore(requiredTechnique, recipe) {
   return Math.max(0, score);
 }
 
-// ==================== ⭐⭐⭐ Gemini Vision 1:1 순차 비교 (정확도 향상 + RAG 기법 매칭) ====================
-async function selectBestStyleByVision(userImageBase64, mimeType, candidateStyles, geminiKey) {
-  console.log(`🔍 Vision 1:1 비교 시작: ${candidateStyles.length}개 스타일`);
+// ==================== ⭐ 펌 전용 캡션 매칭 점수 계산 ====================
+/**
+ * 펌 레시피 텍스트와 필요한 펌 기법을 매칭하여 점수 계산
+ * - 펌 타입(매직/로드/트위스트)
+ * - 로드 크기, 베이스 타입, 볼륨 위치
+ */
+function calculatePermTechniqueMatchScore(requiredTechnique, recipe) {
+  if (!requiredTechnique || !recipe) return 0;
+  let score = 0;
+  const styleId = recipe.styleId || '';
 
-  // ⭐ RAG 기반 커팅 기법 분석 (병렬 처리를 위해 먼저 시작)
-  const techniqueAnalysisPromise = analyzeRequiredCuttingTechnique(userImageBase64, mimeType, geminiKey);
+  // 레시피 텍스트
+  const recipeText = (recipe.textRecipe || recipe.captionText || recipe.caption || '').toLowerCase();
+
+  if (!recipeText) {
+    console.log(`  [\x1b[35m${styleId}\x1b[0m] 펌 레시피 텍스트 없음`);
+    return 0;
+  }
+
+  console.log(`  [\x1b[35m${styleId}\x1b[0m] 펌 캡션 기반 매칭:`);
+
+  // styleId에서 펌 타입 추정 (0~4번대)
+  const styleNumMatch = styleId.match(/\d{4}/);
+  const styleNum = styleNumMatch ? parseInt(styleNumMatch[0].charAt(0)) : -1;
+  // 0: 매직, 1: C컬, 2: S컬, 3: 볼륨웨이브, 4: 트위스트
+
+  // 1. 펌 타입 매칭 (40점) - 가장 중요
+  const hasMagicKeywords = recipeText.includes('프레스') || recipeText.includes('매직') ||
+                           recipeText.includes('스트레이트') || recipeText.includes('press');
+  const hasTwistKeywords = recipeText.includes('트위스트') || recipeText.includes('twist');
+  const hasRodKeywords = recipeText.includes('로드') || recipeText.includes('rod') ||
+                         recipeText.includes('와인딩') || recipeText.includes('winding');
+  const hasSettingRollKeywords = recipeText.includes('셋팅롤') || recipeText.includes('setting') ||
+                                  recipeText.includes('셋팅 롤');
+
+  let stylePermType = 'unknown';
+  if (hasMagicKeywords && !hasRodKeywords) {
+    stylePermType = 'magic';
+  } else if (hasTwistKeywords) {
+    stylePermType = 'twist';
+  } else if (hasSettingRollKeywords || styleNum === 1) {
+    stylePermType = 'rod_c_curl';
+  } else if (hasRodKeywords) {
+    // 로드 크기로 C컬/S컬 구분
+    const rodSizeMatch = recipeText.match(/(\d+)\s*mm/g);
+    if (rodSizeMatch) {
+      const sizes = rodSizeMatch.map(m => parseInt(m));
+      const avgSize = sizes.reduce((a, b) => a + b, 0) / sizes.length;
+      stylePermType = avgSize >= 20 ? 'rod_c_curl' : 'rod_s_curl';
+    } else {
+      // 호수로 판단 (숫자호)
+      const rodNumMatch = recipeText.match(/(\d+)\s*호/g);
+      if (rodNumMatch) {
+        const nums = rodNumMatch.map(m => parseInt(m));
+        const avgNum = nums.reduce((a, b) => a + b, 0) / nums.length;
+        stylePermType = avgNum <= 6 ? 'rod_s_curl' : 'rod_c_curl';
+      } else {
+        stylePermType = 'rod_s_curl';  // 기본값
+      }
+    }
+  }
+
+  // 타입 매칭 점수
+  if (requiredTechnique.perm_type === stylePermType) {
+    score += 40;
+    console.log(`    펌 타입 일치(${stylePermType}): +40`);
+  } else if (
+    (requiredTechnique.perm_type === 'rod_c_curl' && stylePermType === 'rod_s_curl') ||
+    (requiredTechnique.perm_type === 'rod_s_curl' && stylePermType === 'rod_c_curl')
+  ) {
+    score += 20;  // 같은 로드 계열
+    console.log(`    펌 타입 유사(로드 계열): +20`);
+  } else if (requiredTechnique.perm_type === 'volume_wave' && (stylePermType === 'rod_c_curl' || stylePermType === 'rod_s_curl')) {
+    score += 15;
+    console.log(`    펌 타입 유사(웨이브 계열): +15`);
+  } else if (requiredTechnique.perm_type === 'magic' && stylePermType !== 'magic') {
+    score -= 30;  // 매직 원하는데 컬 스타일이면 대폭 감점
+    console.log(`    매직 vs 컬 불일치: -30`);
+  }
+
+  // 2. 컬 크기 매칭 (25점)
+  let styleRodSize = 'unknown';
+  const mmMatch = recipeText.match(/(\d+)\s*mm/g);
+  if (mmMatch) {
+    const sizes = mmMatch.map(m => parseInt(m));
+    const avgSize = sizes.reduce((a, b) => a + b, 0) / sizes.length;
+    styleRodSize = avgSize <= 15 ? 'small' : avgSize <= 22 ? 'medium' : 'large';
+    console.log(`    로드 크기 평균: ${avgSize.toFixed(0)}mm → ${styleRodSize}`);
+  }
+  const numMatch = recipeText.match(/(\d+)\s*호/g);
+  if (numMatch && styleRodSize === 'unknown') {
+    const nums = numMatch.map(m => parseInt(m));
+    const avgNum = nums.reduce((a, b) => a + b, 0) / nums.length;
+    styleRodSize = avgNum <= 5 ? 'small' : avgNum <= 7 ? 'medium' : 'large';
+    console.log(`    로드 호수 평균: ${avgNum.toFixed(0)}호 → ${styleRodSize}`);
+  }
+
+  if (requiredTechnique.curl_size && styleRodSize !== 'unknown') {
+    if (requiredTechnique.curl_size === styleRodSize) {
+      score += 25;
+      console.log(`    컬 크기 일치: +25`);
+    } else if (
+      (requiredTechnique.curl_size === 'small' && styleRodSize === 'medium') ||
+      (requiredTechnique.curl_size === 'medium' && (styleRodSize === 'small' || styleRodSize === 'large')) ||
+      (requiredTechnique.curl_size === 'large' && styleRodSize === 'medium')
+    ) {
+      score += 10;
+      console.log(`    컬 크기 유사: +10`);
+    }
+  }
+
+  // 3. 컬 시작점 매칭 (20점)
+  const hasOnBase = recipeText.includes('온 베이스') || recipeText.includes('on base') || recipeText.includes('온베이스');
+  const hasOffBase = recipeText.includes('오프 베이스') || recipeText.includes('off base') || recipeText.includes('오프베이스');
+  const hasHalfOffBase = recipeText.includes('하프 오프') || recipeText.includes('half off') || recipeText.includes('하프오프');
+  const hasRootMention = recipeText.includes('모근') || recipeText.includes('뿌리') || recipeText.includes('root');
+
+  let styleCurlStart = 'middle';  // 기본값
+  if (hasOnBase || hasRootMention) {
+    styleCurlStart = 'root';
+  } else if (hasOffBase && !hasHalfOffBase) {
+    styleCurlStart = 'end';
+  } else if (hasHalfOffBase) {
+    styleCurlStart = 'middle';
+  }
+
+  if (requiredTechnique.curl_start) {
+    if (requiredTechnique.curl_start === styleCurlStart) {
+      score += 20;
+      console.log(`    컬 시작점 일치(${styleCurlStart}): +20`);
+    } else if (
+      (requiredTechnique.curl_start === 'middle' && (styleCurlStart === 'root' || styleCurlStart === 'end')) ||
+      (requiredTechnique.curl_start !== 'middle' && styleCurlStart === 'middle')
+    ) {
+      score += 8;
+      console.log(`    컬 시작점 유사: +8`);
+    }
+  }
+
+  // 4. 볼륨 위치 매칭 (15점)
+  const hasCrownVolume = recipeText.includes('크라운') || recipeText.includes('crown') ||
+                          recipeText.includes('탑') || recipeText.includes('top') || recipeText.includes('정수리');
+  const hasSideVolume = recipeText.includes('사이드') || recipeText.includes('side');
+  const hasNapeVolume = recipeText.includes('네이프') || recipeText.includes('nape') ||
+                         recipeText.includes('후두부');
+
+  let styleVolumePos = 'even';
+  if (hasCrownVolume && !hasSideVolume && !hasNapeVolume) {
+    styleVolumePos = 'top';
+  } else if (hasSideVolume) {
+    styleVolumePos = 'middle';
+  } else if (hasNapeVolume && !hasCrownVolume) {
+    styleVolumePos = 'bottom';
+  }
+
+  if (requiredTechnique.volume_position) {
+    if (requiredTechnique.volume_position === styleVolumePos) {
+      score += 15;
+      console.log(`    볼륨 위치 일치: +15`);
+    } else if (styleVolumePos === 'even') {
+      score += 8;  // 전체 볼륨은 부분 일치로 처리
+      console.log(`    볼륨 위치 유사(전체): +8`);
+    }
+  }
+
+  console.log(`    → 펌 캡션 기법 총점: ${Math.max(0, score)}`);
+  return Math.max(0, score);
+}
+
+// ==================== ⭐⭐⭐ Gemini Vision 1:1 순차 비교 (정확도 향상 + RAG 기법 매칭) ====================
+async function selectBestStyleByVision(userImageBase64, mimeType, candidateStyles, geminiKey, serviceType = 'cut') {
+  console.log(`🔍 Vision 1:1 비교 시작: ${candidateStyles.length}개 스타일 (시술: ${serviceType})`);
+
+  // ⭐ 펌/커트에 따라 다른 기법 분석 함수 사용
+  const techniqueAnalysisPromise = serviceType === 'perm'
+    ? analyzeRequiredPermTechnique(userImageBase64, mimeType, geminiKey)
+    : analyzeRequiredCuttingTechnique(userImageBase64, mimeType, geminiKey);
 
   // 각 스타일별 특징 설명 (시리즈별)
   const STYLE_FEATURES = {
@@ -7180,20 +7437,35 @@ JSON만: {"total_score":<0-100>,"curl_match":<true/false>,"reason":"<1문장>"}`
 
   // ⭐ RAG 기법 분석 결과 대기
   const requiredTechnique = await techniqueAnalysisPromise;
-  console.log(`\n🔬 Vision 커팅 분석 결과:`);
-  console.log(`   complexity: ${requiredTechnique?.complexity || 'N/A'}`);
-  console.log(`   volume: ${requiredTechnique?.volume_position || 'N/A'}`);
-  console.log(`   needs_c_zone: ${requiredTechnique?.needs_c_zone}`);
-  console.log(`   needs_layer: ${requiredTechnique?.needs_layer}`);
-  console.log(`   section: ${requiredTechnique?.section_type || 'N/A'}`);
-  console.log(`   reason: ${requiredTechnique?.analysis_reason || '분석 실패'}`);
 
-  // ⭐ 기법 매칭 점수 계산 및 최종 점수 계산
+  // 펌/커트에 따라 다른 로그 출력
+  if (serviceType === 'perm') {
+    console.log(`\n🔬 Vision 펌 분석 결과:`);
+    console.log(`   perm_type: ${requiredTechnique?.perm_type || 'N/A'}`);
+    console.log(`   curl_size: ${requiredTechnique?.curl_size || 'N/A'}`);
+    console.log(`   curl_start: ${requiredTechnique?.curl_start || 'N/A'}`);
+    console.log(`   volume: ${requiredTechnique?.volume_position || 'N/A'}`);
+    console.log(`   fringe: ${requiredTechnique?.fringe_treatment || 'N/A'}`);
+    console.log(`   reason: ${requiredTechnique?.analysis_reason || '분석 실패'}`);
+  } else {
+    console.log(`\n🔬 Vision 커팅 분석 결과:`);
+    console.log(`   complexity: ${requiredTechnique?.complexity || 'N/A'}`);
+    console.log(`   volume: ${requiredTechnique?.volume_position || 'N/A'}`);
+    console.log(`   needs_c_zone: ${requiredTechnique?.needs_c_zone}`);
+    console.log(`   needs_layer: ${requiredTechnique?.needs_layer}`);
+    console.log(`   section: ${requiredTechnique?.section_type || 'N/A'}`);
+    console.log(`   reason: ${requiredTechnique?.analysis_reason || '분석 실패'}`);
+  }
+
+  // ⭐ 기법 매칭 점수 계산 및 최종 점수 계산 (펌/커트 분기)
   const candidateStyleMap = new Map(candidateStyles.map(s => [s.styleId, s]));
 
   for (const result of scoreResults) {
     const recipe = candidateStyleMap.get(result.styleId);
-    const techniqueScore = calculateTechniqueMatchScore(requiredTechnique, recipe);
+    // ⭐ 펌/커트에 따라 다른 점수 계산 함수 사용
+    const techniqueScore = serviceType === 'perm'
+      ? calculatePermTechniqueMatchScore(requiredTechnique, recipe)
+      : calculateTechniqueMatchScore(requiredTechnique, recipe);
     result.visionScore = result.score;  // 원본 Vision 점수 보존
     result.techniqueScore = techniqueScore;
     // 최종 점수: Vision 70% + 기법 매칭 30% (Vision 가중치 상향)
@@ -7208,7 +7480,13 @@ JSON만: {"total_score":<0-100>,"curl_match":<true/false>,"reason":"<1문장>"}`
   scoreResults.slice(0, 3).forEach((r, i) => {
     console.log(`  ${i + 1}. ${r.styleId}: ${r.score}점 (V:${r.visionScore} + T:${r.techniqueScore})`);
   });
-  console.log(`📋 Vision분석: complexity=${requiredTechnique?.complexity}, volume=${requiredTechnique?.volume_position}, c_zone=${requiredTechnique?.needs_c_zone}, layer=${requiredTechnique?.needs_layer}, section=${requiredTechnique?.section_type}`);
+
+  // 펌/커트에 따라 다른 요약 로그
+  if (serviceType === 'perm') {
+    console.log(`📋 Vision펌분석: perm_type=${requiredTechnique?.perm_type}, curl_size=${requiredTechnique?.curl_size}, curl_start=${requiredTechnique?.curl_start}, volume=${requiredTechnique?.volume_position}`);
+  } else {
+    console.log(`📋 Vision분석: complexity=${requiredTechnique?.complexity}, volume=${requiredTechnique?.volume_position}, c_zone=${requiredTechnique?.needs_c_zone}, layer=${requiredTechnique?.needs_layer}, section=${requiredTechnique?.section_type}`);
+  }
 
   if (scoreResults.length > 0) {
     const best = scoreResults[0];
