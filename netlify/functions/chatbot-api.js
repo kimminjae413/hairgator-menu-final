@@ -7288,7 +7288,8 @@ function parseFirestoreDocument(doc) {
 
 // ==================== 레시피 형식 통일 ====================
 /**
- * 펌 레시피 텍스트 전처리 (OCR 아티팩트 제거 및 서술형 변환)
+ * 펌 레시피 텍스트 전처리 (OCR 아티팩트 제거 + 도해도 순서 유지 + 단계 번호 추가)
+ * ⭐ 핵심: 원본 순서 유지하여 도해도 번호와 매칭
  */
 function formatPermRecipe(recipe) {
   if (!recipe) return recipe;
@@ -7298,174 +7299,105 @@ function formatPermRecipe(recipe) {
   // 1. "상세설명 텍스트" OCR 아티팩트 제거
   formatted = formatted.replace(/상세설명\s*텍스트\s*/g, '');
 
-  // 2. 연속 줄바꿈 정리
+  // 2. 연속 줄바꿈 정리 (2개 이상 → 2개)
   formatted = formatted.replace(/\n{3,}/g, '\n\n');
 
   // 3. 주의/참고 섹션 강조
   formatted = formatted.replace(/^주의[_\s]*(.+)$/gm, '⚠️ **주의**: $1');
   formatted = formatted.replace(/^참고[_\s]*(.+)$/gm, '💡 **참고**: $1');
 
-  // ⭐ 디렉션 설명 매핑
-  const directionDesc = {
-    'D0': 'D0 (정중앙, 앞이마 중앙선 방향)',
-    'D2': 'D2 (앞쪽 측면 방향)',
-    'D4': 'D4 (눈꼬리 위쪽, 측면 방향)',
-    'D6': 'D6 (귀 바로 위쪽 방향)',
-    'D8': 'D8 (뒤통수 중앙 방향)'
-  };
-
-  // ⭐ 베이스 설명
-  const baseDesc = {
-    '온베이스': '온베이스 (모근에서 수직으로 말기)',
-    '하프오프베이스': '하프오프베이스 (모근에서 45도 기울여 말기)',
-    '오프베이스': '오프베이스 (모근에서 눕혀서 말기)'
-  };
-
-  // 4. 영역별 섹션 헤더 추가 + 서술형 변환
+  // 4. 원본 순서 유지하면서 단계 번호 추가
   const lines = formatted.split('\n');
-  const groupedLines = [];
-  let currentSection = '';
-  let currentSectionName = '';
-  let stepCount = 0;
+  const resultLines = [];
+  let stepNumber = 0;  // 도해도 번호와 매칭되는 순차 번호
+
+  // 부위명 감지 함수
+  function detectZoneName(text) {
+    if (/프론트\s*톱|Front\s*Top/i.test(text)) return '프론트 톱';
+    if (/센터\s*백|Center\s*Back/i.test(text)) return '센터 백';
+    if (/백\s*사이드|Back\s*Side/i.test(text)) return '백 사이드';
+    if (/네이프|Nape/i.test(text)) return '네이프';
+    if (/프린지|Fringe|뱅|앞머리/i.test(text)) return '프린지';
+    if (/크라운|Crown/i.test(text)) return '크라운';
+    if (/A2\s*존/i.test(text)) return 'A2존';
+    if (/A1\s*존/i.test(text)) return 'A1존';
+    if (/A\s*존/i.test(text)) return 'A존';
+    if (/B2\s*존/i.test(text)) return 'B2존';
+    if (/B1\s*존/i.test(text)) return 'B1존';
+    if (/B\s*존/i.test(text)) return 'B존';
+    if (/C\s*존/i.test(text)) return 'C존';
+    if (/사이드|Side/i.test(text) && !/백\s*사이드|Back\s*Side/i.test(text)) return '사이드';
+    if (/탑\s*섹션|Top\s*Section|탑\s*부분/i.test(text)) return '탑';
+    return null;
+  }
 
   for (const line of lines) {
     const trimmed = line.trim();
+
+    // 빈 줄 유지
     if (!trimmed) {
-      groupedLines.push('');
+      resultLines.push('');
       continue;
     }
 
-    // 부위/Zone 감지 (사이드, 백 사이드, 센터 백, 네이프, 프린지, 크라운, 탑 등)
-    let detectedSection = '';
-    let sectionLabel = '';
-    let sectionNameKo = '';
-
-    // 부위명 감지 (순서 중요: 긴 것 먼저)
-    if (/프론트\s*톱|Front\s*Top/i.test(trimmed)) {
-      detectedSection = 'FRONT_TOP';
-      sectionLabel = '📍 프론트 톱 (Front Top)';
-      sectionNameKo = '프론트 톱';
-    } else if (/센터\s*백|Center\s*Back/i.test(trimmed)) {
-      detectedSection = 'CENTER_BACK';
-      sectionLabel = '📍 센터 백 (Center Back)';
-      sectionNameKo = '센터 백';
-    } else if (/백\s*사이드|Back\s*Side/i.test(trimmed)) {
-      detectedSection = 'BACK_SIDE';
-      sectionLabel = '📍 백 사이드 (Back Side)';
-      sectionNameKo = '백 사이드';
-    } else if (/네이프|Nape/i.test(trimmed)) {
-      detectedSection = 'NAPE';
-      sectionLabel = '📍 네이프 (Nape)';
-      sectionNameKo = '네이프';
-    } else if (/프린지|Fringe|뱅|앞머리/i.test(trimmed)) {
-      detectedSection = 'FRINGE';
-      sectionLabel = '📍 프린지 (Fringe)';
-      sectionNameKo = '프린지';
-    } else if (/크라운|Crown/i.test(trimmed)) {
-      detectedSection = 'CROWN';
-      sectionLabel = '📍 크라운 (Crown)';
-      sectionNameKo = '크라운';
-    } else if (/탑\s*섹션|Top\s*Section|탑\s*부분/i.test(trimmed)) {
-      detectedSection = 'TOP';
-      sectionLabel = '📍 탑 (Top)';
-      sectionNameKo = '탑';
-    } else if (/사이드|Side/i.test(trimmed) && !/백\s*사이드|Back\s*Side/i.test(trimmed)) {
-      detectedSection = 'SIDE';
-      sectionLabel = '📍 사이드 (Side)';
-      sectionNameKo = '사이드';
-    } else if (/A[12]?\s*존/i.test(trimmed)) {
-      detectedSection = trimmed.match(/A[12]?\s*존/i)[0].replace(/\s+/g, '').toUpperCase();
-      sectionLabel = `📍 ${detectedSection} (Under Zone)`;
-      sectionNameKo = detectedSection;
-    } else if (/B[12]?\s*존/i.test(trimmed)) {
-      detectedSection = trimmed.match(/B[12]?\s*존/i)[0].replace(/\s+/g, '').toUpperCase();
-      sectionLabel = `📍 ${detectedSection} (Mid Zone)`;
-      sectionNameKo = detectedSection;
-    } else if (/C\s*존/i.test(trimmed)) {
-      detectedSection = 'C존';
-      sectionLabel = '📍 C존 (Over Zone)';
-      sectionNameKo = 'C존';
-    }
-
-    // 새로운 섹션이면 헤더 추가
-    if (detectedSection && detectedSection !== currentSection) {
-      currentSection = detectedSection;
-      currentSectionName = sectionNameKo;
-      stepCount = 0;
-      groupedLines.push(`\n**[${sectionLabel}]**`);
-      continue; // 섹션 헤더 라인은 스킵
-    }
-
-    // ◆ 기호나 부위명만 있는 라인 스킵
-    if (/^[◆◇●○■□▶▷]$/.test(trimmed) || /^(네이프|센터\s*백|백\s*사이드|사이드|프론트\s*톱|크라운|프린지|탑)$/i.test(trimmed)) {
+    // ◆ 기호만 있는 라인 스킵
+    if (/^[◆◇●○■□▶▷]$/.test(trimmed)) {
       continue;
     }
 
-    // ⭐ 리스트 형태 → 서술형 변환
-    // 패턴: "1" 또는 "각도 45° / D8 / 일반로드 8호 / 하프오프베이스 / 와인딩"
-    const stepMatch = trimmed.match(/^(\d+)$/);
-    if (stepMatch) {
-      stepCount = parseInt(stepMatch[1]);
-      continue; // 숫자만 있는 라인은 스킵
+    // 숫자만 있는 라인 스킵 (원본 번호)
+    if (/^\d+$/.test(trimmed)) {
+      continue;
     }
 
-    // 패턴: "각도 XX° / DX / 로드 X호 / 베이스 / 와인딩|프레스"
-    const recipeMatch = trimmed.match(/각도\s*(\d+(?:\.\d+)?)[°도]?\s*\/\s*(D\d)\s*\/\s*(.+?)\s*(\d+)호\s*\/\s*(온베이스|하프오프베이스|오프베이스)\s*\/\s*(와인딩|프레스)/i);
-    if (recipeMatch) {
-      const [_, angle, direction, rodType, rodSize, base, technique] = recipeMatch;
-      const dirDesc = directionDesc[direction] || direction;
-      const bDesc = baseDesc[base] || base;
+    // 주의/참고는 그대로 유지
+    if (trimmed.startsWith('⚠️') || trimmed.startsWith('💡')) {
+      resultLines.push(trimmed);
+      continue;
+    }
 
-      // 서술형 문장 생성
-      let sentence = '';
-      if (stepCount > 0) {
-        sentence = `${stepCount}단계: `;
+    // 부위명만 있는 라인 스킵
+    if (/^(네이프|센터\s*백|백\s*사이드|사이드|프론트\s*톱|크라운|프린지|탑|A[12]?\s*존|B[12]?\s*존|C\s*존)$/i.test(trimmed)) {
+      continue;
+    }
+
+    // 작업 내용이 있는 라인 (연화 후, 각도, 천체축 등 포함)
+    const isWorkStep = /연화\s*후|각도|천체축|다이렉션|다이랙션|프레스|와인딩|로드|섹션/i.test(trimmed);
+
+    if (isWorkStep) {
+      stepNumber++;
+
+      // 부위명 추출
+      const zoneName = detectZoneName(trimmed);
+
+      // 키워드 정리
+      let processedLine = trimmed
+        .replace(/천체축\s*각도\s*(\d+(?:\.\d+)?)\s*도/g, '천체축 $1도')
+        .replace(/다이렉션\s*(D\d)/gi, '다이렉션 $1')
+        .replace(/다이랙션\s*(D\d)/gi, '다이렉션 $1')
+        .replace(/가로\s*섹션/g, '가로 섹션')
+        .replace(/세로\s*섹션/g, '세로 섹션')
+        .replace(/(\d+)\s*차\s*프레스/g, '$1차 프레스')
+        .replace(/연화\s*후/g, '연화 후');
+
+      // 단계 번호 + 부위명 추가
+      if (zoneName) {
+        resultLines.push(`**${stepNumber}단계 [${zoneName}]**: ${processedLine}`);
+      } else {
+        resultLines.push(`**${stepNumber}단계**: ${processedLine}`);
       }
-      sentence += `천체축 ${angle}도 각도에서 ${dirDesc} 방향으로 ${rodType} ${rodSize}호를 ${bDesc}로 ${technique}합니다.`;
-
-      groupedLines.push(sentence);
-      continue;
+    } else {
+      // 작업 단계가 아닌 일반 텍스트
+      resultLines.push(trimmed);
     }
-
-    // 패턴: "노로드 / (스킵)" - 스킵 처리
-    if (/노로드|스킵|skip/i.test(trimmed)) {
-      groupedLines.push(`이 부분은 로드를 감지 않고 스킵합니다.`);
-      continue;
-    }
-
-    // 패턴: 프레스 관련 (셋팅롤 / 프레스)
-    const pressMatch = trimmed.match(/각도\s*(\d+(?:\.\d+)?)[°도]?\s*\/\s*(D\d)\s*\/\s*(.+?)\s*\/\s*(온베이스|하프오프베이스|오프베이스)\s*\/\s*(\d+)차?\s*프레스/i);
-    if (pressMatch) {
-      const [_, angle, direction, rodType, base, pressNum] = pressMatch;
-      const dirDesc = directionDesc[direction] || direction;
-      const bDesc = baseDesc[base] || base;
-
-      let sentence = '';
-      if (stepCount > 0) {
-        sentence = `${stepCount}단계: `;
-      }
-      sentence += `천체축 ${angle}도 각도에서 ${dirDesc} 방향으로 ${rodType}를 ${bDesc}로 ${pressNum}차 프레스합니다.`;
-
-      groupedLines.push(sentence);
-      continue;
-    }
-
-    // 기존 키워드 강조 (변환 안 된 라인)
-    let processedLine = trimmed
-      .replace(/천체축\s*각도\s*(\d+(?:\.\d+)?)\s*도/g, '천체축 $1도')
-      .replace(/다이렉션\s*(D\d)/gi, '다이렉션 $1')
-      .replace(/다이랙션\s*(D\d)/gi, '다이렉션 $1')
-      .replace(/가로\s*섹션/g, '가로 섹션')
-      .replace(/세로\s*섹션/g, '세로 섹션')
-      .replace(/(\d+)\s*차\s*프레스/g, '$1차 프레스')
-      .replace(/연화\s*후/g, '연화 후');
-
-    groupedLines.push(processedLine);
   }
 
-  formatted = groupedLines.join('\n').trim();
+  formatted = resultLines.join('\n').trim();
 
-  // 5. 레시피 시작 안내 추가
+  // 5. 빈 줄 연속 제거
+  formatted = formatted.replace(/\n{3,}/g, '\n\n');
+
+  // 6. 레시피 시작 안내 추가
   if (!formatted.startsWith('[') && !formatted.startsWith('**[')) {
     formatted = '**[🌀 펌 레시피]**\n\n' + formatted;
   }
