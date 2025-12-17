@@ -7286,10 +7286,12 @@ function parseFirestoreDocument(doc) {
   }
 }
 
+
 // ==================== 레시피 형식 통일 ====================
 /**
- * 펌 레시피 텍스트 전처리 (OCR 아티팩트 제거 + 도해도 순서 유지 + 단계 번호 추가)
- * ⭐ 핵심: 원본 순서 유지하여 도해도 번호와 매칭
+ * 펌 레시피 텍스트 전처리
+ * ⭐ AI 생성 레시피: 부위명만 있는 줄 기준으로 단계 묶음 (여러 줄 → 한 단계)
+ * ⭐ OCR 레시피: 원본 순서 유지
  */
 function formatPermRecipe(recipe) {
   if (!recipe) return recipe;
@@ -7299,105 +7301,153 @@ function formatPermRecipe(recipe) {
   // 1. "상세설명 텍스트" OCR 아티팩트 제거
   formatted = formatted.replace(/상세설명\s*텍스트\s*/g, '');
 
-  // 2. 연속 줄바꿈 정리 (2개 이상 → 2개)
+  // 2. 연속 줄바꿈 정리
   formatted = formatted.replace(/\n{3,}/g, '\n\n');
 
   // 3. 주의/참고 섹션 강조
   formatted = formatted.replace(/^주의[_\s]*(.+)$/gm, '⚠️ **주의**: $1');
   formatted = formatted.replace(/^참고[_\s]*(.+)$/gm, '💡 **참고**: $1');
 
-  // 4. 원본 순서 유지하면서 단계 번호 추가
-  const lines = formatted.split('\n');
-  const resultLines = [];
-  let stepNumber = 0;  // 도해도 번호와 매칭되는 순차 번호
+  // 부위명 감지 정규식 (순서 중요: 긴 것 먼저)
+  const zonePatterns = [
+    { pattern: /프론트\s*톱|Front\s*Top/i, name: '프론트 톱' },
+    { pattern: /센터\s*백|Center\s*Back/i, name: '센터 백' },
+    { pattern: /백\s*사이드|Back\s*Side/i, name: '백 사이드' },
+    { pattern: /네이프|Nape/i, name: '네이프' },
+    { pattern: /프린지|Fringe|뱅|앞머리/i, name: '프린지' },
+    { pattern: /크라운|Crown/i, name: '크라운' },
+    { pattern: /A2\s*존/i, name: 'A2존' },
+    { pattern: /A1\s*존/i, name: 'A1존' },
+    { pattern: /A\s*존/i, name: 'A존' },
+    { pattern: /B2\s*존/i, name: 'B2존' },
+    { pattern: /B1\s*존/i, name: 'B1존' },
+    { pattern: /B\s*존/i, name: 'B존' },
+    { pattern: /C\s*존/i, name: 'C존' },
+    { pattern: /탑\s*섹션|Top\s*Section|탑\s*부분/i, name: '탑' }
+  ];
 
-  // 부위명 감지 함수
   function detectZoneName(text) {
-    if (/프론트\s*톱|Front\s*Top/i.test(text)) return '프론트 톱';
-    if (/센터\s*백|Center\s*Back/i.test(text)) return '센터 백';
-    if (/백\s*사이드|Back\s*Side/i.test(text)) return '백 사이드';
-    if (/네이프|Nape/i.test(text)) return '네이프';
-    if (/프린지|Fringe|뱅|앞머리/i.test(text)) return '프린지';
-    if (/크라운|Crown/i.test(text)) return '크라운';
-    if (/A2\s*존/i.test(text)) return 'A2존';
-    if (/A1\s*존/i.test(text)) return 'A1존';
-    if (/A\s*존/i.test(text)) return 'A존';
-    if (/B2\s*존/i.test(text)) return 'B2존';
-    if (/B1\s*존/i.test(text)) return 'B1존';
-    if (/B\s*존/i.test(text)) return 'B존';
-    if (/C\s*존/i.test(text)) return 'C존';
-    if (/사이드|Side/i.test(text) && !/백\s*사이드|Back\s*Side/i.test(text)) return '사이드';
-    if (/탑\s*섹션|Top\s*Section|탑\s*부분/i.test(text)) return '탑';
+    for (const { pattern, name } of zonePatterns) {
+      if (pattern.test(text)) return name;
+    }
+    // 사이드는 백 사이드가 아닐 때만
+    if (/사이드|Side/i.test(text) && !/백\s*사이드|Back\s*Side/i.test(text)) {
+      return '사이드';
+    }
     return null;
   }
 
-  for (const line of lines) {
-    const trimmed = line.trim();
+  // AI 생성 레시피인지 판단 (영어 병기가 있으면 AI 생성)
+  const isAIGenerated = /\(Nape\)|\(Center Back\)|\(Side\)|\(Horizontal Section\)|\(Celestial Axis\)/i.test(formatted);
 
-    // 빈 줄 유지
-    if (!trimmed) {
-      resultLines.push('');
-      continue;
-    }
+  const lines = formatted.split('\n');
+  const resultLines = [];
 
-    // ◆ 기호만 있는 라인 스킵
-    if (/^[◆◇●○■□▶▷]$/.test(trimmed)) {
-      continue;
-    }
+  if (isAIGenerated) {
+    // ⭐ AI 생성 레시피: 부위명만 있는 줄 기준으로 단계 묶기
+    let currentStep = null;
+    let stepNumber = 0;
 
-    // 숫자만 있는 라인 스킵 (원본 번호)
-    if (/^\d+$/.test(trimmed)) {
-      continue;
-    }
+    for (const line of lines) {
+      const trimmed = line.trim();
 
-    // 주의/참고는 그대로 유지
-    if (trimmed.startsWith('⚠️') || trimmed.startsWith('💡')) {
-      resultLines.push(trimmed);
-      continue;
-    }
+      if (!trimmed) continue;
 
-    // 부위명만 있는 라인 스킵
-    if (/^(네이프|센터\s*백|백\s*사이드|사이드|프론트\s*톱|크라운|프린지|탑|A[12]?\s*존|B[12]?\s*존|C\s*존)$/i.test(trimmed)) {
-      continue;
-    }
-
-    // 작업 내용이 있는 라인 (연화 후, 각도, 천체축 등 포함)
-    const isWorkStep = /연화\s*후|각도|천체축|다이렉션|다이랙션|프레스|와인딩|로드|섹션/i.test(trimmed);
-
-    if (isWorkStep) {
-      stepNumber++;
-
-      // 부위명 추출
-      const zoneName = detectZoneName(trimmed);
-
-      // 키워드 정리
-      let processedLine = trimmed
-        .replace(/천체축\s*각도\s*(\d+(?:\.\d+)?)\s*도/g, '천체축 $1도')
-        .replace(/다이렉션\s*(D\d)/gi, '다이렉션 $1')
-        .replace(/다이랙션\s*(D\d)/gi, '다이렉션 $1')
-        .replace(/가로\s*섹션/g, '가로 섹션')
-        .replace(/세로\s*섹션/g, '세로 섹션')
-        .replace(/(\d+)\s*차\s*프레스/g, '$1차 프레스')
-        .replace(/연화\s*후/g, '연화 후');
-
-      // 단계 번호 + 부위명 추가
-      if (zoneName) {
-        resultLines.push(`**${stepNumber}단계 [${zoneName}]**: ${processedLine}`);
-      } else {
-        resultLines.push(`**${stepNumber}단계**: ${processedLine}`);
+      // 주의/참고는 별도 저장
+      if (trimmed.startsWith('⚠️') || trimmed.startsWith('💡')) {
+        if (currentStep && currentStep.content) {
+          resultLines.push(`**${stepNumber}단계 [${currentStep.zone}]**: ${currentStep.content}`);
+          currentStep = null;
+        }
+        resultLines.push(trimmed);
+        continue;
       }
-    } else {
-      // 작업 단계가 아닌 일반 텍스트
-      resultLines.push(trimmed);
+
+      // ⭐ 부위명만 있는 줄 감지 (새 단계 시작)
+      const isZoneOnlyLine = /^(네이프|센터\s*백|백\s*사이드|프론트\s*톱|크라운|프린지|탑|사이드)$/i.test(trimmed);
+
+      if (isZoneOnlyLine) {
+        // 이전 단계 저장
+        if (currentStep && currentStep.content) {
+          resultLines.push(`**${stepNumber}단계 [${currentStep.zone}]**: ${currentStep.content}`);
+        }
+        // 새 단계 시작
+        stepNumber++;
+        currentStep = {
+          zone: detectZoneName(trimmed),
+          content: ''
+        };
+      } else if (currentStep) {
+        // 현재 단계에 내용 이어붙임 (콜론으로 시작하면 제거)
+        let content = trimmed.replace(/^:\s*/, '');
+        currentStep.content += (currentStep.content ? ' ' : '') + content;
+      } else {
+        // 단계 없이 시작하는 내용
+        resultLines.push(trimmed);
+      }
+    }
+
+    // 마지막 단계 저장
+    if (currentStep && currentStep.content) {
+      resultLines.push(`**${stepNumber}단계 [${currentStep.zone}]**: ${currentStep.content}`);
+    }
+
+  } else {
+    // ⭐ OCR 레시피: 원본 순서 유지하면서 단계 번호 추가
+    let stepNumber = 0;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+
+      if (!trimmed) {
+        resultLines.push('');
+        continue;
+      }
+
+      // 기호만, 숫자만 있는 라인 스킵
+      if (/^[◆◇●○■□▶▷]$/.test(trimmed) || /^\d+$/.test(trimmed)) {
+        continue;
+      }
+
+      // 주의/참고는 그대로
+      if (trimmed.startsWith('⚠️') || trimmed.startsWith('💡')) {
+        resultLines.push(trimmed);
+        continue;
+      }
+
+      // 부위명만 있는 라인 스킵
+      if (/^(네이프|센터\s*백|백\s*사이드|사이드|프론트\s*톱|크라운|프린지|탑|A[12]?\s*존|B[12]?\s*존|C\s*존)$/i.test(trimmed)) {
+        continue;
+      }
+
+      // 작업 내용이 있는 라인
+      const isWorkStep = /연화\s*후|각도|천체축|다이렉션|다이랙션|프레스|와인딩|로드/i.test(trimmed);
+
+      if (isWorkStep) {
+        stepNumber++;
+        const zoneName = detectZoneName(trimmed);
+
+        let processedLine = trimmed
+          .replace(/천체축\s*각도\s*(\d+(?:\.\d+)?)\s*도/g, '천체축 $1도')
+          .replace(/다이렉션\s*(D\d)/gi, '다이렉션 $1')
+          .replace(/다이랙션\s*(D\d)/gi, '다이렉션 $1')
+          .replace(/(\d+)\s*차\s*프레스/g, '$1차 프레스')
+          .replace(/연화\s*후/g, '연화 후');
+
+        if (zoneName) {
+          resultLines.push(`**${stepNumber}단계 [${zoneName}]**: ${processedLine}`);
+        } else {
+          resultLines.push(`**${stepNumber}단계**: ${processedLine}`);
+        }
+      } else {
+        resultLines.push(trimmed);
+      }
     }
   }
 
   formatted = resultLines.join('\n').trim();
-
-  // 5. 빈 줄 연속 제거
   formatted = formatted.replace(/\n{3,}/g, '\n\n');
 
-  // 6. 레시피 시작 안내 추가
   if (!formatted.startsWith('[') && !formatted.startsWith('**[')) {
     formatted = '**[🌀 펌 레시피]**\n\n' + formatted;
   }
