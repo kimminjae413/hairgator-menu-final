@@ -468,20 +468,17 @@
         // 온보딩 플로우 시작
         async function startOnboarding() {
             const hasLanguage = localStorage.getItem('hairgator_language');
-            let hasAgreedTerms = localStorage.getItem('hairgator_terms_agreed');
             const hasSeenNotice = sessionStorage.getItem('mobileNoticeShown');
 
-            console.log('🚀 startOnboarding:', { hasLanguage, hasAgreedTerms, hasSeenNotice });
+            console.log('🚀 startOnboarding:', { hasLanguage, hasSeenNotice });
 
-            // localStorage에 없으면 Firebase에서 확인
-            if (!hasAgreedTerms && typeof checkTermsAgreedFromFirebase === 'function') {
+            // Firebase에서 동의 여부 확인 (localStorage 사용 안 함)
+            let hasAgreedTerms = false;
+            if (typeof checkTermsAgreedFromFirebase === 'function') {
                 console.log('🔍 Firebase에서 동의 여부 확인 중...');
-                const firebaseAgreed = await checkTermsAgreedFromFirebase();
-                console.log('🔍 Firebase 결과:', firebaseAgreed);
-                if (firebaseAgreed) {
-                    hasAgreedTerms = 'true';
-                }
-            } else if (!hasAgreedTerms) {
+                hasAgreedTerms = await checkTermsAgreedFromFirebase();
+                console.log('🔍 Firebase 결과:', hasAgreedTerms);
+            } else {
                 console.log('⚠️ checkTermsAgreedFromFirebase 함수 없음');
             }
 
@@ -504,10 +501,15 @@
         }
 
         // 언어 선택 완료 후 콜백
-        window.onLanguageSelected = function() {
+        window.onLanguageSelected = async function() {
             updateI18nTexts();
-            const hasAgreedTerms = localStorage.getItem('hairgator_terms_agreed');
             const hasSeenNotice = sessionStorage.getItem('mobileNoticeShown');
+
+            // Firebase에서 동의 확인
+            let hasAgreedTerms = false;
+            if (typeof checkTermsAgreedFromFirebase === 'function') {
+                hasAgreedTerms = await checkTermsAgreedFromFirebase();
+            }
 
             if (isMobilePhone() && !hasSeenNotice) {
                 document.getElementById('mobileNoticeModal').style.display = 'flex';
@@ -517,7 +519,7 @@
         };
 
         // 모바일 안내 닫기
-        function closeMobileNotice(showDownload) {
+        async function closeMobileNotice(showDownload) {
             document.getElementById('mobileNoticeModal').style.display = 'none';
             sessionStorage.setItem('mobileNoticeShown', 'true');
 
@@ -526,25 +528,27 @@
                 const alertMsg = window.HAIRGATOR_I18N?.[lang]?.mobileNotice?.downloadAlert || '태블릿에서 HAIRGATOR를 검색하여 다운로드해주세요.';
                 alert(alertMsg);
             } else {
-                const hasAgreedTerms = localStorage.getItem('hairgator_terms_agreed');
+                // Firebase에서 동의 확인
+                let hasAgreedTerms = false;
+                if (typeof checkTermsAgreedFromFirebase === 'function') {
+                    hasAgreedTerms = await checkTermsAgreedFromFirebase();
+                }
                 if (!hasAgreedTerms) {
                     document.getElementById('termsModal').style.display = 'flex';
                 }
             }
         }
 
-        // 저작권 동의
-        function agreeTerms() {
+        // 저작권 동의 (Firebase에만 저장)
+        async function agreeTerms() {
             console.log('📋 agreeTerms() 호출됨');
             try {
-                localStorage.setItem('hairgator_terms_agreed', 'true');
-                localStorage.setItem('hairgator_terms_agreed_date', new Date().toISOString());
-                console.log('✅ localStorage 저장 완료:', localStorage.getItem('hairgator_terms_agreed'));
-
-                // Firebase에도 저장
+                // Firebase에 저장
                 if (typeof saveTermsAgreedToFirebase === 'function') {
-                    saveTermsAgreedToFirebase();
-                    console.log('✅ Firebase 저장 요청됨');
+                    const result = await saveTermsAgreedToFirebase();
+                    console.log('✅ Firebase 저장 결과:', result);
+                } else {
+                    console.error('❌ saveTermsAgreedToFirebase 함수 없음');
                 }
             } catch (e) {
                 console.error('❌ 저장 실패:', e);

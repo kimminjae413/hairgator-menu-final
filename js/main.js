@@ -1368,23 +1368,86 @@ function saveLanguageToFirebase(language) {
     saveUserSettingsToFirebase({ language: language });
 }
 
-// 저작권 동의 시 Firebase에 저장
-function saveTermsAgreedToFirebase() {
-    saveUserSettingsToFirebase({
-        termsAgreed: true,
-        termsAgreedDate: new Date().toISOString()
-    });
+// 저작권 동의 시 Firebase에 저장 (userId 기반)
+async function saveTermsAgreedToFirebase() {
+    try {
+        if (!window.db) {
+            console.error('❌ Firebase DB 없음');
+            return false;
+        }
+
+        // userId 가져오기 (URL > bullnabi > localStorage)
+        const userId = getTermsUserId();
+        if (!userId) {
+            console.error('❌ userId 없음, 저장 실패');
+            return false;
+        }
+
+        await window.db.collection('userTermsAgreed').doc(userId).set({
+            termsAgreed: true,
+            termsAgreedDate: new Date().toISOString(),
+            updatedAt: Date.now()
+        }, { merge: true });
+
+        console.log('✅ Firebase 저작권 동의 저장 완료:', userId);
+        return true;
+    } catch (e) {
+        console.error('❌ Firebase 저작권 동의 저장 실패:', e);
+        return false;
+    }
+}
+
+// userId 가져오기 (URL > bullnabi > localStorage)
+function getTermsUserId() {
+    // 1순위: URL 파라미터 (앱에서 전달)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlUserId = urlParams.get('userId');
+    if (urlUserId) {
+        console.log('🔑 userId from URL:', urlUserId);
+        return urlUserId;
+    }
+
+    // 2순위: bullnabi 사용자
+    const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
+    if (bullnabiUser && bullnabiUser.userId) {
+        console.log('🔑 userId from bullnabi:', bullnabiUser.userId);
+        return bullnabiUser.userId;
+    }
+
+    // 3순위: userInfo (designerName_phone)
+    const userInfo = getUserInfo();
+    if (userInfo) {
+        const docId = `${userInfo.name}_${userInfo.phone}`;
+        console.log('🔑 userId from userInfo:', docId);
+        return docId;
+    }
+
+    return null;
 }
 
 // Firebase에서 저작권 동의 여부 확인
 async function checkTermsAgreedFromFirebase() {
     try {
-        const settings = await loadUserSettingsFromFirebase();
-        if (settings && settings.termsAgreed) {
-            localStorage.setItem('hairgator_terms_agreed', 'true');
+        if (!window.db) {
+            console.log('⚠️ Firebase DB 없음, 대기 중...');
+            return false;
+        }
+
+        const userId = getTermsUserId();
+        if (!userId) {
+            console.log('⚠️ userId 없음, 확인 불가');
+            return false;
+        }
+
+        console.log('🔍 Firebase에서 동의 확인:', userId);
+        const doc = await window.db.collection('userTermsAgreed').doc(userId).get();
+
+        if (doc.exists && doc.data().termsAgreed) {
             console.log('✅ Firebase에서 저작권 동의 확인됨');
             return true;
         }
+
+        console.log('❌ Firebase에 동의 기록 없음');
         return false;
     } catch (e) {
         console.error('❌ Firebase 저작권 동의 확인 실패:', e);
