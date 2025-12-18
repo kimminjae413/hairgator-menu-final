@@ -36,7 +36,10 @@
       "Bash(dir:*)",
       "Bash(node:*)",
       "Bash(dir \"C:\\Users\\김민재\\Desktop\\Hairgator_chatbot\\indexes\" /b)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__resize_page",
+      "Bash(git push)"
     ],
     "deny": [],
     "ask": []

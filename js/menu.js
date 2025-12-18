@@ -404,7 +404,7 @@ const FEMALE_CATEGORIES = [
     {
         id: 'c-length',
         name: 'C LENGTH',
-        description: 'C 길이는 쇄골 라인 아래의 세미 롱으로, 레이어드 C/S컬·에어리펌과 잘 맞아 단정하고 세련된 오피스 무드를 냅니다.'
+        description: 'C 길이는 쇄골 라인 아래의 세미 롱으로, 레이어드 C/S컬과 잘 맞아 단정하고 세련된 오피스 무드를 냅니다.'
     },
     {
         id: 'd-length',
