@@ -475,10 +475,14 @@
 
             // localStorage에 없으면 Firebase에서 확인
             if (!hasAgreedTerms && typeof checkTermsAgreedFromFirebase === 'function') {
+                console.log('🔍 Firebase에서 동의 여부 확인 중...');
                 const firebaseAgreed = await checkTermsAgreedFromFirebase();
+                console.log('🔍 Firebase 결과:', firebaseAgreed);
                 if (firebaseAgreed) {
                     hasAgreedTerms = 'true';
                 }
+            } else if (!hasAgreedTerms) {
+                console.log('⚠️ checkTermsAgreedFromFirebase 함수 없음');
             }
 
             if (!hasLanguage) {
@@ -548,9 +552,9 @@
             document.getElementById('termsModal').style.display = 'none';
         }
 
-        // 페이지 로드 시 온보딩 시작
+        // 페이지 로드 시 온보딩 시작 (Firebase/bullnabi 준비될 시간 충분히 주기)
         document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(startOnboarding, 300);
+            setTimeout(startOnboarding, 1500);
         });
     </script>
 
