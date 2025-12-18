@@ -1963,8 +1963,21 @@
                     <!-- 동적 생성 -->
                 </div>
 
+                <!-- 인스타그램 캡션 -->
+                <div id="cardNewsCaptionSection" style="margin-top: 24px; padding: 16px; background: rgba(33, 150, 243, 0.1); border: 1px solid rgba(33, 150, 243, 0.3); border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="color: #2196F3; font-size: 14px; margin: 0;">📝 인스타그램 캡션</h4>
+                        <button onclick="copyCaption()" style="background: #2196F3; border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                            📋 복사
+                        </button>
+                    </div>
+                    <div id="cardNewsCaption" style="color: #fff; font-size: 13px; line-height: 1.8; word-break: keep-all; white-space: pre-wrap;">
+                        <!-- 동적 생성 -->
+                    </div>
+                </div>
+
                 <!-- 추천 키워드/해시태그 -->
-                <div id="cardNewsKeywordsSection" style="margin-top: 24px; padding: 16px; background: rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.3); border-radius: 12px;">
+                <div id="cardNewsKeywordsSection" style="margin-top: 16px; padding: 16px; background: rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.3); border-radius: 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                         <h4 style="color: #E91E63; font-size: 14px; margin: 0;">#️⃣ 추천 해시태그</h4>
                         <button onclick="copyKeywords()" style="background: #E91E63; border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
@@ -4549,8 +4562,8 @@
                 // 히스토리에 저장
                 saveCardNewsHistory(title, pages, finalImages);
 
-                // 키워드 추천 요청
-                generateKeywords(title, pages);
+                // 캡션 + 키워드 추천 요청
+                generateCaptionAndKeywords(title, pages);
 
             } catch (error) {
                 console.error('카드뉴스 생성 오류:', error);
@@ -4561,9 +4574,11 @@
             }
         }
 
-        // 키워드/해시태그 추천 생성
-        async function generateKeywords(title, pages) {
+        // 캡션 + 키워드/해시태그 생성
+        async function generateCaptionAndKeywords(title, pages) {
+            const captionDiv = document.getElementById('cardNewsCaption');
             const keywordsDiv = document.getElementById('cardNewsKeywords');
+            captionDiv.innerHTML = '<span style="color: #888;">캡션 생성 중...</span>';
             keywordsDiv.innerHTML = '<span style="color: #888;">해시태그 생성 중...</span>';
 
             try {
@@ -4571,22 +4586,45 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        action: 'generate_cardnews_keywords',
+                        action: 'generate_cardnews_caption',
                         payload: { title, pages }
                     })
                 });
 
                 const result = await response.json();
 
-                if (result.success && result.data && result.data.keywords) {
-                    keywordsDiv.innerHTML = result.data.keywords;
+                if (result.success && result.data) {
+                    if (result.data.caption) {
+                        captionDiv.innerHTML = result.data.caption;
+                    } else {
+                        captionDiv.innerHTML = '<span style="color: #888;">캡션 생성 실패</span>';
+                    }
+                    if (result.data.keywords) {
+                        keywordsDiv.innerHTML = result.data.keywords;
+                    } else {
+                        keywordsDiv.innerHTML = '<span style="color: #888;">해시태그 생성 실패</span>';
+                    }
                 } else {
+                    captionDiv.innerHTML = '<span style="color: #888;">캡션 생성 실패</span>';
                     keywordsDiv.innerHTML = '<span style="color: #888;">해시태그 생성 실패</span>';
                 }
             } catch (error) {
-                console.error('키워드 생성 오류:', error);
+                console.error('캡션/키워드 생성 오류:', error);
+                captionDiv.innerHTML = '<span style="color: #888;">캡션 생성 실패</span>';
                 keywordsDiv.innerHTML = '<span style="color: #888;">해시태그 생성 실패</span>';
             }
+        }
+
+        // 캡션 복사
+        function copyCaption() {
+            const captionDiv = document.getElementById('cardNewsCaption');
+            const text = captionDiv.innerText;
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('캡션이 복사되었습니다!');
+            }).catch(() => {
+                showToast('복사 실패');
+            });
         }
 
         // 키워드 복사

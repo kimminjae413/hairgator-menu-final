@@ -483,7 +483,11 @@ exports.handler = async (event, context) => {
       case 'generate_cardnews_image':
         return await generateCardNewsImage(payload);
 
-      // ⭐ 어드민: 카드뉴스 키워드/해시태그 추천
+      // ⭐ 어드민: 카드뉴스 캡션 + 키워드 생성
+      case 'generate_cardnews_caption':
+        return await generateCardNewsCaption(payload);
+
+      // ⭐ 어드민: 카드뉴스 키워드/해시태그 추천 (레거시)
       case 'generate_cardnews_keywords':
         return await generateCardNewsKeywords(payload);
 
@@ -11262,6 +11266,105 @@ BRAND STYLE:
 
   } catch (error) {
     console.error('카드뉴스 이미지 생성 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 어드민: 카드뉴스 캡션 + 키워드 생성 ====================
+async function generateCardNewsCaption(payload) {
+  const { title, pages } = payload;
+
+  const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
+
+  if (!ADMIN_GEMINI_KEY) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: 'GEMINI_API_KEY not configured' })
+    };
+  }
+
+  try {
+    // 모든 페이지 내용 합치기
+    const allContent = [title, ...(pages || [])].filter(Boolean).join('\n\n');
+
+    const prompt = `당신은 인스타그램 콘텐츠 전문 카피라이터입니다.
+
+아래 카드뉴스 콘텐츠를 분석하고:
+1. 감성적이고 공감되는 인스타그램 캡션(본문)을 작성해주세요
+2. 도달률 높은 해시태그를 추천해주세요
+
+카드뉴스 콘텐츠:
+${allContent}
+
+응답 형식 (JSON):
+{
+  "caption": "인스타그램 캡션 본문 (줄바꿈 포함, 이모지 적절히 사용, 200-400자)",
+  "keywords": "#해시태그1 #해시태그2 ... (10-15개)"
+}
+
+규칙:
+- 캡션은 카드뉴스의 감정과 메시지를 살려서 작성
+- 너무 홍보성이 아닌, 진정성 있는 글쓰기
+- 해시태그는 관련성 높은 것 위주로
+- JSON 형식으로만 응답`;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${ADMIN_GEMINI_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2000
+          }
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(data.error.message || 'API 오류');
+    }
+
+    const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // JSON 파싱 시도
+    let caption = '';
+    let keywords = '';
+
+    try {
+      // JSON 블록 추출
+      const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        caption = parsed.caption || '';
+        keywords = parsed.keywords || '';
+      }
+    } catch (e) {
+      // JSON 파싱 실패시 텍스트 그대로 사용
+      console.error('캡션 JSON 파싱 실패:', e);
+      caption = textResponse;
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: { caption, keywords }
+      })
+    };
+
+  } catch (error) {
+    console.error('캡션 생성 오류:', error);
     return {
       statusCode: 500,
       headers,
