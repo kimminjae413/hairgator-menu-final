@@ -2106,30 +2106,37 @@ async function processAIFaceSwap() {
         tempStoragePath = uploadResult.path; // 삭제용 경로 저장
         console.log('✅ 고객 사진 URL:', customerPhotoUrl);
 
-        // 2. API 호출 (성별 정보 포함 - Gemini 후처리 프롬프트용)
-        const response = await fetch('/.netlify/functions/hair-change', {
+        const gender = window.currentGender || 'male';
+
+        // 2. Task 생성 (action: 'start')
+        console.log('🚀 헤어체험 Task 생성 중...');
+        const startResponse = await fetch('/.netlify/functions/hair-change', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                action: 'start',
                 customerPhotoUrl: customerPhotoUrl,
                 styleImageUrl: styleImageUrl,
-                gender: window.currentGender || 'male'
+                gender: gender
             })
         });
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `API 오류: ${response.status}`);
+        if (!startResponse.ok) {
+            const errorData = await startResponse.json().catch(() => ({}));
+            throw new Error(errorData.message || `API 오류: ${startResponse.status}`);
         }
 
-        const result = await response.json();
-        console.log('💇 헤어체험 API 응답:', result);
+        const startResult = await startResponse.json();
+        console.log('📝 Task 생성됨:', startResult.taskId);
 
-        if (!result.success || !result.resultImageUrl) {
-            throw new Error('결과 이미지를 받지 못했습니다');
+        if (!startResult.success || !startResult.taskId) {
+            throw new Error('Task 생성 실패');
         }
 
-        // 3. 임시 파일 삭제 (결과 받은 후 즉시)
+        // 3. 폴링으로 결과 대기 (action: 'status')
+        const result = await pollHairChangeStatus(startResult.taskId, gender, loadingOverlay);
+
+        // 4. 임시 파일 삭제 (결과 받은 후 즉시)
         if (tempStoragePath) {
             deleteTemporaryFile(tempStoragePath);
         }
@@ -2140,7 +2147,7 @@ async function processAIFaceSwap() {
         // 업로드 모달 닫기
         closePhotoUploadModal();
 
-        // 결과 모달 표시
+        // 결과 모달 표시 (window.uploadedCustomerPhoto 사용)
         showHairTryResult(result.resultImageUrl, styleName);
 
         // 크레딧 차감
@@ -2163,6 +2170,65 @@ async function processAIFaceSwap() {
 
         showToast(t('hairTry.error') || '처리 중 오류가 발생했습니다. 다시 시도해주세요.', 'error');
     }
+}
+
+/**
+ * 헤어체험 상태 폴링
+ * @param {string} taskId - vModel Task ID
+ * @param {string} gender - 성별
+ * @param {HTMLElement} loadingOverlay - 로딩 오버레이 요소
+ * @returns {Object} - 완료된 결과
+ */
+async function pollHairChangeStatus(taskId, gender, loadingOverlay) {
+    const maxAttempts = 30;  // 최대 30회 (60초)
+    const pollInterval = 2000;  // 2초마다
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        console.log(`🔄 상태 확인 중... (${attempt + 1}/${maxAttempts})`);
+
+        // 로딩 메시지 업데이트
+        const progressText = loadingOverlay.querySelector('.loading-progress');
+        if (progressText) {
+            progressText.textContent = `AI 처리 중... (${attempt + 1}/${maxAttempts})`;
+        }
+
+        const response = await fetch('/.netlify/functions/hair-change', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'status',
+                taskId: taskId,
+                gender: gender
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `상태 확인 오류: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('📊 상태:', result.status);
+
+        // 완료됨
+        if (result.status === 'completed') {
+            if (!result.resultImageUrl) {
+                throw new Error('결과 이미지가 없습니다');
+            }
+            console.log('✅ 헤어체험 완료!', result.enhanced ? '(Gemini 후처리 적용)' : '(원본)');
+            return result;
+        }
+
+        // 실패
+        if (result.status === 'failed' || result.status === 'unknown') {
+            throw new Error(result.message || '헤어체험 처리 실패');
+        }
+
+        // 아직 처리 중 - 다음 폴링까지 대기
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+    }
+
+    throw new Error('처리 시간 초과. 다시 시도해주세요.');
 }
 
 // 고객 사진을 Firebase Storage에 임시 업로드
@@ -2257,7 +2323,7 @@ function createHairTryLoadingOverlay() {
             <h2 style="font-size: 24px; margin-bottom: 15px; font-weight: 600; color: #7C4DFF;">
                 💇 ${t('hairTry.title') || '헤어체험'}
             </h2>
-            <p style="font-size: 18px; margin-bottom: 10px; opacity: 0.9;">
+            <p class="loading-progress" style="font-size: 18px; margin-bottom: 10px; opacity: 0.9;">
                 ${loadingText}
             </p>
             <p style="font-size: 14px; opacity: 0.6;">

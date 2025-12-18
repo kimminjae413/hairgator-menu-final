@@ -1,9 +1,9 @@
 // netlify/functions/hair-change.js
 // HAIRGATOR Hair Change API (헤어체험)
 //
-// 2단계 처리:
-// 1. Vmodel Tasks API - 헤어스타일 합성
-// 2. Gemini Image Generation - 자연스러운 후처리
+// 비동기 2단계 처리 (Netlify 10초 타임아웃 회피):
+// 1. action: 'start' - vModel Task 생성 후 taskId 반환 (빠름)
+// 2. action: 'status' - taskId로 상태 확인, 성공 시 Gemini 후처리
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -15,8 +15,7 @@ const headers = {
 // AI Hairstyle 모델 버전 ID
 const HAIR_SWAP_VERSION = '5c0440717a995b0bbd93377bd65dbb4fe360f67967c506aa6bd8f6b660733a7e';
 
-// Gemini 이미지 생성 모델 (Nano Banana Pro)
-// gemini-3-pro-image-preview: 고품질 이미지 생성/편집 (최대 4K)
+// Gemini 이미지 생성 모델
 const GEMINI_IMAGE_MODEL = 'gemini-3-pro-image-preview';
 
 exports.handler = async (event) => {
@@ -34,27 +33,8 @@ exports.handler = async (event) => {
     }
 
     try {
-        const {
-            customerPhotoUrl,      // 고객 사진 URL (Firebase Storage 등)
-            styleImageUrl,         // 적용할 헤어스타일 이미지 URL
-            gender = 'male'        // 성별 (후처리 프롬프트 조정용)
-        } = JSON.parse(event.body);
-
-        if (!customerPhotoUrl) {
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({ error: 'customerPhotoUrl is required' })
-            };
-        }
-
-        if (!styleImageUrl) {
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({ error: 'styleImageUrl is required' })
-            };
-        }
+        const body = JSON.parse(event.body);
+        const action = body.action || 'start';
 
         // API 키 확인
         const VMODEL_KEY = process.env.VMODEL_API_KEY;
@@ -67,61 +47,158 @@ exports.handler = async (event) => {
             throw new Error('GEMINI API key not configured');
         }
 
-        console.log('💇 헤어체험 API 호출 시작 (2단계 처리)');
-        console.log('📋 고객 사진:', customerPhotoUrl);
-        console.log('📋 스타일 이미지:', styleImageUrl);
-        console.log('📋 성별:', gender);
+        // ========== action: 'start' - Task 생성만 ==========
+        if (action === 'start') {
+            const { customerPhotoUrl, styleImageUrl, gender = 'male' } = body;
 
-        // ========== 1단계: vModel 헤어 합성 ==========
-        console.log('\n🔄 [1단계] vModel 헤어 합성 시작...');
-        const taskId = await createTask(customerPhotoUrl, styleImageUrl, VMODEL_KEY);
-        console.log('📝 Task 생성됨:', taskId);
+            if (!customerPhotoUrl) {
+                return {
+                    statusCode: 400,
+                    headers,
+                    body: JSON.stringify({ error: 'customerPhotoUrl is required' })
+                };
+            }
 
-        const vmodelResult = await pollTaskResult(taskId, VMODEL_KEY, 20000);
-        console.log('✅ vModel 완료:', vmodelResult.status);
+            if (!styleImageUrl) {
+                return {
+                    statusCode: 400,
+                    headers,
+                    body: JSON.stringify({ error: 'styleImageUrl is required' })
+                };
+            }
 
-        if (vmodelResult.status !== 'succeeded' || !vmodelResult.output || vmodelResult.output.length === 0) {
-            throw new Error(vmodelResult.error || 'vModel task failed');
-        }
+            console.log('💇 헤어체험 Task 생성 시작');
+            console.log('📋 고객 사진:', customerPhotoUrl);
+            console.log('📋 스타일 이미지:', styleImageUrl);
+            console.log('📋 성별:', gender);
 
-        const vmodelImageUrl = vmodelResult.output[0];
-        console.log('📸 vModel 결과:', vmodelImageUrl);
+            // vModel Task 생성
+            const taskId = await createTask(customerPhotoUrl, styleImageUrl, VMODEL_KEY);
+            console.log('📝 Task 생성됨:', taskId);
 
-        // ========== 2단계: Gemini 후처리 ==========
-        console.log('\n🔄 [2단계] Gemini 후처리 시작...');
-        const enhancedImageBase64 = await enhanceWithGemini(vmodelImageUrl, gender, GEMINI_KEY);
-
-        if (!enhancedImageBase64) {
-            // Gemini 후처리 실패 시 vModel 결과 반환
-            console.log('⚠️ Gemini 후처리 실패, vModel 결과 반환');
             return {
                 statusCode: 200,
                 headers,
                 body: JSON.stringify({
                     success: true,
-                    resultImageUrl: vmodelImageUrl,
+                    status: 'processing',
                     taskId: taskId,
-                    enhanced: false,
-                    message: 'Hair change completed (without enhancement)'
+                    message: 'Hair change task created. Poll with action=status'
                 })
             };
         }
 
-        console.log('✅ Gemini 후처리 완료');
+        // ========== action: 'status' - 상태 확인 + 후처리 ==========
+        if (action === 'status') {
+            const { taskId, gender = 'male' } = body;
 
-        // Base64 데이터 URL로 반환
-        const resultDataUrl = `data:image/png;base64,${enhancedImageBase64}`;
+            if (!taskId) {
+                return {
+                    statusCode: 400,
+                    headers,
+                    body: JSON.stringify({ error: 'taskId is required' })
+                };
+            }
 
+            console.log('💇 헤어체험 상태 확인:', taskId);
+
+            // vModel 상태 조회 (폴링 없이 1회 조회)
+            const taskResult = await getTaskStatus(taskId, VMODEL_KEY);
+            console.log('📊 Task 상태:', taskResult.status);
+
+            // 아직 처리 중
+            if (taskResult.status === 'starting' || taskResult.status === 'processing') {
+                return {
+                    statusCode: 200,
+                    headers,
+                    body: JSON.stringify({
+                        success: true,
+                        status: 'processing',
+                        taskId: taskId,
+                        message: 'Still processing...'
+                    })
+                };
+            }
+
+            // 실패
+            if (taskResult.status === 'failed' || taskResult.status === 'canceled') {
+                return {
+                    statusCode: 200,
+                    headers,
+                    body: JSON.stringify({
+                        success: false,
+                        status: 'failed',
+                        taskId: taskId,
+                        message: taskResult.error || 'Task failed'
+                    })
+                };
+            }
+
+            // 성공 - Gemini 후처리 진행
+            if (taskResult.status === 'succeeded') {
+                if (!taskResult.output || taskResult.output.length === 0) {
+                    throw new Error('No output from vModel');
+                }
+
+                const vmodelImageUrl = taskResult.output[0];
+                console.log('📸 vModel 결과:', vmodelImageUrl);
+
+                // Gemini 후처리
+                console.log('🔄 Gemini 후처리 시작...');
+                const enhancedImageBase64 = await enhanceWithGemini(vmodelImageUrl, gender, GEMINI_KEY);
+
+                if (!enhancedImageBase64) {
+                    // Gemini 후처리 실패 시 vModel 결과 반환
+                    console.log('⚠️ Gemini 후처리 실패, vModel 결과 반환');
+                    return {
+                        statusCode: 200,
+                        headers,
+                        body: JSON.stringify({
+                            success: true,
+                            status: 'completed',
+                            resultImageUrl: vmodelImageUrl,
+                            taskId: taskId,
+                            enhanced: false,
+                            message: 'Hair change completed (without enhancement)'
+                        })
+                    };
+                }
+
+                console.log('✅ Gemini 후처리 완료');
+                const resultDataUrl = `data:image/png;base64,${enhancedImageBase64}`;
+
+                return {
+                    statusCode: 200,
+                    headers,
+                    body: JSON.stringify({
+                        success: true,
+                        status: 'completed',
+                        resultImageUrl: resultDataUrl,
+                        taskId: taskId,
+                        enhanced: true,
+                        message: 'Hair change completed with Gemini enhancement'
+                    })
+                };
+            }
+
+            // 알 수 없는 상태
+            return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify({
+                    success: false,
+                    status: 'unknown',
+                    taskId: taskId,
+                    message: `Unknown status: ${taskResult.status}`
+                })
+            };
+        }
+
+        // 알 수 없는 action
         return {
-            statusCode: 200,
+            statusCode: 400,
             headers,
-            body: JSON.stringify({
-                success: true,
-                resultImageUrl: resultDataUrl,
-                taskId: taskId,
-                enhanced: true,
-                message: 'Hair change completed with Gemini enhancement'
-            })
+            body: JSON.stringify({ error: `Unknown action: ${action}` })
         };
 
     } catch (error) {
@@ -139,10 +216,6 @@ exports.handler = async (event) => {
 
 /**
  * Gemini로 헤어 이미지 후처리 (REST API 직접 호출)
- * @param {string} imageUrl - vModel 결과 이미지 URL
- * @param {string} gender - 성별 (male/female)
- * @param {string} apiKey - Gemini API 키
- * @returns {string|null} - Base64 이미지 데이터 또는 null
  */
 async function enhanceWithGemini(imageUrl, gender, apiKey) {
     try {
@@ -162,7 +235,7 @@ async function enhanceWithGemini(imageUrl, gender, apiKey) {
 - Each strand should be distinct, especially at the tips`
             : `- For short hair: ensure clean edges around the hairline and sideburns`;
 
-        // 후처리 프롬프트 (헤어 변형 금지 + 얼굴-헤어 조화 최우선)
+        // 후처리 프롬프트
         const prompt = `You are a photo retouching expert. Your task is to make this hair swap photo look natural.
 
 #1 PRIORITY - HAIR-FACE HARMONY (MOST IMPORTANT):
@@ -191,7 +264,7 @@ ABSOLUTELY DO NOT CHANGE:
 
 OUTPUT: The same photo with improved hair-face integration. The hair must look like it naturally belongs to this person.`;
 
-        // Gemini REST API 호출 (이미지 생성 모델)
+        // Gemini REST API 호출
         console.log('🤖 Gemini API 호출 중...');
         const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_IMAGE_MODEL}:generateContent?key=${apiKey}`,
@@ -227,10 +300,9 @@ OUTPUT: The same photo with improved hair-face integration. The hair must look l
         const data = await response.json();
         console.log('📄 Gemini 응답 수신');
 
-        // 응답에서 이미지 추출 (camelCase: inlineData)
+        // 응답에서 이미지 추출
         if (data.candidates && data.candidates[0]?.content?.parts) {
             for (const part of data.candidates[0].content.parts) {
-                // REST API는 camelCase (inlineData) 반환
                 const imageData = part.inlineData || part.inline_data;
                 if (imageData && imageData.data) {
                     console.log('🎨 Gemini 이미지 생성 성공, mimeType:', imageData.mimeType);
@@ -250,10 +322,6 @@ OUTPUT: The same photo with improved hair-face integration. The hair must look l
 
 /**
  * Vmodel Task 생성
- * @param {string} customerPhotoUrl - 고객 사진 URL
- * @param {string} styleImageUrl - 헤어스타일 이미지 URL
- * @param {string} apiKey - API 키
- * @returns {string} - task_id
  */
 async function createTask(customerPhotoUrl, styleImageUrl, apiKey) {
     const response = await fetch('https://api.vmodel.ai/api/tasks/v1/create', {
@@ -265,8 +333,8 @@ async function createTask(customerPhotoUrl, styleImageUrl, apiKey) {
         body: JSON.stringify({
             version: HAIR_SWAP_VERSION,
             input: {
-                source: styleImageUrl,     // 헤어스타일 참조 이미지 (적용할 헤어)
-                target: customerPhotoUrl   // 바꾸고 싶은 사람 사진 (고객 사진)
+                source: styleImageUrl,     // 헤어스타일 참조 이미지
+                target: customerPhotoUrl   // 고객 사진
             }
         })
     });
@@ -288,49 +356,27 @@ async function createTask(customerPhotoUrl, styleImageUrl, apiKey) {
 }
 
 /**
- * Task 결과 폴링
- * @param {string} taskId - Task ID
- * @param {string} apiKey - API 키
- * @param {number} timeout - 최대 대기 시간 (ms)
- * @returns {Object} - Task 결과
+ * Task 상태 조회 (1회만, 폴링 없음)
  */
-async function pollTaskResult(taskId, apiKey, timeout = 20000) {
-    const startTime = Date.now();
-    const pollInterval = 2000; // 2초마다 폴링
-
-    while (Date.now() - startTime < timeout) {
-        const response = await fetch(`https://api.vmodel.ai/api/tasks/v1/get/${taskId}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`
-            }
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Task 조회 오류:', response.status, errorText);
-            throw new Error(`Task query failed: ${response.status}`);
+async function getTaskStatus(taskId, apiKey) {
+    const response = await fetch(`https://api.vmodel.ai/api/tasks/v1/get/${taskId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`
         }
+    });
 
-        const result = await response.json();
-
-        if (result.code === 200 && result.result) {
-            const task = result.result;
-            console.log(`📊 Task 상태: ${task.status} (${Math.round((Date.now() - startTime) / 1000)}초 경과)`);
-
-            if (task.status === 'succeeded') {
-                return task;
-            } else if (task.status === 'failed') {
-                throw new Error(task.error || 'Task failed');
-            } else if (task.status === 'canceled') {
-                throw new Error('Task was canceled');
-            }
-            // starting, processing 상태면 계속 폴링
-        }
-
-        // 다음 폴링까지 대기
-        await new Promise(resolve => setTimeout(resolve, pollInterval));
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Task 조회 오류:', response.status, errorText);
+        throw new Error(`Task query failed: ${response.status}`);
     }
 
-    throw new Error('Task timeout - exceeded maximum wait time');
+    const result = await response.json();
+
+    if (result.code === 200 && result.result) {
+        return result.result;
+    } else {
+        throw new Error(result.message?.en || 'Task query failed');
+    }
 }
