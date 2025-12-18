@@ -4083,7 +4083,7 @@
         // 현재 카드뉴스 페이지 수
         let cardNewsPageNum = 1;
 
-        // 페이지 HTML 생성 함수
+        // 페이지 HTML 생성 함수 (이미지 2개까지 첨부 가능)
         function createPageHTML(pageNum) {
             return `
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
@@ -4091,14 +4091,24 @@
                     <div style="flex: 1;">
                         <textarea id="cardNewsPage${pageNum}" placeholder="예: 올 봄 트렌드는 자연스러운 웨이브! 볼륨감 있는 레이어드 컷으로 세련된 느낌을..."
                             style="width: 100%; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; padding: 10px; font-size: 13px; min-height: 60px; resize: vertical; box-sizing: border-box;"></textarea>
-                        <div style="margin-top: 8px; display: flex; align-items: center; gap: 10px;">
-                            <label style="cursor: pointer; background: #333; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: #aaa; display: inline-flex; align-items: center; gap: 4px;">
-                                📷 참고 이미지
-                                <input type="file" accept="image/*" style="display: none;" onchange="previewPageImage(${pageNum}, event)">
+                        <div style="margin-top: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <!-- 이미지 1 -->
+                            <label id="cardNewsPageImgLabel${pageNum}_1" style="cursor: pointer; background: #333; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: #aaa; display: inline-flex; align-items: center; gap: 4px;">
+                                📷 이미지 1
+                                <input type="file" accept="image/*" style="display: none;" onchange="previewPageImage(${pageNum}, 1, event)">
                             </label>
-                            <div id="cardNewsPageImgPreview${pageNum}" style="display: none; align-items: center;">
-                                <img id="cardNewsPageImg${pageNum}" src="" style="height: 40px; border-radius: 4px;">
-                                <button onclick="clearPageImage(${pageNum})" style="background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 16px; margin-left: 4px;">✕</button>
+                            <div id="cardNewsPageImgPreview${pageNum}_1" style="display: none; align-items: center;">
+                                <img id="cardNewsPageImg${pageNum}_1" src="" style="height: 40px; border-radius: 4px;">
+                                <button onclick="clearPageImage(${pageNum}, 1)" style="background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 16px; margin-left: 4px;">✕</button>
+                            </div>
+                            <!-- 이미지 2 -->
+                            <label id="cardNewsPageImgLabel${pageNum}_2" style="cursor: pointer; background: #333; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: #aaa; display: inline-flex; align-items: center; gap: 4px;">
+                                📷 이미지 2
+                                <input type="file" accept="image/*" style="display: none;" onchange="previewPageImage(${pageNum}, 2, event)">
+                            </label>
+                            <div id="cardNewsPageImgPreview${pageNum}_2" style="display: none; align-items: center;">
+                                <img id="cardNewsPageImg${pageNum}_2" src="" style="height: 40px; border-radius: 4px;">
+                                <button onclick="clearPageImage(${pageNum}, 2)" style="background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 16px; margin-left: 4px;">✕</button>
                             </div>
                         </div>
                     </div>
@@ -4144,30 +4154,58 @@
             document.getElementById('removePageBtn').style.display = cardNewsPageNum > 1 ? 'block' : 'none';
         }
 
-        // 각 장별 이미지 미리보기
-        function previewPageImage(pageNum, event) {
+        // 각 장별 이미지 미리보기 (imgIndex: 1 또는 2)
+        function previewPageImage(pageNum, imgIndex, event) {
             const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
             reader.onload = function(e) {
                 const base64 = e.target.result;
-                cardNewsPageImages[pageNum] = {
+
+                // 페이지별 이미지 배열 초기화
+                if (!cardNewsPageImages[pageNum]) {
+                    cardNewsPageImages[pageNum] = [];
+                }
+
+                // 이미지 저장 (인덱스 0 또는 1)
+                cardNewsPageImages[pageNum][imgIndex - 1] = {
                     data: base64.split(',')[1],
-                    mimeType: file.type || 'image/jpeg'
+                    mimeType: file.type || 'image/jpeg',
+                    preview: base64
                 };
 
-                document.getElementById(`cardNewsPageImg${pageNum}`).src = base64;
-                document.getElementById(`cardNewsPageImgPreview${pageNum}`).style.display = 'flex';
+                document.getElementById(`cardNewsPageImg${pageNum}_${imgIndex}`).src = base64;
+                document.getElementById(`cardNewsPageImgPreview${pageNum}_${imgIndex}`).style.display = 'flex';
+
+                // 라벨 스타일 변경
+                const label = document.getElementById(`cardNewsPageImgLabel${pageNum}_${imgIndex}`);
+                if (label) {
+                    label.style.background = '#2a4a2a';
+                    label.style.color = '#4CAF50';
+                }
             };
             reader.readAsDataURL(file);
         }
 
-        // 각 장별 이미지 제거
-        function clearPageImage(pageNum) {
-            delete cardNewsPageImages[pageNum];
-            document.getElementById(`cardNewsPageImgPreview${pageNum}`).style.display = 'none';
-            document.getElementById(`cardNewsPageImg${pageNum}`).src = '';
+        // 각 장별 이미지 제거 (imgIndex: 1 또는 2)
+        function clearPageImage(pageNum, imgIndex) {
+            if (cardNewsPageImages[pageNum]) {
+                cardNewsPageImages[pageNum][imgIndex - 1] = null;
+                // 배열이 모두 비었으면 삭제
+                if (!cardNewsPageImages[pageNum].some(img => img)) {
+                    delete cardNewsPageImages[pageNum];
+                }
+            }
+            document.getElementById(`cardNewsPageImgPreview${pageNum}_${imgIndex}`).style.display = 'none';
+            document.getElementById(`cardNewsPageImg${pageNum}_${imgIndex}`).src = '';
+
+            // 라벨 스타일 복원
+            const label = document.getElementById(`cardNewsPageImgLabel${pageNum}_${imgIndex}`);
+            if (label) {
+                label.style.background = '#333';
+                label.style.color = '#aaa';
+            }
         }
 
         // 페이지 로드 시 초기 입력창 생성
@@ -4184,8 +4222,11 @@
         // 생성된 카드뉴스 이미지 저장 (일괄 다운로드용)
         let generatedCardNewsImages = [];
 
-        // ⭐ Canvas로 카드뉴스 생성 (이미지 있는 페이지용)
-        async function generateCardNewsWithCanvas(pageNum, totalPages, title, content, imageData, ratio) {
+        // ⭐ Canvas로 카드뉴스 생성 (이미지 1~2개 지원)
+        async function generateCardNewsWithCanvas(pageNum, totalPages, title, content, imagesArray, ratio) {
+            // imagesArray: 최대 2개 이미지 배열 [{data, mimeType, preview}, ...]
+            const validImages = imagesArray.filter(img => img && img.preview);
+
             return new Promise((resolve) => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
@@ -4221,57 +4262,71 @@
                 ctx.arc(canvas.width, canvas.height, 200, Math.PI, Math.PI * 1.5);
                 ctx.fill();
 
-                // 이미지 로드 및 배치
-                const img = new Image();
-                img.onload = () => {
-                    // 이미지 영역 계산 (중앙, 여백 확보)
+                // 이미지 로드 후 그리기
+                const loadedImages = [];
+                let loadCount = 0;
+
+                const onAllLoaded = () => {
                     const padding = 60;
                     const titleHeight = title ? 120 : 40;
                     const contentHeight = content ? 160 : 40;
                     const pageIndicatorHeight = 60;
-
                     const imgAreaTop = titleHeight + padding;
                     const imgAreaHeight = canvas.height - imgAreaTop - contentHeight - pageIndicatorHeight - padding;
                     const imgAreaWidth = canvas.width - (padding * 2);
+                    const gap = 20; // 이미지 간 간격
 
-                    // 이미지 비율 유지하며 맞추기
-                    const imgRatio = img.width / img.height;
-                    const areaRatio = imgAreaWidth / imgAreaHeight;
+                    // 1개 또는 2개 이미지 레이아웃
+                    loadedImages.forEach((img, idx) => {
+                        let slotWidth, slotX;
 
-                    let drawWidth, drawHeight, drawX, drawY;
-                    if (imgRatio > areaRatio) {
-                        drawWidth = imgAreaWidth;
-                        drawHeight = imgAreaWidth / imgRatio;
-                    } else {
-                        drawHeight = imgAreaHeight;
-                        drawWidth = imgAreaHeight * imgRatio;
-                    }
-                    drawX = (canvas.width - drawWidth) / 2;
-                    drawY = imgAreaTop + (imgAreaHeight - drawHeight) / 2;
+                        if (loadedImages.length === 1) {
+                            // 1개: 전체 너비
+                            slotWidth = imgAreaWidth;
+                            slotX = padding;
+                        } else {
+                            // 2개: 반씩 나눠서 배치
+                            slotWidth = (imgAreaWidth - gap) / 2;
+                            slotX = padding + idx * (slotWidth + gap);
+                        }
 
-                    // 이미지 그림자
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-                    ctx.shadowBlur = 20;
-                    ctx.shadowOffsetX = 0;
-                    ctx.shadowOffsetY = 10;
+                        // 이미지 비율 유지
+                        const imgRatio = img.width / img.height;
+                        const slotRatio = slotWidth / imgAreaHeight;
 
-                    // 이미지 프레임 (흰색 테두리)
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(drawX - 10, drawY - 10, drawWidth + 20, drawHeight + 20);
+                        let drawWidth, drawHeight, drawX, drawY;
+                        if (imgRatio > slotRatio) {
+                            drawWidth = slotWidth;
+                            drawHeight = slotWidth / imgRatio;
+                        } else {
+                            drawHeight = imgAreaHeight;
+                            drawWidth = imgAreaHeight * imgRatio;
+                        }
+                        drawX = slotX + (slotWidth - drawWidth) / 2;
+                        drawY = imgAreaTop + (imgAreaHeight - drawHeight) / 2;
 
-                    // 그림자 리셋
-                    ctx.shadowColor = 'transparent';
-                    ctx.shadowBlur = 0;
-                    ctx.shadowOffsetX = 0;
-                    ctx.shadowOffsetY = 0;
+                        // 이미지 그림자
+                        ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+                        ctx.shadowBlur = 15;
+                        ctx.shadowOffsetY = 8;
 
-                    // 이미지 그리기
-                    ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+                        // 이미지 프레임 (흰색 테두리)
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(drawX - 8, drawY - 8, drawWidth + 16, drawHeight + 16);
 
-                    // 이미지 테두리
-                    ctx.strokeStyle = '#E91E63';
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(drawX - 10, drawY - 10, drawWidth + 20, drawHeight + 20);
+                        // 그림자 리셋
+                        ctx.shadowColor = 'transparent';
+                        ctx.shadowBlur = 0;
+                        ctx.shadowOffsetY = 0;
+
+                        // 이미지 그리기
+                        ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+
+                        // 이미지 테두리
+                        ctx.strokeStyle = '#E91E63';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(drawX - 8, drawY - 8, drawWidth + 16, drawHeight + 16);
+                    });
 
                     // 제목 텍스트
                     if (title) {
@@ -4279,8 +4334,6 @@
                         ctx.font = 'bold 48px "Noto Sans KR", sans-serif';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
-
-                        // 긴 제목 줄바꿈 처리
                         const maxWidth = canvas.width - 120;
                         const titleY = 70;
                         wrapText(ctx, title, canvas.width / 2, titleY, maxWidth, 56);
@@ -4291,7 +4344,6 @@
                         ctx.fillStyle = '#333333';
                         ctx.font = '32px "Noto Sans KR", sans-serif';
                         ctx.textAlign = 'center';
-
                         const contentY = canvas.height - contentHeight - pageIndicatorHeight + 20;
                         const maxWidth = canvas.width - 100;
                         wrapText(ctx, content, canvas.width / 2, contentY, maxWidth, 42);
@@ -4312,13 +4364,31 @@
                     resolve(canvas.toDataURL('image/png'));
                 };
 
-                img.onerror = () => {
-                    console.error('이미지 로드 실패');
-                    resolve(null);
-                };
+                // 이미지 로드
+                if (validImages.length === 0) {
+                    // 이미지 없으면 텍스트만
+                    onAllLoaded();
+                    return;
+                }
 
-                // Base64 이미지 로드
-                img.src = imageData.preview || `data:${imageData.mimeType};base64,${imageData.data}`;
+                validImages.forEach((imgData, idx) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        loadedImages[idx] = img;
+                        loadCount++;
+                        if (loadCount === validImages.length) {
+                            onAllLoaded();
+                        }
+                    };
+                    img.onerror = () => {
+                        console.error(`이미지 ${idx + 1} 로드 실패`);
+                        loadCount++;
+                        if (loadCount === validImages.length) {
+                            onAllLoaded();
+                        }
+                    };
+                    img.src = imgData.preview || `data:${imgData.mimeType};base64,${imgData.data}`;
+                });
             });
         }
 
@@ -4381,10 +4451,14 @@
 
                 // 1단계: 이미지 있는 페이지는 Canvas로 즉시 생성
                 for (let i = 1; i <= count; i++) {
-                    if (cardNewsPageImages[i]) {
+                    // 배열 형태로 변경됨: cardNewsPageImages[i] = [img1, img2]
+                    const pageImages = cardNewsPageImages[i];
+                    const hasValidImage = pageImages && pageImages.some(img => img && img.preview);
+
+                    if (hasValidImage) {
                         btn.innerHTML = `<span class="loading-spinner"></span>Canvas 처리 중... (${i}/${count})`;
                         const canvasResult = await generateCardNewsWithCanvas(
-                            i, count, title, pages[i - 1], cardNewsPageImages[i], ratio
+                            i, count, title, pages[i - 1], pageImages, ratio
                         );
                         if (canvasResult) {
                             generatedImages[i - 1] = { url: canvasResult, pageNum: i };
