@@ -9655,6 +9655,15 @@ async function getCutRecipeByStyle(payload) {
         };
       }).sort((a, b) => a.step - b.step);
 
+      // ⭐ 원본 레시피 가져오기 및 스타일 코드 제거
+      let altTextRecipe = fields.textRecipe?.stringValue || '';
+      altTextRecipe = altTextRecipe
+        .replace(/\[?[FM]?[A-Z]{2,3}P?\d{4}\]?/g, '')
+        .replace(/\[\s*\]/g, '')
+        .replace(/ {2,}/g, ' ')
+        .trim();
+      altTextRecipe = normalizeRecipeFormat(altTextRecipe);
+
       return {
         statusCode: 200,
         body: JSON.stringify({
@@ -9662,7 +9671,7 @@ async function getCutRecipeByStyle(payload) {
           data: {
             styleId: cutStyle.name.split('/').pop(),
             seriesName: fields.seriesName?.stringValue || '',
-            textRecipe: fields.textRecipe?.stringValue || '',
+            textRecipe: altTextRecipe,
             diagrams: diagrams,
             diagramCount: diagrams.length,
             isAlternative: true  // 대체 레시피임을 표시
@@ -9685,6 +9694,17 @@ async function getCutRecipeByStyle(payload) {
 
     console.log(`✅ 커트 레시피 조회 성공: ${cut_style_id}, 도해도 ${diagrams.length}개`);
 
+    // ⭐ 원본 레시피 가져오기 및 스타일 코드 제거
+    let textRecipe = fields.textRecipe?.stringValue || '';
+    textRecipe = textRecipe
+      .replace(/\[?[FM]?[A-Z]{2,3}P?\d{4}\]?/g, '')  // 스타일ID 제거 (FFL1004, FALP0001 등)
+      .replace(/\[\s*\]/g, '')  // 빈 괄호 [] 제거
+      .replace(/ {2,}/g, ' ')  // 연속 공백 정리
+      .trim();
+
+    // ⭐ External/Internal 형식으로 변환 (커트 레시피)
+    textRecipe = normalizeRecipeFormat(textRecipe);
+
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -9692,7 +9712,7 @@ async function getCutRecipeByStyle(payload) {
         data: {
           styleId: cut_style_id,
           seriesName: fields.seriesName?.stringValue || '',
-          textRecipe: fields.textRecipe?.stringValue || '',
+          textRecipe: textRecipe,
           diagrams: diagrams,
           diagramCount: diagrams.length
         }
