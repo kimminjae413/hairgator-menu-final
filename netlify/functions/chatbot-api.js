@@ -11217,8 +11217,9 @@ BRAND STYLE:
 - Page: ${page_num}/${total_pages}`;
     }
 
+    // gemini-2.5-flash-image 모델 사용 (최신 이미지 생성 모델)
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${ADMIN_GEMINI_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-image-generation:generateContent?key=${ADMIN_GEMINI_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -11232,6 +11233,7 @@ BRAND STYLE:
     );
 
     const data = await response.json();
+    console.log('🎨 이미지 생성 응답:', JSON.stringify(data).substring(0, 500));
 
     if (data.error) {
       throw new Error(data.error.message || 'API 오류');
@@ -11243,7 +11245,8 @@ BRAND STYLE:
     const imagePart = parts.find(p => p.inlineData?.mimeType?.startsWith('image/'));
 
     if (!imagePart) {
-      throw new Error('이미지 생성 실패');
+      console.error('이미지 파트 없음:', JSON.stringify(parts).substring(0, 300));
+      throw new Error('이미지 생성 실패 - 응답에 이미지 없음');
     }
 
     const imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
