@@ -2589,11 +2589,16 @@ function addHairTryResultStyles() {
             width: 100%;
         }
 
-        .comparison-before,
+        .comparison-before {
+            position: relative;
+            flex: 0 0 auto;
+            max-width: 140px;
+        }
+
         .comparison-after {
             position: relative;
             flex: 1;
-            max-width: 280px;
+            max-width: 380px;
         }
 
         .comparison-label {
@@ -2622,10 +2627,18 @@ function addHairTryResultStyles() {
         .comparison-image {
             width: 100%;
             height: auto;
-            max-height: 50vh;
             object-fit: cover;
             border-radius: 12px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .comparison-before .comparison-image {
+            max-height: 35vh;
+            opacity: 0.85;
+        }
+
+        .comparison-after .comparison-image {
+            max-height: 55vh;
         }
 
         .comparison-divider {
@@ -2728,14 +2741,23 @@ function addHairTryResultStyles() {
                 gap: 10px;
             }
 
-            .comparison-before,
+            .comparison-before {
+                max-width: 50%;
+                width: 50%;
+                margin: 0 auto;
+            }
+
             .comparison-after {
                 max-width: 100%;
                 width: 100%;
             }
 
-            .comparison-image {
-                max-height: 35vh;
+            .comparison-before .comparison-image {
+                max-height: 22vh;
+            }
+
+            .comparison-after .comparison-image {
+                max-height: 45vh;
             }
 
             .comparison-divider {
