@@ -1805,8 +1805,8 @@ body.ai-studio-page {
 }
 
 .diagram-viewer-main img {
-  max-width: 90%;
-  max-height: 90%;
+  max-width: 85%;
+  max-height: 85%;
   object-fit: contain;
 }
 
