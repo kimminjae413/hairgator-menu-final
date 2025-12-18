@@ -411,7 +411,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ⭐⭐⭐ 언어 선택 함수 ⭐⭐⭐
-    function showLanguageModal() {
+    let isOnboardingMode = false;
+    function showLanguageModal(isOnboarding = false) {
+        isOnboardingMode = isOnboarding;
         const languages = [
             { code: 'ko', name: '한국어', flag: '🇰🇷' },
             { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -500,7 +502,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
+            if (e.target === modal && !isOnboardingMode) {
                 modal.remove();
             }
         });
@@ -540,6 +542,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const langName = window.LANGUAGE_OPTIONS?.find(l => l.id === langCode)?.name || langCode;
         const langFlag = typeof getLanguageFlag === 'function' ? getLanguageFlag(langCode) : '';
         showToast(`${langName} ${langFlag}`);
+
+        // 온보딩 모드에서 언어 선택 완료 시 콜백 호출
+        if (isOnboardingMode && typeof window.onLanguageSelected === 'function') {
+            isOnboardingMode = false;
+            window.onLanguageSelected();
+        }
     }
 
     function updateAllTexts() {

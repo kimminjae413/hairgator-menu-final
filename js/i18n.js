@@ -886,6 +886,24 @@ const HAIRGATOR_I18N = {
         wideGapDesc: '넓은 미간 - 눈 사이가 멀어 보임',
         balancedGapDesc: '균형잡힌 미간 - 이상적인 비율'
       },
+    },
+
+    // ========== 태블릿 안내 ==========
+    mobileNotice: {
+      title: 'HAIRGATOR는<br>태블릿에 최적화된<br>서비스입니다.',
+      desc: '더 나은 경험을 위해<br>태블릿에서 이용해주세요.',
+      downloadBtn: '태블릿에서 앱 다운로드',
+      continueBtn: '그래도 계속하기',
+      downloadAlert: '태블릿에서 HAIRGATOR를 검색하여 다운로드해주세요.'
+    },
+
+    // ========== 저작권 동의 ==========
+    terms: {
+      title: '서비스 이용 동의',
+      subtitle: '저작권 및 지식재산권 안내',
+      content1: '헤어게이터에서 제공하는 이미지, 그래픽, 텍스트, 영상 등의 모든 콘텐츠의 소유권에 대한 저작권(프로그램등록 포함), 특허권, 상표권은 <strong>(주)에이아이더블유</strong>에서 소유하고 있으며 관련 법의 보호를 받습니다.',
+      content2: '헤어게이터 콘텐츠를 사전허가 없이 유사한 서비스를 제공하는 어플리케이션 또는 온라인에 무단으로 도용하여 복사, 배포, 판매, 전시, 변조하여 사용하는 경우 <strong>민형사상의 책임</strong>이 따를 수 있으므로 이점 양지하시기 바랍니다.',
+      agreeBtn: '확인 및 동의'
     }
   },
 
@@ -1739,6 +1757,24 @@ const HAIRGATOR_I18N = {
         selectFront: 'Please select fringe direction.',
         inputComplete: 'Customer info complete! Starting AI analysis.'
       }
+    },
+
+    // ========== Mobile Notice ==========
+    mobileNotice: {
+      title: 'HAIRGATOR is<br>optimized for<br>tablets.',
+      desc: 'For a better experience,<br>please use a tablet.',
+      downloadBtn: 'Download app on tablet',
+      continueBtn: 'Continue anyway',
+      downloadAlert: 'Please search for HAIRGATOR on your tablet to download.'
+    },
+
+    // ========== Terms Agreement ==========
+    terms: {
+      title: 'Terms of Service',
+      subtitle: 'Copyright and Intellectual Property Notice',
+      content1: 'All content provided by HAIRGATOR, including images, graphics, text, and videos, is owned by <strong>AIW Inc.</strong> and protected by copyright (including software registration), patent, and trademark laws.',
+      content2: 'Unauthorized copying, distribution, sale, display, or modification of HAIRGATOR content for similar services without prior permission may result in <strong>civil and criminal liability</strong>.',
+      agreeBtn: 'Agree and Continue'
     }
   },
 
@@ -2588,6 +2624,24 @@ const HAIRGATOR_I18N = {
         selectFront: '前髪の方向を選択してください。',
         inputComplete: 'お客様情報入力完了！AI分析を開始します。'
       }
+    },
+
+    // ========== モバイル通知 ==========
+    mobileNotice: {
+      title: 'HAIRGATORは<br>タブレットに<br>最適化されています。',
+      desc: 'より良い体験のために<br>タブレットでご利用ください。',
+      downloadBtn: 'タブレットでアプリをダウンロード',
+      continueBtn: 'このまま続ける',
+      downloadAlert: 'タブレットでHAIRGATORを検索してダウンロードしてください。'
+    },
+
+    // ========== 利用規約同意 ==========
+    terms: {
+      title: '利用規約への同意',
+      subtitle: '著作権および知的財産権について',
+      content1: 'HAIRGATORが提供する画像、グラフィック、テキスト、動画などのすべてのコンテンツの著作権（プログラム登録を含む）、特許権、商標権は<strong>AIW株式会社</strong>が所有し、関連法により保護されています。',
+      content2: 'HAIRGATORのコンテンツを事前許可なく、類似サービスへの無断転載、コピー、配布、販売、展示、改変などを行った場合、<strong>民事・刑事上の責任</strong>が生じる可能性がありますのでご注意ください。',
+      agreeBtn: '同意して続ける'
     }
   },
 
@@ -3440,6 +3494,24 @@ const HAIRGATOR_I18N = {
         selectFront: '请选择刘海方向。',
         inputComplete: '客户信息输入完成！开始AI分析。'
       }
+    },
+
+    // ========== 移动端提示 ==========
+    mobileNotice: {
+      title: 'HAIRGATOR<br>针对平板设备<br>进行了优化。',
+      desc: '为了更好的体验，<br>请使用平板设备。',
+      downloadBtn: '在平板上下载应用',
+      continueBtn: '继续使用',
+      downloadAlert: '请在平板设备上搜索HAIRGATOR进行下载。'
+    },
+
+    // ========== 服务条款同意 ==========
+    terms: {
+      title: '服务条款同意',
+      subtitle: '版权及知识产权声明',
+      content1: 'HAIRGATOR提供的所有内容，包括图片、图形、文字、视频等的著作权（包括软件登记）、专利权、商标权均归<strong>AIW株式会社</strong>所有，受相关法律保护。',
+      content2: '未经事先许可，擅自将HAIRGATOR内容用于类似服务的复制、分发、销售、展示、篡改等行为，将承担<strong>民事和刑事责任</strong>，请知悉。',
+      agreeBtn: '同意并继续'
     }
   },
 
@@ -4279,6 +4351,24 @@ const HAIRGATOR_I18N = {
         selectFront: 'Vui lòng chọn hướng mái.',
         inputComplete: 'Hoàn tất nhập thông tin! Bắt đầu phân tích AI.'
       }
+    },
+
+    // ========== Thông báo di động ==========
+    mobileNotice: {
+      title: 'HAIRGATOR được<br>tối ưu hóa cho<br>máy tính bảng.',
+      desc: 'Để có trải nghiệm tốt hơn,<br>vui lòng sử dụng máy tính bảng.',
+      downloadBtn: 'Tải ứng dụng trên máy tính bảng',
+      continueBtn: 'Vẫn tiếp tục',
+      downloadAlert: 'Vui lòng tìm kiếm HAIRGATOR trên máy tính bảng để tải xuống.'
+    },
+
+    // ========== Đồng ý điều khoản ==========
+    terms: {
+      title: 'Đồng ý điều khoản sử dụng',
+      subtitle: 'Thông báo bản quyền và sở hữu trí tuệ',
+      content1: 'Tất cả nội dung do HAIRGATOR cung cấp bao gồm hình ảnh, đồ họa, văn bản, video đều thuộc quyền sở hữu của <strong>AIW Inc.</strong> và được bảo vệ bởi luật bản quyền, bằng sáng chế và nhãn hiệu.',
+      content2: 'Việc sao chép, phân phối, bán, trưng bày hoặc sửa đổi nội dung HAIRGATOR mà không có sự cho phép trước có thể dẫn đến <strong>trách nhiệm dân sự và hình sự</strong>.',
+      agreeBtn: 'Đồng ý và tiếp tục'
     }
   },
 
@@ -5092,6 +5182,24 @@ const HAIRGATOR_I18N = {
         selectFront: 'Silakan pilih arah poni.',
         inputComplete: 'Input selesai! Memulai analisis AI.'
       }
+    },
+
+    // ========== Pemberitahuan Seluler ==========
+    mobileNotice: {
+      title: 'HAIRGATOR<br>dioptimalkan untuk<br>tablet.',
+      desc: 'Untuk pengalaman yang lebih baik,<br>silakan gunakan tablet.',
+      downloadBtn: 'Unduh aplikasi di tablet',
+      continueBtn: 'Tetap lanjutkan',
+      downloadAlert: 'Silakan cari HAIRGATOR di tablet Anda untuk mengunduh.'
+    },
+
+    // ========== Persetujuan Ketentuan ==========
+    terms: {
+      title: 'Persetujuan Ketentuan Layanan',
+      subtitle: 'Pemberitahuan Hak Cipta dan Kekayaan Intelektual',
+      content1: 'Semua konten yang disediakan oleh HAIRGATOR termasuk gambar, grafik, teks, dan video dimiliki oleh <strong>AIW Inc.</strong> dan dilindungi oleh hak cipta, paten, dan undang-undang merek dagang.',
+      content2: 'Penyalinan, distribusi, penjualan, tampilan, atau modifikasi konten HAIRGATOR tanpa izin sebelumnya dapat mengakibatkan <strong>tanggung jawab perdata dan pidana</strong>.',
+      agreeBtn: 'Setuju dan Lanjutkan'
     }
   },
 
@@ -5623,6 +5731,24 @@ const HAIRGATOR_I18N = {
         hard: 'Difícil',
         hardTip: 'Requiere decoloración profesional'
       }
+    },
+
+    // ========== Aviso Móvil ==========
+    mobileNotice: {
+      title: 'HAIRGATOR está<br>optimizado para<br>tabletas.',
+      desc: 'Para una mejor experiencia,<br>usa una tableta.',
+      downloadBtn: 'Descargar app en tableta',
+      continueBtn: 'Continuar de todos modos',
+      downloadAlert: 'Busca HAIRGATOR en tu tableta para descargar.'
+    },
+
+    // ========== Acuerdo de Términos ==========
+    terms: {
+      title: 'Acuerdo de Términos',
+      subtitle: 'Aviso de Derechos de Autor y Propiedad Intelectual',
+      content1: 'Todo el contenido proporcionado por HAIRGATOR, incluyendo imágenes, gráficos, textos y videos, es propiedad de <strong>AIW Inc.</strong> y está protegido por leyes de derechos de autor, patentes y marcas registradas.',
+      content2: 'La copia, distribución, venta, exhibición o modificación no autorizada del contenido de HAIRGATOR puede resultar en <strong>responsabilidad civil y penal</strong>.',
+      agreeBtn: 'Aceptar y Continuar'
     }
   }
 };
