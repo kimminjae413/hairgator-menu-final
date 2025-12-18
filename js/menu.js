@@ -1264,6 +1264,7 @@ async function openStyleModal(style) {
                 sessionStorage.setItem('lookbookImage', style.imageUrl || '');
                 sessionStorage.setItem('lookbookTitle', style.name || 'Style');
                 sessionStorage.setItem('lookbookGender', genderValue);
+                sessionStorage.setItem('lookbookLanguage', window.currentLanguage || 'ko');
 
                 // 크레딧 차감 (API 성공 시에만)
                 deductLookbookCreditFromMenu(LOOKBOOK_CREDIT_COST);

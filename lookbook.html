@@ -1142,8 +1142,15 @@
             genderParam = urlParams.get('gender') || ''; // 메뉴판에서 전달된 성별 (male/female)
         }
 
-        // 현재 언어 가져오기 (i18n.js와 동일한 키 사용)
-        const currentLang = localStorage.getItem('hairgator_language') || 'ko';
+        // 현재 언어 가져오기 (sessionStorage 우선 - 앱에서 localStorage 초기화 대비)
+        const currentLang = sessionStorage.getItem('lookbookLanguage')
+            || localStorage.getItem('hairgator_language')
+            || 'ko';
+
+        // i18n.js의 currentLanguage도 동기화
+        if (typeof window.setLanguage === 'function' && currentLang !== 'ko') {
+            window.setLanguage(currentLang);
+        }
 
         // ==================== 랜덤 테마 선택 ====================
         const themes = ['street', 'classic', 'modern'];
@@ -1405,6 +1412,7 @@
                         sessionStorage.removeItem('lookbookImage');
                         sessionStorage.removeItem('lookbookTitle');
                         sessionStorage.removeItem('lookbookGender');
+                        sessionStorage.removeItem('lookbookLanguage');
                     } catch (e) {
                         console.error('Preloaded 결과 파싱 실패:', e);
                         // 실패 시 다시 API 호출
