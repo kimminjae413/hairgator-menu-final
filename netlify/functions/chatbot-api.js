@@ -11223,7 +11223,7 @@ async function generateCardNewsKeywords(payload) {
 
 // ==================== 어드민: Veo 영상 생성 시작 (SDK 방식, Image-to-Video 지원) ====================
 async function generateVideoStart(payload) {
-  const { prompt, duration, aspect_ratio, input_image } = payload;
+  const { prompt, duration, aspect_ratio, input_image, last_image } = payload;
 
   const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
 
@@ -11231,7 +11231,8 @@ async function generateVideoStart(payload) {
     prompt: prompt?.substring(0, 50),
     duration,
     aspect_ratio,
-    hasInputImage: !!input_image
+    hasInputImage: !!input_image,
+    hasLastImage: !!last_image
   });
 
   if (!ADMIN_GEMINI_KEY) {
@@ -11287,10 +11288,24 @@ Target audience: Professional hair designers and stylists.`;
       console.log('📷 Image-to-Video 모드: 입력 이미지를 첫 프레임으로 사용');
     }
 
+    // ⭐ Frame Interpolation: 마지막 프레임 이미지가 있으면 보간 모드
+    if (last_image && last_image.data) {
+      const lastImageBase64 = last_image.data.includes(',')
+        ? last_image.data.split(',')[1]
+        : last_image.data;
+
+      requestParams.lastFrame = {
+        imageBytes: lastImageBase64,
+        mimeType: last_image.mimeType || 'image/jpeg'
+      };
+      console.log('🎬 Frame Interpolation 모드: 첫 프레임 → 마지막 프레임 보간');
+    }
+
     console.log('📋 Request structure:', {
       model: requestParams.model,
       hasPrompt: !!requestParams.prompt,
       hasImage: !!requestParams.image?.imageBytes,
+      hasLastFrame: !!requestParams.lastFrame?.imageBytes,
       config: requestParams.config
     });
 
@@ -11454,7 +11469,7 @@ async function generateVideoStatus(payload) {
 
 // ==================== 어드민: Veo 영상 생성 (SDK 방식, Image-to-Video 지원) ====================
 async function generateVideo(payload) {
-  const { prompt, duration, aspect_ratio, input_image } = payload;
+  const { prompt, duration, aspect_ratio, input_image, last_image } = payload;
 
   const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
 
@@ -11515,6 +11530,19 @@ Target audience: Professional hair designers and stylists.`;
         mimeType: input_image.mimeType || 'image/jpeg'
       };
       console.log('📷 Image-to-Video 모드: 입력 이미지를 첫 프레임으로 사용');
+    }
+
+    // ⭐ Frame Interpolation: 마지막 프레임 이미지가 있으면 보간 모드
+    if (last_image && last_image.data) {
+      const lastImageBase64 = last_image.data.includes(',')
+        ? last_image.data.split(',')[1]
+        : last_image.data;
+
+      requestParams.lastFrame = {
+        imageBytes: lastImageBase64,
+        mimeType: last_image.mimeType || 'image/jpeg'
+      };
+      console.log('🎬 Frame Interpolation 모드: 첫 프레임 → 마지막 프레임 보간');
     }
 
     // SDK로 영상 생성 시작
