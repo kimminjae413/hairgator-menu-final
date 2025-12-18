@@ -1368,11 +1368,37 @@ function saveLanguageToFirebase(language) {
     saveUserSettingsToFirebase({ language: language });
 }
 
+// 저작권 동의 시 Firebase에 저장
+function saveTermsAgreedToFirebase() {
+    saveUserSettingsToFirebase({
+        termsAgreed: true,
+        termsAgreedDate: new Date().toISOString()
+    });
+}
+
+// Firebase에서 저작권 동의 여부 확인
+async function checkTermsAgreedFromFirebase() {
+    try {
+        const settings = await loadUserSettingsFromFirebase();
+        if (settings && settings.termsAgreed) {
+            localStorage.setItem('hairgator_terms_agreed', 'true');
+            console.log('✅ Firebase에서 저작권 동의 확인됨');
+            return true;
+        }
+        return false;
+    } catch (e) {
+        console.error('❌ Firebase 저작권 동의 확인 실패:', e);
+        return false;
+    }
+}
+
 // 전역 함수로 노출
 window.saveUserSettingsToFirebase = saveUserSettingsToFirebase;
 window.loadUserSettingsFromFirebase = loadUserSettingsFromFirebase;
 window.saveThemeToFirebase = saveThemeToFirebase;
 window.saveLanguageToFirebase = saveLanguageToFirebase;
+window.saveTermsAgreedToFirebase = saveTermsAgreedToFirebase;
+window.checkTermsAgreedFromFirebase = checkTermsAgreedFromFirebase;
 
 // 저장된 상호명 적용
 function applyCustomBrand() {

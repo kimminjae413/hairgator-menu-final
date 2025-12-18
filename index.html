@@ -466,10 +466,20 @@
         }
 
         // 온보딩 플로우 시작
-        function startOnboarding() {
+        async function startOnboarding() {
             const hasLanguage = localStorage.getItem('hairgator_language');
-            const hasAgreedTerms = localStorage.getItem('hairgator_terms_agreed');
+            let hasAgreedTerms = localStorage.getItem('hairgator_terms_agreed');
             const hasSeenNotice = sessionStorage.getItem('mobileNoticeShown');
+
+            console.log('🚀 startOnboarding:', { hasLanguage, hasAgreedTerms, hasSeenNotice });
+
+            // localStorage에 없으면 Firebase에서 확인
+            if (!hasAgreedTerms && typeof checkTermsAgreedFromFirebase === 'function') {
+                const firebaseAgreed = await checkTermsAgreedFromFirebase();
+                if (firebaseAgreed) {
+                    hasAgreedTerms = 'true';
+                }
+            }
 
             if (!hasLanguage) {
                 // 1단계: 언어 선택 (처음 이용자)
@@ -521,8 +531,20 @@
 
         // 저작권 동의
         function agreeTerms() {
-            localStorage.setItem('hairgator_terms_agreed', 'true');
-            localStorage.setItem('hairgator_terms_agreed_date', new Date().toISOString());
+            console.log('📋 agreeTerms() 호출됨');
+            try {
+                localStorage.setItem('hairgator_terms_agreed', 'true');
+                localStorage.setItem('hairgator_terms_agreed_date', new Date().toISOString());
+                console.log('✅ localStorage 저장 완료:', localStorage.getItem('hairgator_terms_agreed'));
+
+                // Firebase에도 저장
+                if (typeof saveTermsAgreedToFirebase === 'function') {
+                    saveTermsAgreedToFirebase();
+                    console.log('✅ Firebase 저장 요청됨');
+                }
+            } catch (e) {
+                console.error('❌ 저장 실패:', e);
+            }
             document.getElementById('termsModal').style.display = 'none';
         }
 
