@@ -11265,23 +11265,32 @@ Target audience: Professional hair designers and stylists.`;
       }
     };
 
-    // ⭐ Image-to-Video: 입력 이미지가 있으면 첫 프레임으로 사용
+    // ⭐ Image-to-Video: 입력 이미지를 referenceImages로 전달 (asset 타입)
+    // REST API에서는 image 파라미터가 아닌 referenceImages를 사용해야 함
     if (input_image && input_image.data) {
-      requestBody.instances[0].image = {
-        imageBytes: input_image.data,
-        mimeType: input_image.mimeType || 'image/png'
-      };
-      console.log('📷 Image-to-Video 모드: 입력 이미지를 첫 프레임으로 사용');
+      // referenceImages 배열에 첫 번째로 추가 (asset 타입 = 주체 이미지)
+      requestBody.instances[0].referenceImages = [{
+        image: {
+          bytesBase64Encoded: input_image.data,
+          mimeType: input_image.mimeType || 'image/png'
+        },
+        referenceType: 'asset'
+      }];
+      // referenceImages 사용 시 duration은 8초 고정
+      requestBody.parameters.durationSeconds = 8;
+      console.log('📷 Image-to-Video 모드: referenceImages (asset) 방식으로 전달');
     }
 
-    // 참고 이미지 추가 (스타일 일관성용, 최대 3개)
-    if (reference_images && reference_images.length > 0) {
+    // 추가 참고 이미지 (input_image가 없을 때만 - 겹치지 않도록)
+    if (!input_image && reference_images && reference_images.length > 0) {
       requestBody.instances[0].referenceImages = reference_images.slice(0, 3).map(img => ({
         image: {
           bytesBase64Encoded: img.data,
           mimeType: img.mimeType || 'image/jpeg'
-        }
+        },
+        referenceType: 'asset'
       }));
+      requestBody.parameters.durationSeconds = 8;
       console.log(`🎨 참고 이미지 ${reference_images.length}개 추가`);
     }
 
@@ -11465,23 +11474,29 @@ Target audience: Professional hair designers and stylists.`;
       }
     };
 
-    // ⭐ Image-to-Video: 입력 이미지가 있으면 첫 프레임으로 사용
+    // ⭐ Image-to-Video: 입력 이미지를 referenceImages로 전달 (asset 타입)
     if (input_image && input_image.data) {
-      requestBody.instances[0].image = {
-        imageBytes: input_image.data,
-        mimeType: input_image.mimeType || 'image/png'
-      };
-      console.log('📷 Image-to-Video 모드: 입력 이미지를 첫 프레임으로 사용');
+      requestBody.instances[0].referenceImages = [{
+        image: {
+          bytesBase64Encoded: input_image.data,
+          mimeType: input_image.mimeType || 'image/png'
+        },
+        referenceType: 'asset'
+      }];
+      requestBody.parameters.durationSeconds = 8;
+      console.log('📷 Image-to-Video 모드: referenceImages (asset) 방식으로 전달');
     }
 
-    // 참고 이미지가 있으면 추가 (스타일/캐릭터 일관성용, 최대 3개)
-    if (reference_images && reference_images.length > 0) {
+    // 추가 참고 이미지 (input_image가 없을 때만)
+    if (!input_image && reference_images && reference_images.length > 0) {
       requestBody.instances[0].referenceImages = reference_images.slice(0, 3).map(img => ({
         image: {
           bytesBase64Encoded: img.data,
           mimeType: img.mimeType || 'image/jpeg'
-        }
+        },
+        referenceType: 'asset'
       }));
+      requestBody.parameters.durationSeconds = 8;
       console.log(`🎨 참고 이미지 ${reference_images.length}개 추가`);
     }
 
