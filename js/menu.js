@@ -2447,17 +2447,39 @@ function retryHairTry() {
 }
 
 // 헤어체험 결과 저장
-function saveHairTryResult(imageUrl) {
-    // 이미지 다운로드
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = `hair-try-result-${Date.now()}.png`;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+async function saveHairTryResult(imageUrl) {
+    try {
+        let blob;
 
-    showToast(t('hairTry.save') || '이미지가 저장되었습니다', 'success');
+        // Data URL인 경우 (base64)
+        if (imageUrl.startsWith('data:')) {
+            const response = await fetch(imageUrl);
+            blob = await response.blob();
+        } else {
+            // 일반 URL인 경우
+            const response = await fetch(imageUrl);
+            blob = await response.blob();
+        }
+
+        // Blob URL 생성
+        const blobUrl = URL.createObjectURL(blob);
+
+        // 다운로드 링크 생성
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `hair-try-result-${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Blob URL 해제
+        URL.revokeObjectURL(blobUrl);
+
+        showToast(t('hairTry.saved') || '이미지가 저장되었습니다', 'success');
+    } catch (error) {
+        console.error('이미지 저장 오류:', error);
+        showToast(t('hairTry.saveError') || '저장 중 오류가 발생했습니다', 'error');
+    }
 }
 
 // 헤어체험 결과 모달 스타일
