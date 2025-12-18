@@ -475,9 +475,13 @@ exports.handler = async (event, context) => {
       case 'generate_hairstyle_direct':
         return await generateHairstyleDirect(payload);
 
-      // ⭐ 어드민: AI 카드뉴스 생성
+      // ⭐ 어드민: AI 카드뉴스 생성 (전체)
       case 'generate_cardnews':
         return await generateCardNews(payload);
+
+      // ⭐ 어드민: AI 카드뉴스 이미지만 생성 (이미지 프롬프트용)
+      case 'generate_cardnews_image':
+        return await generateCardNewsImage(payload);
 
       // ⭐ 어드민: 카드뉴스 키워드/해시태그 추천
       case 'generate_cardnews_keywords':
@@ -11138,6 +11142,123 @@ IMPORTANT:
 
   } catch (error) {
     console.error('💥 카드뉴스 생성 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 어드민: AI 카드뉴스 이미지만 생성 (이미지 프롬프트용) ====================
+async function generateCardNewsImage(payload) {
+  const { title, content, image_prompt, page_num, total_pages, aspect_ratio, text_overlay } = payload;
+
+  const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
+
+  console.log('🖼️ 카드뉴스 이미지 생성:', { hasImagePrompt: !!image_prompt, page_num, text_overlay });
+
+  if (!ADMIN_GEMINI_KEY) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: 'GEMINI_API_KEY not configured' })
+    };
+  }
+
+  try {
+    // 비율 가이드
+    const ratioGuide = {
+      '1:1': 'square format (1:1 ratio, 1080x1080)',
+      '4:5': 'vertical format (4:5 ratio, 1080x1350)',
+      '9:16': 'story/reels format (9:16 ratio, 1080x1920)'
+    };
+    const sizeText = ratioGuide[aspect_ratio] || ratioGuide['1:1'];
+
+    let imagePrompt;
+
+    if (image_prompt) {
+      // ⭐ 이미지 프롬프트 있음 → 텍스트 없이 느낌만 이미지 생성
+      imagePrompt = `Create a visually striking, artistic image for Instagram card news.
+
+CONCEPT/MOOD TO CAPTURE:
+${image_prompt}
+
+IMPORTANT RULES:
+- DO NOT include ANY text, words, letters, numbers, or typography in the image
+- Focus purely on visual imagery, mood, atmosphere, and symbolism
+- Create a powerful visual that captures the emotional essence of the concept
+- Use artistic composition, lighting, and color to convey the feeling
+
+STYLE GUIDELINES:
+- Premium, professional Instagram aesthetic
+- Clean, modern visual design
+- Soft, harmonious color palette with pink (#E91E63) as accent if fitting
+- Format: ${sizeText}
+- NO watermarks, NO text overlays, NO typography`;
+
+    } else {
+      // 이미지 프롬프트 없음 → 전체 카드뉴스 생성 (텍스트 포함)
+      imagePrompt = `Create a professional Instagram card news image for HAIRGATOR.
+
+⚠️ KOREAN TEXT RULE:
+- You MUST copy the user's Korean text EXACTLY as provided
+- DO NOT translate or modify Korean text
+
+USER'S TEXT:
+- Title: "${title || ''}"
+- Content: "${content || ''}"
+
+BRAND STYLE:
+- Background: Clean WHITE
+- Accent: Magenta Pink (#E91E63)
+- Feel: Premium, professional, clean
+- Format: ${sizeText}
+- Page: ${page_num}/${total_pages}`;
+    }
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${ADMIN_GEMINI_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: imagePrompt }] }],
+          generationConfig: {
+            responseModalities: ['IMAGE']
+          }
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(data.error.message || 'API 오류');
+    }
+
+    // 이미지 추출
+    const candidates = data.candidates || [];
+    const parts = candidates[0]?.content?.parts || [];
+    const imagePart = parts.find(p => p.inlineData?.mimeType?.startsWith('image/'));
+
+    if (!imagePart) {
+      throw new Error('이미지 생성 실패');
+    }
+
+    const imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: { image_url: imageUrl }
+      })
+    };
+
+  } catch (error) {
+    console.error('카드뉴스 이미지 생성 오류:', error);
     return {
       statusCode: 500,
       headers,

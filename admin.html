@@ -4083,15 +4083,21 @@
         // 현재 카드뉴스 페이지 수
         let cardNewsPageNum = 1;
 
-        // 페이지 HTML 생성 함수 (이미지 2개까지 첨부 가능)
+        // 페이지 HTML 생성 함수 (이미지 2개까지 첨부 가능 + AI 이미지 프롬프트)
         function createPageHTML(pageNum) {
             return `
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                     <span style="color: #E91E63; font-weight: 600; min-width: 50px; padding-top: 10px;">${pageNum}장</span>
                     <div style="flex: 1;">
-                        <textarea id="cardNewsPage${pageNum}" placeholder="예: 올 봄 트렌드는 자연스러운 웨이브! 볼륨감 있는 레이어드 컷으로 세련된 느낌을..."
+                        <textarea id="cardNewsPage${pageNum}" placeholder="본문 텍스트를 입력하세요..."
                             style="width: 100%; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; padding: 10px; font-size: 13px; min-height: 60px; resize: vertical; box-sizing: border-box;"></textarea>
+                        <div style="margin-top: 8px;">
+                            <input type="text" id="cardNewsImagePrompt${pageNum}" placeholder="(이미지: 엉킨 실타래, 멍하니 바라보는 시선) - AI가 이 느낌의 이미지 생성"
+                                style="width: 100%; background: #1a2a3a; border: 1px solid #2196F3; border-radius: 6px; color: #64B5F6; padding: 8px 10px; font-size: 12px; box-sizing: border-box;">
+                            <p style="color: #666; font-size: 10px; margin-top: 4px;">💡 이미지 프롬프트: AI가 텍스트 없이 이 느낌의 이미지만 생성</p>
+                        </div>
                         <div style="margin-top: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <span style="color: #888; font-size: 11px;">또는 직접 첨부:</span>
                             <!-- 이미지 1 -->
                             <label id="cardNewsPageImgLabel${pageNum}_1" style="cursor: pointer; background: #333; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: #aaa; display: inline-flex; align-items: center; gap: 4px;">
                                 📷 이미지 1
@@ -4392,13 +4398,12 @@
             });
         }
 
-        // 텍스트 줄바꿈 함수
-        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+        // 텍스트 줄바꿈 함수 (제한 없음)
+        function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 10) {
             const words = text.split('');
             let line = '';
             let testLine = '';
             let lineCount = 0;
-            const maxLines = 3;
 
             for (let i = 0; i < words.length; i++) {
                 testLine = line + words[i];
@@ -4411,25 +4416,29 @@
                     if (lineCount >= maxLines) {
                         line = line.slice(0, -3) + '...';
                         ctx.fillText(line, x, y + (lineCount * lineHeight));
-                        return;
+                        return lineCount + 1;
                     }
                 } else {
                     line = testLine;
                 }
             }
             ctx.fillText(line, x, y + (lineCount * lineHeight));
+            return lineCount + 1;
         }
 
-        // 카드뉴스 생성 (하이브리드: Canvas + AI)
+        // 카드뉴스 생성 (하이브리드: Canvas + AI 이미지 프롬프트)
         async function generateCardNews() {
             const title = document.getElementById('cardNewsTitle').value.trim();
             const count = cardNewsPageNum;
 
-            // 각 장별 내용 수집
+            // 각 장별 내용 + 이미지 프롬프트 수집
             const pages = [];
+            const imagePrompts = [];
             for (let i = 1; i <= count; i++) {
                 const pageContent = document.getElementById(`cardNewsPage${i}`)?.value.trim() || '';
+                const imgPrompt = document.getElementById(`cardNewsImagePrompt${i}`)?.value.trim() || '';
                 pages.push(pageContent);
+                imagePrompts.push(imgPrompt);
             }
 
             // 최소 제목 또는 첫 번째 장 내용이 있어야 함
@@ -4446,16 +4455,16 @@
 
             try {
                 const generatedImages = [];
-                const aiPages = []; // AI로 생성할 페이지들
-                const aiPageIndices = []; // AI 페이지 인덱스
+                const aiImageRequests = []; // AI 이미지 생성 요청들
 
-                // 1단계: 이미지 있는 페이지는 Canvas로 즉시 생성
+                // 1단계: 각 페이지 분류
                 for (let i = 1; i <= count; i++) {
-                    // 배열 형태로 변경됨: cardNewsPageImages[i] = [img1, img2]
                     const pageImages = cardNewsPageImages[i];
                     const hasValidImage = pageImages && pageImages.some(img => img && img.preview);
+                    const hasImagePrompt = imagePrompts[i - 1] && imagePrompts[i - 1].length > 0;
 
                     if (hasValidImage) {
+                        // 첨부 이미지 있음 → Canvas로 즉시 처리
                         btn.innerHTML = `<span class="loading-spinner"></span>Canvas 처리 중... (${i}/${count})`;
                         const canvasResult = await generateCardNewsWithCanvas(
                             i, count, title, pages[i - 1], pageImages, ratio
@@ -4463,43 +4472,70 @@
                         if (canvasResult) {
                             generatedImages[i - 1] = { url: canvasResult, pageNum: i };
                         }
+                    } else if (hasImagePrompt) {
+                        // 이미지 프롬프트 있음 → AI 이미지 생성 후 Canvas 합성
+                        aiImageRequests.push({
+                            pageNum: i,
+                            pageIndex: i - 1,
+                            content: pages[i - 1],
+                            imagePrompt: imagePrompts[i - 1],
+                            needsCanvasMerge: true // Canvas로 텍스트 합성 필요
+                        });
                     } else {
-                        // AI로 생성할 페이지 수집
-                        aiPages.push({ pageNum: i, content: pages[i - 1] });
-                        aiPageIndices.push(i - 1);
+                        // 둘 다 없음 → AI가 전체 이미지 생성 (텍스트 포함)
+                        aiImageRequests.push({
+                            pageNum: i,
+                            pageIndex: i - 1,
+                            content: pages[i - 1],
+                            imagePrompt: null,
+                            needsCanvasMerge: false
+                        });
                     }
                 }
 
-                // 2단계: 이미지 없는 페이지는 AI로 생성
-                if (aiPages.length > 0) {
-                    btn.innerHTML = `<span class="loading-spinner"></span>AI 생성 중... (${aiPages.length}장)`;
+                // 2단계: AI 이미지 생성 요청 처리
+                for (const req of aiImageRequests) {
+                    btn.innerHTML = `<span class="loading-spinner"></span>AI 이미지 생성 중... (${req.pageNum}/${count})`;
 
                     const response = await fetch('/.netlify/functions/chatbot-api', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            action: 'generate_cardnews',
+                            action: 'generate_cardnews_image',
                             payload: {
                                 title: title,
-                                pages: aiPages.map(p => p.content),
-                                aspect_ratio: ratio,
-                                num_images: aiPages.length,
+                                content: req.content,
+                                image_prompt: req.imagePrompt, // 이미지 느낌 프롬프트
+                                page_num: req.pageNum,
                                 total_pages: count,
-                                page_numbers: aiPages.map(p => p.pageNum)
+                                aspect_ratio: ratio,
+                                text_overlay: !req.needsCanvasMerge // AI가 텍스트 포함할지 여부
                             }
                         })
                     });
 
                     const result = await response.json();
 
-                    if (result.success && result.data && result.data.images) {
-                        // AI 결과를 올바른 위치에 배치
-                        result.data.images.forEach((img, idx) => {
-                            const originalIndex = aiPageIndices[idx];
-                            generatedImages[originalIndex] = img;
-                        });
+                    if (result.success && result.data?.image_url) {
+                        if (req.needsCanvasMerge) {
+                            // AI 이미지 + Canvas 텍스트 합성
+                            btn.innerHTML = `<span class="loading-spinner"></span>텍스트 합성 중... (${req.pageNum}/${count})`;
+                            const aiImageData = [{
+                                preview: result.data.image_url,
+                                mimeType: 'image/png'
+                            }];
+                            const canvasResult = await generateCardNewsWithCanvas(
+                                req.pageNum, count, title, req.content, aiImageData, ratio
+                            );
+                            if (canvasResult) {
+                                generatedImages[req.pageIndex] = { url: canvasResult, pageNum: req.pageNum };
+                            }
+                        } else {
+                            // AI가 생성한 전체 이미지 사용
+                            generatedImages[req.pageIndex] = { url: result.data.image_url, pageNum: req.pageNum };
+                        }
                     } else {
-                        throw new Error(result.error || 'AI 카드뉴스 생성 실패');
+                        console.error(`페이지 ${req.pageNum} 생성 실패:`, result.error);
                     }
                 }
 
