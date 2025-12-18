@@ -7076,9 +7076,20 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       .replace(/ {2,}/g, ' ')  // 연속 공백 정리 (줄바꿈 제외)
       .trim();
 
-    // ⭐ 펌 레시피 전처리 (OCR 아티팩트 제거 및 포맷팅)
+    // ⭐ 펌 레시피 전처리 (OCR 아티팩트 제거 및 AI 서술형 변환)
     if (serviceType === 'perm') {
-      originalRecipe = formatPermRecipe(originalRecipe);
+      // ⭐ AI 서술형 펌 레시피 생성 (Gemini 활용)
+      if (originalRecipe && geminiKey) {
+        try {
+          const permTypeName = params56.perm_type || '로드 (S컬)';
+          originalRecipe = await generateCustomPermRecipe(params56, originalRecipe, permTypeName, geminiKey);
+        } catch (err) {
+          console.error('❌ AI 펌 레시피 생성 실패, 기존 포맷 사용:', err.message);
+          originalRecipe = formatPermRecipe(originalRecipe);
+        }
+      } else {
+        originalRecipe = formatPermRecipe(originalRecipe);
+      }
     } else {
       // ⭐ External/Internal 형식으로 통일 (커트만)
       originalRecipe = normalizeRecipeFormat(originalRecipe);
