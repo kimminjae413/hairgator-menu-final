@@ -543,6 +543,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const langFlag = typeof getLanguageFlag === 'function' ? getLanguageFlag(langCode) : '';
         showToast(`${langName} ${langFlag}`);
 
+        // Firebase에도 언어 저장 (userId 기반)
+        if (typeof saveLanguageToFirebaseByUserId === 'function') {
+            saveLanguageToFirebaseByUserId(langCode);
+        }
+
         // 온보딩 모드에서 언어 선택 완료 시 콜백 호출
         if (isOnboardingMode && typeof window.onLanguageSelected === 'function') {
             isOnboardingMode = false;
@@ -1424,6 +1429,48 @@ function getTermsUserId() {
 
     return null;
 }
+
+// 언어 설정 Firebase에 저장 (userId 기반)
+async function saveLanguageToFirebaseByUserId(lang) {
+    try {
+        if (!window.db) return false;
+        const userId = getTermsUserId();
+        if (!userId) return false;
+
+        await window.db.collection('userTermsAgreed').doc(userId).set({
+            language: lang,
+            updatedAt: Date.now()
+        }, { merge: true });
+
+        console.log('✅ Firebase 언어 저장:', userId, lang);
+        return true;
+    } catch (e) {
+        console.error('❌ Firebase 언어 저장 실패:', e);
+        return false;
+    }
+}
+
+// Firebase에서 언어 확인 (userId 기반)
+async function checkLanguageFromFirebase() {
+    try {
+        if (!window.db) return null;
+        const userId = getTermsUserId();
+        if (!userId) return null;
+
+        const doc = await window.db.collection('userTermsAgreed').doc(userId).get();
+        if (doc.exists && doc.data().language) {
+            console.log('✅ Firebase에서 언어 확인:', doc.data().language);
+            return doc.data().language;
+        }
+        return null;
+    } catch (e) {
+        console.error('❌ Firebase 언어 확인 실패:', e);
+        return null;
+    }
+}
+
+window.saveLanguageToFirebaseByUserId = saveLanguageToFirebaseByUserId;
+window.checkLanguageFromFirebase = checkLanguageFromFirebase;
 
 // Firebase에서 저작권 동의 여부 확인
 async function checkTermsAgreedFromFirebase() {

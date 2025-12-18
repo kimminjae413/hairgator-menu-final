@@ -467,10 +467,22 @@
 
         // 온보딩 플로우 시작
         async function startOnboarding() {
-            const hasLanguage = localStorage.getItem('hairgator_language');
+            let hasLanguage = localStorage.getItem('hairgator_language');
             const hasSeenNotice = sessionStorage.getItem('mobileNoticeShown');
 
             console.log('🚀 startOnboarding:', { hasLanguage, hasSeenNotice });
+
+            // Firebase에서 언어 확인 (localStorage에 없으면)
+            if (!hasLanguage && typeof checkLanguageFromFirebase === 'function') {
+                console.log('🔍 Firebase에서 언어 확인 중...');
+                const firebaseLang = await checkLanguageFromFirebase();
+                if (firebaseLang) {
+                    hasLanguage = firebaseLang;
+                    localStorage.setItem('hairgator_language', firebaseLang);
+                    if (typeof setLanguage === 'function') setLanguage(firebaseLang);
+                    console.log('✅ Firebase에서 언어 복원:', firebaseLang);
+                }
+            }
 
             // Firebase에서 동의 여부 확인 (localStorage 사용 안 함)
             let hasAgreedTerms = false;
