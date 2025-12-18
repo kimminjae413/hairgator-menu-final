@@ -2922,32 +2922,115 @@ function addHairUploadModalStyles() {
         
         /* 모바일 반응형 */
         @media (max-width: 767px) {
-            .hair-upload-content {
-                max-width: 95vw;
-                margin: 10px;
-                min-width: auto;
+            .hair-upload-modal {
+                align-items: flex-start;
+                padding: 10px;
             }
-            
+
+            .hair-upload-content {
+                max-width: 100%;
+                max-height: calc(100vh - 20px);
+                margin: 0;
+                min-width: auto;
+                width: 100%;
+                border-radius: 12px;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .hair-upload-header {
+                padding: 15px;
+                position: sticky;
+                top: 0;
+                background: var(--primary-dark);
+                z-index: 10;
+            }
+
+            .hair-upload-header h3 {
+                font-size: 16px;
+            }
+
+            .hair-upload-header p {
+                font-size: 13px;
+            }
+
             .hair-upload-body {
                 flex-direction: column;
                 gap: 15px;
+                padding: 15px;
             }
-            
+
+            .style-preview-image {
+                width: 100px;
+                height: 130px;
+            }
+
             .upload-arrow {
                 transform: rotate(90deg);
+                font-size: 20px;
             }
-            
+
+            .photo-options {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .photo-option-btn {
+                padding: 15px;
+                min-height: 70px;
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            .photo-option-btn .option-icon {
+                font-size: 24px;
+            }
+
+            .customer-preview img {
+                width: 120px;
+                height: 160px;
+            }
+
             .hair-upload-actions {
                 flex-direction: column;
+                padding: 15px;
+                gap: 10px;
+                position: sticky;
+                bottom: 0;
+                background: var(--primary-dark);
+                border-top: 1px solid var(--border-color);
             }
-            
+
             .upload-action-btn {
                 width: 100%;
                 justify-content: center;
+                padding: 14px 20px;
             }
-            
-            .photo-options {
-                flex-direction: column;
+
+            .process-btn {
+                order: -1;
+            }
+        }
+
+        /* 아주 작은 모바일 */
+        @media (max-width: 400px) {
+            .hair-upload-header h3 {
+                font-size: 15px;
+            }
+
+            .style-preview-image {
+                width: 80px;
+                height: 105px;
+            }
+
+            .photo-option-btn {
+                padding: 12px;
+                min-height: 60px;
+                font-size: 13px;
+            }
+
+            .photo-option-btn .option-icon {
+                font-size: 20px;
             }
         }
     `;
