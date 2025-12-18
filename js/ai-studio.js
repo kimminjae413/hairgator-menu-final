@@ -3019,20 +3019,28 @@ class AIStudio {
     // --- 구분선을 hr 태그로 변환 (먼저 처리)
     formatted = formatted.replace(/^---+$/gm, '<hr class="recipe-divider">');
 
-    // ⭐ [External], [Internal] 섹션 헤더를 예쁜 카드로 변환 (남녀 통일)
-    formatted = formatted.replace(/\[External\]\s*\(Under\s*Zone\)/gi,
+    // ⭐ [External], [Internal] 섹션 헤더를 예쁜 카드로 변환 (커트 레시피)
+    formatted = formatted.replace(/\*?\*?\[External\]\s*\(Under\s*Zone[^)]*\)\*?\*?/gi,
       '<div class="recipe-section external"><span class="section-icon">🔵</span><span class="section-title">External</span><span class="section-desc">Under Zone</span></div>');
-    formatted = formatted.replace(/\[Internal\]\s*\(Over\s*Zone\)/gi,
+    formatted = formatted.replace(/\*?\*?\[Internal\]\s*\(Over\s*Zone[^)]*\)\*?\*?/gi,
       '<div class="recipe-section internal"><span class="section-icon">🟣</span><span class="section-title">Internal</span><span class="section-desc">Over Zone</span></div>');
 
     // 기존 한글 형식도 지원 (호환성)
-    formatted = formatted.replace(/\[엑스터널\s*부분\]\s*\([^)]*\)/gi,
+    formatted = formatted.replace(/\*?\*?\[엑스터널\s*부분\]\s*\([^)]*\)\*?\*?/gi,
       '<div class="recipe-section external"><span class="section-icon">🔵</span><span class="section-title">External</span><span class="section-desc">Under Zone</span></div>');
-    formatted = formatted.replace(/\[인터널\s*부분\]\s*\([^)]*\)/gi,
+    formatted = formatted.replace(/\*?\*?\[인터널\s*부분\]\s*\([^)]*\)\*?\*?/gi,
       '<div class="recipe-section internal"><span class="section-icon">🟣</span><span class="section-title">Internal</span><span class="section-desc">Over Zone</span></div>');
 
-    // [텍스트] 형태의 다른 섹션 헤더들
-    formatted = formatted.replace(/\[([^\]]+)\]/g, '<div class="recipe-section-simple"><span class="section-badge">$1</span></div>');
+    // ⭐ 펌 레시피 Zone 섹션 헤더 (A존/B존/C존)
+    formatted = formatted.replace(/\*?\*?\[A존\s*\/?\s*Under\s*Zone\]\*?\*?\s*\([^)]*\)?/gi,
+      '<div class="recipe-section zone-a"><span class="section-icon">🟢</span><span class="section-title">A존</span><span class="section-desc">Under Zone</span></div>');
+    formatted = formatted.replace(/\*?\*?\[B존\s*\/?\s*Mid\s*Zone\]\*?\*?\s*\([^)]*\)?/gi,
+      '<div class="recipe-section zone-b"><span class="section-icon">🟡</span><span class="section-title">B존</span><span class="section-desc">Mid Zone</span></div>');
+    formatted = formatted.replace(/\*?\*?\[C존\s*\/?\s*Over\s*Zone\]\*?\*?\s*\([^)]*\)?/gi,
+      '<div class="recipe-section zone-c"><span class="section-icon">🟣</span><span class="section-title">C존</span><span class="section-desc">Over Zone</span></div>');
+
+    // [텍스트] 형태의 다른 섹션 헤더들 (위에서 처리되지 않은 것만)
+    formatted = formatted.replace(/\*?\*?\[([^\]]+)\]\*?\*?/g, '<div class="recipe-section-simple"><span class="section-badge">$1</span></div>');
 
     // 마크다운 헤더 제거 및 변환 (##, ###, ####)
     formatted = formatted

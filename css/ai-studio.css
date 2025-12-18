@@ -2336,6 +2336,42 @@ body.ai-studio-page {
   background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
 }
 
+/* 펌 레시피 Zone 색상 */
+.recipe-section.zone-a {
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+}
+
+.recipe-section.zone-b {
+  background: linear-gradient(135deg, #FFC107 0%, #FFA000 100%);
+  color: #333;
+}
+
+.recipe-section.zone-b .section-desc {
+  color: #555;
+}
+
+.recipe-section.zone-c {
+  background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+}
+
+/* 기타 섹션 (간단 스타일) */
+.recipe-section-simple {
+  display: inline-flex;
+  align-items: center;
+  margin: 16px 0 10px 0;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.recipe-section-simple .section-badge {
+  letter-spacing: 0.5px;
+}
+
 .recipe-section .section-icon {
   font-size: 16px;
 }
@@ -2359,6 +2395,23 @@ body.light-theme .recipe-section.external {
 
 body.light-theme .recipe-section.internal {
   background: linear-gradient(135deg, #AB47BC 0%, #8E24AA 100%);
+}
+
+/* 라이트 모드 펌 레시피 Zone */
+body.light-theme .recipe-section.zone-a {
+  background: linear-gradient(135deg, #66BB6A 0%, #43A047 100%);
+}
+
+body.light-theme .recipe-section.zone-b {
+  background: linear-gradient(135deg, #FFCA28 0%, #FFB300 100%);
+}
+
+body.light-theme .recipe-section.zone-c {
+  background: linear-gradient(135deg, #AB47BC 0%, #8E24AA 100%);
+}
+
+body.light-theme .recipe-section-simple {
+  background: linear-gradient(135deg, #7986CB 0%, #9575CD 100%);
 }
 
 /* ==================== 펌 레시피 Zone 스타일 ==================== */
