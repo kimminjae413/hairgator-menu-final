@@ -900,7 +900,7 @@ const HAIRGATOR_I18N = {
     // ========== 저작권 동의 ==========
     terms: {
       title: '서비스 이용 동의',
-      subtitle: '⚠️ 저작권 및 지식재산권 안내',
+      subtitle: '<span class="warning-icon">!</span> 저작권 및 지식재산권 안내',
       content1: '헤어게이터에서 제공하는 이미지, 그래픽, 텍스트, 영상 등의 모든 콘텐츠의 소유권에 대한 저작권(프로그램등록 포함), 특허권, 상표권은 <strong>(주)에이아이더블유</strong>에서 소유하고 있으며 관련 법의 보호를 받습니다.',
       content2: '헤어게이터 콘텐츠를 사전허가 없이 유사한 서비스를 제공하는 어플리케이션 또는 온라인에 무단으로 도용하여 복사, 배포, 판매, 전시, 변조하여 사용하는 경우 <strong>민형사상의 책임</strong>이 따를 수 있으므로 이점 양지하시기 바랍니다.',
       agreeBtn: '확인 및 동의'
@@ -1771,7 +1771,7 @@ const HAIRGATOR_I18N = {
     // ========== Terms Agreement ==========
     terms: {
       title: 'Terms of Service',
-      subtitle: '⚠️ Copyright and Intellectual Property Notice',
+      subtitle: '<span class="warning-icon">!</span> Copyright and Intellectual Property Notice',
       content1: 'All content provided by HAIRGATOR, including images, graphics, text, and videos, is owned by <strong>AIW Inc.</strong> and protected by copyright (including software registration), patent, and trademark laws.',
       content2: 'Unauthorized copying, distribution, sale, display, or modification of HAIRGATOR content for similar services without prior permission may result in <strong>civil and criminal liability</strong>.',
       agreeBtn: 'Agree and Continue'
@@ -2638,7 +2638,7 @@ const HAIRGATOR_I18N = {
     // ========== 利用規約同意 ==========
     terms: {
       title: '利用規約への同意',
-      subtitle: '⚠️ 著作権および知的財産権について',
+      subtitle: '<span class="warning-icon">!</span> 著作権および知的財産権について',
       content1: 'HAIRGATORが提供する画像、グラフィック、テキスト、動画などのすべてのコンテンツの著作権（プログラム登録を含む）、特許権、商標権は<strong>AIW株式会社</strong>が所有し、関連法により保護されています。',
       content2: 'HAIRGATORのコンテンツを事前許可なく、類似サービスへの無断転載、コピー、配布、販売、展示、改変などを行った場合、<strong>民事・刑事上の責任</strong>が生じる可能性がありますのでご注意ください。',
       agreeBtn: '同意して続ける'
@@ -3508,7 +3508,7 @@ const HAIRGATOR_I18N = {
     // ========== 服务条款同意 ==========
     terms: {
       title: '服务条款同意',
-      subtitle: '⚠️ 版权及知识产权声明',
+      subtitle: '<span class="warning-icon">!</span> 版权及知识产权声明',
       content1: 'HAIRGATOR提供的所有内容，包括图片、图形、文字、视频等的著作权（包括软件登记）、专利权、商标权均归<strong>AIW株式会社</strong>所有，受相关法律保护。',
       content2: '未经事先许可，擅自将HAIRGATOR内容用于类似服务的复制、分发、销售、展示、篡改等行为，将承担<strong>民事和刑事责任</strong>，请知悉。',
       agreeBtn: '同意并继续'
@@ -4365,7 +4365,7 @@ const HAIRGATOR_I18N = {
     // ========== Đồng ý điều khoản ==========
     terms: {
       title: 'Đồng ý điều khoản sử dụng',
-      subtitle: '⚠️ Thông báo bản quyền và sở hữu trí tuệ',
+      subtitle: '<span class="warning-icon">!</span> Thông báo bản quyền và sở hữu trí tuệ',
       content1: 'Tất cả nội dung do HAIRGATOR cung cấp bao gồm hình ảnh, đồ họa, văn bản, video đều thuộc quyền sở hữu của <strong>AIW Inc.</strong> và được bảo vệ bởi luật bản quyền, bằng sáng chế và nhãn hiệu.',
       content2: 'Việc sao chép, phân phối, bán, trưng bày hoặc sửa đổi nội dung HAIRGATOR mà không có sự cho phép trước có thể dẫn đến <strong>trách nhiệm dân sự và hình sự</strong>.',
       agreeBtn: 'Đồng ý và tiếp tục'
@@ -5196,7 +5196,7 @@ const HAIRGATOR_I18N = {
     // ========== Persetujuan Ketentuan ==========
     terms: {
       title: 'Persetujuan Ketentuan Layanan',
-      subtitle: '⚠️ Pemberitahuan Hak Cipta dan Kekayaan Intelektual',
+      subtitle: '<span class="warning-icon">!</span> Pemberitahuan Hak Cipta dan Kekayaan Intelektual',
       content1: 'Semua konten yang disediakan oleh HAIRGATOR termasuk gambar, grafik, teks, dan video dimiliki oleh <strong>AIW Inc.</strong> dan dilindungi oleh hak cipta, paten, dan undang-undang merek dagang.',
       content2: 'Penyalinan, distribusi, penjualan, tampilan, atau modifikasi konten HAIRGATOR tanpa izin sebelumnya dapat mengakibatkan <strong>tanggung jawab perdata dan pidana</strong>.',
       agreeBtn: 'Setuju dan Lanjutkan'
@@ -5745,7 +5745,7 @@ const HAIRGATOR_I18N = {
     // ========== Acuerdo de Términos ==========
     terms: {
       title: 'Acuerdo de Términos',
-      subtitle: '⚠️ Aviso de Derechos de Autor y Propiedad Intelectual',
+      subtitle: '<span class="warning-icon">!</span> Aviso de Derechos de Autor y Propiedad Intelectual',
       content1: 'Todo el contenido proporcionado por HAIRGATOR, incluyendo imágenes, gráficos, textos y videos, es propiedad de <strong>AIW Inc.</strong> y está protegido por leyes de derechos de autor, patentes y marcas registradas.',
       content2: 'La copia, distribución, venta, exhibición o modificación no autorizada del contenido de HAIRGATOR puede resultar en <strong>responsabilidad civil y penal</strong>.',
       agreeBtn: 'Aceptar y Continuar'
