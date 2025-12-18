@@ -11265,33 +11265,13 @@ Target audience: Professional hair designers and stylists.`;
       }
     };
 
-    // ⭐ Image-to-Video: 입력 이미지를 referenceImages로 전달 (asset 타입)
-    // REST API에서는 image 파라미터가 아닌 referenceImages를 사용해야 함
+    // ⚠️ Image-to-Video 및 referenceImages는 Gemini API(Consumer)에서 미지원
+    // Vertex AI(Enterprise)에서만 지원됨 - text-to-video만 사용
     if (input_image && input_image.data) {
-      // referenceImages 배열에 첫 번째로 추가 (asset 타입 = 주체 이미지)
-      requestBody.instances[0].referenceImages = [{
-        image: {
-          bytesBase64Encoded: input_image.data,
-          mimeType: input_image.mimeType || 'image/png'
-        },
-        referenceType: 'asset'
-      }];
-      // referenceImages 사용 시 duration은 8초 고정
-      requestBody.parameters.durationSeconds = 8;
-      console.log('📷 Image-to-Video 모드: referenceImages (asset) 방식으로 전달');
+      console.log('⚠️ Image-to-Video는 Gemini API에서 미지원 - 무시됨');
     }
-
-    // 추가 참고 이미지 (input_image가 없을 때만 - 겹치지 않도록)
-    if (!input_image && reference_images && reference_images.length > 0) {
-      requestBody.instances[0].referenceImages = reference_images.slice(0, 3).map(img => ({
-        image: {
-          bytesBase64Encoded: img.data,
-          mimeType: img.mimeType || 'image/jpeg'
-        },
-        referenceType: 'asset'
-      }));
-      requestBody.parameters.durationSeconds = 8;
-      console.log(`🎨 참고 이미지 ${reference_images.length}개 추가`);
+    if (reference_images && reference_images.length > 0) {
+      console.log('⚠️ referenceImages는 Gemini API에서 미지원 - 무시됨');
     }
 
     // Veo 3.1 Long Running Operation 시작
@@ -11474,30 +11454,13 @@ Target audience: Professional hair designers and stylists.`;
       }
     };
 
-    // ⭐ Image-to-Video: 입력 이미지를 referenceImages로 전달 (asset 타입)
+    // ⚠️ Image-to-Video 및 referenceImages는 Gemini API(Consumer)에서 미지원
+    // Vertex AI(Enterprise)에서만 지원됨 - text-to-video만 사용
     if (input_image && input_image.data) {
-      requestBody.instances[0].referenceImages = [{
-        image: {
-          bytesBase64Encoded: input_image.data,
-          mimeType: input_image.mimeType || 'image/png'
-        },
-        referenceType: 'asset'
-      }];
-      requestBody.parameters.durationSeconds = 8;
-      console.log('📷 Image-to-Video 모드: referenceImages (asset) 방식으로 전달');
+      console.log('⚠️ Image-to-Video는 Gemini API에서 미지원 - 무시됨');
     }
-
-    // 추가 참고 이미지 (input_image가 없을 때만)
-    if (!input_image && reference_images && reference_images.length > 0) {
-      requestBody.instances[0].referenceImages = reference_images.slice(0, 3).map(img => ({
-        image: {
-          bytesBase64Encoded: img.data,
-          mimeType: img.mimeType || 'image/jpeg'
-        },
-        referenceType: 'asset'
-      }));
-      requestBody.parameters.durationSeconds = 8;
-      console.log(`🎨 참고 이미지 ${reference_images.length}개 추가`);
+    if (reference_images && reference_images.length > 0) {
+      console.log('⚠️ referenceImages는 Gemini API에서 미지원 - 무시됨');
     }
 
     // Veo 3.1 Long Running Operation 시작
