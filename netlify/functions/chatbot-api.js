@@ -10963,11 +10963,15 @@ THE HAIRSTYLE MUST BE VISUALLY IDENTICAL TO THE REFERENCE. Only the model's face
 
 // ==================== 어드민: AI 카드뉴스 생성 ====================
 async function generateCardNews(payload) {
-  const { title, pages, aspect_ratio, num_images, page_images } = payload;
+  const { title, pages, aspect_ratio, num_images, page_images, total_pages, page_numbers } = payload;
 
   const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
 
-  console.log('📰 카드뉴스 생성 시작:', { title, pageCount: pages?.length, aspect_ratio, hasPageImages: !!page_images });
+  // total_pages: 전체 페이지 수 (Canvas + AI 합계)
+  // page_numbers: AI로 생성할 페이지 번호 배열 (예: [2, 4] = 2장, 4장만 AI 생성)
+  const totalPageCount = total_pages || num_images || pages?.length || 1;
+
+  console.log('📰 카드뉴스 생성 시작:', { title, pageCount: pages?.length, aspect_ratio, totalPageCount, page_numbers });
 
   if (!ADMIN_GEMINI_KEY) {
     return {
@@ -11002,7 +11006,8 @@ async function generateCardNews(payload) {
 
       // 각 장별 내용 가져오기
       const pageContent = pages?.[i] || '';
-      const pageNum = i + 1;
+      // page_numbers가 있으면 해당 페이지 번호 사용, 없으면 순차
+      const pageNum = page_numbers?.[i] || (i + 1);
 
       // HAIRGATOR 브랜드 스타일 카드뉴스 프롬프트 (각 장별)
       const cardNewsPrompt = `Create a professional Instagram card news image for HAIRGATOR.
@@ -11026,16 +11031,16 @@ BRAND STYLE GUIDE:
 
 IMAGE REQUIREMENTS:
 - Format: ${sizeText}
-- Page indicator: ${pageNum}/${numToGenerate}
+- Page indicator: ${pageNum}/${totalPageCount}
 - NO watermarks
 - Focus on visual design, icons, illustrations
 - Any text shown MUST be copied exactly from user input above`;
 
-      // parts 구성
+      // parts 구성 (이미지는 클라이언트 Canvas에서 처리하므로 텍스트 프롬프트만 전송)
       const parts = [];
 
-      // 해당 장의 참고 이미지가 있으면 추가
-      const pageImageData = page_images?.[pageNum];
+      // 기존 page_images 처리 제거 - 이제 Canvas에서 처리
+      const pageImageData = null; // page_images?.[pageNum]; // 비활성화
       if (pageImageData && pageImageData.data) {
         // 업로드 이미지를 그대로 유지하면서 카드뉴스 프레임 추가
         const imageContextPrompt = `⚠️ CRITICAL RULE - DO NOT MODIFY THE UPLOADED IMAGE:

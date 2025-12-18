@@ -4184,7 +4184,173 @@
         // 생성된 카드뉴스 이미지 저장 (일괄 다운로드용)
         let generatedCardNewsImages = [];
 
-        // 카드뉴스 생성
+        // ⭐ Canvas로 카드뉴스 생성 (이미지 있는 페이지용)
+        async function generateCardNewsWithCanvas(pageNum, totalPages, title, content, imageData, ratio) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // 비율에 따른 캔버스 크기
+                const sizes = {
+                    '1:1': { width: 1080, height: 1080 },
+                    '4:5': { width: 1080, height: 1350 },
+                    '9:16': { width: 1080, height: 1920 }
+                };
+                const size = sizes[ratio] || sizes['1:1'];
+                canvas.width = size.width;
+                canvas.height = size.height;
+
+                // 배경 그라데이션
+                const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                gradient.addColorStop(0, '#ffffff');
+                gradient.addColorStop(0.5, '#fff5f8');
+                gradient.addColorStop(1, '#ffe4ec');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // 장식 요소 - 상단 핑크 바
+                ctx.fillStyle = '#E91E63';
+                ctx.fillRect(0, 0, canvas.width, 8);
+
+                // 장식 요소 - 모서리 장식
+                ctx.fillStyle = 'rgba(233, 30, 99, 0.1)';
+                ctx.beginPath();
+                ctx.arc(0, 0, 150, 0, Math.PI * 0.5);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(canvas.width, canvas.height, 200, Math.PI, Math.PI * 1.5);
+                ctx.fill();
+
+                // 이미지 로드 및 배치
+                const img = new Image();
+                img.onload = () => {
+                    // 이미지 영역 계산 (중앙, 여백 확보)
+                    const padding = 60;
+                    const titleHeight = title ? 120 : 40;
+                    const contentHeight = content ? 160 : 40;
+                    const pageIndicatorHeight = 60;
+
+                    const imgAreaTop = titleHeight + padding;
+                    const imgAreaHeight = canvas.height - imgAreaTop - contentHeight - pageIndicatorHeight - padding;
+                    const imgAreaWidth = canvas.width - (padding * 2);
+
+                    // 이미지 비율 유지하며 맞추기
+                    const imgRatio = img.width / img.height;
+                    const areaRatio = imgAreaWidth / imgAreaHeight;
+
+                    let drawWidth, drawHeight, drawX, drawY;
+                    if (imgRatio > areaRatio) {
+                        drawWidth = imgAreaWidth;
+                        drawHeight = imgAreaWidth / imgRatio;
+                    } else {
+                        drawHeight = imgAreaHeight;
+                        drawWidth = imgAreaHeight * imgRatio;
+                    }
+                    drawX = (canvas.width - drawWidth) / 2;
+                    drawY = imgAreaTop + (imgAreaHeight - drawHeight) / 2;
+
+                    // 이미지 그림자
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 10;
+
+                    // 이미지 프레임 (흰색 테두리)
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(drawX - 10, drawY - 10, drawWidth + 20, drawHeight + 20);
+
+                    // 그림자 리셋
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+
+                    // 이미지 그리기
+                    ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+
+                    // 이미지 테두리
+                    ctx.strokeStyle = '#E91E63';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(drawX - 10, drawY - 10, drawWidth + 20, drawHeight + 20);
+
+                    // 제목 텍스트
+                    if (title) {
+                        ctx.fillStyle = '#1a1a1a';
+                        ctx.font = 'bold 48px "Noto Sans KR", sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        // 긴 제목 줄바꿈 처리
+                        const maxWidth = canvas.width - 120;
+                        const titleY = 70;
+                        wrapText(ctx, title, canvas.width / 2, titleY, maxWidth, 56);
+                    }
+
+                    // 내용 텍스트
+                    if (content) {
+                        ctx.fillStyle = '#333333';
+                        ctx.font = '32px "Noto Sans KR", sans-serif';
+                        ctx.textAlign = 'center';
+
+                        const contentY = canvas.height - contentHeight - pageIndicatorHeight + 20;
+                        const maxWidth = canvas.width - 100;
+                        wrapText(ctx, content, canvas.width / 2, contentY, maxWidth, 42);
+                    }
+
+                    // 페이지 번호
+                    ctx.fillStyle = '#E91E63';
+                    ctx.font = 'bold 28px "Noto Sans KR", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`${pageNum} / ${totalPages}`, canvas.width / 2, canvas.height - 30);
+
+                    // HAIRGATOR 워터마크
+                    ctx.fillStyle = 'rgba(233, 30, 99, 0.3)';
+                    ctx.font = 'bold 18px Arial';
+                    ctx.textAlign = 'right';
+                    ctx.fillText('HAIRGATOR', canvas.width - 30, canvas.height - 30);
+
+                    resolve(canvas.toDataURL('image/png'));
+                };
+
+                img.onerror = () => {
+                    console.error('이미지 로드 실패');
+                    resolve(null);
+                };
+
+                // Base64 이미지 로드
+                img.src = imageData.preview || `data:${imageData.mimeType};base64,${imageData.data}`;
+            });
+        }
+
+        // 텍스트 줄바꿈 함수
+        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split('');
+            let line = '';
+            let testLine = '';
+            let lineCount = 0;
+            const maxLines = 3;
+
+            for (let i = 0; i < words.length; i++) {
+                testLine = line + words[i];
+                const metrics = ctx.measureText(testLine);
+
+                if (metrics.width > maxWidth && line !== '') {
+                    ctx.fillText(line, x, y + (lineCount * lineHeight));
+                    line = words[i];
+                    lineCount++;
+                    if (lineCount >= maxLines) {
+                        line = line.slice(0, -3) + '...';
+                        ctx.fillText(line, x, y + (lineCount * lineHeight));
+                        return;
+                    }
+                } else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, x, y + (lineCount * lineHeight));
+        }
+
+        // 카드뉴스 생성 (하이브리드: Canvas + AI)
         async function generateCardNews() {
             const title = document.getElementById('cardNewsTitle').value.trim();
             const count = cardNewsPageNum;
@@ -4204,51 +4370,78 @@
 
             const btn = document.getElementById('generateCardNewsBtn');
             btn.disabled = true;
-            btn.innerHTML = '<span class="loading-spinner"></span>생성 중... (약 10-30초 소요)';
+            btn.innerHTML = '<span class="loading-spinner"></span>생성 중...';
 
             const ratio = document.getElementById('cardNewsRatio').value;
 
             try {
-                // 각 장별 이미지 수집
-                const pageImages = {};
+                const generatedImages = [];
+                const aiPages = []; // AI로 생성할 페이지들
+                const aiPageIndices = []; // AI 페이지 인덱스
+
+                // 1단계: 이미지 있는 페이지는 Canvas로 즉시 생성
                 for (let i = 1; i <= count; i++) {
                     if (cardNewsPageImages[i]) {
-                        pageImages[i] = cardNewsPageImages[i];
+                        btn.innerHTML = `<span class="loading-spinner"></span>Canvas 처리 중... (${i}/${count})`;
+                        const canvasResult = await generateCardNewsWithCanvas(
+                            i, count, title, pages[i - 1], cardNewsPageImages[i], ratio
+                        );
+                        if (canvasResult) {
+                            generatedImages[i - 1] = { url: canvasResult, pageNum: i };
+                        }
+                    } else {
+                        // AI로 생성할 페이지 수집
+                        aiPages.push({ pageNum: i, content: pages[i - 1] });
+                        aiPageIndices.push(i - 1);
                     }
                 }
 
-                const payload = {
-                    title: title,
-                    pages: pages,
-                    aspect_ratio: ratio,
-                    num_images: count,
-                    page_images: pageImages
-                };
+                // 2단계: 이미지 없는 페이지는 AI로 생성
+                if (aiPages.length > 0) {
+                    btn.innerHTML = `<span class="loading-spinner"></span>AI 생성 중... (${aiPages.length}장)`;
 
-                const response = await fetch('/.netlify/functions/chatbot-api', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'generate_cardnews',
-                        payload: payload
-                    })
-                });
+                    const response = await fetch('/.netlify/functions/chatbot-api', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'generate_cardnews',
+                            payload: {
+                                title: title,
+                                pages: aiPages.map(p => p.content),
+                                aspect_ratio: ratio,
+                                num_images: aiPages.length,
+                                total_pages: count,
+                                page_numbers: aiPages.map(p => p.pageNum)
+                            }
+                        })
+                    });
 
-                const result = await response.json();
+                    const result = await response.json();
 
-                if (result.success && result.data && result.data.images) {
-                    generatedCardNewsImages = result.data.images; // 일괄 다운로드용 저장
-                    displayCardNewsResults(result.data.images);
-                    showToast(`${result.data.images.length}개 카드뉴스 생성 완료!`);
-
-                    // 히스토리에 저장
-                    saveCardNewsHistory(title, pages, result.data.images);
-
-                    // 키워드 추천 요청
-                    generateKeywords(title, pages);
-                } else {
-                    throw new Error(result.error || '카드뉴스 생성 실패');
+                    if (result.success && result.data && result.data.images) {
+                        // AI 결과를 올바른 위치에 배치
+                        result.data.images.forEach((img, idx) => {
+                            const originalIndex = aiPageIndices[idx];
+                            generatedImages[originalIndex] = img;
+                        });
+                    } else {
+                        throw new Error(result.error || 'AI 카드뉴스 생성 실패');
+                    }
                 }
+
+                // 결과 정리 (빈 슬롯 제거)
+                const finalImages = generatedImages.filter(img => img);
+
+                generatedCardNewsImages = finalImages;
+                displayCardNewsResults(finalImages);
+                showToast(`${finalImages.length}개 카드뉴스 생성 완료!`);
+
+                // 히스토리에 저장
+                saveCardNewsHistory(title, pages, finalImages);
+
+                // 키워드 추천 요청
+                generateKeywords(title, pages);
+
             } catch (error) {
                 console.error('카드뉴스 생성 오류:', error);
                 showToast('생성 실패: ' + error.message);
