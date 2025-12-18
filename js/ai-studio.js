@@ -2042,11 +2042,15 @@ class AIStudio {
       thumb.classList.toggle('active', i === index);
     });
 
-    // 선택된 썸네일이 보이도록 스크롤
+    // 선택된 썸네일이 보이도록 스크롤 (컨테이너 내부에서만)
     const thumbnailsContainer = document.getElementById('diagram-thumbnails');
     const activeThumb = thumbnailsContainer?.querySelector('.diagram-thumb-item.active');
     if (activeThumb && thumbnailsContainer) {
-      activeThumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      // 페이지 전체 스크롤 방지 - 컨테이너 내부 스크롤만 조정
+      const containerRect = thumbnailsContainer.getBoundingClientRect();
+      const thumbRect = activeThumb.getBoundingClientRect();
+      const scrollLeft = thumbnailsContainer.scrollLeft + (thumbRect.left - containerRect.left) - (containerRect.width / 2) + (thumbRect.width / 2);
+      thumbnailsContainer.scrollTo({ left: scrollLeft, behavior: 'smooth' });
     }
 
     // 네비게이션 버튼 상태 업데이트
