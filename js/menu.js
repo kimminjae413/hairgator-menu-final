@@ -429,7 +429,7 @@ const FEMALE_CATEGORIES = [
     {
         id: 'h-length',
         name: 'H LENGTH',
-        description: 'H 길이는 귀선~베리숏구간의 숏헤어로, 픽시·샤그 숏·허쉬 숏 등이 어울려 활동적이고 개성 있는 스타일을 완성합니다.'
+        description: 'H 길이는 귀선~베리숏구간의 숏헤어로, 활동적이고 개성 있는 스타일을 완성합니다.'
     }
 ];
 
