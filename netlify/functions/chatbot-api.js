@@ -6650,74 +6650,41 @@ ${recipeTexts}
 
 ## ✂️ 커팅 레시피
 
-[External] (Under Zone / A,B Zone)
+**[External] (Under Zone / A,B Zone)**
 
-### 📍 STEP 1. 아웃라인 설정
+각 단계를 하나의 완전한 서술형 문장으로 작성하세요. 번호를 붙이고 문장 끝에 마침표를 찍습니다.
 
-- 📐 **섹션**: (섹션 타입 + 설명)
-- 📐 **리프팅**: (L코드 + 각도 + 쉬운 설명)
-- 🔄 **디렉션**: (D코드 + 방향 설명)
-- ✂️ **기법**: (기법명 + 효과 설명)
-- 💡 **포인트**: (이 단계의 핵심 목적)
+**1단계**: 네이프(Nape) 부분은 수평 섹션(HS, Horizontal Section)으로 나눈 뒤, 리프팅 L0(0도, 자연 낙하 상태)에서 고정 디자인라인(같은 길이 유지)으로 아웃라인을 설정한다.
 
----
+**2단계**: 백(Back) 영역은 후대각 섹션(DBS, Diagonal-Backward Section)으로 슬라이스하고, 리프팅 L3(67.5도, 두피에서 살짝 들어올림)와 디렉션 D4(온베이스, 측면 방향)로 가이드를 이어 층을 형성한다.
 
-### 📍 STEP 2. 사이드 & 프레임
-
-- 📐 **섹션**:
-- 📐 **리프팅**:
-- 🔄 **디렉션**:
-- ✂️ **기법**:
-- 💡 **포인트**:
+**3단계**: 사이드(Side) 부분은 수직 섹션(VS, Vertical Section)으로 나눈 뒤, 디렉션 D8(오버디렉션, 뒤쪽으로 당김)을 적용하여 앞이 길어지는 A라인으로 얼굴을 감싸도록 커팅한다.
 
 ---
 
-[Internal] (Over Zone / C Zone)
+**[Internal] (Over Zone / C Zone)**
 
-### 📍 STEP 3. 인터널 레이어 (볼륨층)
+**4단계**: 크라운(Crown) 영역은 파이 섹션(Pie Section, 부채꼴 모양)으로 나눈 뒤, 리프팅 L6(135도, 두피에서 높이 들어올림)와 이동 디자인라인(점점 길이 변화)으로 볼륨층을 형성한다.
 
-- 📐 **섹션**:
-- 📐 **리프팅**:
-- 🔄 **디렉션**:
-- ✂️ **기법**:
-- 💡 **포인트**:
+**5단계**: 탑(Top) 부분은 전대각 섹션(DFS, Diagonal-Forward Section)으로 슬라이스하고, 리프팅 L4(90도, 두피와 수직)로 균일한 레이어를 만들어 자연스러운 움직임을 부여한다.
 
----
-
-### 📍 STEP 4. 탑 & 크라운
-
-- 📐 **섹션**:
-- 📐 **리프팅**:
-- 🔄 **디렉션**:
-- ✂️ **기법**:
-- 💡 **포인트**:
-
----
-
-### 📍 STEP 5. 프린지 (앞머리가 있는 경우)
-
-- 📐 **섹션**:
-- 📐 **리프팅**:
-- 🔄 **디렉션**:
-- ✂️ **기법**:
-- 💡 **포인트**:
+**6단계** (앞머리가 있는 경우): 프린지(Fringe) 영역은 수평 섹션(HS)으로 나눈 뒤, 리프팅 L0~L2(0~45도)로 원하는 질감에 맞게 포인트 커팅으로 마무리한다.
 
 ---
 
 ## 💇 마무리 & 스타일링
 
-- **텍스처링**: (질감 처리 - 포인트컷, 슬라이싱 등)
-- **드라이 방향**: (볼륨 연출 방향)
-- **추천 제품**: (왁스/무스/오일 등)
+텍스처링은 모발 끝부분을 포인트컷(Point Cut)으로 처리하여 가벼운 질감을 연출한다. 드라이 시에는 뿌리 방향으로 볼륨을 잡아주고, 왁스나 오일로 자연스러운 광택을 더한다.
 
 ---
 
 ### ⚠️ 필수 규칙:
-1. 반드시 [External] (Under Zone / A,B Zone)과 [Internal] (Over Zone / C Zone)으로 구분
-2. 각 STEP마다 "---" 구분선 사용
-3. 이모지(📐🔄✂️💡)로 항목 구분
-4. 모든 전문용어 뒤에 괄호()로 쉬운 설명
-5. 스타일명은 "${styleName}"으로 반드시 표기`
+1. 반드시 **[External] (Under Zone / A,B Zone)**과 **[Internal] (Over Zone / C Zone)**으로 구분
+2. 각 단계는 **완전한 서술형 문장**으로 작성 (줄임말/약어 금지)
+3. 단계 번호: **1단계**, **2단계**, **3단계**... 형식
+4. 모든 전문용어 뒤에 괄호()로 쉬운 설명 (예: 수평 섹션(HS, Horizontal Section))
+5. 각 문장은 "~한다", "~형성한다", "~커팅한다" 등 서술형 종결어미 사용
+6. 스타일명은 "${styleName}"으로 반드시 표기`
             }]
           }],
           tools: [{
@@ -6765,6 +6732,160 @@ ${recipeTexts}
   } catch (error) {
     console.error('❌ 레시피 생성 실패:', error);
     return '레시피 생성 중 오류가 발생했습니다.';
+  }
+}
+
+/**
+ * Gemini로 맞춤 펌 레시피 생성 - 스타일 분석 기반 + 서술형 출력
+ */
+async function generateCustomPermRecipe(params56, referenceRecipe, permType, geminiKey) {
+  try {
+    const lengthName = params56.length_category || 'D Length';
+    const permTypeName = params56.perm_type || permType || '로드 (S컬)';
+
+    console.log('📚 펌 레시피 서술형 변환 중...');
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `당신은 헤어 펌 전문가입니다.
+
+## 📖 펌 핵심 용어 정의
+
+### 천체축 각도 (Celestial Axis Angle)
+- 0도: 머리를 들지 않고 자연스럽게 떨어뜨린 상태
+- 45도: 두피에서 약 45도 들어올림
+- 67.5도: 두피에서 약 70도 들어올림 (손가락 두 마디 정도 띄움)
+- 90도: 두피와 완전히 수직으로 들어올림
+- 135도: 수직을 넘어 반대쪽으로 45도 더 넘김
+
+### 다이렉션 (Direction)
+- D0: 머리 정중앙 (앞이마 중앙선)
+- D4: 눈꼬리 위쪽 (얼굴 측면)
+- D6: 귀 바로 위쪽
+- D7~D8: 뒤통수 방향
+
+### 베이스 유형
+- 온 베이스(On Base): 로드가 베이스 위에 정확히 위치, 뿌리 볼륨 최대
+- 오프 베이스(Off Base): 로드가 베이스 아래로 내려감, 자연스러운 웨이브
+- 하프 오프 베이스(Half Off Base): 중간 위치, 적당한 볼륨
+
+### 와인딩/프레스
+- 와인딩(Winding): 로드에 모발을 감아 컬 형성
+- 프레스(Press): 열을 가해 모발 펴기 (매직)
+- 트위스트(Twist): 비틀면서 와인딩하여 자연스러운 컬
+
+## 🎯 고객 요청 펌 스타일
+
+### 기본 정보
+- **기장**: ${lengthName}
+- **펌 타입**: ${permTypeName}
+
+### 참고 레시피 원본
+${referenceRecipe || '참고 레시피 없음'}
+
+---
+
+## ⭐⭐⭐ 출력 형식 (반드시 준수!) ⭐⭐⭐
+
+아래 형식으로 펌 레시피를 서술형 문장으로 작성하세요.
+**각 단계는 완전한 한국어 문장으로 작성합니다.**
+
+---
+
+## 🌀 ${permTypeName} 펌 레시피
+
+**스타일 정보**
+- 기장: ${lengthName}
+- 펌 타입: ${permTypeName}
+
+---
+
+**[A존 / Under Zone]** (네이프~백 사이드 영역)
+
+**1단계**: 네이프(Nape) 부분은 연화 처리 후 천체축 각도 0도(자연 낙하 상태)에서 수평 섹션으로 나눈 뒤, 로드 18mm를 활용하여 오프 베이스(Off Base)로 와인딩한다.
+
+**2단계**: 백 사이드(Back Side) 부분은 천체축 각도 45도(두피에서 살짝 들어올림)에서 다이렉션 D7 기점으로 당기며, 로드 20mm로 하프 오프 베이스(Half Off Base) 와인딩한다.
+
+---
+
+**[B존 / Mid Zone]** (사이드~크라운 영역)
+
+**3단계**: 사이드(Side) 부분은 천체축 각도 67.5도(손가락 두 마디 정도 띄움)에서 다이렉션 D6 기점, 로드 22mm를 활용하여 온 베이스(On Base)로 와인딩한다.
+
+**4단계**: 크라운(Crown) 영역은 천체축 각도 90도(두피와 수직)에서 파이 섹션으로 나눈 뒤, 로드 24mm로 온 베이스 와인딩하여 볼륨을 형성한다.
+
+---
+
+**[C존 / Over Zone]** (탑~프론트 영역)
+
+**5단계**: 탑(Top) 부분은 천체축 각도 90도에서 다이렉션 D4 기점으로 끌어당겨, 로드 26mm를 활용하여 온 베이스로 볼륨 와인딩한다.
+
+**6단계** (프린지가 있는 경우): 프린지(Fringe) 영역은 천체축 각도 45도에서 수평 섹션으로 나눈 뒤, 셋팅롤 또는 작은 로드로 자연스러운 C컬을 형성한다.
+
+---
+
+**💡 시술 포인트**
+
+- 연화 시간은 모질에 따라 10~15분 조절한다.
+- 중간 처리(2제) 후 충분히 방치하여 컬 고정력을 높인다.
+- 마무리 시 트리트먼트로 모발 손상을 최소화한다.
+
+---
+
+### ⚠️ 필수 규칙:
+1. 반드시 **[A존 / Under Zone]**, **[B존 / Mid Zone]**, **[C존 / Over Zone]**으로 구분
+2. 각 단계는 **완전한 서술형 문장**으로 작성 (약어/슬래시 표기 금지)
+3. 단계 번호: **1단계**, **2단계**, **3단계**... 형식
+4. 모든 전문용어 뒤에 괄호()로 쉬운 설명 추가
+5. 각 문장은 "~한다", "~형성한다", "~와인딩한다" 등 서술형 종결어미 사용
+6. 참고 레시피의 수치(각도, 로드 크기, 베이스 유형 등)를 최대한 활용`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.5,
+            maxOutputTokens: 4000,
+            thinkingConfig: {
+              thinkingBudget: 0
+            }
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Perm Recipe API Error:', response.status, errorText);
+      throw new Error(`Perm recipe generation failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    let recipeText = '';
+    const parts = data.candidates?.[0]?.content?.parts || [];
+    for (const part of parts) {
+      if (part.text) {
+        recipeText += part.text;
+      }
+    }
+
+    if (!recipeText) {
+      console.error('❌ 펌 레시피 텍스트 없음');
+      throw new Error('펌 레시피 텍스트를 찾을 수 없습니다');
+    }
+
+    console.log('✅ 펌 레시피 서술형 변환 완료');
+    console.log(`📝 펌 레시피 길이: ${recipeText.length}자`);
+    return recipeText;
+
+  } catch (error) {
+    console.error('❌ 펌 레시피 생성 실패:', error);
+    // 실패 시 원본 레시피 반환
+    return referenceRecipe || '레시피 생성 중 오류가 발생했습니다.';
   }
 }
 
@@ -9286,10 +9407,20 @@ async function regeneratePermRecipeWithStyle(payload, geminiKey) {
     const bestStyle = targetStyles[0];
     console.log(`🎯 선택된 펌 스타일: ${bestStyle.styleId}`);
 
-    // 레시피 포맷팅
-    let recipeText = bestStyle.textRecipe || '';
-    if (recipeText) {
-      recipeText = formatPermRecipe(recipeText);
+    // ⭐ AI 서술형 펌 레시피 생성 (Gemini 활용)
+    const originalRecipe = bestStyle.textRecipe || '';
+    let recipeText = '';
+
+    if (originalRecipe && geminiKey) {
+      try {
+        recipeText = await generateCustomPermRecipe(params56, originalRecipe, permInfo.name, geminiKey);
+      } catch (err) {
+        console.error('❌ AI 펌 레시피 생성 실패, 원본 사용:', err.message);
+        recipeText = formatPermRecipe(originalRecipe);
+      }
+    } else if (originalRecipe) {
+      // Gemini 키 없으면 기존 포맷팅만
+      recipeText = formatPermRecipe(originalRecipe);
     }
 
     // 6. 결과 반환
