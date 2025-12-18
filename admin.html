@@ -4578,10 +4578,18 @@
         async function generateCaptionAndKeywords(title, pages) {
             const captionDiv = document.getElementById('cardNewsCaption');
             const keywordsDiv = document.getElementById('cardNewsKeywords');
+
+            if (!captionDiv || !keywordsDiv) {
+                console.error('캡션/키워드 DOM 요소를 찾을 수 없음');
+                return;
+            }
+
             captionDiv.innerHTML = '<span style="color: #888;">캡션 생성 중...</span>';
             keywordsDiv.innerHTML = '<span style="color: #888;">해시태그 생성 중...</span>';
 
             try {
+                console.log('📝 캡션 생성 요청:', { title, pagesCount: pages.length });
+
                 const response = await fetch('/.netlify/functions/chatbot-api', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -4592,26 +4600,28 @@
                 });
 
                 const result = await response.json();
+                console.log('📝 캡션 생성 응답:', result);
 
                 if (result.success && result.data) {
                     if (result.data.caption) {
                         captionDiv.innerHTML = result.data.caption;
                     } else {
-                        captionDiv.innerHTML = '<span style="color: #888;">캡션 생성 실패</span>';
+                        captionDiv.innerHTML = '<span style="color: #888;">캡션이 비어있음</span>';
                     }
                     if (result.data.keywords) {
                         keywordsDiv.innerHTML = result.data.keywords;
                     } else {
-                        keywordsDiv.innerHTML = '<span style="color: #888;">해시태그 생성 실패</span>';
+                        keywordsDiv.innerHTML = '<span style="color: #888;">해시태그가 비어있음</span>';
                     }
                 } else {
-                    captionDiv.innerHTML = '<span style="color: #888;">캡션 생성 실패</span>';
+                    console.error('캡션 생성 실패:', result.error);
+                    captionDiv.innerHTML = `<span style="color: #888;">캡션 생성 실패: ${result.error || '알 수 없는 오류'}</span>`;
                     keywordsDiv.innerHTML = '<span style="color: #888;">해시태그 생성 실패</span>';
                 }
             } catch (error) {
                 console.error('캡션/키워드 생성 오류:', error);
-                captionDiv.innerHTML = '<span style="color: #888;">캡션 생성 실패</span>';
-                keywordsDiv.innerHTML = '<span style="color: #888;">해시태그 생성 실패</span>';
+                captionDiv.innerHTML = `<span style="color: #888;">캡션 생성 오류: ${error.message}</span>`;
+                keywordsDiv.innerHTML = '<span style="color: #888;">해시태그 생성 오류</span>';
             }
         }
 

@@ -11329,12 +11329,14 @@ ${allContent}
     );
 
     const data = await response.json();
+    console.log('📝 캡션 API 응답:', JSON.stringify(data).substring(0, 500));
 
     if (data.error) {
       throw new Error(data.error.message || 'API 오류');
     }
 
     const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    console.log('📝 텍스트 응답:', textResponse.substring(0, 300));
 
     // JSON 파싱 시도
     let caption = '';
@@ -11347,12 +11349,18 @@ ${allContent}
         const parsed = JSON.parse(jsonMatch[0]);
         caption = parsed.caption || '';
         keywords = parsed.keywords || '';
+      } else {
+        // JSON 없으면 텍스트 그대로 캡션으로 사용
+        caption = textResponse;
       }
     } catch (e) {
       // JSON 파싱 실패시 텍스트 그대로 사용
       console.error('캡션 JSON 파싱 실패:', e);
       caption = textResponse;
     }
+
+    console.log('📝 파싱된 캡션:', caption.substring(0, 100));
+    console.log('📝 파싱된 키워드:', keywords.substring(0, 100));
 
     return {
       statusCode: 200,
