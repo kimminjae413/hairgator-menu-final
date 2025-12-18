@@ -2437,7 +2437,9 @@ function addHairTryResultStyles() {
             border-radius: 20px;
             max-width: 90vw;
             max-height: 90vh;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
             box-shadow: 0 20px 60px rgba(124, 77, 255, 0.3);
             border: 1px solid rgba(124, 77, 255, 0.3);
         }
