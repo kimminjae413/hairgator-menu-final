@@ -11218,13 +11218,19 @@ async function generateCardNewsKeywords(payload) {
   }
 }
 
-// ==================== 어드민: Veo 영상 생성 시작 (비동기) ====================
+// ==================== 어드민: Veo 3.1 영상 생성 시작 (비동기, Image-to-Video 지원) ====================
 async function generateVideoStart(payload) {
-  const { prompt, duration, aspect_ratio, reference_images } = payload;
+  const { prompt, duration, aspect_ratio, reference_images, input_image } = payload;
 
   const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
 
-  console.log('🎬 영상 생성 시작 요청:', { prompt: prompt?.substring(0, 50), duration, aspect_ratio });
+  console.log('🎬 영상 생성 시작 요청:', {
+    prompt: prompt?.substring(0, 50),
+    duration,
+    aspect_ratio,
+    hasInputImage: !!input_image,
+    refImageCount: reference_images?.length || 0
+  });
 
   if (!ADMIN_GEMINI_KEY) {
     return {
@@ -11248,7 +11254,7 @@ async function generateVideoStart(payload) {
 Style: Premium, professional Korean hair salon atmosphere. Clean, modern interior with soft lighting.
 Target audience: Professional hair designers and stylists.`;
 
-    // Veo 2.0 API 요청 구성 (참고 이미지 미지원)
+    // Veo 3.1 API 요청 구성
     const requestBody = {
       instances: [{
         prompt: enhancedPrompt
@@ -11259,14 +11265,29 @@ Target audience: Professional hair designers and stylists.`;
       }
     };
 
-    // 참고: Veo 2.0은 referenceImages를 지원하지 않음
-    if (reference_images && reference_images.length > 0) {
-      console.log('⚠️ Veo 2.0은 참고 이미지를 지원하지 않습니다. 프롬프트만 사용합니다.');
+    // ⭐ Image-to-Video: 입력 이미지가 있으면 첫 프레임으로 사용
+    if (input_image && input_image.data) {
+      requestBody.instances[0].image = {
+        imageBytes: input_image.data,
+        mimeType: input_image.mimeType || 'image/png'
+      };
+      console.log('📷 Image-to-Video 모드: 입력 이미지를 첫 프레임으로 사용');
     }
 
-    // Veo 2.0 Long Running Operation 시작
+    // 참고 이미지 추가 (스타일 일관성용, 최대 3개)
+    if (reference_images && reference_images.length > 0) {
+      requestBody.instances[0].referenceImages = reference_images.slice(0, 3).map(img => ({
+        image: {
+          bytesBase64Encoded: img.data,
+          mimeType: img.mimeType || 'image/jpeg'
+        }
+      }));
+      console.log(`🎨 참고 이미지 ${reference_images.length}개 추가`);
+    }
+
+    // Veo 3.1 Long Running Operation 시작
     const startResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/veo-2.0-generate-001:predictLongRunning?key=${ADMIN_GEMINI_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning?key=${ADMIN_GEMINI_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -11397,13 +11418,19 @@ async function generateVideoStatus(payload) {
   }
 }
 
-// ==================== 어드민: Veo 3.1 영상 생성 (레거시) ====================
+// ==================== 어드민: Veo 3.1 영상 생성 (Image-to-Video 지원) ====================
 async function generateVideo(payload) {
-  const { prompt, duration, aspect_ratio, reference_images } = payload;
+  const { prompt, duration, aspect_ratio, reference_images, input_image } = payload;
 
   const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
 
-  console.log('🎬 영상 생성 시작:', { prompt: prompt?.substring(0, 50), duration, aspect_ratio, refImageCount: reference_images?.length || 0 });
+  console.log('🎬 영상 생성 시작:', {
+    prompt: prompt?.substring(0, 50),
+    duration,
+    aspect_ratio,
+    hasInputImage: !!input_image,
+    refImageCount: reference_images?.length || 0
+  });
 
   if (!ADMIN_GEMINI_KEY) {
     return {
@@ -11438,7 +11465,16 @@ Target audience: Professional hair designers and stylists.`;
       }
     };
 
-    // 참고 이미지가 있으면 추가 (최대 3개)
+    // ⭐ Image-to-Video: 입력 이미지가 있으면 첫 프레임으로 사용
+    if (input_image && input_image.data) {
+      requestBody.instances[0].image = {
+        imageBytes: input_image.data,
+        mimeType: input_image.mimeType || 'image/png'
+      };
+      console.log('📷 Image-to-Video 모드: 입력 이미지를 첫 프레임으로 사용');
+    }
+
+    // 참고 이미지가 있으면 추가 (스타일/캐릭터 일관성용, 최대 3개)
     if (reference_images && reference_images.length > 0) {
       requestBody.instances[0].referenceImages = reference_images.slice(0, 3).map(img => ({
         image: {
@@ -11446,6 +11482,7 @@ Target audience: Professional hair designers and stylists.`;
           mimeType: img.mimeType || 'image/jpeg'
         }
       }));
+      console.log(`🎨 참고 이미지 ${reference_images.length}개 추가`);
     }
 
     // Veo 3.1 Long Running Operation 시작
