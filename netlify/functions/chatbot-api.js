@@ -11223,7 +11223,7 @@ BRAND STYLE:
 
     // gemini-2.5-flash-image 모델 사용 (최신 이미지 생성 모델)
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-image-generation:generateContent?key=${ADMIN_GEMINI_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${ADMIN_GEMINI_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
