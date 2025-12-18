@@ -4411,32 +4411,53 @@
             });
         }
 
-        // 텍스트 줄바꿈 함수 (제한 없음)
-        function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 10) {
-            const words = text.split('');
-            let line = '';
-            let testLine = '';
+        // 텍스트 줄바꿈 함수 (줄바꿈 문자 지원)
+        function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 15) {
+            // 먼저 문단(\n)으로 분리
+            const paragraphs = text.split('\n');
             let lineCount = 0;
 
-            for (let i = 0; i < words.length; i++) {
-                testLine = line + words[i];
-                const metrics = ctx.measureText(testLine);
+            for (const paragraph of paragraphs) {
+                if (lineCount >= maxLines) {
+                    ctx.fillText('...', x, y + (lineCount * lineHeight));
+                    return lineCount + 1;
+                }
 
-                if (metrics.width > maxWidth && line !== '') {
-                    ctx.fillText(line, x, y + (lineCount * lineHeight));
-                    line = words[i];
+                // 빈 문단은 빈 줄 추가
+                if (paragraph.trim() === '') {
                     lineCount++;
-                    if (lineCount >= maxLines) {
-                        line = line.slice(0, -3) + '...';
+                    continue;
+                }
+
+                // 문단 내 글자 단위로 줄바꿈
+                const chars = paragraph.split('');
+                let line = '';
+
+                for (let i = 0; i < chars.length; i++) {
+                    const testLine = line + chars[i];
+                    const metrics = ctx.measureText(testLine);
+
+                    if (metrics.width > maxWidth && line !== '') {
                         ctx.fillText(line, x, y + (lineCount * lineHeight));
-                        return lineCount + 1;
+                        line = chars[i];
+                        lineCount++;
+                        if (lineCount >= maxLines) {
+                            ctx.fillText('...', x, y + (lineCount * lineHeight));
+                            return lineCount + 1;
+                        }
+                    } else {
+                        line = testLine;
                     }
-                } else {
-                    line = testLine;
+                }
+
+                // 문단의 마지막 줄 출력
+                if (line) {
+                    ctx.fillText(line, x, y + (lineCount * lineHeight));
+                    lineCount++;
                 }
             }
-            ctx.fillText(line, x, y + (lineCount * lineHeight));
-            return lineCount + 1;
+
+            return lineCount;
         }
 
         // 카드뉴스 생성 (하이브리드: Canvas + AI 이미지 프롬프트)
