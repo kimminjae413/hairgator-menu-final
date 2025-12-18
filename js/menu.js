@@ -424,7 +424,7 @@ const FEMALE_CATEGORIES = [
     {
         id: 'g-length',
         name: 'G LENGTH',
-        description: 'G 길이는 턱선과 같은 높이의 미니 보브로, 클래식 턱선 보브·미니 레이어 보브가 잘 맞아 똘똘하고 미니멀한 무드를 줍니다.'
+        description: 'G 길이는 턱선위 높이의 미니 보브로, 클래식 턱선 보브·미니 레이어 보브가 잘 맞아 똘똘하고 미니멀한 무드를 줍니다.'
     },
     {
         id: 'h-length',
