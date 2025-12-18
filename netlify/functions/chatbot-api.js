@@ -11427,13 +11427,17 @@ async function generateVideoStatus(payload) {
         throw new Error('비디오 URL을 찾을 수 없습니다');
       }
 
+      // URL에 API 키 추가 (다운로드 시 인증 필요)
+      const separator = videoUrl.includes('?') ? '&' : '?';
+      const videoUrlWithKey = `${videoUrl}${separator}key=${ADMIN_GEMINI_KEY}`;
+
       return {
         statusCode: 200,
         headers,
         body: JSON.stringify({
           success: true,
           done: true,
-          data: { video_url: videoUrl },
+          data: { video_url: videoUrlWithKey },
           duration: duration
         })
       };
@@ -11603,13 +11607,17 @@ Target audience: Professional hair designers and stylists.`;
           throw new Error('비디오 URL을 찾을 수 없습니다');
         }
 
+        // URL에 API 키 추가 (다운로드 시 인증 필요)
+        const separator = videoUrl.includes('?') ? '&' : '?';
+        const videoUrlWithKey = `${videoUrl}${separator}key=${ADMIN_GEMINI_KEY}`;
+
         return {
           statusCode: 200,
           headers,
           body: JSON.stringify({
             success: true,
             data: {
-              video_url: videoUrl,
+              video_url: videoUrlWithKey,
               duration: validDuration,
               aspect_ratio: aspect_ratio
             }
