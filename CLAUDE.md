@@ -186,6 +186,31 @@
 - `document.body.classList.contains('light-theme')`: 다크모드 체크
 
 ## 최근 작업 이력
+- 2025-12-18: 헤어체험 504 타임아웃 해결 + AI 레시피 서술형 포맷
+
+  ### 헤어체험 비동기 폴링 방식으로 변경
+  - **문제**: Netlify 함수 10초 타임아웃 → vModel 20초 폴링 + Gemini 후처리 시간 초과
+  - **해결**: action 파라미터 기반 비동기 처리
+    - `action: 'start'` → vModel Task 생성 후 taskId 반환 (빠름)
+    - `action: 'status'` → 상태 확인, 완료 시 Gemini 후처리 실행
+  - **클라이언트 폴링**: `pollHairChangeStatus()` 함수
+    - 2초 간격, 최대 30회 (60초)
+    - `.loading-progress` 요소로 진행 상태 표시
+  - **파일 위치**: hair-change.js, menu.js
+
+  ### AI 레시피 서술형 포맷 변경 (이전 세션)
+  - **커트 레시피**: External/Internal 섹션 분리, 서술형 단계별 안내
+  - **펌 레시피**: A존/B존/C존 섹션 분리, 서술형 단계별 안내
+  - **CSS 그라데이션 박스**:
+    - `.recipe-section.external` (파란색)
+    - `.recipe-section.internal` (보라색)
+    - `.recipe-section.zone-a/b/c` (녹색/노랑/보라)
+
+  ### Veo 3.1 Image-to-Video 지원 (admin.html)
+  - Veo 2.0 → 3.1 업그레이드
+  - `input_image` 파라미터로 첫 프레임 이미지 지정 가능
+  - admin.html에 첫 프레임 이미지 선택 UI 추가
+
 - 2025-12-17: 룩북 매거진 스타일 + 헤어체험 전/후 비교 UI
 
   ### 룩북 에디토리얼 매거진 스타일 적용
