@@ -924,16 +924,16 @@ const HAIRGATOR_I18N = {
       'PUSHED BACK': 'Hair flows naturally backward, reveals forehead for a neat, classic, and urban mood, perfect for business and formal looks',
       'BUZZ': 'The shortest men\'s cut style, reveals head shape and contours for a simple, no-frills image with very easy maintenance',
       'CROP': 'Slightly longer than buzz with bangs lightly covering upper forehead, allows texture and volume expression with trendy and chic feel',
-      'MOHICAN': 'Center section lifted upward for emphasis, shorter sides create clear corners and lines, expresses strong personality, energy, and street mood',
+      'MOHICAN': 'Center top lifted upward for emphasis, shorter sides create clear corners and lines, expresses strong personality, energy, and street mood',
 
       'A LENGTH': 'A length is long hair below chest line, suits one-length, layered long, and thick S-curls for an elegant and dramatic atmosphere.',
       'B LENGTH': 'B length is medium-long between below chest (A) and below collarbone (C), suits layered medium-long and body perm for soft and practical impression.',
-      'C LENGTH': 'C length is semi-long below collarbone line, suits layered C/S-curl and airy perm for neat and sophisticated office mood.',
-      'D LENGTH': 'D length reaches exactly to shoulders, suits LOB, shoulder C-curl, and build perm for trendy and clean feel.',
+      'C LENGTH': 'C length is semi-long below collarbone line, suits layered C/S-curl for neat and sophisticated office mood.',
+      'D LENGTH': 'D length reaches exactly to shoulders, suits shoulder C-curl for trendy and clean feel.',
       'E LENGTH': 'E length is bob just above shoulders, suits classic bob, A-line bob, and inward/outward C-curl for lively and modern impression.',
       'F LENGTH': 'F length is bob just below jawline, suits French bob, straight bob, and texture bob for chic and urban atmosphere.',
-      'G LENGTH': 'G length is mini bob at jawline height, suits classic jawline bob and mini layered bob for smart and minimal mood.',
-      'H LENGTH': 'H length is short hair from ear line to very short range, suits pixie, shag short, and hush short for active and unique style.'
+      'G LENGTH': 'G length is mini bob above jawline, suits classic jawline bob and mini layered bob for smart and minimal mood.',
+      'H LENGTH': 'H length is short hair from ear line to very short range, for active and unique style.'
     },
 
     // ========== Subcategories ==========
@@ -1777,16 +1777,16 @@ const HAIRGATOR_I18N = {
       'PUSHED BACK': '髪の全体的な流れが後ろに自然に流れるスタイル、おでこを見せて端正でクラシックで都会的なムード、職場やフォーマルルックによく合う',
       'BUZZ': '男性スタイルの中で最も短いカットスタイル、頭の形と輪郭がそのまま現れてシンプルで無駄のないイメージで管理が非常に簡単',
       'CROP': 'バズより少し長い長さで前髪がおでこの上部を軽く覆う形、テクスチャとボリューム表現が可能でトレンディでシックな感じ',
-      'MOHICAN': 'トップ（センター）部分を上に立てて強調し、サイドが相対的に短くてコーナーとラインがはっきり、強い個性とエネルギーとストリートムードを演出',
+      'MOHICAN': 'センタートップ部分を上に立てて強調し、サイドが相対的に短くてコーナーとラインがはっきり、強い個性とエネルギーとストリートムードを演出',
 
       'A LENGTH': 'Aレングスは胸より下に降りるロングヘアで、ワンレングス・レイヤードロング・太いSカールがよく合い、優雅でドラマチックな雰囲気を出します。',
       'B LENGTH': 'Bレングスは胸下（A）と鎖骨下（C）の間のミディアムロングで、レイヤードミディアムロング・ボディパーマが似合い、柔らかく実用的な印象を与えます。',
-      'C LENGTH': 'Cレングスは鎖骨ライン下のセミロングで、レイヤードC/Sカール・エアリーパーマとよく合い、端正で洗練されたオフィスムードを出します。',
-      'D LENGTH': 'Dレングスは肩に正確に触れる長さで、LOB・ショルダーCカール・ビルドパーマが似合い、トレンディできれいな感じを与えます。',
+      'C LENGTH': 'Cレングスは鎖骨ライン下のセミロングで、レイヤードC/Sカールとよく合い、端正で洗練されたオフィスムードを出します。',
+      'D LENGTH': 'Dレングスは肩に正確に触れる長さで、ショルダーCカールが似合い、トレンディできれいな感じを与えます。',
       'E LENGTH': 'Eレングスは肩のすぐ上のボブで、クラシックボブ・Aラインボブ・内外Cカールがよく合い、軽快でモダンな印象を作ります。',
       'F LENGTH': 'Fレングスは顎のすぐ下のボブ長で、フレンチボブ・ストレートボブ・テクスチャボブが似合い、シックで都会的な雰囲気を演出します。',
-      'G LENGTH': 'Gレングスは顎と同じ高さのミニボブで、クラシック顎ボブ・ミニレイヤーボブがよく合い、きびきびとミニマルなムードを与えます。',
-      'H LENGTH': 'Hレングスは耳～ベリーショート区間のショートヘアで、ピクシー・シャグショート・ハッシュショートなどが似合い、活動的で個性的なスタイルを完成します。'
+      'G LENGTH': 'Gレングスは顎上の高さのミニボブで、クラシック顎ボブ・ミニレイヤーボブがよく合い、きびきびとミニマルなムードを与えます。',
+      'H LENGTH': 'Hレングスは耳～ベリーショート区間のショートヘアで、活動的で個性的なスタイルを完成します。'
     },
 
     // ========== サブカテゴリ ==========
@@ -2626,16 +2626,16 @@ const HAIRGATOR_I18N = {
       'PUSHED BACK': '整体发流自然向后的风格，露出额头，干练、经典、都市气质，适合职场和正装造型',
       'BUZZ': '男士发型中最短的剪发风格，头型和轮廓完全展现，简约无赘，打理非常容易',
       'CROP': '比寸头稍长，刘海轻盖额头上部的形态，可表现质感和蓬松感，时尚别致',
-      'MOHICAN': '顶部（中心）部分向上竖立强调，两侧相对较短，棱角和线条分明，表现强烈个性、活力和街头气息',
+      'MOHICAN': '中心顶部部分向上竖立强调，两侧相对较短，棱角和线条分明，表现强烈个性、活力和街头气息',
 
       'A LENGTH': 'A长度是胸线以下的长发，适合一刀切、层次长发、粗S卷，展现优雅和戏剧性氛围。',
       'B LENGTH': 'B长度是胸下（A）和锁骨下（C）之间的中长发，适合层次中长发和身体烫，给人柔和实用的印象。',
-      'C LENGTH': 'C长度是锁骨线下的半长发，适合层次C/S卷和空气烫，展现干练精致的办公气质。',
-      'D LENGTH': 'D长度正好触及肩膀，适合LOB、肩部C卷和蓬松烫，给人时尚整洁的感觉。',
+      'C LENGTH': 'C长度是锁骨线下的半长发，适合层次C/S卷，展现干练精致的办公气质。',
+      'D LENGTH': 'D长度正好触及肩膀，适合肩部C卷，给人时尚整洁的感觉。',
       'E LENGTH': 'E长度是肩膀正上方的短发，适合经典波波头、A线波波头、内外C卷，营造轻快现代的印象。',
       'F LENGTH': 'F长度是下巴正下方的波波头长度，适合法式波波头、直发短发、质感波波头，展现别致都市氛围。',
-      'G LENGTH': 'G长度是与下巴同高的迷你波波头，适合经典下巴波波头、迷你层次波波头，给人干练简约的气质。',
-      'H LENGTH': 'H长度是耳线至超短发区间的短发，适合精灵短发、碎发短发等，完成活力个性的风格。'
+      'G LENGTH': 'G长度是下巴上方高度的迷你波波头，适合经典下巴波波头、迷你层次波波头，给人干练简约的气质。',
+      'H LENGTH': 'H长度是耳线至超短发区间的短发，完成活力个性的风格。'
     },
 
     // ========== 子分类 ==========
@@ -3478,16 +3478,16 @@ const HAIRGATOR_I18N = {
       'PUSHED BACK': 'Tóc chảy tự nhiên về phía sau, để lộ trán tạo phong cách gọn gàng, cổ điển và đô thị, hoàn hảo cho công sở và trang phục trang trọng',
       'BUZZ': 'Kiểu cắt tóc ngắn nhất dành cho nam, để lộ hình dạng đầu và đường nét cho hình ảnh đơn giản, gọn gàng với bảo dưỡng rất dễ dàng',
       'CROP': 'Dài hơn buzz một chút với mái che nhẹ phần trên trán, cho phép thể hiện kết cấu và độ phồng với cảm giác thời trang và thanh lịch',
-      'MOHICAN': 'Phần giữa (trung tâm) dựng lên nhấn mạnh, hai bên tương đối ngắn tạo góc cạnh và đường nét rõ ràng, thể hiện cá tính mạnh mẽ, năng lượng và phong cách đường phố',
+      'MOHICAN': 'Phần đỉnh trung tâm dựng lên nhấn mạnh, hai bên tương đối ngắn tạo góc cạnh và đường nét rõ ràng, thể hiện cá tính mạnh mẽ, năng lượng và phong cách đường phố',
 
       'A LENGTH': 'Độ dài A là tóc dài dưới đường ngực, phù hợp với kiểu một độ dài, tầng dài, và S-curl dày tạo bầu không khí thanh lịch và kịch tính.',
       'B LENGTH': 'Độ dài B là trung bình-dài giữa dưới ngực (A) và dưới xương đòn (C), phù hợp với tầng trung dài và uốn body tạo ấn tượng mềm mại và thực dụng.',
-      'C LENGTH': 'Độ dài C là bán dài dưới đường xương đòn, phù hợp với tầng C/S-curl và uốn nhẹ tạo phong cách văn phòng gọn gàng và tinh tế.',
-      'D LENGTH': 'Độ dài D chạm chính xác đến vai, phù hợp với LOB, C-curl vai và uốn phồng tạo cảm giác thời trang và gọn gàng.',
+      'C LENGTH': 'Độ dài C là bán dài dưới đường xương đòn, phù hợp với tầng C/S-curl tạo phong cách văn phòng gọn gàng và tinh tế.',
+      'D LENGTH': 'Độ dài D chạm chính xác đến vai, phù hợp với C-curl vai tạo cảm giác thời trang và gọn gàng.',
       'E LENGTH': 'Độ dài E là tóc bob ngay trên vai, phù hợp với bob cổ điển, bob A-line và C-curl trong/ngoài tạo ấn tượng sống động và hiện đại.',
       'F LENGTH': 'Độ dài F là bob ngay dưới đường hàm, phù hợp với bob Pháp, bob thẳng và bob kết cấu tạo bầu không khí thanh lịch và đô thị.',
-      'G LENGTH': 'Độ dài G là mini bob bằng đường hàm, phù hợp với bob hàm cổ điển và bob tầng mini tạo phong cách thông minh và tối giản.',
-      'H LENGTH': 'Độ dài H là tóc ngắn từ đường tai đến rất ngắn, phù hợp với pixie, shag ngắn, hush ngắn tạo phong cách năng động và độc đáo.'
+      'G LENGTH': 'Độ dài G là mini bob trên đường hàm, phù hợp với bob hàm cổ điển và bob tầng mini tạo phong cách thông minh và tối giản.',
+      'H LENGTH': 'Độ dài H là tóc ngắn từ đường tai đến rất ngắn, tạo phong cách năng động và độc đáo.'
     },
 
     // ========== Danh mục phụ ==========
@@ -4318,16 +4318,16 @@ const HAIRGATOR_I18N = {
       'PUSHED BACK': 'Rambut mengalir alami ke belakang, menampilkan dahi untuk tampilan rapi, klasik, dan urban, sempurna untuk kantor dan pakaian formal',
       'BUZZ': 'Potongan rambut pria terpendek, menampilkan bentuk kepala dan garis wajah untuk tampilan simpel dan rapi dengan perawatan sangat mudah',
       'CROP': 'Sedikit lebih panjang dari buzz dengan poni yang menutupi dahi atas, memungkinkan ekspresi tekstur dan volume dengan nuansa trendi dan elegan',
-      'MOHICAN': 'Bagian tengah (center) diangkat ke atas untuk penekanan, samping relatif pendek menciptakan sudut dan garis yang jelas, menunjukkan kepribadian kuat, energi, dan gaya jalanan',
+      'MOHICAN': 'Bagian center top diangkat ke atas untuk penekanan, samping relatif pendek menciptakan sudut dan garis yang jelas, menunjukkan kepribadian kuat, energi, dan gaya jalanan',
 
       'A LENGTH': 'Panjang A adalah rambut panjang di bawah garis dada, cocok untuk one-length, layered panjang, dan S-curl tebal menciptakan suasana elegan dan dramatis.',
       'B LENGTH': 'Panjang B adalah medium-panjang antara bawah dada (A) dan bawah tulang selangka (C), cocok untuk layered medium-panjang dan body perm menciptakan kesan lembut dan praktis.',
-      'C LENGTH': 'Panjang C adalah semi-panjang di bawah garis tulang selangka, cocok untuk layered C/S-curl dan airy perm menciptakan gaya kantor yang rapi dan elegan.',
-      'D LENGTH': 'Panjang D tepat menyentuh bahu, cocok untuk LOB, shoulder C-curl, dan build perm menciptakan nuansa trendi dan rapi.',
+      'C LENGTH': 'Panjang C adalah semi-panjang di bawah garis tulang selangka, cocok untuk layered C/S-curl menciptakan gaya kantor yang rapi dan elegan.',
+      'D LENGTH': 'Panjang D tepat menyentuh bahu, cocok untuk shoulder C-curl menciptakan nuansa trendi dan rapi.',
       'E LENGTH': 'Panjang E adalah bob tepat di atas bahu, cocok untuk classic bob, A-line bob, dan C-curl dalam/luar menciptakan kesan hidup dan modern.',
       'F LENGTH': 'Panjang F adalah bob tepat di bawah garis rahang, cocok untuk French bob, straight bob, dan textured bob menciptakan suasana elegan dan urban.',
-      'G LENGTH': 'Panjang G adalah mini bob setinggi garis rahang, cocok untuk classic jaw bob dan mini layered bob menciptakan gaya cerdas dan minimalis.',
-      'H LENGTH': 'Panjang H adalah rambut pendek dari garis telinga hingga sangat pendek, cocok untuk pixie, short shag, hush short menciptakan gaya aktif dan unik.'
+      'G LENGTH': 'Panjang G adalah mini bob di atas garis rahang, cocok untuk classic jaw bob dan mini layered bob menciptakan gaya cerdas dan minimalis.',
+      'H LENGTH': 'Panjang H adalah rambut pendek dari garis telinga hingga sangat pendek, menciptakan gaya aktif dan unik.'
     },
 
     // ========== Subkategori ==========
@@ -5131,16 +5131,16 @@ const HAIRGATOR_I18N = {
       'PUSHED BACK': 'El cabello fluye naturalmente hacia atrás, revela la frente para un ambiente ordenado, clásico y urbano, perfecto para looks de negocios y formales',
       'BUZZ': 'El estilo de corte masculino más corto, revela la forma y contornos de la cabeza para una imagen simple y sin adornos con mantenimiento muy fácil',
       'CROP': 'Ligeramente más largo que el buzz con flequillo cubriendo ligeramente la parte superior de la frente, permite expresión de textura y volumen con sensación moderna y chic',
-      'MOHICAN': 'Sección central levantada hacia arriba para énfasis, lados más cortos crean esquinas y líneas claras, expresa personalidad fuerte, energía y estilo urbano',
+      'MOHICAN': 'Centro superior levantado hacia arriba para énfasis, lados más cortos crean esquinas y líneas claras, expresa personalidad fuerte, energía y estilo urbano',
 
       'A LENGTH': 'Largo A es cabello largo debajo de la línea del pecho, ideal para corte recto, capas largas y rizos S gruesos para una atmósfera elegante y dramática.',
       'B LENGTH': 'Largo B es medio-largo entre debajo del pecho (A) y debajo de la clavícula (C), ideal para capas medio-largas y permanente de cuerpo para impresión suave y práctica.',
-      'C LENGTH': 'Largo C es semi-largo debajo de la línea de la clavícula, ideal para rizo C/S en capas y permanente aireado para ambiente de oficina ordenado y sofisticado.',
-      'D LENGTH': 'Largo D llega exactamente a los hombros, ideal para LOB, rizo C de hombro y permanente de construcción para sensación moderna y limpia.',
+      'C LENGTH': 'Largo C es semi-largo debajo de la línea de la clavícula, ideal para rizo C/S en capas para ambiente de oficina ordenado y sofisticado.',
+      'D LENGTH': 'Largo D llega exactamente a los hombros, ideal para rizo C de hombro para sensación moderna y limpia.',
       'E LENGTH': 'Largo E es bob justo encima de los hombros, ideal para bob clásico, bob línea A y rizo C interior/exterior para impresión animada y moderna.',
       'F LENGTH': 'Largo F es bob justo debajo de la mandíbula, ideal para bob francés, bob recto y bob con textura para atmósfera chic y urbana.',
-      'G LENGTH': 'Largo G es mini bob a la altura de la mandíbula, ideal para bob clásico de mandíbula y mini bob en capas para ambiente inteligente y minimal.',
-      'H LENGTH': 'Largo H es cabello corto desde la línea de la oreja hasta el rango muy corto, ideal para pixie, shag corto y hush corto para estilo activo y único.'
+      'G LENGTH': 'Largo G es mini bob por encima de la mandíbula, ideal para bob clásico de mandíbula y mini bob en capas para ambiente inteligente y minimal.',
+      'H LENGTH': 'Largo H es cabello corto desde la línea de la oreja hasta el rango muy corto, para estilo activo y único.'
     },
 
     // ========== Subcategorías ==========
