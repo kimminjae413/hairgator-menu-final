@@ -2315,6 +2315,52 @@ body.ai-studio-page {
   background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
 }
 
+/* ==================== 커트 레시피 Section 스타일 ==================== */
+.recipe-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0 12px 0;
+  padding: 12px 16px;
+  border-radius: 10px;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.recipe-section.external {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+}
+
+.recipe-section.internal {
+  background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+}
+
+.recipe-section .section-icon {
+  font-size: 16px;
+}
+
+.recipe-section .section-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.recipe-section .section-desc {
+  font-size: 13px;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+/* 라이트 모드 커트 레시피 */
+body.light-theme .recipe-section.external {
+  background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
+}
+
+body.light-theme .recipe-section.internal {
+  background: linear-gradient(135deg, #AB47BC 0%, #8E24AA 100%);
+}
+
 /* ==================== 펌 레시피 Zone 스타일 ==================== */
 .recipe-formatted .recipe-zone-header {
   display: flex;
