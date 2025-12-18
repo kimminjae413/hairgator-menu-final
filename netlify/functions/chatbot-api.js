@@ -21,6 +21,9 @@
 // Node.js 18+ 내장 fetch 사용 (node-fetch 불필요)
 // const fetch = require('node-fetch'); // 제거됨
 
+// Google GenAI SDK (Veo 영상 생성용)
+const { GoogleGenAI } = require('@google/genai');
+
 // 스타일 매칭 함수 import - 2WAY CUT SYSTEM 전체 스키마
 const {
   // 스키마
@@ -11218,18 +11221,17 @@ async function generateCardNewsKeywords(payload) {
   }
 }
 
-// ==================== 어드민: Veo 3.1 영상 생성 시작 (비동기, Image-to-Video 지원) ====================
+// ==================== 어드민: Veo 영상 생성 시작 (SDK 방식, Image-to-Video 지원) ====================
 async function generateVideoStart(payload) {
-  const { prompt, duration, aspect_ratio, reference_images, input_image } = payload;
+  const { prompt, duration, aspect_ratio, input_image } = payload;
 
   const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
 
-  console.log('🎬 영상 생성 시작 요청:', {
+  console.log('🎬 영상 생성 시작 요청 (SDK):', {
     prompt: prompt?.substring(0, 50),
     duration,
     aspect_ratio,
-    hasInputImage: !!input_image,
-    refImageCount: reference_images?.length || 0
+    hasInputImage: !!input_image
   });
 
   if (!ADMIN_GEMINI_KEY) {
@@ -11249,51 +11251,57 @@ async function generateVideoStart(payload) {
   }
 
   try {
+    // Google GenAI SDK 초기화
+    const client = new GoogleGenAI({ apiKey: ADMIN_GEMINI_KEY });
+
     // HAIRGATOR 브랜드 스타일 프롬프트 강화
     const enhancedPrompt = `Professional hair salon video for HAIRGATOR brand. ${prompt}.
 Style: Premium, professional Korean hair salon atmosphere. Clean, modern interior with soft lighting.
 Target audience: Professional hair designers and stylists.`;
 
-    // Veo 3.1 API 요청 구성
-    const requestBody = {
-      instances: [{
-        prompt: enhancedPrompt
-      }],
-      parameters: {
+    // Duration 검증 - Veo 2: 5초, 8초만 지원
+    const validDuration = [5, 8].includes(parseInt(duration)) ? parseInt(duration) : 8;
+
+    // SDK 요청 파라미터 구성
+    const requestParams = {
+      model: 'veo-2.0-generate-001',
+      prompt: enhancedPrompt,
+      config: {
         aspectRatio: aspect_ratio || '9:16',
-        durationSeconds: parseInt(duration) || 8
+        durationSeconds: validDuration,
+        personGeneration: 'allow_adult'
       }
     };
 
-    // ⚠️ Image-to-Video 및 referenceImages는 Gemini API(Consumer)에서 미지원
-    // Vertex AI(Enterprise)에서만 지원됨 - text-to-video만 사용
+    // ⭐ Image-to-Video: 입력 이미지가 있으면 첫 프레임으로 사용
     if (input_image && input_image.data) {
-      console.log('⚠️ Image-to-Video는 Gemini API에서 미지원 - 무시됨');
-    }
-    if (reference_images && reference_images.length > 0) {
-      console.log('⚠️ referenceImages는 Gemini API에서 미지원 - 무시됨');
-    }
+      // Base64 데이터에서 prefix 제거
+      const imageBase64 = input_image.data.includes(',')
+        ? input_image.data.split(',')[1]
+        : input_image.data;
 
-    // Veo 3.1 Long Running Operation 시작
-    const startResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning?key=${ADMIN_GEMINI_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
-      }
-    );
-
-    if (!startResponse.ok) {
-      const errorText = await startResponse.text();
-      console.error('Veo API 시작 오류:', startResponse.status, errorText);
-      throw new Error(`Veo API 오류 (${startResponse.status}): ${errorText.substring(0, 200)}`);
+      requestParams.image = {
+        imageBytes: imageBase64,
+        mimeType: input_image.mimeType || 'image/jpeg'
+      };
+      console.log('📷 Image-to-Video 모드: 입력 이미지를 첫 프레임으로 사용');
     }
 
-    const operationData = await startResponse.json();
-    const operationName = operationData.name;
+    console.log('📋 Request structure:', {
+      model: requestParams.model,
+      hasPrompt: !!requestParams.prompt,
+      hasImage: !!requestParams.image?.imageBytes,
+      config: requestParams.config
+    });
 
-    console.log('✅ 영상 생성 작업 시작됨:', operationName);
+    // SDK로 영상 생성 시작
+    const operation = await client.models.generateVideos(requestParams);
+
+    if (!operation || !operation.name) {
+      throw new Error('Invalid operation response - no operation.name');
+    }
+
+    console.log('✅ 영상 생성 작업 시작됨:', operation.name);
 
     // operation ID 즉시 반환 (타임아웃 방지)
     return {
@@ -11301,8 +11309,8 @@ Target audience: Professional hair designers and stylists.`;
       headers,
       body: JSON.stringify({
         success: true,
-        operationName: operationName,
-        message: '영상 생성이 시작되었습니다. 1-3분 소요됩니다.'
+        operationName: operation.name,
+        message: `${validDuration}초 영상 생성이 시작되었습니다. 예상 소요 시간: ${validDuration === 5 ? '3-4분' : '4-5분'}`
       })
     };
 
@@ -11316,9 +11324,9 @@ Target audience: Professional hair designers and stylists.`;
   }
 }
 
-// ==================== 어드민: Veo 영상 생성 상태 확인 ====================
+// ==================== 어드민: Veo 영상 생성 상태 확인 (SDK 응답 구조) ====================
 async function generateVideoStatus(payload) {
-  const { operationName } = payload;
+  const { operationName, duration } = payload;
 
   const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
 
@@ -11332,8 +11340,14 @@ async function generateVideoStatus(payload) {
 
   try {
     const pollResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/${operationName}?key=${ADMIN_GEMINI_KEY}`,
-      { method: 'GET' }
+      `https://generativelanguage.googleapis.com/v1beta/${operationName}`,
+      {
+        method: 'GET',
+        headers: {
+          'x-goog-api-key': ADMIN_GEMINI_KEY,
+          'Content-Type': 'application/json'
+        }
+      }
     );
 
     if (!pollResponse.ok) {
@@ -11359,20 +11373,43 @@ async function generateVideoStatus(payload) {
         };
       }
 
-      // 생성된 비디오 URL 추출
-      const videoData = pollData.response?.generatedVideos?.[0];
-      if (!videoData) {
+      // SDK 응답 구조: generateVideoResponse.generatedSamples
+      const videoResponse = pollData.response?.generateVideoResponse;
+      const samples = videoResponse?.generatedSamples;
+
+      // RAI 필터 체크
+      if (videoResponse?.raiMediaFilteredCount > 0) {
+        const reasons = videoResponse.raiMediaFilteredReasons || [];
+        let errorMessage = '이미지가 Google 안전 정책에 의해 차단되었습니다.';
+
+        if (reasons.length > 0) {
+          const reason = reasons[0].toLowerCase();
+          if (reason.includes('children') || reason.includes('minor')) {
+            errorMessage = '미성년자로 보이는 인물이 감지되어 영상 생성이 제한되었습니다.';
+          } else if (reason.includes('celebrity')) {
+            errorMessage = '유명인 또는 유사한 인물이 감지되었습니다.';
+          }
+        }
+
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            success: false,
+            done: true,
+            error: errorMessage,
+            raiFiltered: true
+          })
+        };
+      }
+
+      if (!samples || samples.length === 0) {
         throw new Error('생성된 영상이 없습니다');
       }
 
-      // base64 비디오 데이터를 data URL로 변환
-      let videoUrl;
-      if (videoData.video?.uri) {
-        videoUrl = videoData.video.uri;
-      } else if (videoData.video?.bytesBase64Encoded) {
-        videoUrl = `data:video/mp4;base64,${videoData.video.bytesBase64Encoded}`;
-      } else {
-        throw new Error('비디오 데이터를 찾을 수 없습니다');
+      const videoUrl = samples[0].video?.uri;
+      if (!videoUrl) {
+        throw new Error('비디오 URL을 찾을 수 없습니다');
       }
 
       return {
@@ -11381,19 +11418,27 @@ async function generateVideoStatus(payload) {
         body: JSON.stringify({
           success: true,
           done: true,
-          data: { video_url: videoUrl }
+          data: { video_url: videoUrl },
+          duration: duration
         })
       };
     }
 
     // 아직 처리 중
+    let progressMessage = '영상 생성 중...';
+    if (duration === 5) {
+      progressMessage = '5초 영상 생성 중... (~3-4분 소요)';
+    } else if (duration === 8) {
+      progressMessage = '8초 영상 생성 중... (~4-5분 소요)';
+    }
+
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
         success: true,
         done: false,
-        message: '영상 생성 중...'
+        message: progressMessage
       })
     };
 
@@ -11407,18 +11452,17 @@ async function generateVideoStatus(payload) {
   }
 }
 
-// ==================== 어드민: Veo 3.1 영상 생성 (Image-to-Video 지원) ====================
+// ==================== 어드민: Veo 영상 생성 (SDK 방식, Image-to-Video 지원) ====================
 async function generateVideo(payload) {
-  const { prompt, duration, aspect_ratio, reference_images, input_image } = payload;
+  const { prompt, duration, aspect_ratio, input_image } = payload;
 
   const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
 
-  console.log('🎬 영상 생성 시작:', {
+  console.log('🎬 영상 생성 시작 (SDK):', {
     prompt: prompt?.substring(0, 50),
     duration,
     aspect_ratio,
-    hasInputImage: !!input_image,
-    refImageCount: reference_images?.length || 0
+    hasInputImage: !!input_image
   });
 
   if (!ADMIN_GEMINI_KEY) {
@@ -11438,51 +11482,49 @@ async function generateVideo(payload) {
   }
 
   try {
+    // Google GenAI SDK 초기화
+    const client = new GoogleGenAI({ apiKey: ADMIN_GEMINI_KEY });
+
     // HAIRGATOR 브랜드 스타일 프롬프트 강화
     const enhancedPrompt = `Professional hair salon video for HAIRGATOR brand. ${prompt}.
 Style: Premium, professional Korean hair salon atmosphere. Clean, modern interior with soft lighting.
 Target audience: Professional hair designers and stylists.`;
 
-    // Veo 3.1 API 요청 구성
-    const requestBody = {
-      instances: [{
-        prompt: enhancedPrompt
-      }],
-      parameters: {
+    // Duration 검증 - Veo 2: 5초, 8초만 지원
+    const validDuration = [5, 8].includes(parseInt(duration)) ? parseInt(duration) : 8;
+
+    // SDK 요청 파라미터 구성
+    const requestParams = {
+      model: 'veo-2.0-generate-001',
+      prompt: enhancedPrompt,
+      config: {
         aspectRatio: aspect_ratio || '9:16',
-        durationSeconds: parseInt(duration) || 8
+        durationSeconds: validDuration,
+        personGeneration: 'allow_adult'
       }
     };
 
-    // ⚠️ Image-to-Video 및 referenceImages는 Gemini API(Consumer)에서 미지원
-    // Vertex AI(Enterprise)에서만 지원됨 - text-to-video만 사용
+    // ⭐ Image-to-Video: 입력 이미지가 있으면 첫 프레임으로 사용
     if (input_image && input_image.data) {
-      console.log('⚠️ Image-to-Video는 Gemini API에서 미지원 - 무시됨');
-    }
-    if (reference_images && reference_images.length > 0) {
-      console.log('⚠️ referenceImages는 Gemini API에서 미지원 - 무시됨');
-    }
+      const imageBase64 = input_image.data.includes(',')
+        ? input_image.data.split(',')[1]
+        : input_image.data;
 
-    // Veo 3.1 Long Running Operation 시작
-    const startResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning?key=${ADMIN_GEMINI_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
-      }
-    );
-
-    if (!startResponse.ok) {
-      const errorText = await startResponse.text();
-      console.error('Veo API 시작 오류:', startResponse.status, errorText);
-      throw new Error(`Veo API 오류 (${startResponse.status}): ${errorText.substring(0, 200)}`);
+      requestParams.image = {
+        imageBytes: imageBase64,
+        mimeType: input_image.mimeType || 'image/jpeg'
+      };
+      console.log('📷 Image-to-Video 모드: 입력 이미지를 첫 프레임으로 사용');
     }
 
-    const operationData = await startResponse.json();
-    const operationName = operationData.name;
+    // SDK로 영상 생성 시작
+    const operation = await client.models.generateVideos(requestParams);
 
-    console.log('🎬 영상 생성 작업 시작:', operationName);
+    if (!operation || !operation.name) {
+      throw new Error('Invalid operation response - no operation.name');
+    }
+
+    console.log('🎬 영상 생성 작업 시작:', operation.name);
 
     // 작업 완료까지 폴링 (최대 5분)
     const maxAttempts = 30;
@@ -11492,8 +11534,14 @@ Target audience: Professional hair designers and stylists.`;
       await new Promise(resolve => setTimeout(resolve, pollInterval));
 
       const pollResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/${operationName}?key=${ADMIN_GEMINI_KEY}`,
-        { method: 'GET' }
+        `https://generativelanguage.googleapis.com/v1beta/${operation.name}`,
+        {
+          method: 'GET',
+          headers: {
+            'x-goog-api-key': ADMIN_GEMINI_KEY,
+            'Content-Type': 'application/json'
+          }
+        }
       );
 
       if (!pollResponse.ok) {
@@ -11510,20 +11558,21 @@ Target audience: Professional hair designers and stylists.`;
           throw new Error(pollData.error.message || '영상 생성 실패');
         }
 
-        // 생성된 비디오 URL 추출
-        const videoData = pollData.response?.generatedVideos?.[0];
-        if (!videoData) {
+        // SDK 응답 구조: generateVideoResponse.generatedSamples
+        const videoResponse = pollData.response?.generateVideoResponse;
+        const samples = videoResponse?.generatedSamples;
+
+        if (!samples || samples.length === 0) {
+          // RAI 필터 체크
+          if (videoResponse?.raiMediaFilteredCount > 0) {
+            throw new Error('이미지가 Google 안전 정책에 의해 차단되었습니다');
+          }
           throw new Error('생성된 영상이 없습니다');
         }
 
-        // base64 비디오 데이터를 data URL로 변환
-        let videoUrl;
-        if (videoData.video?.uri) {
-          videoUrl = videoData.video.uri;
-        } else if (videoData.video?.bytesBase64Encoded) {
-          videoUrl = `data:video/mp4;base64,${videoData.video.bytesBase64Encoded}`;
-        } else {
-          throw new Error('비디오 데이터를 찾을 수 없습니다');
+        const videoUrl = samples[0].video?.uri;
+        if (!videoUrl) {
+          throw new Error('비디오 URL을 찾을 수 없습니다');
         }
 
         return {
@@ -11533,7 +11582,7 @@ Target audience: Professional hair designers and stylists.`;
             success: true,
             data: {
               video_url: videoUrl,
-              duration: duration,
+              duration: validDuration,
               aspect_ratio: aspect_ratio
             }
           })
