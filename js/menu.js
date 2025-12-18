@@ -409,7 +409,7 @@ const FEMALE_CATEGORIES = [
     {
         id: 'd-length',
         name: 'D LENGTH',
-        description: 'D 길이는 어깨에 정확히 닿는 길이로, LOB·숄더 C컬·빌드펌이 어울려 트렌디하고 깔끔한 느낌을 줍니다.'
+        description: 'D 길이는 어깨에 정확히 닿는 길이로, 숄더 C컬이 어울려 트렌디하고 깔끔한 느낌을 줍니다.'
     },
     {
         id: 'e-length',
