@@ -5,13 +5,14 @@
 ### RAG 시스템
 - **Gemini File Search API** 사용
 - Store ID: `fileSearchStores/hairgator-theory-final-2025-kkb6n1ftfbf2`
-- **45개 문서**, 524MB (영구 저장됨)
+- **46개 문서**, 524MB (영구 저장됨)
 - 업로드된 자료:
   - 이론 PDF 38개
   - 펌 레시피 자막 4개
   - 커트 레시피 자막 1개(138개 병합)
   - **헤어 용어 사전(hair_diagram_glossary.txt)**: 도해도 기호, 두상 포인트, 커트 테크닉, 펌/염색 용어
   - **기초학 개론(hair_basic_science.txt)**: 모발학, 케미컬, 두피학, 색채학, 소독학
+  - **헤어케어 제품 가이드(hair_care_products_guide.txt)**: 트리트먼트/린스/컨디셔너 차이, 카티온 계면활성제 작용, FAQ (2025-12-19 추가)
 
 ### Firestore
 - 컬렉션: `theory_indexes` - 키워드 매칭 + 이미지 URL 저장 (커트 164개 + 펌 46개 = 210개)
@@ -169,6 +170,7 @@
 - `extract-perm-captions-additional.py`: 추가분 11개 펌 레시피 자막 추출 (Gemini Vision)
 - `upload-perm-recipes-additional.py`: 추가분 펌 레시피 Firebase Storage + Firestore 업로드
 - `upload-perm-thumbnails-additional.py`: 추가분 펌 도해도 썸네일 변환
+- `upload-hair-care-guide.py`: 헤어케어 제품 가이드 RAG 업로드 (트리트먼트/린스/컨디셔너)
 
 ## 크리스마스 효과 (간소화됨 - 2025-12-14)
 
@@ -186,6 +188,21 @@
 - `document.body.classList.contains('light-theme')`: 다크모드 체크
 
 ## 최근 작업 이력
+- 2025-12-19: RAG 헤어케어 제품 가이드 추가 + 히스토리 이미지 영구 저장
+
+  ### RAG 헤어케어 제품 가이드 추가
+  - **문서**: `hair_care_products_guide.txt` - 트리트먼트/린스/컨디셔너 차이 가이드
+  - **내용**: 카티온 계면활성제 작용 원리, 손상별 제품 선택, FAQ 6개
+  - **업로드 스크립트**: `scripts/upload-hair-care-guide.py`
+  - **Store**: fileSearchStores/hairgator-theory-final-2025-kkb6n1ftfbf2 (46개 문서)
+
+  ### 히스토리 이미지 Firebase Storage 저장
+  - **문제**: blob URL은 세션 종료 시 만료 → 히스토리에서 이미지가 엑박으로 표시
+  - **해결**: 이미지 업로드 시 Firebase Storage에 영구 저장 (7일 보관)
+  - **함수**: `uploadImageToStorage()` (ai-studio.js)
+  - **경로**: `temp_uploads/{userId}/{timestamp}_{random}.{ext}`
+  - **정리**: `cleanup-old-images.js` Netlify 스케줄 함수 (@daily)
+
 - 2025-12-18: 헤어체험 504 타임아웃 해결 + AI 레시피 서술형 포맷
 
   ### 헤어체험 비동기 폴링 방식으로 변경
