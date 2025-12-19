@@ -2373,9 +2373,12 @@ function showHairTryResult(resultImageUrl, styleName) {
     const disclaimerText = t('hairTry.disclaimer') || '가상 결과입니다. 헤어 느낌을 미리 파악해보는 정도의 의미로만 사용해 주세요. 실제와 다를 수 있습니다.';
     const beforeText = t('hairTry.before') || 'BEFORE';
     const afterText = t('hairTry.after') || 'AFTER';
+    const styleText = t('hairTry.style') || 'STYLE';
 
     // 원본 사진 가져오기
     const originalPhoto = window.uploadedCustomerPhoto || '';
+    // 체험하는 스타일 이미지
+    const styleImage = window.currentAIStyleImage || '';
 
     const modal = document.createElement('div');
     modal.className = 'hair-try-result-modal';
@@ -2390,9 +2393,19 @@ function showHairTryResult(resultImageUrl, styleName) {
             <div class="hair-try-result-body">
                 <!-- 전/후 비교 컨테이너 -->
                 <div class="hair-try-comparison">
-                    <div class="comparison-before">
-                        <span class="comparison-label">${beforeText}</span>
-                        <img src="${originalPhoto}" alt="Before" class="comparison-image">
+                    <div class="comparison-left-stack">
+                        <!-- 스타일 이미지 (위) -->
+                        ${styleImage ? `
+                        <div class="comparison-style">
+                            <span class="comparison-label">${styleText}</span>
+                            <img src="${styleImage}" alt="Style" class="comparison-image">
+                        </div>
+                        ` : ''}
+                        <!-- BEFORE 이미지 (아래) -->
+                        <div class="comparison-before">
+                            <span class="comparison-label">${beforeText}</span>
+                            <img src="${originalPhoto}" alt="Before" class="comparison-image">
+                        </div>
                     </div>
                     <div class="comparison-divider">
                         <span class="divider-arrow">→</span>
@@ -2601,10 +2614,20 @@ function addHairTryResultStyles() {
             width: 100%;
         }
 
-        .comparison-before {
-            position: relative;
+        .comparison-left-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
             flex: 0 0 auto;
             max-width: 140px;
+        }
+
+        .comparison-style {
+            position: relative;
+        }
+
+        .comparison-before {
+            position: relative;
         }
 
         .comparison-after {
@@ -2615,17 +2638,21 @@ function addHairTryResultStyles() {
 
         .comparison-label {
             position: absolute;
-            top: 10px;
+            top: 8px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.7);
             color: #fff;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
             font-weight: 600;
             letter-spacing: 1px;
             z-index: 2;
+        }
+
+        .comparison-style .comparison-label {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
         }
 
         .comparison-before .comparison-label {
@@ -2640,12 +2667,16 @@ function addHairTryResultStyles() {
             width: 100%;
             height: auto;
             object-fit: cover;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .comparison-style .comparison-image {
+            max-height: 20vh;
         }
 
         .comparison-before .comparison-image {
-            max-height: 35vh;
+            max-height: 20vh;
             opacity: 0.85;
         }
 

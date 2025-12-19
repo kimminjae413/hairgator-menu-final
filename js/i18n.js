@@ -265,7 +265,8 @@ const HAIRGATOR_I18N = {
       error: '처리 중 오류가 발생했습니다. 다시 시도해주세요.',
       disclaimer: '가상 결과입니다. 헤어 느낌을 미리 파악해보는 정도의 의미로만 사용해 주세요. 실제와 다를 수 있습니다.',
       before: 'BEFORE',
-      after: 'AFTER'
+      after: 'AFTER',
+      style: 'STYLE'
     },
 
     // ========== 룩북 (Lookbook) ==========
@@ -1163,7 +1164,8 @@ const HAIRGATOR_I18N = {
       error: 'An error occurred. Please try again.',
       disclaimer: 'This is a virtual result. Please use it only as a reference to get a feel for the hairstyle. Actual results may vary.',
       before: 'BEFORE',
-      after: 'AFTER'
+      after: 'AFTER',
+      style: 'STYLE'
     },
 
     // ========== Lookbook ==========
@@ -2034,7 +2036,8 @@ const HAIRGATOR_I18N = {
       error: 'エラーが発生しました。もう一度お試しください。',
       disclaimer: 'これは仮想結果です。ヘアスタイルの雰囲気を事前に確認する参考としてご利用ください。実際の結果は異なる場合があります。',
       before: 'BEFORE',
-      after: 'AFTER'
+      after: 'AFTER',
+      style: 'STYLE'
     },
 
     // ========== Lookbook (Japanese) ==========
@@ -2901,7 +2904,8 @@ const HAIRGATOR_I18N = {
       error: '处理出错，请重试。',
       disclaimer: '这是虚拟结果。请仅作为提前了解发型感觉的参考使用。实际效果可能有所不同。',
       before: 'BEFORE',
-      after: 'AFTER'
+      after: 'AFTER',
+      style: 'STYLE'
     },
 
     // ========== Lookbook (Chinese) ==========
@@ -3771,7 +3775,8 @@ const HAIRGATOR_I18N = {
       error: 'Đã xảy ra lỗi. Vui lòng thử lại.',
       disclaimer: 'Đây là kết quả ảo. Vui lòng chỉ sử dụng như tham khảo để cảm nhận kiểu tóc trước. Kết quả thực tế có thể khác.',
       before: 'BEFORE',
-      after: 'AFTER'
+      after: 'AFTER',
+      style: 'STYLE'
     },
 
     // ========== Lookbook (Vietnamese) ==========
@@ -4629,7 +4634,8 @@ const HAIRGATOR_I18N = {
       error: 'Terjadi kesalahan. Silakan coba lagi.',
       disclaimer: 'Ini adalah hasil virtual. Silakan gunakan hanya sebagai referensi untuk merasakan gaya rambut. Hasil sebenarnya mungkin berbeda.',
       before: 'BEFORE',
-      after: 'AFTER'
+      after: 'AFTER',
+      style: 'STYLE'
     },
 
     // ========== Lookbook ==========
@@ -5451,7 +5457,8 @@ const HAIRGATOR_I18N = {
       error: 'Ocurrió un error. Por favor intenta de nuevo.',
       disclaimer: 'Este es un resultado virtual. Úsalo solo como referencia para tener una idea del peinado. Los resultados reales pueden variar.',
       before: 'BEFORE',
-      after: 'AFTER'
+      after: 'AFTER',
+      style: 'STYLE'
     },
 
     // ========== Lookbook ==========
