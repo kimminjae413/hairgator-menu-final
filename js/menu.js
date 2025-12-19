@@ -2507,9 +2507,17 @@ async function saveHairTryResult(imageUrl) {
     }
 }
 
-// 헤어체험 결과 모달 스타일
+// 헤어체험 결과 모달 스타일 (성별 기반 테마 색상)
 function addHairTryResultStyles() {
-    if (document.getElementById('hair-try-result-styles')) return;
+    // 기존 스타일 제거 후 재생성 (성별 변경 대응)
+    const existingStyle = document.getElementById('hair-try-result-styles');
+    if (existingStyle) existingStyle.remove();
+
+    // 성별에 따른 테마 색상
+    const isMale = window.currentGender === 'male';
+    const primaryColor = isMale ? '#4A90E2' : '#E91E63';
+    const primaryDark = isMale ? '#3A7BC8' : '#C2185B';
+    const primaryRgb = isMale ? '74, 144, 226' : '233, 30, 99';
 
     const style = document.createElement('style');
     style.id = 'hair-try-result-styles';
@@ -2546,33 +2554,33 @@ function addHairTryResultStyles() {
 
         .hair-try-result-content {
             position: relative;
-            background: var(--primary-dark, #1a1a1a);
+            background: #ffffff;
             border-radius: 20px;
             max-width: 90vw;
             max-height: 90vh;
             overflow-y: auto;
             overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
-            box-shadow: 0 20px 60px rgba(124, 77, 255, 0.3);
-            border: 1px solid rgba(124, 77, 255, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid #eee;
         }
 
         .hair-try-result-header {
             padding: 20px;
             text-align: center;
-            border-bottom: 1px solid var(--border-color, #333);
+            border-bottom: 1px solid #eee;
             position: relative;
         }
 
         .hair-try-result-header h3 {
             margin: 0 0 5px 0;
-            color: #7C4DFF;
+            color: #333;
             font-size: 20px;
         }
 
         .hair-try-result-header p {
             margin: 0;
-            color: var(--text-secondary, #888);
+            color: #888;
             font-size: 14px;
         }
 
@@ -2582,7 +2590,7 @@ function addHairTryResultStyles() {
             right: 15px;
             background: none;
             border: none;
-            color: var(--text-secondary, #888);
+            color: #888;
             font-size: 24px;
             cursor: pointer;
             width: 30px;
@@ -2593,7 +2601,7 @@ function addHairTryResultStyles() {
         }
 
         .close-result-btn:hover {
-            color: #fff;
+            color: #333;
         }
 
         .hair-try-result-body {
@@ -2660,7 +2668,7 @@ function addHairTryResultStyles() {
         }
 
         .comparison-after .comparison-label {
-            background: linear-gradient(135deg, #7C4DFF 0%, #651FFF 100%);
+            background: linear-gradient(135deg, ${primaryColor} 0%, ${primaryDark} 100%);
         }
 
         .comparison-image {
@@ -2668,7 +2676,7 @@ function addHairTryResultStyles() {
             height: auto;
             object-fit: cover;
             border-radius: 10px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
         .comparison-style .comparison-image {
@@ -2693,7 +2701,7 @@ function addHairTryResultStyles() {
 
         .divider-arrow {
             font-size: 24px;
-            color: #7C4DFF;
+            color: ${primaryColor};
             animation: pulseArrow 1.5s ease-in-out infinite;
         }
 
@@ -2728,14 +2736,14 @@ function addHairTryResultStyles() {
             max-width: 100%;
             max-height: 60vh;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
         .hair-try-result-actions {
             display: flex;
             gap: 15px;
             padding: 20px;
-            border-top: 1px solid var(--border-color, #333);
+            border-top: 1px solid #eee;
             justify-content: center;
         }
 
@@ -2753,7 +2761,7 @@ function addHairTryResultStyles() {
         }
 
         .retry-btn {
-            background: var(--text-secondary, #666);
+            background: #666;
             color: white;
         }
 
@@ -2763,13 +2771,13 @@ function addHairTryResultStyles() {
         }
 
         .save-btn {
-            background: linear-gradient(135deg, #7C4DFF 0%, #651FFF 100%);
+            background: linear-gradient(135deg, ${primaryColor} 0%, ${primaryDark} 100%);
             color: white;
         }
 
         .save-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(124, 77, 255, 0.4);
+            box-shadow: 0 8px 20px rgba(${primaryRgb}, 0.4);
         }
 
         @media (max-width: 767px) {
