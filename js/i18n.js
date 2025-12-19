@@ -46,7 +46,7 @@ const HAIRGATOR_I18N = {
       'D LENGTH': 'D 길이는 어깨에 정확히 닿는 길이로, 숄더 C컬이 어울려 트렌디하고 깔끔한 느낌을 줍니다.',
       'E LENGTH': 'E 길이는 어깨 바로 위의 단발로, 클래식 보브·A라인 보브·내/외 C컬이 잘 맞아 경쾌하고 모던한 인상을 만듭니다.',
       'F LENGTH': 'F 길이는 턱선 바로 밑 보브 길이로, 프렌치 보브·일자 단발·텍스쳐 보브가 어울려 시크하고 도회적인 분위기를 연출합니다.',
-      'G LENGTH': 'G 길이는 턱선위 높이의 미니 보브로, 클래식 턱선 보브·미니 레이어 보브가 잘 맞아 똘똘하고 미니멀한 무드를 줍니다.',
+      'G LENGTH': 'G 길이는 턱선위 높이의 미니 보브로, 클래식 턱선 보브·미니 레이어 보브가 잘 맞아 깔끔하고 미니멀한 무드를 줍니다.',
       'H LENGTH': 'H 길이는 귀선~베리숏구간의 숏헤어로, 활동적이고 개성 있는 스타일을 완성합니다.'
     },
 
@@ -950,7 +950,7 @@ const HAIRGATOR_I18N = {
       'D LENGTH': 'D length reaches exactly to shoulders, suits shoulder C-curl for trendy and clean feel.',
       'E LENGTH': 'E length is bob just above shoulders, suits classic bob, A-line bob, and inward/outward C-curl for lively and modern impression.',
       'F LENGTH': 'F length is bob just below jawline, suits French bob, straight bob, and texture bob for chic and urban atmosphere.',
-      'G LENGTH': 'G length is mini bob above jawline, suits classic jawline bob and mini layered bob for smart and minimal mood.',
+      'G LENGTH': 'G length is mini bob above jawline, suits classic jawline bob and mini layered bob for neat and minimal mood.',
       'H LENGTH': 'H length is short hair from ear line to very short range, for active and unique style.'
     },
 
@@ -1821,7 +1821,7 @@ const HAIRGATOR_I18N = {
       'D LENGTH': 'Dレングスは肩に正確に触れる長さで、ショルダーCカールが似合い、トレンディできれいな感じを与えます。',
       'E LENGTH': 'Eレングスは肩のすぐ上のボブで、クラシックボブ・Aラインボブ・内外Cカールがよく合い、軽快でモダンな印象を作ります。',
       'F LENGTH': 'Fレングスは顎のすぐ下のボブ長で、フレンチボブ・ストレートボブ・テクスチャボブが似合い、シックで都会的な雰囲気を演出します。',
-      'G LENGTH': 'Gレングスは顎上の高さのミニボブで、クラシック顎ボブ・ミニレイヤーボブがよく合い、きびきびとミニマルなムードを与えます。',
+      'G LENGTH': 'Gレングスは顎上の高さのミニボブで、クラシック顎ボブ・ミニレイヤーボブがよく合い、すっきりとミニマルなムードを与えます。',
       'H LENGTH': 'Hレングスは耳～ベリーショート区間のショートヘアで、活動的で個性的なスタイルを完成します。'
     },
 
@@ -2688,7 +2688,7 @@ const HAIRGATOR_I18N = {
       'D LENGTH': 'D长度正好触及肩膀，适合肩部C卷，给人时尚整洁的感觉。',
       'E LENGTH': 'E长度是肩膀正上方的短发，适合经典波波头、A线波波头、内外C卷，营造轻快现代的印象。',
       'F LENGTH': 'F长度是下巴正下方的波波头长度，适合法式波波头、直发短发、质感波波头，展现别致都市氛围。',
-      'G LENGTH': 'G长度是下巴上方高度的迷你波波头，适合经典下巴波波头、迷你层次波波头，给人干练简约的气质。',
+      'G LENGTH': 'G长度是下巴上方高度的迷你波波头，适合经典下巴波波头、迷你层次波波头，给人整洁简约的气质。',
       'H LENGTH': 'H长度是耳线至超短发区间的短发，完成活力个性的风格。'
     },
 
@@ -3558,7 +3558,7 @@ const HAIRGATOR_I18N = {
       'D LENGTH': 'Độ dài D chạm chính xác đến vai, phù hợp với C-curl vai tạo cảm giác thời trang và gọn gàng.',
       'E LENGTH': 'Độ dài E là tóc bob ngay trên vai, phù hợp với bob cổ điển, bob A-line và C-curl trong/ngoài tạo ấn tượng sống động và hiện đại.',
       'F LENGTH': 'Độ dài F là bob ngay dưới đường hàm, phù hợp với bob Pháp, bob thẳng và bob kết cấu tạo bầu không khí thanh lịch và đô thị.',
-      'G LENGTH': 'Độ dài G là mini bob trên đường hàm, phù hợp với bob hàm cổ điển và bob tầng mini tạo phong cách thông minh và tối giản.',
+      'G LENGTH': 'Độ dài G là mini bob trên đường hàm, phù hợp với bob hàm cổ điển và bob tầng mini tạo phong cách gọn gàng và tối giản.',
       'H LENGTH': 'Độ dài H là tóc ngắn từ đường tai đến rất ngắn, tạo phong cách năng động và độc đáo.'
     },
 
@@ -4416,7 +4416,7 @@ const HAIRGATOR_I18N = {
       'D LENGTH': 'Panjang D tepat menyentuh bahu, cocok untuk shoulder C-curl menciptakan nuansa trendi dan rapi.',
       'E LENGTH': 'Panjang E adalah bob tepat di atas bahu, cocok untuk classic bob, A-line bob, dan C-curl dalam/luar menciptakan kesan hidup dan modern.',
       'F LENGTH': 'Panjang F adalah bob tepat di bawah garis rahang, cocok untuk French bob, straight bob, dan textured bob menciptakan suasana elegan dan urban.',
-      'G LENGTH': 'Panjang G adalah mini bob di atas garis rahang, cocok untuk classic jaw bob dan mini layered bob menciptakan gaya cerdas dan minimalis.',
+      'G LENGTH': 'Panjang G adalah mini bob di atas garis rahang, cocok untuk classic jaw bob dan mini layered bob menciptakan gaya rapi dan minimalis.',
       'H LENGTH': 'Panjang H adalah rambut pendek dari garis telinga hingga sangat pendek, menciptakan gaya aktif dan unik.'
     },
 
@@ -5247,7 +5247,7 @@ const HAIRGATOR_I18N = {
       'D LENGTH': 'Largo D llega exactamente a los hombros, ideal para rizo C de hombro para sensación moderna y limpia.',
       'E LENGTH': 'Largo E es bob justo encima de los hombros, ideal para bob clásico, bob línea A y rizo C interior/exterior para impresión animada y moderna.',
       'F LENGTH': 'Largo F es bob justo debajo de la mandíbula, ideal para bob francés, bob recto y bob con textura para atmósfera chic y urbana.',
-      'G LENGTH': 'Largo G es mini bob por encima de la mandíbula, ideal para bob clásico de mandíbula y mini bob en capas para ambiente inteligente y minimal.',
+      'G LENGTH': 'Largo G es mini bob por encima de la mandíbula, ideal para bob clásico de mandíbula y mini bob en capas para ambiente ordenado y minimal.',
       'H LENGTH': 'Largo H es cabello corto desde la línea de la oreja hasta el rango muy corto, para estilo activo y único.'
     },
 
