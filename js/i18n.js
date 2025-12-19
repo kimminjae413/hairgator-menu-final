@@ -74,7 +74,7 @@ const HAIRGATOR_I18N = {
       switchToLight: '라이트 모드로 전환',
 
       // 사이드바
-      personalColor: '퍼스널 컬러 진단',
+      personalColor: '퍼스널 이미지 분석',
       personalColorDesc: '614개 헤어컬러 데이터 기반 분석',
       brandSetting: '상호 설정',
 
@@ -975,7 +975,7 @@ const HAIRGATOR_I18N = {
       switchToDark: 'Switch to Dark Mode',
       switchToLight: 'Switch to Light Mode',
 
-      personalColor: 'Personal Color Analysis',
+      personalColor: 'Personal Image Analysis',
       personalColorDesc: 'Analysis based on 614 hair color data',
       brandSetting: 'Brand Setting',
 
@@ -1846,7 +1846,7 @@ const HAIRGATOR_I18N = {
       switchToDark: 'ダークモードに切替',
       switchToLight: 'ライトモードに切替',
 
-      personalColor: 'パーソナルカラー診断',
+      personalColor: 'パーソナルイメージ分析',
       personalColorDesc: '614個のヘアカラーデータ基盤分析',
       brandSetting: '店名設定',
 
@@ -2713,7 +2713,7 @@ const HAIRGATOR_I18N = {
       switchToDark: '切换到暗色模式',
       switchToLight: '切换到亮色模式',
 
-      personalColor: '个人色彩分析',
+      personalColor: '个人形象分析',
       personalColorDesc: '基于614个染发数据的分析',
       brandSetting: '店名设置',
 
@@ -3583,7 +3583,7 @@ const HAIRGATOR_I18N = {
       switchToDark: 'Chuyển sang chế độ tối',
       switchToLight: 'Chuyển sang chế độ sáng',
 
-      personalColor: 'Phân tích màu cá nhân',
+      personalColor: 'Phân tích hình ảnh cá nhân',
       personalColorDesc: 'Phân tích dựa trên 614 dữ liệu màu tóc',
       brandSetting: 'Cài đặt tên cửa hàng',
 
@@ -4441,7 +4441,7 @@ const HAIRGATOR_I18N = {
       switchToDark: 'Beralih ke mode gelap',
       switchToLight: 'Beralih ke mode terang',
 
-      personalColor: 'Analisis Warna Personal',
+      personalColor: 'Analisis Gambar Personal',
       personalColorDesc: 'Analisis berdasarkan 614 data warna rambut',
       brandSetting: 'Pengaturan Nama Toko',
 
@@ -5272,7 +5272,7 @@ const HAIRGATOR_I18N = {
       switchToDark: 'Cambiar a Modo Oscuro',
       switchToLight: 'Cambiar a Modo Claro',
 
-      personalColor: 'Análisis de Color Personal',
+      personalColor: 'Análisis de Imagen Personal',
       personalColorDesc: 'Análisis basado en 614 datos de color de cabello',
       brandSetting: 'Configuración de Marca',
 

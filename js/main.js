@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
 
-                        <!-- 퍼스널 컬러 진단 -->
+                        <!-- 퍼스널 이미지 분석 -->
                         <div class="menu-item" id="personalColorBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <span style="font-size: 20px;">🌈</span>
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (personalColorBtn) {
             personalColorBtn.addEventListener('click', function() {
-                console.log('🎨 퍼스널 컬러 진단 클릭');
+                console.log('🎨 퍼스널 이미지 분석 클릭');
                 const gender = window.currentGender || 'female';
                 window.location.href = `/personal-color/?gender=${gender}`;
             });
