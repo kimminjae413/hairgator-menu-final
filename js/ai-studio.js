@@ -3273,9 +3273,9 @@ function startNewChat() {
         <p><strong>${welcomeTitle}</strong></p>
         <p>${welcomeMessage}</p>
         <div class="message-actions">
-          <button class="action-btn" onclick="quickAction('A Length가 뭐야?')">${quickALength}</button>
-          <button class="action-btn" onclick="quickAction('레이어와 그래쥬에이션 차이')">${quickLayerGrad}</button>
-          <button class="action-btn" onclick="quickAction('리프팅 각도 설명해줘')">${quickLifting}</button>
+          <button class="action-btn" onclick="quickAction('${quickALength.replace(/'/g, "\\'")}')">${quickALength}</button>
+          <button class="action-btn" onclick="quickAction('${quickLayerGrad.replace(/'/g, "\\'")}')">${quickLayerGrad}</button>
+          <button class="action-btn" onclick="quickAction('${quickLifting.replace(/'/g, "\\'")}')">${quickLifting}</button>
         </div>
       </div>
     </div>
