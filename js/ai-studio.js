@@ -991,9 +991,15 @@ class AIStudio {
     this.canvasResult.classList.remove('hidden');
 
     // Generate canvas content
-    if (canvasData.type === 'customRecipe' || canvasData.customRecipe) {
+    if (canvasData.type === 'customRecipe' || canvasData.customRecipe === true) {
       // ⭐ customRecipe 타입: showCustomRecipeCanvas로 위임
-      this.showCustomRecipeCanvas(canvasData, canvasData.uploadedImageUrl || '');
+      // canvasData 구조 변환: recipe → customRecipe (showCustomRecipeCanvas가 기대하는 형식)
+      const transformedData = {
+        ...canvasData,
+        customRecipe: canvasData.recipe || canvasData.customRecipe, // recipe 필드를 customRecipe로 매핑
+        mainDiagrams: canvasData.mainDiagrams || []
+      };
+      this.showCustomRecipeCanvas(transformedData, canvasData.uploadedImageUrl || '');
       return;
     } else if (canvasData.type === 'recipe') {
       this.canvasResult.innerHTML = this.generateRecipeCard(canvasData);
@@ -3017,6 +3023,12 @@ class AIStudio {
   // 레시피 내용 포맷팅 (세련된 HTML로 변환)
   formatRecipeContent(content) {
     if (!content) return '<p class="recipe-empty">레시피를 불러올 수 없습니다.</p>';
+
+    // ⭐ 문자열이 아닌 경우 처리 (객체, boolean 등)
+    if (typeof content !== 'string') {
+      console.warn('formatRecipeContent: content is not a string:', typeof content, content);
+      return '<p class="recipe-empty">레시피를 불러올 수 없습니다.</p>';
+    }
 
     let formatted = content;
 
