@@ -2412,7 +2412,7 @@ function showHairTryResult(resultImageUrl, styleName) {
                     </div>
                     <div class="comparison-after">
                         <span class="comparison-label">${afterText}</span>
-                        <img src="${resultImageUrl}" alt="After" class="comparison-image">
+                        <img src="${resultImageUrl}" alt="After" class="comparison-image" crossorigin="anonymous">
                     </div>
                 </div>
 
@@ -2474,36 +2474,47 @@ function retryHairTry() {
 // 헤어체험 결과 저장
 async function saveHairTryResult(imageUrl) {
     try {
-        let blob;
+        // 결과 모달에서 AFTER 이미지 요소 찾기
+        const afterImg = document.querySelector('.hair-try-result-modal .comparison-after .comparison-image');
 
-        // Data URL인 경우 (base64)
-        if (imageUrl.startsWith('data:')) {
-            const response = await fetch(imageUrl);
-            blob = await response.blob();
+        if (afterImg && afterImg.complete) {
+            // Canvas를 사용해 이미지 저장 (CORS 우회)
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = afterImg.naturalWidth || afterImg.width;
+            canvas.height = afterImg.naturalHeight || afterImg.height;
+
+            ctx.drawImage(afterImg, 0, 0);
+
+            // Canvas를 Blob으로 변환
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    const blobUrl = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = `hair-try-result-${Date.now()}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(blobUrl);
+                    showToast(t('hairTry.saved') || '이미지가 저장되었습니다', 'success');
+                } else {
+                    // Canvas 방식 실패 시 새 탭에서 열기
+                    window.open(imageUrl, '_blank');
+                    showToast(t('hairTry.saveManual') || '새 탭에서 이미지를 길게 눌러 저장하세요', 'info');
+                }
+            }, 'image/png');
         } else {
-            // 일반 URL인 경우
-            const response = await fetch(imageUrl);
-            blob = await response.blob();
+            // 이미지 요소를 못 찾으면 새 탭에서 열기
+            window.open(imageUrl, '_blank');
+            showToast(t('hairTry.saveManual') || '새 탭에서 이미지를 길게 눌러 저장하세요', 'info');
         }
-
-        // Blob URL 생성
-        const blobUrl = URL.createObjectURL(blob);
-
-        // 다운로드 링크 생성
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = `hair-try-result-${Date.now()}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        // Blob URL 해제
-        URL.revokeObjectURL(blobUrl);
-
-        showToast(t('hairTry.saved') || '이미지가 저장되었습니다', 'success');
     } catch (error) {
         console.error('이미지 저장 오류:', error);
-        showToast(t('hairTry.saveError') || '저장 중 오류가 발생했습니다', 'error');
+        // 오류 발생 시 새 탭에서 열기 (fallback)
+        window.open(imageUrl, '_blank');
+        showToast(t('hairTry.saveManual') || '새 탭에서 이미지를 길게 눌러 저장하세요', 'info');
     }
 }
 
