@@ -840,10 +840,11 @@ function showBrandSettingModal() {
         backdrop-filter: blur(3px);
     `;
 
+    const fontPreviewText = t('ui.fontPreview') || 'Aa 가나';
     const fontOptionsHtml = FONT_OPTIONS.map(font => `
         <label class="font-option ${savedFont === font.id ? 'selected' : ''}" data-font-id="${font.id}">
             <input type="radio" name="brandFont" value="${font.id}" ${savedFont === font.id ? 'checked' : ''} style="display: none;">
-            <span class="font-preview" style="font-family: ${font.fontFamily}; color: #fff;">Aa 가나</span>
+            <span class="font-preview" style="font-family: ${font.fontFamily}; color: #fff;">${fontPreviewText}</span>
             <span class="font-name">${t('ui.' + font.i18nKey) || font.id}</span>
         </label>
     `).join('');
