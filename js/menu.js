@@ -355,36 +355,43 @@ const MALE_CATEGORIES = [
     {
         id: 'side-fringe',
         name: 'SIDE FRINGE',
+        shortName: 'SF',
         description: '앞머리를 앞으로 내려 자연스럽게 흐르는 스타일、 넓은 이마를 돌출 시킨 역삼각형 얼굴형 보완에 효과적이며、 부드럽고 감성적인 이미지를 연출'
     },
     {
         id: 'side-part',
         name: 'SIDE PART',
+        shortName: 'SP',
         description: '가르마를 기준으로 나누는 스타일、 뒤로 넘기면 클래식、내리면 캐주얼、 다양한 얼굴형에 무난하고 활용도가 높음'
     },
     {
         id: 'fringe-up',
         name: 'FRINGE UP',
+        shortName: 'FU',
         description: '윗머리는 앞으로 흐르고、 앞머리 끝만 위로 올린 스타일이며、 이마를 적당히 드러내 시원하고 세련된 인상、 활동적이며 깔끔한 스타일을 연출'
     },
     {
         id: 'pushed-back',
         name: 'PUSHED BACK',
+        shortName: 'PB',
         description: '모발의 전체 흐름이 뒤쪽으로 자연스럽게 넘어가는 스타일、 이마를 드러내 단정＆클래식＆도희적 무드、 직장／포멀 룩과 잘 어울림'
     },
     {
         id: 'buzz',
         name: 'BUZZ',
+        shortName: 'BZ',
         description: '남성 스타일 중 가장 짧은 커트 스타일、 두상 및 윤곽이 그대로 드러나 심플하고 군더더기 없는 이미지이며 관리가 매우 쉬움'
     },
     {
         id: 'crop',
         name: 'CROP',
+        shortName: 'CR',
         description: '버즈보다 조금 더 긴 길이이며 앞머리가 이마 상단을 가볍게 덮는 형태、 텍스처＆볼륨 표현이 가능하며 트렌디하고 시크한 느낌'
     },
     {
         id: 'mohican',
         name: 'MOHICAN',
+        shortName: 'MH',
         description: '톱（センター）부분을 위쪽으로 세워 강조하며 사이드가 상대적으로 짧아 코너 및 라인감이 또렷、 강한 개성 ＆ 에너지 ＆ 스트릿 무드 연출'
     }
 ];
@@ -394,53 +401,69 @@ const FEMALE_CATEGORIES = [
     {
         id: 'a-length',
         name: 'A LENGTH',
+        shortName: 'A',
         description: 'A 길이는 가슴선 아래로 내려오는 롱헤어로, 원랭스·레이어드 롱·굵은 S컬이 잘 맞아 우아하고 드라마틱한 분위기를 냅니다.'
     },
     {
         id: 'b-length',
         name: 'B LENGTH',
+        shortName: 'B',
         description: 'B 길이는 가슴 아래(A)와 쇄골 아래(C) 사이의 미디엄-롱으로, 레이어드 미디엄롱·바디펌이 어울려 부드럽고 실용적인 인상을 줍니다.'
     },
     {
         id: 'c-length',
         name: 'C LENGTH',
+        shortName: 'C',
         description: 'C 길이는 쇄골 라인 아래의 세미 롱으로, 레이어드 C/S컬과 잘 맞아 단정하고 세련된 오피스 무드를 냅니다.'
     },
     {
         id: 'd-length',
         name: 'D LENGTH',
+        shortName: 'D',
         description: 'D 길이는 어깨에 정확히 닿는 길이로, 숄더 C컬이 어울려 트렌디하고 깔끔한 느낌을 줍니다.'
     },
     {
         id: 'e-length',
         name: 'E LENGTH',
+        shortName: 'E',
         description: 'E 길이는 어깨 바로 위의 단발로, 클래식 보브·A라인 보브·내/외 C컬이 잘 맞아 경쾌하고 모던한 인상을 만듭니다.'
     },
     {
         id: 'f-length',
         name: 'F LENGTH',
+        shortName: 'F',
         description: 'F 길이는 턱선 바로 밑 보브 길이로, 프렌치 보브·일자 단발·텍스쳐 보브가 어울려 시크하고 도회적인 분위기를 연출합니다.'
     },
     {
         id: 'g-length',
         name: 'G LENGTH',
-        description: 'G 길이는 턱선위 높이의 미니 보브로, 클래식 턱선 보브·미니 레이어 보브가 잘 맞아 똘똘하고 미니멀한 무드를 줍니다.'
+        shortName: 'G',
+        description: 'G 길이는 턱선위 높이의 미니 보브로, 클래식 턱선 보브·미니 레이어 보브가 잘 맞아 깔끔하고 미니멀한 무드를 줍니다.'
     },
     {
         id: 'h-length',
         name: 'H LENGTH',
+        shortName: 'H',
         description: 'H 길이는 귀선~베리숏구간의 숏헤어로, 활동적이고 개성 있는 스타일을 완성합니다.'
     }
 ];
 
 // 중분류 (앞머리 길이)
 const SUB_CATEGORIES = [
-    'None',
-    'Fore Head',
-    'Eye Brow',
-    'Eye',
-    'Cheekbone'
+    { name: 'None', shortName: 'N' },
+    { name: 'Fore Head', shortName: 'FH' },
+    { name: 'Eye Brow', shortName: 'EB' },
+    { name: 'Eye', shortName: 'E' },
+    { name: 'Cheekbone', shortName: 'CB' }
 ];
+
+// 중분류 이름 얻기 (호환성 유지)
+function getSubCategoryName(subCat) {
+    return typeof subCat === 'string' ? subCat : subCat.name;
+}
+function getSubCategoryShortName(subCat) {
+    return typeof subCat === 'string' ? subCat : subCat.shortName;
+}
 
 // ========== 전역 변수 ==========
 let currentGender = null;
@@ -519,7 +542,7 @@ async function checkSubcategoriesAndNew(gender, categoryName) {
     } catch (error) {
         console.error('서브카테고리 확인 오류:', error);
         return {
-            available: SUB_CATEGORIES,
+            available: SUB_CATEGORIES.map(s => getSubCategoryName(s)),
             newCounts: {},
             totalNewCount: 0
         };
@@ -607,7 +630,11 @@ async function createMainTabsWithSmart(categories, gender) {
     categories.forEach((category, index) => {
         const tab = document.createElement('button');
         tab.className = `category-tab main-tab ${gender}`;
-        tab.textContent = category.name; // 영어로 통일
+
+        // 모바일용 짧은 이름 + 데스크탑용 전체 이름
+        const fullName = category.name;
+        const shortName = category.shortName || fullName;
+        tab.innerHTML = `<span class="tab-name-full">${fullName}</span><span class="tab-name-short">${shortName}</span>`;
         tab.onclick = () => selectMainTab(category, index);
 
         const categoryInfo = categoryInfos[index];
@@ -720,13 +747,18 @@ async function loadSmartSubTabs(categoryName) {
 
     let firstAvailableIndex = -1;
 
-    SUB_CATEGORIES.forEach((subCategory, index) => {
+    SUB_CATEGORIES.forEach((subCategoryObj, index) => {
+        const subCategoryName = getSubCategoryName(subCategoryObj);
+        const subCategoryShort = getSubCategoryShortName(subCategoryObj);
+
         const tab = document.createElement('button');
         tab.className = `sub-tab ${currentGender}`;
-        tab.textContent = subCategory; // 영어로 통일
+
+        // 모바일용 짧은 이름 + 데스크탑용 전체 이름
+        tab.innerHTML = `<span class="tab-name-full">${subCategoryName}</span><span class="tab-name-short">${subCategoryShort}</span>`;
 
         // 사용 가능한 서브카테고리인지 확인
-        const isAvailable = subInfo.available.includes(subCategory);
+        const isAvailable = subInfo.available.includes(subCategoryName);
 
         if (!isAvailable) {
             // 스타일이 없는 서브카테고리 - 비활성화
@@ -736,21 +768,21 @@ async function loadSmartSubTabs(categoryName) {
             tab.style.pointerEvents = 'none';
         } else {
             // 사용 가능한 서브카테고리
-            tab.onclick = () => selectSubTab(subCategory, index);
+            tab.onclick = () => selectSubTab(subCategoryName, index);
 
             // 첫 번째 사용 가능한 서브카테고리를 활성화
             if (firstAvailableIndex === -1) {
                 firstAvailableIndex = index;
                 tab.classList.add('active');
-                currentSubTab = subCategory;
-                window.currentSubTab = subCategory; // window 동기화
+                currentSubTab = subCategoryName;
+                window.currentSubTab = subCategoryName; // window 동기화
             }
 
             // NEW 표시 추가
-            const newCount = subInfo.newCounts[subCategory];
+            const newCount = subInfo.newCounts[subCategoryName];
             if (newCount && newCount > 0) {
                 tab.appendChild(createNewIndicator());
-                console.log(`중분류 NEW 표시: ${subCategory} (${newCount}개)`);
+                console.log(`중분류 NEW 표시: ${subCategoryName} (${newCount}개)`);
             }
         }
 
