@@ -409,7 +409,7 @@ exports.handler = async (event, context) => {
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
 
     if (!OPENAI_KEY) throw new Error('OpenAI API key not configured');
-    if (!GEMINI_KEY) throw new Error('Gemini API key not configured');
+    if (!GEMINI_KEY) throw new Error('AI 서비스 설정 오류');
 
     console.log('🔑 환경변수 확인 완료 (Firebase 기반)');
 
@@ -1103,7 +1103,7 @@ async function analyzeImageWithQuestion(payload, geminiKey) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ Gemini API Error:', response.status, errorText);
-      throw new Error(`Gemini API Error: ${response.status}`);
+      throw new Error(`AI 서비스 오류: ${response.status}`);
     }
 
     const data = await response.json();
@@ -1162,7 +1162,7 @@ async function analyzeImage(payload, openaiKey) {
   const GEMINI_KEY = process.env.GEMINI_API_KEY;
   if (!GEMINI_KEY) {
     console.error('❌ GEMINI_API_KEY not configured');
-    throw new Error('Gemini API key not configured');
+    throw new Error('AI 서비스 설정 오류');
   }
 
   console.log(`🎯 이미지 분석 시작 (Gemini 2.0 Flash) - 사용자 선택 성별: ${user_gender || 'unspecified'}`);
@@ -1317,7 +1317,7 @@ Return ONLY the JSON object, no markdown, no explanation, no code blocks!`;
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Gemini API Error Response:', errorText);
-      throw new Error(`Gemini API Error: ${response.status} - ${errorText}`);
+      throw new Error(`AI 서비스 오류: ${response.status}`);
     }
 
     const data = await response.json();
@@ -1325,7 +1325,7 @@ Return ONLY the JSON object, no markdown, no explanation, no code blocks!`;
     // Gemini 응답에서 텍스트 추출
     const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!responseText) {
-      throw new Error('No response text from Gemini');
+      throw new Error('AI 응답을 받지 못했습니다');
     }
 
     // JSON 파싱 (마크다운 코드 블록 제거)
@@ -1489,7 +1489,7 @@ async function searchRecipeSamples(supabaseUrl, supabaseKey, geminiKey, searchQu
     );
 
     if (!embeddingResponse.ok) {
-      throw new Error(`Gemini embedding failed: ${embeddingResponse.status}`);
+      throw new Error(`임베딩 생성 실패: ${embeddingResponse.status}`);
     }
 
     const embeddingData = await embeddingResponse.json();
@@ -3422,7 +3422,7 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Gemini API Error:', response.status, errorText);
-      throw new Error(`Gemini API Error: ${response.status}`);
+      throw new Error(`AI 서비스 오류: ${response.status}`);
     }
 
     const data = await response.json();
@@ -3936,7 +3936,7 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ Gemini API Error:', response.status, errorText);
-      throw new Error(`Gemini API Error: ${response.status} - ${errorText}`);
+      throw new Error(`AI 서비스 오류: ${response.status}`);
     }
 
     const data = await response.json();
@@ -10144,14 +10144,14 @@ async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
   );
 
   if (!response.ok) {
-    throw new Error(`Gemini Vision API Error: ${response.status}`);
+    throw new Error(`AI Vision 서비스 오류: ${response.status}`);
   }
 
   const data = await response.json();
   const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
   if (!responseText) {
-    throw new Error('No response from Gemini Vision');
+    throw new Error('AI Vision 응답을 받지 못했습니다');
   }
 
   // JSON 파싱
@@ -10542,7 +10542,7 @@ Be EXTREMELY specific. Every detail matters for accurate replication.`;
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ API 에러 응답:', errorText);
-      throw new Error(`Gemini API Error: ${response.status} - ${errorText}`);
+      throw new Error(`AI 서비스 오류: ${response.status}`);
     }
 
     const data = await response.json();
@@ -10646,7 +10646,7 @@ Be specific and visual. Focus on what makes this hairstyle unique.`;
     );
 
     if (!response.ok) {
-      throw new Error(`Gemini API Error: ${response.status}`);
+      throw new Error(`AI 서비스 오류: ${response.status}`);
     }
 
     const data = await response.json();
@@ -11101,7 +11101,7 @@ IMPORTANT:
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Gemini API Error: ${response.status}`, errorText);
-        throw new Error(`Gemini API 오류 (${response.status}): ${errorText.substring(0, 300)}`);
+        throw new Error(`AI 서비스 오류 (${response.status})`);
       }
 
       const result = await response.json();
@@ -11434,7 +11434,7 @@ async function generateCardNewsKeywords(payload) {
     );
 
     if (!response.ok) {
-      throw new Error('Gemini API 오류');
+      throw new Error('AI 서비스 오류');
     }
 
     const result = await response.json();

@@ -137,7 +137,7 @@ exports.handler = async (event) => {
             // 성공 - Gemini 후처리 진행
             if (taskResult.status === 'succeeded') {
                 if (!taskResult.output || taskResult.output.length === 0) {
-                    throw new Error('No output from vModel');
+                    throw new Error('헤어체험 결과를 생성하지 못했습니다');
                 }
 
                 const vmodelImageUrl = taskResult.output[0];
