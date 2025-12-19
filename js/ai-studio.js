@@ -3141,13 +3141,31 @@ class AIStudio {
     // 불릿 리스트 (- item) - 단 이미 처리된 것 제외
     formatted = formatted.replace(/^-\s+(.+)$/gm, '<li class="bullet-item">$1</li>');
 
-    // 리스트 그룹화
+    // 리스트 그룹화 + 섹션별 번호 매기기
     let inList = false;
+    let sectionCounter = 0;  // External/Internal 섹션 내 문장 번호
+    let inSection = false;   // 현재 섹션(External/Internal/Zone) 안에 있는지
     const lines = formatted.split('\n');
     const result = [];
 
     for (let line of lines) {
       const trimmed = line.trim();
+
+      // External/Internal/Zone 섹션 헤더 감지 → 번호 리셋
+      if (trimmed.includes('class="recipe-section') &&
+          (trimmed.includes('external') || trimmed.includes('internal') ||
+           trimmed.includes('zone-a') || trimmed.includes('zone-b') || trimmed.includes('zone-c'))) {
+        sectionCounter = 0;
+        inSection = true;
+        result.push(trimmed);
+        continue;
+      }
+
+      // 다른 섹션 헤더나 구분선 만나면 섹션 종료
+      if (trimmed.includes('class="recipe-section') || trimmed.startsWith('<hr')) {
+        inSection = false;
+      }
+
       if (trimmed.startsWith('<li')) {
         if (!inList) {
           result.push('<ul class="recipe-list">');
@@ -3168,7 +3186,13 @@ class AIStudio {
             !trimmed.startsWith('<span class="tip-')) {
           // 빈 문장이 아니면 p로 감싸기
           if (trimmed.length > 0) {
-            result.push(`<p class="recipe-para">${trimmed}</p>`);
+            // ⭐ 섹션 내부이면 번호 추가
+            if (inSection) {
+              sectionCounter++;
+              result.push(`<p class="recipe-para numbered"><span class="step-num">${sectionCounter}</span>${trimmed}</p>`);
+            } else {
+              result.push(`<p class="recipe-para">${trimmed}</p>`);
+            }
           }
         } else {
           result.push(trimmed);

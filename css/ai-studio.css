@@ -2174,6 +2174,37 @@ body.ai-studio-page {
   color: var(--text-primary);
 }
 
+/* ⭐ 섹션 내 번호가 붙은 문장 스타일 */
+.recipe-formatted .recipe-para.numbered {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid var(--primary-color, #E91E63);
+}
+
+.recipe-formatted .recipe-para.numbered .step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  background: linear-gradient(135deg, var(--primary-color, #E91E63), var(--primary-dark, #C2185B));
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* 라이트 모드 */
+body.light-theme .recipe-formatted .recipe-para.numbered {
+  background: rgba(0, 0, 0, 0.03);
+}
+
 /* 💡 초보자 설명 스타일 */
 .recipe-formatted .beginner-tip,
 .recipe-content .beginner-tip {
