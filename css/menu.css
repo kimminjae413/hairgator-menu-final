@@ -612,9 +612,18 @@ body.light-theme .category-description {
 
 .category-description-text {
     display: flex !important;
-    align-items: baseline !important;
+    align-items: center !important;
     gap: 16px !important;
-    flex-wrap: wrap !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.category-description-text::-webkit-scrollbar {
+    display: none;
 }
 
 .category-description-text .category-name {
