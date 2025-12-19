@@ -39,6 +39,13 @@
   node_bundler = "esbuild"
   timeout = 26
 
+# ⭐ 이미지 정리 스케줄 함수 (매일 실행)
+# - 7일 지난 temp_uploads/ 이미지 자동 삭제
+# - Firebase Storage에서 만료된 파일 정리
+[functions."cleanup-old-images"]
+  node_bundler = "esbuild"
+  schedule = "@daily"
+
 # ========== 캐시 설정 (개발/업데이트 빈번) ==========
 # HTML 파일 - 캐시 비활성화
 [[headers]]

@@ -1276,6 +1276,49 @@ class AIStudio {
     });
   }
 
+  // ==================== Firebase Storage 이미지 업로드 (7일 보관) ====================
+
+  async uploadImageToStorage(file) {
+    try {
+      if (!firebase.storage) {
+        console.warn('Firebase Storage not available, using blob URL');
+        return URL.createObjectURL(file);
+      }
+
+      const storage = firebase.storage();
+      const userId = this.currentUserId || 'anonymous';
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substring(2, 8);
+      const ext = file.name.split('.').pop() || 'jpg';
+      const filePath = `temp_uploads/${userId}/${timestamp}_${randomStr}.${ext}`;
+
+      console.log(`📤 이미지 업로드 중: ${filePath}`);
+
+      const storageRef = storage.ref(filePath);
+
+      // 메타데이터에 업로드 시간 저장 (cleanup용)
+      const metadata = {
+        contentType: file.type,
+        customMetadata: {
+          uploadedAt: timestamp.toString(),
+          userId: userId,
+          expiresAt: (timestamp + 7 * 24 * 60 * 60 * 1000).toString() // 7일 후
+        }
+      };
+
+      const snapshot = await storageRef.put(file, metadata);
+      const downloadURL = await snapshot.ref.getDownloadURL();
+
+      console.log(`✅ 이미지 업로드 완료: ${downloadURL}`);
+      return downloadURL;
+
+    } catch (error) {
+      console.error('❌ Firebase Storage 업로드 실패:', error);
+      // 실패 시 blob URL fallback
+      return URL.createObjectURL(file);
+    }
+  }
+
   // ==================== Actions ====================
 
   async clearFirebaseHistory() {
@@ -3500,7 +3543,7 @@ function triggerImageUpload() {
   document.getElementById('image-upload').click();
 }
 
-function handleImageSelect(event) {
+async function handleImageSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
 
@@ -3515,25 +3558,49 @@ function handleImageSelect(event) {
     return;
   }
 
-  // 미리보기 표시
-  const imageUrl = URL.createObjectURL(file);
+  // 즉시 미리보기 표시 (blob URL - 빠른 UX)
+  const blobUrl = URL.createObjectURL(file);
   const previewArea = document.getElementById('image-preview-area');
   const previewImage = document.getElementById('preview-image');
 
-  previewImage.src = imageUrl;
+  previewImage.src = blobUrl;
   previewArea.style.display = 'block';
 
-  // 파일 데이터 저장
+  // 파일 데이터 저장 (초기: blob URL)
   pendingImageData = {
     file: file,
-    url: imageUrl
+    url: blobUrl,
+    isUploading: true,
+    storageUrl: null
   };
 
   console.log('📷 이미지 선택됨:', file.name);
-  console.log('📷 pendingImageData 설정됨:', pendingImageData);
 
   // 파일 입력 초기화
   event.target.value = '';
+
+  // ⭐ 백그라운드에서 Firebase Storage 업로드
+  try {
+    if (window.aiStudio && window.aiStudio.uploadImageToStorage) {
+      console.log('📤 Firebase Storage 업로드 시작...');
+      const storageUrl = await window.aiStudio.uploadImageToStorage(file);
+
+      // 업로드 완료 시 URL 업데이트
+      if (pendingImageData && pendingImageData.file === file) {
+        pendingImageData.storageUrl = storageUrl;
+        pendingImageData.url = storageUrl; // 영구 URL로 교체
+        pendingImageData.isUploading = false;
+        console.log('✅ Firebase Storage URL 업데이트:', storageUrl);
+      }
+    } else {
+      // Firebase Storage 사용 불가 시 blob URL 유지
+      pendingImageData.isUploading = false;
+      console.warn('⚠️ Firebase Storage 사용 불가, blob URL 사용');
+    }
+  } catch (error) {
+    console.error('❌ Firebase Storage 업로드 실패:', error);
+    pendingImageData.isUploading = false;
+  }
 }
 
 function removePreviewImage() {
@@ -3583,6 +3650,18 @@ async function sendImageWithQuestion() {
     return false;
   }
 
+  // ⭐ Firebase Storage 업로드 완료 대기
+  if (pendingImageData.isUploading) {
+    console.log('⏳ 이미지 업로드 완료 대기 중...');
+    // 최대 10초 대기
+    for (let i = 0; i < 100 && pendingImageData.isUploading; i++) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    if (pendingImageData.isUploading) {
+      console.warn('⚠️ 이미지 업로드 타임아웃, blob URL 사용');
+    }
+  }
+
   const textInput = document.getElementById('chat-input');
   const question = textInput.value.trim() || '이 헤어스타일에 맞는 레시피를 만들어주세요';
 
@@ -3593,8 +3672,10 @@ async function sendImageWithQuestion() {
     : selectedCategory.code;
 
   // 사용자 메시지 표시 (이미지 + 성별 + 카테고리 + 텍스트)
+  // ⭐ Firebase Storage URL 사용 (있으면)
+  const displayUrl = pendingImageData.storageUrl || pendingImageData.url;
   window.aiStudio.addMessageToUI('user', `
-    <img src="${pendingImageData.url}" style="max-width: 200px; border-radius: 8px; margin-bottom: 8px;" alt="업로드된 이미지">
+    <img src="${displayUrl}" style="max-width: 200px; border-radius: 8px; margin-bottom: 8px;" alt="업로드된 이미지">
     <p><strong>${genderText} | ${categoryText}</strong></p>
     <p>${question}</p>
   `);
@@ -3727,6 +3808,8 @@ ${data.customRecipe ? `\n생성된 레시피:\n${data.customRecipe}` : ''}`;
       }
 
       // ⭐ 캔버스 데이터 구성 (히스토리 복원용)
+      // Firebase Storage URL 우선 사용 (영구 보관)
+      const permanentImageUrl = pendingImageData.storageUrl || pendingImageData.url;
       const canvasData = {
         type: 'customRecipe',
         customRecipe: true,
@@ -3734,8 +3817,8 @@ ${data.customRecipe ? `\n생성된 레시피:\n${data.customRecipe}` : ''}`;
         analysis: data.analysis,
         referenceStyles: data.referenceStyles,
         recipe: data.gender === 'male' ? data.recipe : data.customRecipe,
-        imageUrl: pendingImageData.url,
-        uploadedImageUrl: pendingImageData.url
+        imageUrl: permanentImageUrl,
+        uploadedImageUrl: permanentImageUrl
       };
 
       window.aiStudio.conversationHistory.push({
@@ -3758,8 +3841,8 @@ ${data.customRecipe ? `\n생성된 레시피:\n${data.customRecipe}` : ''}`;
         timestamp: Date.now()
       };
 
-      // 캔버스에 맞춤 레시피 표시
-      window.aiStudio.showCustomRecipeCanvas(data, pendingImageData.url);
+      // 캔버스에 맞춤 레시피 표시 (영구 URL 사용)
+      window.aiStudio.showCustomRecipeCanvas(data, permanentImageUrl);
 
     } else {
       window.aiStudio.addMessageToUI('bot', result.error || '레시피 생성에 실패했습니다. 다시 시도해주세요.');
