@@ -188,15 +188,56 @@
 - `document.body.classList.contains('light-theme')`: 다크모드 체크
 
 ## 최근 작업 이력
-- 2025-12-19: RAG 헤어케어 제품 가이드 추가 + 히스토리 이미지 영구 저장
+- 2025-12-19: 다국어 버그 수정 + 기술 용어 노출 방지 + 모바일 UI 개선
 
-  ### RAG 헤어케어 제품 가이드 추가
+  ### 고객 화면 기술 용어 노출 방지
+  - **chatbot-api.js**: "Gemini" 에러 메시지 14개 → "AI 서비스"로 변경
+  - **hair-change.js**: "vModel" 에러 메시지 → "헤어체험 결과"로 변경
+  - **console.log는 유지**: 디버깅용이므로 그대로 둠
+
+  ### 챗봇 퀵 버튼 다국어 수정
+  - **문제**: 중국어 설정 후 퀵 버튼 클릭 → 한국어로 질문 전송됨
+  - **원인**: onclick에 한국어 질문 하드코딩
+  - **해결**: 번역된 텍스트를 onclick에도 적용
+  - **파일**: ai-studio.js `resetChatMessages()` 함수
+
+  ### 브랜드 설정 폰트 미리보기 다국어
+  - **문제**: "가나" 텍스트 하드코딩
+  - **해결**: `t('ui.fontPreview')` 사용
+  - **7개국어 추가**:
+    - ko: `Aa 가나`, ja: `Aa あア`, zh: `Aa 字体`
+    - en/vi/id/es: `Aa Bb`
+
+  ### 모바일 카테고리 탭 축약
+  - **문제**: 긴 카테고리명이 모바일에서 넘침
+  - **해결**: 480px 이하에서 축약명 표시
+  - **여자**: A LENGTH → A, B LENGTH → B, ...
+  - **남자**: SIDE PART → SP, TWO BLOCK → 2B, CROP → CR, ...
+  - **중분류**: Fore Head → FH, Eye Brow → EB, ...
+  - **CSS**: `.tab-name-full` / `.tab-name-short` + 미디어쿼리
+
+  ### 카테고리 설명 한줄 스크롤
+  - **변경**: 설명 텍스트 `white-space: nowrap` + 가로 스크롤
+  - **CSS**: `.category-description-text` overflow-x: auto
+
+  ### 헤어체험 결과 저장 (태블릿 지원)
+  - **문제**: 태블릿에서 저장 버튼 안됨 (Canvas CORS 제한)
+  - **해결**: 오버레이 모달로 이미지 표시 → 길게 눌러 저장 안내
+  - **함수**: `showSaveImageOverlay()`, `closeSaveImageOverlay()`
+  - **i18n**: `hairTry.saveGuide` 7개국어 추가
+
+  ### 커트 레시피 섹션별 번호 매기기
+  - **External**: 문장마다 1, 2, 3...
+  - **Internal**: 번호 리셋 후 1, 2, 3...
+  - **CSS**: `.step-num` 원형 번호 스타일
+
+  ### RAG 헤어케어 제품 가이드 추가 (이전 세션)
   - **문서**: `hair_care_products_guide.txt` - 트리트먼트/린스/컨디셔너 차이 가이드
   - **내용**: 카티온 계면활성제 작용 원리, 손상별 제품 선택, FAQ 6개
   - **업로드 스크립트**: `scripts/upload-hair-care-guide.py`
   - **Store**: fileSearchStores/hairgator-theory-final-2025-kkb6n1ftfbf2 (46개 문서)
 
-  ### 히스토리 이미지 Firebase Storage 저장
+  ### 히스토리 이미지 Firebase Storage 저장 (이전 세션)
   - **문제**: blob URL은 세션 종료 시 만료 → 히스토리에서 이미지가 엑박으로 표시
   - **해결**: 이미지 업로드 시 Firebase Storage에 영구 저장 (7일 보관)
   - **함수**: `uploadImageToStorage()` (ai-studio.js)
