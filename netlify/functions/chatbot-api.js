@@ -3954,6 +3954,7 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
     // 언어별 이론 인덱스 매핑: korean→ko, english→en, japanese→ja, chinese→zh, vietnamese→vi, indonesian→id, spanish→es
     const langCodeMap = { korean: 'ko', english: 'en', japanese: 'ja', chinese: 'zh', vietnamese: 'vi', indonesian: 'id', spanish: 'es' };
     const theoryLang = langCodeMap[userLanguage] || 'ko';
+    console.log(`🌐 이론 이미지 언어: userLanguage=${userLanguage}, theoryLang=${theoryLang}`);
     const theoryImageResult = await detectTheoryImageForQuery(user_query, theoryLang);
 
     // ⭐ 배열 또는 단일 객체를 배열로 통일
@@ -4223,6 +4224,9 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
     // ⭐ 키워드 정확 매칭이 있으면 후보로 추가
     if (hasExactMatch && matchCount >= 1) {
       const imageUrl = index.images[language] || index.images['ko'] || index.images['en'];
+      // 🔍 디버그: 어떤 언어 이미지가 선택되었는지 확인
+      const selectedLang = index.images[language] ? language : (index.images['ko'] ? 'ko' : 'en');
+      console.log(`🖼️ 이론 이미지 선택: term=${index.term}, 요청=${language}, 실제=${selectedLang}, hasZh=${!!index.images?.zh}`);
       if (imageUrl) {
         matchedIndexes.push({
           url: imageUrl,
