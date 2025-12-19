@@ -4226,7 +4226,8 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
       const imageUrl = index.images[language] || index.images['ko'] || index.images['en'];
       // 🔍 디버그: 어떤 언어 이미지가 선택되었는지 확인
       const selectedLang = index.images[language] ? language : (index.images['ko'] ? 'ko' : 'en');
-      console.log(`🖼️ 이론 이미지 선택: term=${index.term}, 요청=${language}, 실제=${selectedLang}, hasZh=${!!index.images?.zh}`);
+      console.log(`🖼️ 이론 이미지 선택: term=${index.term}, 요청=${language}, 실제=${selectedLang}`);
+      console.log(`   📎 선택된 URL: ${imageUrl?.substring(0, 120)}`);
       if (imageUrl) {
         matchedIndexes.push({
           url: imageUrl,
