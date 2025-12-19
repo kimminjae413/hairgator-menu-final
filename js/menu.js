@@ -2473,49 +2473,126 @@ function retryHairTry() {
 
 // 헤어체험 결과 저장
 async function saveHairTryResult(imageUrl) {
-    try {
-        // 결과 모달에서 AFTER 이미지 요소 찾기
-        const afterImg = document.querySelector('.hair-try-result-modal .comparison-after .comparison-image');
+    console.log('saveHairTryResult 호출됨:', imageUrl);
 
-        if (afterImg && afterImg.complete) {
-            // Canvas를 사용해 이미지 저장 (CORS 우회)
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+    // 저장용 오버레이 표시
+    showSaveImageOverlay(imageUrl);
+}
 
-            canvas.width = afterImg.naturalWidth || afterImg.width;
-            canvas.height = afterImg.naturalHeight || afterImg.height;
+// 이미지 저장 오버레이 (길게 눌러서 저장)
+function showSaveImageOverlay(imageUrl) {
+    // 기존 오버레이 제거
+    const existing = document.querySelector('.save-image-overlay');
+    if (existing) existing.remove();
 
-            ctx.drawImage(afterImg, 0, 0);
+    const overlay = document.createElement('div');
+    overlay.className = 'save-image-overlay';
+    overlay.innerHTML = `
+        <div class="save-image-container">
+            <div class="save-image-header">
+                <span class="save-icon">💾</span>
+                <span>${t('hairTry.saveGuide') || '이미지를 길게 눌러 저장하세요'}</span>
+            </div>
+            <img src="${imageUrl}" alt="Result" class="save-target-image" crossorigin="anonymous">
+            <div class="save-image-actions">
+                <button class="save-close-btn" onclick="closeSaveImageOverlay()">
+                    ${t('common.close') || '닫기'}
+                </button>
+            </div>
+        </div>
+    `;
 
-            // Canvas를 Blob으로 변환
-            canvas.toBlob((blob) => {
-                if (blob) {
-                    const blobUrl = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = blobUrl;
-                    link.download = `hair-try-result-${Date.now()}.png`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(blobUrl);
-                    showToast(t('hairTry.saved') || '이미지가 저장되었습니다', 'success');
-                } else {
-                    // Canvas 방식 실패 시 새 탭에서 열기
-                    window.open(imageUrl, '_blank');
-                    showToast(t('hairTry.saveManual') || '새 탭에서 이미지를 길게 눌러 저장하세요', 'info');
-                }
-            }, 'image/png');
-        } else {
-            // 이미지 요소를 못 찾으면 새 탭에서 열기
-            window.open(imageUrl, '_blank');
-            showToast(t('hairTry.saveManual') || '새 탭에서 이미지를 길게 눌러 저장하세요', 'info');
+    // 스타일 추가
+    addSaveImageStyles();
+
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+
+    // 오버레이 클릭으로 닫기
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            closeSaveImageOverlay();
         }
-    } catch (error) {
-        console.error('이미지 저장 오류:', error);
-        // 오류 발생 시 새 탭에서 열기 (fallback)
-        window.open(imageUrl, '_blank');
-        showToast(t('hairTry.saveManual') || '새 탭에서 이미지를 길게 눌러 저장하세요', 'info');
+    });
+
+    // 토스트 메시지
+    showToast(t('hairTry.saveGuide') || '이미지를 길게 눌러 저장하세요', 'info');
+}
+
+// 저장 오버레이 닫기
+function closeSaveImageOverlay() {
+    const overlay = document.querySelector('.save-image-overlay');
+    if (overlay) {
+        overlay.remove();
+        document.body.style.overflow = '';
     }
+}
+
+// 저장 오버레이 스타일
+function addSaveImageStyles() {
+    if (document.getElementById('save-image-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'save-image-styles';
+    style.textContent = `
+        .save-image-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .save-image-container {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        .save-image-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        .save-icon {
+            font-size: 24px;
+        }
+        .save-target-image {
+            max-width: 100%;
+            max-height: 60vh;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .save-image-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .save-close-btn {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 // 헤어체험 결과 모달 스타일 (성별 기반 테마 색상)
@@ -3568,6 +3645,7 @@ window.closeCameraModal = closeCameraModal;
 window.switchCamera = switchCamera;
 window.capturePhoto = capturePhoto;
 window.saveHairTryResult = saveHairTryResult;
+window.closeSaveImageOverlay = closeSaveImageOverlay;
 
 // 디버깅용 전역 함수
 window.debugHAIRGATOR = function () {

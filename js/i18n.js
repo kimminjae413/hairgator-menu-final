@@ -269,7 +269,8 @@ const HAIRGATOR_I18N = {
       style: 'STYLE',
       saved: '이미지가 저장되었습니다',
       saveError: '저장 중 오류가 발생했습니다',
-      saveManual: '새 탭에서 이미지를 길게 눌러 저장하세요'
+      saveManual: '새 탭에서 이미지를 길게 눌러 저장하세요',
+      saveGuide: '이미지를 길게 눌러 저장하세요'
     },
 
     // ========== 룩북 (Lookbook) ==========
@@ -1171,7 +1172,8 @@ const HAIRGATOR_I18N = {
       style: 'STYLE',
       saved: 'Image saved successfully',
       saveError: 'Error saving image',
-      saveManual: 'Long press on image in new tab to save'
+      saveManual: 'Long press on image in new tab to save',
+      saveGuide: 'Long press on image to save'
     },
 
     // ========== Lookbook ==========
@@ -2046,7 +2048,8 @@ const HAIRGATOR_I18N = {
       style: 'STYLE',
       saved: '画像が保存されました',
       saveError: '保存中にエラーが発生しました',
-      saveManual: '新しいタブで画像を長押しして保存してください'
+      saveManual: '新しいタブで画像を長押しして保存してください',
+      saveGuide: '画像を長押しして保存してください'
     },
 
     // ========== Lookbook (Japanese) ==========
@@ -2917,7 +2920,8 @@ const HAIRGATOR_I18N = {
       style: 'STYLE',
       saved: '图片已保存',
       saveError: '保存时出错',
-      saveManual: '在新标签页长按图片保存'
+      saveManual: '在新标签页长按图片保存',
+      saveGuide: '长按图片保存'
     },
 
     // ========== Lookbook (Chinese) ==========
@@ -3791,7 +3795,8 @@ const HAIRGATOR_I18N = {
       style: 'STYLE',
       saved: 'Hình ảnh đã được lưu',
       saveError: 'Lỗi khi lưu',
-      saveManual: 'Nhấn giữ hình ảnh trong tab mới để lưu'
+      saveManual: 'Nhấn giữ hình ảnh trong tab mới để lưu',
+      saveGuide: 'Nhấn giữ hình ảnh để lưu'
     },
 
     // ========== Lookbook (Vietnamese) ==========
@@ -4653,7 +4658,8 @@ const HAIRGATOR_I18N = {
       style: 'STYLE',
       saved: 'Gambar berhasil disimpan',
       saveError: 'Gagal menyimpan',
-      saveManual: 'Tekan lama gambar di tab baru untuk menyimpan'
+      saveManual: 'Tekan lama gambar di tab baru untuk menyimpan',
+      saveGuide: 'Tekan lama gambar untuk menyimpan'
     },
 
     // ========== Lookbook ==========
@@ -5479,7 +5485,8 @@ const HAIRGATOR_I18N = {
       style: 'STYLE',
       saved: 'Imagen guardada con éxito',
       saveError: 'Error al guardar',
-      saveManual: 'Mantén presionada la imagen en la nueva pestaña para guardar'
+      saveManual: 'Mantén presionada la imagen en la nueva pestaña para guardar',
+      saveGuide: 'Mantén presionada la imagen para guardar'
     },
 
     // ========== Lookbook ==========
