@@ -991,7 +991,11 @@ class AIStudio {
     this.canvasResult.classList.remove('hidden');
 
     // Generate canvas content
-    if (canvasData.type === 'recipe') {
+    if (canvasData.type === 'customRecipe' || canvasData.customRecipe) {
+      // ⭐ customRecipe 타입: showCustomRecipeCanvas로 위임
+      this.showCustomRecipeCanvas(canvasData, canvasData.uploadedImageUrl || '');
+      return;
+    } else if (canvasData.type === 'recipe') {
       this.canvasResult.innerHTML = this.generateRecipeCard(canvasData);
     } else if (canvasData.type === 'analysis') {
       this.canvasResult.innerHTML = this.generateAnalysisCard(canvasData);
