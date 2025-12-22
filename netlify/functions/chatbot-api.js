@@ -9740,6 +9740,7 @@ async function getCutRecipeByStyle(payload) {
         .replace(/ {2,}/g, ' ')
         .trim();
       altTextRecipe = normalizeRecipeFormat(altTextRecipe);
+      altTextRecipe = formatRecipeSentences(altTextRecipe);
 
       return {
         statusCode: 200,
@@ -9781,6 +9782,8 @@ async function getCutRecipeByStyle(payload) {
 
     // ⭐ External/Internal 형식으로 변환 (커트 레시피)
     textRecipe = normalizeRecipeFormat(textRecipe);
+    // ⭐ 문장별 번호 강제 적용
+    textRecipe = formatRecipeSentences(textRecipe);
 
     return {
       statusCode: 200,
