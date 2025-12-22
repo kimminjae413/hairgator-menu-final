@@ -378,7 +378,7 @@
             chatbot: 10
         },
 
-        // 토큰 잔액 조회
+        // 토큰 잔액 조회 (클라이언트 측 Firebase 직접 사용)
         async getTokenBalance(userId) {
             try {
                 if (!userId) {
@@ -391,6 +391,23 @@
                     return { success: false, error: 'userId required' };
                 }
 
+                // 클라이언트 측 Firebase Firestore 직접 조회
+                if (window.firebase && window.firebase.firestore) {
+                    const db = window.firebase.firestore();
+                    const doc = await db.collection('user_tokens').doc(userId).get();
+
+                    if (doc.exists) {
+                        const data = doc.data();
+                        const balance = data.tokenBalance || 0;
+                        console.log('💰 토큰 잔액 조회 (Firestore):', balance);
+                        return { success: true, tokenBalance: balance };
+                    } else {
+                        console.log('💰 토큰 잔액 조회: 신규 사용자 (0 토큰)');
+                        return { success: true, tokenBalance: 0, isNewUser: true };
+                    }
+                }
+
+                // Firebase가 없으면 서버 API 폴백
                 const response = await fetch('/.netlify/functions/token-api', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -401,7 +418,7 @@
                 });
 
                 const result = await response.json();
-                console.log('💰 토큰 잔액 조회:', result);
+                console.log('💰 토큰 잔액 조회 (API):', result);
                 return result;
             } catch (error) {
                 console.error('❌ 토큰 잔액 조회 실패:', error);
@@ -409,7 +426,7 @@
             }
         },
 
-        // 기능 사용 가능 여부 확인
+        // 기능 사용 가능 여부 확인 (클라이언트 측 Firebase 직접 사용)
         async canUseFeature(userId, feature) {
             try {
                 if (!userId) {
@@ -421,6 +438,33 @@
                     return { success: false, canUse: false, error: 'userId required' };
                 }
 
+                const cost = this.TOKEN_COSTS[feature];
+                if (!cost) {
+                    return { success: false, canUse: false, error: `Unknown feature: ${feature}` };
+                }
+
+                // 클라이언트 측 Firebase Firestore 직접 조회
+                if (window.firebase && window.firebase.firestore) {
+                    const db = window.firebase.firestore();
+                    const doc = await db.collection('user_tokens').doc(userId).get();
+
+                    let currentBalance = 0;
+                    if (doc.exists) {
+                        currentBalance = doc.data().tokenBalance || 0;
+                    }
+
+                    const canUse = currentBalance >= cost;
+                    console.log(`🔍 ${feature} 사용 가능 여부 (Firestore):`, { canUse, currentBalance, requiredTokens: cost });
+                    return {
+                        success: true,
+                        canUse: canUse,
+                        currentBalance: currentBalance,
+                        requiredTokens: cost,
+                        shortfall: canUse ? 0 : cost - currentBalance
+                    };
+                }
+
+                // Firebase가 없으면 서버 API 폴백
                 const response = await fetch('/.netlify/functions/token-api', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -432,7 +476,7 @@
                 });
 
                 const result = await response.json();
-                console.log(`🔍 ${feature} 사용 가능 여부:`, result);
+                console.log(`🔍 ${feature} 사용 가능 여부 (API):`, result);
                 return result;
             } catch (error) {
                 console.error('❌ 기능 사용 가능 여부 확인 실패:', error);
@@ -440,7 +484,7 @@
             }
         },
 
-        // 토큰 차감
+        // 토큰 차감 (클라이언트 측 Firebase 직접 사용)
         async deductTokens(userId, feature, metadata = {}) {
             try {
                 if (!userId) {
@@ -452,6 +496,60 @@
                     return { success: false, error: 'userId required' };
                 }
 
+                const cost = this.TOKEN_COSTS[feature];
+                if (!cost) {
+                    return { success: false, error: `Unknown feature: ${feature}` };
+                }
+
+                // 클라이언트 측 Firebase Firestore 직접 사용
+                if (window.firebase && window.firebase.firestore) {
+                    const db = window.firebase.firestore();
+                    const docRef = db.collection('user_tokens').doc(userId);
+                    const doc = await docRef.get();
+
+                    let currentBalance = 0;
+                    if (doc.exists) {
+                        currentBalance = doc.data().tokenBalance || 0;
+                    }
+
+                    if (currentBalance < cost) {
+                        console.warn(`⚠️ 토큰 부족: 현재 ${currentBalance}, 필요 ${cost}`);
+                        return { success: false, error: '토큰이 부족합니다', code: 'INSUFFICIENT_TOKENS' };
+                    }
+
+                    const newBalance = currentBalance - cost;
+
+                    // 토큰 차감
+                    await docRef.set({
+                        tokenBalance: newBalance,
+                        updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+
+                    // 사용 로그 저장
+                    await db.collection('token_logs').add({
+                        userId: userId,
+                        action: feature,
+                        tokensUsed: cost,
+                        previousBalance: currentBalance,
+                        newBalance: newBalance,
+                        timestamp: window.firebase.firestore.FieldValue.serverTimestamp(),
+                        metadata: metadata
+                    });
+
+                    console.log(`✅ 토큰 차감 완료 (Firestore): ${feature}, ${cost}토큰 사용, 잔액: ${newBalance}`);
+
+                    // UI 업데이트
+                    this.updateTokenDisplay(newBalance);
+
+                    return {
+                        success: true,
+                        previousBalance: currentBalance,
+                        deducted: cost,
+                        newBalance: newBalance
+                    };
+                }
+
+                // Firebase가 없으면 서버 API 폴백
                 const response = await fetch('/.netlify/functions/token-api', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -466,9 +564,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    console.log(`✅ 토큰 차감 완료: ${feature}, ${result.deducted}토큰 사용, 잔액: ${result.newBalance}`);
-
-                    // UI 업데이트 (토큰 잔액 표시)
+                    console.log(`✅ 토큰 차감 완료 (API): ${feature}, ${result.deducted}토큰 사용, 잔액: ${result.newBalance}`);
                     this.updateTokenDisplay(result.newBalance);
                 } else {
                     console.warn(`⚠️ 토큰 차감 실패: ${result.error}`);
