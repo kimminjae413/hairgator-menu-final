@@ -671,15 +671,19 @@ class AIStudio {
     });
     this.saveMessageToFirebase('user', text);
 
-    // Show typing indicator
-    this.showTypingIndicator();
+    // ⭐ 스트리밍용: 빈 봇 메시지 박스를 먼저 추가
+    const streamingMessageEl = this.addStreamingMessageToUI();
+    const contentEl = streamingMessageEl.querySelector('.message-content');
 
     try {
-      // Call API
-      const response = await this.callAPI(text);
-
-      // Remove typing indicator
-      this.hideTypingIndicator();
+      // ⭐ 스트리밍 API 호출
+      const response = await this.callAPIStreaming(text, (chunk) => {
+        // 실시간으로 텍스트 업데이트
+        if (contentEl) {
+          contentEl.innerHTML = this.formatMessage(chunk);
+          this.scrollToBottom();
+        }
+      });
 
       // ⭐ 가이드 이미지가 있으면 콘텐츠에 추가
       let finalContent = response.content;
@@ -703,8 +707,13 @@ class AIStudio {
         </div>`;
       }
 
-      // Add bot response
-      this.addMessageToUI('bot', finalContent, true, response.canvasData);
+      // 최종 콘텐츠로 업데이트 (가이드 이미지, 연관 질문 포함)
+      if (contentEl) {
+        contentEl.innerHTML = this.formatMessage(finalContent);
+      }
+
+      // 스트리밍 표시 제거
+      streamingMessageEl.classList.remove('streaming');
 
       // Save bot response
       this.conversationHistory.push({
@@ -730,10 +739,27 @@ class AIStudio {
       }
 
     } catch (error) {
-      this.hideTypingIndicator();
-      this.addMessageToUI('bot', '죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.');
+      // 에러 시 스트리밍 메시지에 에러 표시
+      if (contentEl) {
+        contentEl.innerHTML = '죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.';
+      }
+      streamingMessageEl.classList.remove('streaming');
       console.error('❌ API Error:', error);
     }
+  }
+
+  // ⭐ 스트리밍용 빈 메시지 박스 추가
+  addStreamingMessageToUI() {
+    const messagesContainer = document.getElementById('chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message bot streaming';
+    messageDiv.innerHTML = `
+      <div class="message-avatar bot-logo"><img src="icons/icon-72.png" alt="H"></div>
+      <div class="message-content"><span class="typing-cursor">▋</span></div>
+    `;
+    messagesContainer.appendChild(messageDiv);
+    this.scrollToBottom();
+    return messageDiv;
   }
 
   async callAPI(query) {
@@ -849,6 +875,118 @@ class AIStudio {
       canvasData: hasRecipeData ? this.parseRecipeData(fullContent) : null,
       guideImage: guideImage, // ⭐ 가이드 이미지 반환
       relatedQuestions: relatedQuestions // ⭐ 연관 질문 반환
+    };
+  }
+
+  // ⭐ 실시간 스트리밍 API 호출
+  async callAPIStreaming(query, onChunk) {
+    console.log('📤 스트리밍 API 호출:', query);
+
+    // 최근 대화 히스토리 (최대 30개) - 맥락 유지용
+    const recentHistory = this.conversationHistory
+      .slice(-30)
+      .map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'model',
+        content: msg.content
+      }));
+
+    // 현재 활성 레시피 컨텍스트 (30분 이내면 유효)
+    let recipeContext = null;
+    if (this.currentRecipeContext && (Date.now() - this.currentRecipeContext.timestamp) < 30 * 60 * 1000) {
+      recipeContext = this.currentRecipeContext;
+    }
+
+    const response = await fetch(this.apiEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'generate_response_stream',
+        payload: {
+          user_query: query,
+          language: this.currentLanguage,
+          chat_history: recentHistory,
+          recipe_context: recipeContext
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    // ⭐ ReadableStream으로 실시간 처리
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullContent = '';
+    let guideImage = null;
+    let relatedQuestions = null;
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      // 청크를 텍스트로 디코딩
+      buffer += decoder.decode(value, { stream: true });
+
+      // 줄 단위로 파싱
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || ''; // 마지막 불완전한 줄은 버퍼에 유지
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') continue;
+
+          try {
+            const data = JSON.parse(jsonStr);
+            if (data.type === 'content' && data.content) {
+              fullContent += data.content;
+              onChunk(fullContent); // ⭐ 실시간 콜백
+            } else if (data.type === 'guide_image') {
+              guideImage = {
+                url: data.imageUrl,
+                title: data.title
+              };
+            } else if (data.type === 'related_questions') {
+              relatedQuestions = {
+                questionType: data.questionType,
+                intro: data.intro,
+                questions: data.questions
+              };
+            } else if (data.content) {
+              fullContent += data.content;
+              onChunk(fullContent);
+            }
+          } catch (e) {
+            // JSON 파싱 실패 시 무시
+          }
+        }
+      }
+    }
+
+    // 버퍼에 남은 데이터 처리
+    if (buffer.startsWith('data: ')) {
+      const jsonStr = buffer.slice(6).trim();
+      if (jsonStr && jsonStr !== '[DONE]') {
+        try {
+          const data = JSON.parse(jsonStr);
+          if (data.content) {
+            fullContent += data.content;
+          }
+        } catch (e) {}
+      }
+    }
+
+    console.log('📥 스트리밍 완료, 총 길이:', fullContent.length);
+
+    const hasRecipeData = this.detectRecipeContent(fullContent);
+
+    return {
+      content: fullContent || '응답을 받지 못했습니다.',
+      canvasData: hasRecipeData ? this.parseRecipeData(fullContent) : null,
+      guideImage: guideImage,
+      relatedQuestions: relatedQuestions
     };
   }
 

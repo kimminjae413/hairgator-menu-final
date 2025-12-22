@@ -4202,6 +4202,40 @@ body.dark-mode .term-chip {
   color: #bfdbfe;
 }
 
+/* ==================== Streaming Message ==================== */
+.message.bot.streaming .message-content {
+  min-height: 24px;
+}
+
+.typing-cursor {
+  display: inline-block;
+  animation: blink 0.7s infinite;
+  color: var(--accent-color, #3a3a3a);
+  font-weight: bold;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* 스트리밍 중 메시지 스타일 */
+.message.bot.streaming {
+  opacity: 1;
+}
+
+.message.bot.streaming .message-content::after {
+  content: '▋';
+  animation: blink 0.7s infinite;
+  margin-left: 2px;
+  color: var(--accent-color, #3a3a3a);
+}
+
+/* 스트리밍 완료 후 커서 숨김 */
+.message.bot:not(.streaming) .message-content::after {
+  display: none;
+}
+
 /* ==================== Utilities ==================== */
 .hidden { display: none !important; }
 .sr-only {
