@@ -2120,9 +2120,14 @@
 
             <!-- 검색 필터 -->
             <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;">
-                <div style="flex: 1; min-width: 200px;">
+                <div style="flex: 1; min-width: 150px;">
+                    <label style="display: block; margin-bottom: 5px; color: #888; font-size: 12px;">사용자 이름</label>
+                    <input type="text" id="creditLogUserName" placeholder="이름 검색"
+                           style="width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
+                </div>
+                <div style="flex: 1; min-width: 150px;">
                     <label style="display: block; margin-bottom: 5px; color: #888; font-size: 12px;">사용자 ID</label>
-                    <input type="text" id="creditLogUserId" placeholder="userId 입력 (빈칸=전체)"
+                    <input type="text" id="creditLogUserId" placeholder="userId (선택)"
                            style="width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
                 </div>
                 <div style="min-width: 150px;">
@@ -2176,7 +2181,7 @@
                     <thead>
                         <tr style="background: #2a2a2a;">
                             <th style="padding: 15px; text-align: left; font-size: 12px; color: #888; border-bottom: 1px solid #333;">시간</th>
-                            <th style="padding: 15px; text-align: left; font-size: 12px; color: #888; border-bottom: 1px solid #333;">사용자 ID</th>
+                            <th style="padding: 15px; text-align: left; font-size: 12px; color: #888; border-bottom: 1px solid #333;">이름</th>
                             <th style="padding: 15px; text-align: left; font-size: 12px; color: #888; border-bottom: 1px solid #333;">기능</th>
                             <th style="padding: 15px; text-align: right; font-size: 12px; color: #888; border-bottom: 1px solid #333;">크레딧</th>
                             <th style="padding: 15px; text-align: right; font-size: 12px; color: #888; border-bottom: 1px solid #333;">잔액</th>
@@ -5568,6 +5573,7 @@
         let allCreditLogs = [];
 
         async function loadCreditLogs() {
+            const userName = document.getElementById('creditLogUserName').value.trim();
             const userId = document.getElementById('creditLogUserId').value.trim();
             const action = document.getElementById('creditLogAction').value;
             const period = document.getElementById('creditLogPeriod').value;
@@ -5582,6 +5588,11 @@
                 // 필터 적용
                 if (userId) {
                     query = query.where('userId', '==', userId);
+                }
+                if (userName) {
+                    // Firestore는 부분 일치 검색이 안되므로, 전체 가져와서 클라이언트에서 필터링
+                    // 또는 userName 필드에 where 사용 (정확히 일치하는 경우)
+                    query = query.where('userName', '==', userName);
                 }
                 if (action) {
                     query = query.where('action', '==', action);
@@ -5667,7 +5678,7 @@
                     hour: '2-digit',
                     minute: '2-digit'
                 });
-                const shortUserId = log.userId ? log.userId.substring(0, 8) + '...' : '-';
+                const displayName = log.userName || (log.userId ? log.userId.substring(0, 8) + '...' : '-');
                 const actionLabel = actionLabels[log.action] || log.action || '-';
                 const credits = log.creditsUsed?.toFixed(1) || '-';
                 const newBalance = log.metadata?.newCredits?.toFixed(1) || '-';
@@ -5675,7 +5686,7 @@
                 return `
                     <tr style="border-bottom: 1px solid #333;">
                         <td style="padding: 12px 15px; font-size: 13px; color: #aaa;">${timeStr}</td>
-                        <td style="padding: 12px 15px; font-size: 13px; font-family: monospace; color: #fff;" title="${log.userId}">${shortUserId}</td>
+                        <td style="padding: 12px 15px; font-size: 13px; color: #fff;" title="${log.userId || ''}">${displayName}</td>
                         <td style="padding: 12px 15px; font-size: 13px;">${actionLabel}</td>
                         <td style="padding: 12px 15px; font-size: 13px; text-align: right; color: #f44;">-${credits}</td>
                         <td style="padding: 12px 15px; font-size: 13px; text-align: right; color: #4CAF50;">${newBalance}</td>

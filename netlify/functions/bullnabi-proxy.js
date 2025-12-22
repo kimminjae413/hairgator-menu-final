@@ -313,11 +313,12 @@ async function logCreditUsage(userId, action, creditsUsed, metadata = {}) {
     try {
         const logData = {
             userId: userId,
-            action: action,  // 'lookbook', 'hair_try', 'chatbot' 등
+            userName: metadata.userName || null,  // 사용자 이름 (검색용)
+            action: action,  // 'lookbook', 'hairTry', 'chatbot' 등
             creditsUsed: creditsUsed,
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
             createdAt: new Date().toISOString(),
-            metadata: metadata  // styleId, language, etc.
+            metadata: metadata  // styleId, language, previousCredits, newCredits, etc.
         };
 
         const docRef = await db.collection('credit_logs').add(logData);
@@ -357,7 +358,9 @@ async function handleUseCredits(userId, uses, count) {
             return { success: false, error: '사용자 정보를 찾을 수 없습니다' };
         }
 
-        const currentCredits = currentData.data[0].remainCount || 0;
+        const userData = currentData.data[0];
+        const currentCredits = userData.remainCount || 0;
+        const userName = userData.nickname || userData.name || null;
         const deductAmount = Math.abs(count);
 
         if (currentCredits < deductAmount) {
@@ -433,6 +436,7 @@ async function handleUseCredits(userId, uses, count) {
 
             // 4. Firestore에 사용 로그 저장 (비동기, 실패해도 차감은 성공)
             logCreditUsage(userId, uses, deductAmount, {
+                userName: userName,
                 previousCredits: currentCredits,
                 newCredits: newRemainCount
             }).catch(err => console.error('⚠️ 로그 저장 실패 (무시):', err.message));
