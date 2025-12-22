@@ -6409,15 +6409,16 @@ function calculateFeatureScore(style, params56, captionText) {
 
 /**
  * 레시피 문장별 번호 강제 적용 후처리
- * - [External]과 [Internal] 섹션 내 문장에 번호 부여
- * - 이미 줄바꿈된 문장도 처리
+ * - 레시피 문장(~합니다, ~진행한다 등)에 번호 부여
+ * - [External]/[Internal] 섹션에서 번호 리셋
  */
 function formatRecipeSentences(text) {
   if (!text) return text;
 
+  console.log('📝 formatRecipeSentences 시작, 원본 길이:', text.length);
+
   const lines = text.split('\n');
   const result = [];
-  let currentSection = null;  // 'external' or 'internal'
   let sectionNum = 0;
 
   for (let i = 0; i < lines.length; i++) {
@@ -6427,59 +6428,59 @@ function formatRecipeSentences(text) {
     // 기존 번호 제거
     const cleanedLine = trimmed.replace(/^\d+[\.\)]\s*/, '');
 
-    // 섹션 헤더 감지
-    if (/\[External\]/i.test(trimmed) || /\[엑스터널/i.test(trimmed)) {
-      currentSection = 'external';
-      sectionNum = 0;
-      result.push('');
-      result.push(trimmed);
-      result.push('');
-      continue;
-    }
-
-    if (/\[Internal\]/i.test(trimmed) || /\[인터널/i.test(trimmed)) {
-      currentSection = 'internal';
-      sectionNum = 0;
-      result.push('');
-      result.push(trimmed);
-      result.push('');
-      continue;
-    }
-
-    // 빈 줄
+    // 빈 줄 스킵
     if (!trimmed) {
       continue;
     }
 
-    // 구분선
+    // 구분선 스킵
     if (/^[-=]+$/.test(trimmed)) {
       continue;
     }
 
-    // 스타일 정보, 헤더 등 (번호 안 붙임)
-    if (/^스타일\s*정보/i.test(cleanedLine) ||
-        /^-\s*(스타일명|기장|Cut Form|특징)/i.test(cleanedLine) ||
-        /존\s*\(/i.test(cleanedLine) ||  // B존 (뒷머리), C존 (앞머리) 등
-        /부분\s*\(/i.test(cleanedLine) ||  // 프린지 부분 (앞머리)
-        /^(첫 번째|두 번째|세 번째)/i.test(cleanedLine) ||  // 첫 번째 과정:
-        cleanedLine.length < 15) {  // 너무 짧은 줄
+    // 섹션 헤더에서 번호 리셋 ([External], [Internal], C존 등)
+    if (/\[External\]/i.test(trimmed) || /\[Internal\]/i.test(trimmed)) {
+      sectionNum = 0;
+      result.push('');
+      result.push(trimmed);
+      result.push('');
+      continue;
+    }
+
+    // 번호 안 붙이는 줄들
+    const skipNumbering =
+      /^스타일\s*정보/i.test(cleanedLine) ||
+      /^-\s*(스타일명|기장|Cut Form|특징)/i.test(cleanedLine) ||
+      /^[A-Z]존\s*\(/i.test(cleanedLine) ||  // A존 (뒷머리)
+      /부분\s*\(/i.test(cleanedLine) ||      // 프린지 부분 (앞머리)
+      /^(첫 번째|두 번째|세 번째)/i.test(cleanedLine) ||
+      /^HAIRGATOR/i.test(cleanedLine) ||
+      cleanedLine.length < 20;
+
+    if (skipNumbering) {
       result.push(cleanedLine);
       continue;
     }
 
-    // 섹션 내 문장 (번호 붙임)
-    if (currentSection && cleanedLine.endsWith('.') && cleanedLine.length > 15) {
+    // 레시피 문장 감지: ~합니다. 또는 ~한다. 로 끝나는 문장
+    const isRecipeSentence =
+      (cleanedLine.endsWith('.') || cleanedLine.endsWith('다')) &&
+      (cleanedLine.includes('섹션') || cleanedLine.includes('각도') ||
+       cleanedLine.includes('다이렉션') || cleanedLine.includes('디자인라인') ||
+       cleanedLine.includes('커트') || cleanedLine.includes('나눕니다') ||
+       cleanedLine.includes('들어 올') || cleanedLine.includes('적용') ||
+       cleanedLine.includes('활용하여') || cleanedLine.includes('진행'));
+
+    if (isRecipeSentence && cleanedLine.length > 20) {
       sectionNum++;
-      result.push(`${sectionNum}. ${cleanedLine}`);
-    } else if (currentSection && cleanedLine.endsWith('다') && cleanedLine.length > 15) {
-      sectionNum++;
-      result.push(`${sectionNum}. ${cleanedLine}.`);
+      const finalLine = cleanedLine.endsWith('.') ? cleanedLine : cleanedLine + '.';
+      result.push(`${sectionNum}. ${finalLine}`);
     } else {
-      // 섹션 밖이거나 조건 안 맞으면 그대로
       result.push(cleanedLine);
     }
   }
 
+  console.log('📝 formatRecipeSentences 완료, 결과 줄 수:', result.length);
   return result.join('\n');
 }
 
