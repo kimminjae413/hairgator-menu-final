@@ -30,7 +30,7 @@
                         this.handleBullnabiLogin(event.data);
                     }
                     
-                    // 크레딧 업데이트 메시지 처리
+                    // 토큰 업데이트 메시지 처리
                     else if (event.data && event.data.type === 'BULLNABI_CREDIT_UPDATE') {
                         this.handleCreditUpdate(event.data);
                     }
@@ -274,9 +274,9 @@
             this.performLogin(data.userInfo);
         },
 
-        // 크레딧 업데이트 처리
+        // 토큰 업데이트 처리
         handleCreditUpdate(data) {
-            console.log('💳 크레딧 업데이트:', data);
+            console.log('💳 토큰 업데이트:', data);
             
             try {
                 // 불나비 사용자 정보 업데이트
@@ -300,12 +300,12 @@
                         if (typeof showToast === 'function') {
                             const credits = data.remainCount;
                             const displayCredits = Number.isInteger(credits) ? credits : credits.toFixed(1);
-                            showToast(`크레딧이 업데이트되었습니다: ${displayCredits}`, 'info');
+                            showToast(`토큰이 업데이트되었습니다: ${displayCredits}`, 'info');
                         }
                     }
                 }
             } catch (error) {
-                console.error('❌ 크레딧 업데이트 실패:', error);
+                console.error('❌ 토큰 업데이트 실패:', error);
             }
         },
 
@@ -359,7 +359,7 @@
             }
         },
 
-        // AI 기능 사용 시 크레딧 차감 요청
+        // AI 기능 사용 시 토큰 차감 요청 (레거시 - 불나비 앱용)
         requestCreditDeduction(usageType, count) {
             this.sendToNative({
                 type: 'DEDUCT_CREDIT',
@@ -367,6 +367,167 @@
                 count: Math.abs(count), // 양수로 전송
                 timestamp: Date.now()
             });
+        },
+
+        // ========== 헤어게이터 토큰 시스템 (Firebase user_tokens) ==========
+
+        // 토큰 비용 상수
+        TOKEN_COSTS: {
+            lookbook: 200,
+            hairTry: 300,
+            chatbot: 10
+        },
+
+        // 토큰 잔액 조회
+        async getTokenBalance(userId) {
+            try {
+                if (!userId) {
+                    const user = window.getBullnabiUser?.();
+                    userId = user?.userId || user?.id;
+                }
+
+                if (!userId) {
+                    console.error('❌ userId가 없습니다');
+                    return { success: false, error: 'userId required' };
+                }
+
+                const response = await fetch('/.netlify/functions/token-api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'getBalance',
+                        userId: userId
+                    })
+                });
+
+                const result = await response.json();
+                console.log('💰 토큰 잔액 조회:', result);
+                return result;
+            } catch (error) {
+                console.error('❌ 토큰 잔액 조회 실패:', error);
+                return { success: false, error: error.message };
+            }
+        },
+
+        // 기능 사용 가능 여부 확인
+        async canUseFeature(userId, feature) {
+            try {
+                if (!userId) {
+                    const user = window.getBullnabiUser?.();
+                    userId = user?.userId || user?.id;
+                }
+
+                if (!userId) {
+                    return { success: false, canUse: false, error: 'userId required' };
+                }
+
+                const response = await fetch('/.netlify/functions/token-api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'canUse',
+                        userId: userId,
+                        feature: feature
+                    })
+                });
+
+                const result = await response.json();
+                console.log(`🔍 ${feature} 사용 가능 여부:`, result);
+                return result;
+            } catch (error) {
+                console.error('❌ 기능 사용 가능 여부 확인 실패:', error);
+                return { success: false, canUse: false, error: error.message };
+            }
+        },
+
+        // 토큰 차감
+        async deductTokens(userId, feature, metadata = {}) {
+            try {
+                if (!userId) {
+                    const user = window.getBullnabiUser?.();
+                    userId = user?.userId || user?.id;
+                }
+
+                if (!userId) {
+                    return { success: false, error: 'userId required' };
+                }
+
+                const response = await fetch('/.netlify/functions/token-api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'deduct',
+                        userId: userId,
+                        feature: feature,
+                        metadata: metadata
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    console.log(`✅ 토큰 차감 완료: ${feature}, ${result.deducted}토큰 사용, 잔액: ${result.newBalance}`);
+
+                    // UI 업데이트 (토큰 잔액 표시)
+                    this.updateTokenDisplay(result.newBalance);
+                } else {
+                    console.warn(`⚠️ 토큰 차감 실패: ${result.error}`);
+                }
+
+                return result;
+            } catch (error) {
+                console.error('❌ 토큰 차감 실패:', error);
+                return { success: false, error: error.message };
+            }
+        },
+
+        // 토큰 잔액 UI 업데이트
+        updateTokenDisplay(newBalance) {
+            // 토큰 표시 요소 업데이트
+            const tokenElements = document.querySelectorAll('.token-balance, .credit-balance, [data-token-balance]');
+            tokenElements.forEach(el => {
+                el.textContent = newBalance.toLocaleString();
+            });
+
+            // currentDesigner 업데이트 (있는 경우)
+            if (window.currentDesigner) {
+                window.currentDesigner.tokenBalance = newBalance;
+            }
+
+            // 불나비 사용자 정보에도 저장 (localStorage)
+            const user = window.getBullnabiUser?.();
+            if (user) {
+                user.tokenBalance = newBalance;
+                localStorage.setItem('bullnabi_user', JSON.stringify(user));
+            }
+        },
+
+        // 토큰 부족 시 결제 안내 팝업
+        showInsufficientTokensPopup(requiredTokens, currentBalance) {
+            const shortfall = requiredTokens - currentBalance;
+
+            if (typeof showToast === 'function') {
+                showToast(`토큰이 부족합니다. (필요: ${requiredTokens}, 보유: ${currentBalance})`, 'error');
+            }
+
+            // 결제 페이지로 이동할지 확인
+            const confirmPurchase = confirm(
+                `토큰이 ${shortfall}개 부족합니다.\n\n` +
+                `필요 토큰: ${requiredTokens}\n` +
+                `보유 토큰: ${currentBalance}\n\n` +
+                `토큰을 충전하시겠습니까?`
+            );
+
+            if (confirmPurchase) {
+                // 결제 모달 열기
+                if (typeof openPaymentModal === 'function') {
+                    openPaymentModal();
+                } else {
+                    console.log('💳 결제 모달 함수 없음');
+                }
+            }
+
+            return confirmPurchase;
         },
 
         // 연결 상태 확인

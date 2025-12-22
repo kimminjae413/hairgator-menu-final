@@ -1,5 +1,5 @@
 // netlify/functions/payment-verify.js
-// 포트원 V2 결제 검증 및 크레딧 충전
+// 포트원 V2 결제 검증 및 토큰 충전 (Firebase user_tokens 사용)
 
 const admin = require('firebase-admin');
 
@@ -16,12 +16,12 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-// 요금제 정보
+// 요금제 정보 (credits → tokens로 변경)
 const PLANS = {
-  basic: { price: 22000, credits: 10000 },
-  standard: { price: 38000, credits: 18000 },
-  business: { price: 50000, credits: 25000 },
-  credits_5000: { price: 5000, credits: 5000 }
+  basic: { price: 22000, tokens: 10000 },
+  standard: { price: 38000, tokens: 18000 },
+  business: { price: 50000, tokens: 25000 },
+  tokens_5000: { price: 5000, tokens: 5000 }
 };
 
 // 포트원 API 설정
@@ -64,7 +64,7 @@ exports.handler = async (event) => {
 
     // 요금제 확인
     const plan = PLANS[planKey];
-    if (!plan) {
+    if (!plan || !plan.tokens) {
       return {
         statusCode: 400,
         headers,
@@ -120,13 +120,13 @@ exports.handler = async (event) => {
         body: JSON.stringify({
           success: true,
           message: '이미 처리된 결제입니다.',
-          credits: plan.credits
+          tokens: plan.tokens
         })
       };
     }
 
-    // 5. 불나비 DB에서 현재 크레딧 조회 및 충전
-    const chargeResult = await chargeCredits(userId, plan.credits);
+    // 5. Firestore user_tokens에 토큰 충전
+    const chargeResult = await chargeTokens(userId, plan.tokens);
 
     if (!chargeResult.success) {
       return {
@@ -142,32 +142,32 @@ exports.handler = async (event) => {
       userId: userId,
       planKey: planKey,
       amount: plan.price,
-      credits: plan.credits,
+      tokens: plan.tokens,
       status: 'completed',
       portoneStatus: paymentData.status,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    // 7. 크레딧 사용 로그 기록
-    await db.collection('credit_logs').add({
+    // 7. 토큰 충전 로그 기록
+    await db.collection('token_logs').add({
       userId: userId,
       action: 'purchase',
-      creditsUsed: -plan.credits, // 마이너스 = 충전
+      tokensAdded: plan.tokens,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
       metadata: {
         paymentId: paymentId,
         planKey: planKey,
         amount: plan.price,
-        previousCredits: chargeResult.previousCredits,
-        newCredits: chargeResult.newCredits
+        previousTokens: chargeResult.previousTokens,
+        newTokens: chargeResult.newTokens
       }
     });
 
     console.log('✅ 결제 완료:', {
       paymentId,
       userId,
-      credits: plan.credits,
-      newBalance: chargeResult.newCredits
+      tokens: plan.tokens,
+      newBalance: chargeResult.newTokens
     });
 
     return {
@@ -175,9 +175,9 @@ exports.handler = async (event) => {
       headers,
       body: JSON.stringify({
         success: true,
-        credits: plan.credits,
-        newBalance: chargeResult.newCredits,
-        message: `${plan.credits.toLocaleString()} 크레딧이 충전되었습니다.`
+        tokens: plan.tokens,
+        newBalance: chargeResult.newTokens,
+        message: `${plan.tokens.toLocaleString()} 토큰이 충전되었습니다.`
       })
     };
 
@@ -221,56 +221,44 @@ async function verifyPaymentWithPortone(paymentId) {
 }
 
 /**
- * 불나비 DB에 크레딧 충전
+ * Firestore user_tokens에 토큰 충전
  */
-async function chargeCredits(userId, credits) {
+async function chargeTokens(userId, tokens) {
   try {
-    // 불나비 API를 통해 크레딧 충전
-    const bullnabiApiUrl = process.env.BULLNABI_API_URL || 'https://bullnabi.com';
+    const docRef = db.collection('user_tokens').doc(userId);
 
-    // 현재 크레딧 조회
-    const currentResponse = await fetch(`${bullnabiApiUrl}/api/collections/_users/records?filter=(id='${userId}')`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
+    // 트랜잭션으로 안전하게 충전
+    const result = await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(docRef);
+
+      let currentTokens = 0;
+      if (doc.exists) {
+        currentTokens = doc.data().tokenBalance || 0;
       }
+
+      const newTokens = currentTokens + tokens;
+
+      transaction.set(docRef, {
+        tokenBalance: newTokens,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      return {
+        previousTokens: currentTokens,
+        newTokens: newTokens
+      };
     });
 
-    if (!currentResponse.ok) {
-      throw new Error('사용자 정보 조회 실패');
-    }
-
-    const userData = await currentResponse.json();
-    if (!userData.data || userData.data.length === 0) {
-      throw new Error('사용자를 찾을 수 없습니다.');
-    }
-
-    const currentCredits = userData.data[0].remainCount || 0;
-    const newCredits = currentCredits + credits;
-
-    // 크레딧 업데이트
-    const updateResponse = await fetch(`${bullnabiApiUrl}/api/collections/_users/records/${userId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        remainCount: newCredits
-      })
-    });
-
-    if (!updateResponse.ok) {
-      throw new Error('크레딧 업데이트 실패');
-    }
+    console.log(`✅ 토큰 충전 완료: userId=${userId}, added=${tokens}, newBalance=${result.newTokens}`);
 
     return {
       success: true,
-      previousCredits: currentCredits,
-      newCredits: newCredits
+      previousTokens: result.previousTokens,
+      newTokens: result.newTokens
     };
 
   } catch (error) {
-    console.error('크레딧 충전 오류:', error);
+    console.error('토큰 충전 오류:', error);
     return {
       success: false,
       error: error.message

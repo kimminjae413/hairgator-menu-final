@@ -12,35 +12,35 @@ const HAIRGATOR_PAYMENT = {
       name: '베이직',
       nameEn: 'Basic',
       price: 22000,
-      credits: 10000,
+      tokens: 10000,
       productId: 'hairgator_basic'
     },
     standard: {
       name: '스탠다드',
       nameEn: 'Standard',
       price: 38000,
-      credits: 18000,
+      tokens: 18000,
       productId: 'hairgator_standard'
     },
     business: {
       name: '비즈니스',
       nameEn: 'Business',
       price: 50000,
-      credits: 25000,
+      tokens: 25000,
       productId: 'hairgator_business'
     },
-    credits_5000: {
-      name: '추가 크레딧 5,000',
-      nameEn: 'Extra 5,000 Credits',
+    tokens_5000: {
+      name: '추가 토큰 5,000',
+      nameEn: 'Extra 5,000 Tokens',
       price: 5000,
-      credits: 5000,
-      productId: 'hairgator_credits_5000'
+      tokens: 5000,
+      productId: 'hairgator_tokens_5000'
     }
   },
 
   /**
    * 결제 요청
-   * @param {string} planKey - 요금제 키 (basic, standard, business, credits_5000)
+   * @param {string} planKey - 요금제 키 (basic, standard, business, tokens_5000)
    * @param {string} userId - 사용자 ID
    * @param {string} userEmail - 사용자 이메일 (선택)
    * @param {string} userName - 사용자 이름 (선택)
@@ -78,7 +78,7 @@ const HAIRGATOR_PAYMENT = {
         },
         customData: {
           planKey: planKey,
-          credits: plan.credits,
+          tokens: plan.tokens,
           userId: userId
         },
         redirectUrl: window.location.origin + '/payment-complete.html'
@@ -96,13 +96,13 @@ const HAIRGATOR_PAYMENT = {
         throw new Error(response.message || '결제에 실패했습니다.');
       }
 
-      // 결제 성공 - 서버에서 검증 및 크레딧 충전
-      const verifyResult = await this.verifyAndChargeCredits(paymentId, planKey, userId);
+      // 결제 성공 - 서버에서 검증 및 토큰 충전
+      const verifyResult = await this.verifyAndChargeTokens(paymentId, planKey, userId);
 
       return {
         success: true,
         paymentId: paymentId,
-        credits: plan.credits,
+        tokens: plan.tokens,
         ...verifyResult
       };
 
@@ -113,9 +113,9 @@ const HAIRGATOR_PAYMENT = {
   },
 
   /**
-   * 결제 검증 및 크레딧 충전 (서버 호출)
+   * 결제 검증 및 토큰 충전 (서버 호출)
    */
-  async verifyAndChargeCredits(paymentId, planKey, userId) {
+  async verifyAndChargeTokens(paymentId, planKey, userId) {
     const response = await fetch('/.netlify/functions/payment-verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -201,14 +201,14 @@ const HAIRGATOR_PAYMENT = {
         // 성공 메시지
         showPaymentLoading(false);
         const plan = this.plans[planKey];
-        alert(`${plan.credits.toLocaleString()} 크레딧이 충전되었습니다!`);
+        alert(`${plan.tokens.toLocaleString()} 토큰이 충전되었습니다!`);
 
         // 모달 닫기 및 UI 업데이트
         closePricingModal();
 
-        // 크레딧 표시 업데이트 (bullnabi-bridge.js의 함수 호출)
-        if (typeof updateCreditDisplay === 'function') {
-          updateCreditDisplay();
+        // 토큰 표시 업데이트 (bullnabi-bridge.js의 함수 호출)
+        if (window.BullnabiBridge && typeof window.BullnabiBridge.updateTokenDisplay === 'function') {
+          window.BullnabiBridge.updateTokenDisplay(result.newBalance);
         }
       }
 
@@ -220,10 +220,10 @@ const HAIRGATOR_PAYMENT = {
   },
 
   /**
-   * 추가 크레딧 구매
+   * 추가 토큰 구매
    */
-  async purchaseExtraCredits() {
-    return this.purchasePlan('credits_5000');
+  async purchaseExtraTokens() {
+    return this.purchasePlan('tokens_5000');
   }
 };
 

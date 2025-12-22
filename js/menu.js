@@ -94,53 +94,90 @@ function getThumbnailUrl(style) {
     return url;
 }
 
-// ========== 룩북 크레딧 차감 (menu.js에서 호출) ==========
-function deductLookbookCreditFromMenu(creditCost) {
+// ========== 헤어게이터 토큰 차감 (Firebase user_tokens) ==========
+
+// 토큰 비용 상수
+const HAIRGATOR_TOKEN_COSTS = {
+    lookbook: 200,
+    hairTry: 300,
+    chatbot: 10
+};
+
+// 룩북 토큰 차감
+async function deductLookbookTokens(metadata = {}) {
     try {
-        // 불나비 브릿지를 통해 크레딧 차감 요청
-        if (window.BullnabiBridge && typeof window.BullnabiBridge.requestCreditDeduction === 'function') {
-            window.BullnabiBridge.requestCreditDeduction('lookbook', creditCost);
-            console.log(`💳 룩북 크레딧 차감 요청 (BullnabiBridge): ${creditCost}`);
-        } else {
-            console.warn('⚠️ BullnabiBridge가 없습니다. 로컬 크레딧만 업데이트합니다.');
+        if (!window.BullnabiBridge) {
+            console.error('⚠️ BullnabiBridge가 없습니다');
+            return { success: false, error: 'BullnabiBridge not found' };
         }
 
-        // 로컬 UI 업데이트 (불나비 사용자인 경우)
-        const bullnabiUser = localStorage.getItem('bullnabi_user');
-        if (bullnabiUser) {
-            try {
-                const user = JSON.parse(bullnabiUser);
-                if (user.remainCount !== undefined) {
-                    // 부동소수점 오류 방지: 소수점 첫째자리까지 반올림
-                    user.remainCount = Math.round(Math.max(0, user.remainCount - creditCost) * 10) / 10;
-                    localStorage.setItem('bullnabi_user', JSON.stringify(user));
-                    console.log(`💳 로컬 크레딧 업데이트: ${user.remainCount}`);
-
-                    // UI 실시간 업데이트
-                    if (typeof updateUserInfo === 'function') {
-                        updateUserInfo();
-                    }
-
-                    // currentDesigner 업데이트
-                    if (window.currentDesigner) {
-                        window.currentDesigner.tokens = user.remainCount;
-                    }
-                }
-            } catch (e) {
-                console.warn('로컬 크레딧 업데이트 실패:', e);
-            }
-        }
+        const result = await window.BullnabiBridge.deductTokens(null, 'lookbook', metadata);
+        console.log('💳 룩북 토큰 차감 결과:', result);
+        return result;
     } catch (error) {
-        console.error('크레딧 차감 오류:', error);
+        console.error('❌ 룩북 토큰 차감 오류:', error);
+        return { success: false, error: error.message };
     }
+}
+
+// 헤어체험 토큰 차감
+async function deductHairTryTokens(metadata = {}) {
+    try {
+        if (!window.BullnabiBridge) {
+            console.error('⚠️ BullnabiBridge가 없습니다');
+            return { success: false, error: 'BullnabiBridge not found' };
+        }
+
+        const result = await window.BullnabiBridge.deductTokens(null, 'hairTry', metadata);
+        console.log('💳 헤어체험 토큰 차감 결과:', result);
+        return result;
+    } catch (error) {
+        console.error('❌ 헤어체험 토큰 차감 오류:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// 토큰 잔액 조회
+async function getHairgatorTokenBalance() {
+    try {
+        if (!window.BullnabiBridge) {
+            return { success: false, tokenBalance: 0 };
+        }
+        return await window.BullnabiBridge.getTokenBalance();
+    } catch (error) {
+        console.error('❌ 토큰 잔액 조회 오류:', error);
+        return { success: false, tokenBalance: 0 };
+    }
+}
+
+// 기능 사용 가능 여부 확인
+async function canUseHairgatorFeature(feature) {
+    try {
+        if (!window.BullnabiBridge) {
+            return { success: false, canUse: false };
+        }
+        return await window.BullnabiBridge.canUseFeature(null, feature);
+    } catch (error) {
+        console.error('❌ 기능 사용 가능 여부 확인 오류:', error);
+        return { success: false, canUse: false };
+    }
+}
+
+// 레거시 함수 (호환성 유지)
+function deductLookbookCreditFromMenu(creditCost) {
+    console.log('⚠️ 레거시 함수 호출됨: deductLookbookCreditFromMenu - 새 토큰 시스템으로 대체됨');
+    // 새 토큰 시스템으로 자동 전환
+    deductLookbookTokens({ legacyCall: true });
 }
 
 // ========== 토큰 차감 확인 다이얼로그 ==========
 function showTokenConfirmDialog(type) {
     return new Promise((resolve) => {
         // type: 'lookbook' 또는 'hairTry'
+        const tokenCost = HAIRGATOR_TOKEN_COSTS[type] || 200;
         const title = t(`${type}.confirmTitle`) || '토큰 차감 안내';
-        const message = t(`${type}.confirmMessage`) || '0.2토큰이 차감됩니다.\n계속하시겠습니까?';
+        const defaultMessage = `${tokenCost.toLocaleString()}토큰이 차감됩니다.\n계속하시겠습니까?`;
+        const message = t(`${type}.confirmMessage`) || defaultMessage;
         const confirmText = t(`${type}.confirmButton`) || '동의';
         const cancelText = t(`${type}.cancelButton`) || '취소';
 
@@ -1189,26 +1226,23 @@ async function openStyleModal(style) {
     // Lookbook 버튼 이벤트 연결 (index.html의 버튼)
     const btnLookbook = document.getElementById('btnOpenLookbook');
     if (btnLookbook) {
-        const LOOKBOOK_CREDIT_COST = 0.2; // 룩북 사용 비용
+        const LOOKBOOK_TOKEN_COST = HAIRGATOR_TOKEN_COSTS.lookbook; // 룩북 사용 비용: 200 토큰
 
-        // 크레딧 확인 함수
-        const getUserCredits = () => {
+        // 토큰 잔액 확인 함수 (비동기)
+        const getTokenBalance = async () => {
             try {
-                const bullnabiUser = localStorage.getItem('bullnabi_user');
-                if (bullnabiUser) {
-                    const user = JSON.parse(bullnabiUser);
-                    return user.remainCount || 0;
-                }
+                const result = await getHairgatorTokenBalance();
+                return result.success ? result.tokenBalance : 0;
             } catch (e) {
-                console.warn('크레딧 확인 실패:', e);
+                console.warn('토큰 확인 실패:', e);
+                return 0;
             }
-            return 0;
         };
 
-        // 크레딧 부족 여부 확인
-        const hasEnoughCredits = () => {
-            const credits = getUserCredits();
-            return credits >= LOOKBOOK_CREDIT_COST;
+        // 토큰 부족 여부 확인 (비동기)
+        const hasEnoughTokens = async () => {
+            const result = await canUseHairgatorFeature('lookbook');
+            return result.success && result.canUse;
         };
 
         // 다국어 버튼 텍스트 설정 (SVG 아이콘 유지)
@@ -1219,12 +1253,13 @@ async function openStyleModal(style) {
         </svg>`;
         btnLookbook.innerHTML = `${svgIcon}<span>${lookbookText}</span>`;
 
-        // 크레딧 상태에 따라 버튼 스타일 업데이트
-        const updateButtonState = () => {
-            if (!hasEnoughCredits()) {
+        // 토큰 상태에 따라 버튼 스타일 업데이트 (비동기)
+        const updateButtonState = async () => {
+            const hasTokens = await hasEnoughTokens();
+            if (!hasTokens) {
                 btnLookbook.style.opacity = '0.5';
                 btnLookbook.style.cursor = 'not-allowed';
-                btnLookbook.title = t('lookbook.noCredits') || '크레딧이 부족합니다';
+                btnLookbook.title = t('lookbook.noCredits') || '토큰이 부족합니다';
             } else {
                 btnLookbook.style.opacity = '1';
                 btnLookbook.style.cursor = 'pointer';
@@ -1232,7 +1267,7 @@ async function openStyleModal(style) {
             }
         };
 
-        // 초기 상태 설정
+        // 초기 상태 설정 (비동기)
         updateButtonState();
 
         btnLookbook.onclick = async function (e) {
@@ -1244,11 +1279,12 @@ async function openStyleModal(style) {
                 return;
             }
 
-            // 크레딧 체크
-            if (!hasEnoughCredits()) {
-                const currentCredits = getUserCredits();
+            // 토큰 체크 (비동기)
+            const tokenCheck = await canUseHairgatorFeature('lookbook');
+            if (!tokenCheck.success || !tokenCheck.canUse) {
+                const currentTokens = tokenCheck.currentBalance || 0;
                 const message = t('lookbook.insufficientCredits') ||
-                    `크레딧이 부족합니다. (현재: ${currentCredits}, 필요: ${LOOKBOOK_CREDIT_COST})`;
+                    `토큰이 부족합니다. (현재: ${currentTokens}, 필요: ${LOOKBOOK_TOKEN_COST})`;
 
                 // 토스트 메시지 또는 알림
                 if (typeof showToast === 'function') {
@@ -1256,7 +1292,12 @@ async function openStyleModal(style) {
                 } else {
                     alert(message);
                 }
-                console.warn('💳 크레딧 부족:', { current: currentCredits, required: LOOKBOOK_CREDIT_COST });
+                console.warn('💳 토큰 부족:', { current: currentTokens, required: LOOKBOOK_TOKEN_COST });
+
+                // 결제 안내 팝업
+                if (window.BullnabiBridge) {
+                    window.BullnabiBridge.showInsufficientTokensPopup(LOOKBOOK_TOKEN_COST, currentTokens);
+                }
                 return;
             }
 
@@ -1304,8 +1345,8 @@ async function openStyleModal(style) {
                 sessionStorage.setItem('lookbookGender', genderValue);
                 sessionStorage.setItem('lookbookLanguage', window.currentLanguage || 'ko');
 
-                // 크레딧 차감 (API 성공 시에만)
-                deductLookbookCreditFromMenu(LOOKBOOK_CREDIT_COST);
+                // 토큰 차감 (API 성공 시에만)
+                await deductLookbookTokens({ styleId: style.styleId, styleName: style.name });
 
                 // 로딩 오버레이 제거
                 loadingOverlay.remove();
@@ -1330,26 +1371,12 @@ async function openStyleModal(style) {
     // 헤어체험 버튼 이벤트 연결 (index.html의 버튼)
     const btnHairTry = document.getElementById('btnHairTry');
     if (btnHairTry) {
-        const HAIR_TRY_CREDIT_COST = 0.2; // 헤어체험 사용 비용 (룩북과 동일)
+        const HAIR_TRY_TOKEN_COST = HAIRGATOR_TOKEN_COSTS.hairTry; // 헤어체험 사용 비용: 300 토큰
 
-        // 크레딧 확인 함수
-        const getUserCredits = () => {
-            try {
-                const bullnabiUser = localStorage.getItem('bullnabi_user');
-                if (bullnabiUser) {
-                    const user = JSON.parse(bullnabiUser);
-                    return user.remainCount || 0;
-                }
-            } catch (e) {
-                console.warn('크레딧 확인 실패:', e);
-            }
-            return 0;
-        };
-
-        // 크레딧 부족 여부 확인
-        const hasEnoughCredits = () => {
-            const credits = getUserCredits();
-            return credits >= HAIR_TRY_CREDIT_COST;
+        // 토큰 부족 여부 확인 (비동기)
+        const hasEnoughHairTryTokens = async () => {
+            const result = await canUseHairgatorFeature('hairTry');
+            return result.success && result.canUse;
         };
 
         // 다국어 버튼 텍스트 설정 (SVG 아이콘 유지)
@@ -1360,12 +1387,13 @@ async function openStyleModal(style) {
         </svg>`;
         btnHairTry.innerHTML = `${svgIcon}<span>${hairTryText}</span>`;
 
-        // 크레딧 상태에 따라 버튼 스타일 업데이트
-        const updateHairTryButtonState = () => {
-            if (!hasEnoughCredits()) {
+        // 토큰 상태에 따라 버튼 스타일 업데이트 (비동기)
+        const updateHairTryButtonState = async () => {
+            const hasTokens = await hasEnoughHairTryTokens();
+            if (!hasTokens) {
                 btnHairTry.style.opacity = '0.5';
                 btnHairTry.style.cursor = 'not-allowed';
-                btnHairTry.title = t('hairTry.noCredits') || '크레딧이 부족합니다';
+                btnHairTry.title = t('hairTry.noCredits') || '토큰이 부족합니다';
             } else {
                 btnHairTry.style.opacity = '1';
                 btnHairTry.style.cursor = 'pointer';
@@ -1373,7 +1401,7 @@ async function openStyleModal(style) {
             }
         };
 
-        // 초기 상태 설정
+        // 초기 상태 설정 (비동기)
         updateHairTryButtonState();
 
         btnHairTry.onclick = async function (e) {
@@ -1385,18 +1413,24 @@ async function openStyleModal(style) {
                 return;
             }
 
-            // 크레딧 체크
-            if (!hasEnoughCredits()) {
-                const currentCredits = getUserCredits();
+            // 토큰 체크 (비동기)
+            const tokenCheck = await canUseHairgatorFeature('hairTry');
+            if (!tokenCheck.success || !tokenCheck.canUse) {
+                const currentTokens = tokenCheck.currentBalance || 0;
                 const message = t('hairTry.insufficientCredits') ||
-                    `크레딧이 부족합니다. (현재: ${currentCredits}, 필요: ${HAIR_TRY_CREDIT_COST})`;
+                    `토큰이 부족합니다. (현재: ${currentTokens}, 필요: ${HAIR_TRY_TOKEN_COST})`;
 
                 if (typeof showToast === 'function') {
                     showToast(message, 'error');
                 } else {
                     alert(message);
                 }
-                console.warn('💳 크레딧 부족:', { current: currentCredits, required: HAIR_TRY_CREDIT_COST });
+                console.warn('💳 토큰 부족:', { current: currentTokens, required: HAIR_TRY_TOKEN_COST });
+
+                // 결제 안내 팝업
+                if (window.BullnabiBridge) {
+                    window.BullnabiBridge.showInsufficientTokensPopup(HAIR_TRY_TOKEN_COST, currentTokens);
+                }
                 return;
             }
 
@@ -2195,9 +2229,8 @@ async function processAIFaceSwap() {
         // 결과 모달 표시 (window.uploadedCustomerPhoto 사용)
         showHairTryResult(result.resultImageUrl, styleName);
 
-        // 크레딧 차감
-        const HAIR_TRY_CREDIT_COST = 0.2;
-        deductLookbookCreditFromMenu(HAIR_TRY_CREDIT_COST);
+        // 토큰 차감 (성공 시에만)
+        await deductHairTryTokens({ styleId: styleId, styleName: styleName });
 
     } catch (error) {
         // 에러 발생 시에도 임시 파일 삭제 시도

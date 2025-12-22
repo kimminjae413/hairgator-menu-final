@@ -135,10 +135,11 @@ function loginWithBullnabi(userInfo) {
             id: userInfo.userId || userInfo.id,
             name: userInfo.name,
             phone: userInfo.phone || '0000',
-            tokens: userInfo.remainCount || 0,
+            tokens: userInfo.remainCount || 0, // 레거시: 불나비 회수
+            tokenBalance: 0, // 신규: 헤어게이터 토큰
             isBullnabiUser: true
         };
-        
+
         // UI 업데이트
         if (typeof updateUserInfo === 'function') {
             updateUserInfo();
@@ -160,11 +161,39 @@ function loginWithBullnabi(userInfo) {
             });
         }
 
-        // 성공 알림
+        // ⭐ 헤어게이터 토큰 잔액 조회 (Firebase user_tokens)
+        try {
+            const userId = userInfo.userId || userInfo.id;
+            if (userId) {
+                const tokenResponse = await fetch('/.netlify/functions/token-api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'getBalance',
+                        userId: userId
+                    })
+                });
+                const tokenResult = await tokenResponse.json();
+                if (tokenResult.success) {
+                    window.currentDesigner.tokenBalance = tokenResult.tokenBalance;
+                    userInfo.tokenBalance = tokenResult.tokenBalance;
+
+                    // localStorage에도 저장
+                    const storedUser = JSON.parse(localStorage.getItem('bullnabi_user') || '{}');
+                    storedUser.tokenBalance = tokenResult.tokenBalance;
+                    localStorage.setItem('bullnabi_user', JSON.stringify(storedUser));
+
+                    console.log('💰 헤어게이터 토큰 잔액:', tokenResult.tokenBalance);
+                }
+            }
+        } catch (tokenError) {
+            console.warn('⚠️ 토큰 잔액 조회 실패:', tokenError);
+        }
+
+        // 성공 알림 (헤어게이터 토큰 표시)
         if (typeof showToast === 'function') {
-            const credits = userInfo.remainCount || 0;
-            const displayCredits = Number.isInteger(credits) ? credits : credits.toFixed(1);
-            showToast(`${userInfo.name}님 환영합니다! (크레딧: ${displayCredits})`, 'success');
+            const tokenBalance = window.currentDesigner.tokenBalance || 0;
+            showToast(`${userInfo.name}님 환영합니다! (토큰: ${tokenBalance.toLocaleString()})`, 'success');
         }
         
     } catch (error) {

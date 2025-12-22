@@ -645,7 +645,7 @@
                             <span class="pricing-amount">₩0</span>
                             <span class="pricing-period" data-i18n="payment.perMonth">/월</span>
                         </div>
-                        <div class="pricing-credits">300 <span data-i18n="payment.credits">크레딧</span></div>
+                        <div class="pricing-credits">300 <span data-i18n="payment.credits">토큰</span></div>
                     </div>
                     <ul class="pricing-features">
                         <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.styleMenu">스타일 메뉴판</span></li>
@@ -666,7 +666,7 @@
                             <span class="pricing-amount">₩22,000</span>
                             <span class="pricing-period" data-i18n="payment.perMonth">/월</span>
                         </div>
-                        <div class="pricing-credits">10,000 <span data-i18n="payment.credits">크레딧</span></div>
+                        <div class="pricing-credits">10,000 <span data-i18n="payment.credits">토큰</span></div>
                     </div>
                     <ul class="pricing-features">
                         <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.styleMenu">스타일 메뉴판</span></li>
@@ -688,12 +688,12 @@
                             <span class="pricing-amount">₩38,000</span>
                             <span class="pricing-period" data-i18n="payment.perMonth">/월</span>
                         </div>
-                        <div class="pricing-credits">18,000 <span data-i18n="payment.credits">크레딧</span></div>
+                        <div class="pricing-credits">18,000 <span data-i18n="payment.credits">토큰</span></div>
                         <div class="pricing-save" data-i18n="payment.savePercent">원당 4% 효율 증가</div>
                     </div>
                     <ul class="pricing-features">
                         <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.allBasic">베이직 플랜 모든 기능</span></li>
-                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.moreCredits">80% 더 많은 크레딧</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.moreCredits">80% 더 많은 토큰</span></li>
                     </ul>
                     <button class="pricing-btn pricing-btn-pro" onclick="selectPlan('pro')" data-i18n="payment.selectPlan">선택하기</button>
                 </div>
@@ -706,12 +706,12 @@
                             <span class="pricing-amount">₩50,000</span>
                             <span class="pricing-period" data-i18n="payment.perMonth">/월</span>
                         </div>
-                        <div class="pricing-credits">25,000 <span data-i18n="payment.credits">크레딧</span></div>
+                        <div class="pricing-credits">25,000 <span data-i18n="payment.credits">토큰</span></div>
                         <div class="pricing-save" data-i18n="payment.savePercentBiz">원당 11% 효율 증가</div>
                     </div>
                     <ul class="pricing-features">
                         <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.allBasic">베이직 플랜 모든 기능</span></li>
-                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.maxCredits">150% 더 많은 크레딧</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.maxCredits">150% 더 많은 토큰</span></li>
                     </ul>
                     <button class="pricing-btn pricing-btn-business" onclick="selectPlan('business')" data-i18n="payment.selectPlan">선택하기</button>
                 </div>
@@ -733,7 +733,7 @@
                 </div>
             </div>
 
-            <p class="pricing-note" data-i18n="payment.note">* 크레딧은 매월 초기화되며, 미사용 크레딧은 이월되지 않습니다.</p>
+            <p class="pricing-note" data-i18n="payment.note">* 토큰은 매월 초기화되며, 미사용 토큰은 이월되지 않습니다.</p>
         </div>
     </div>
 
@@ -1566,7 +1566,7 @@
                     // 소수점 첫째 자리까지 표시 (정수인 경우 소수점 없이)
                     const credits = currentDesigner.tokens || 0;
                     const displayCredits = Number.isInteger(credits) ? credits : credits.toFixed(1);
-                    sessionStatus.textContent = `크레딧: ${displayCredits}`;
+                    sessionStatus.textContent = `토큰: ${displayCredits}`;
                 }
             } else {
                 userInfo.style.display = 'none';

@@ -12,7 +12,7 @@
 
     <!-- i18n -->
     <script src="js/i18n.js"></script>
-    <!-- 불나비 브릿지 (크레딧 차감용) -->
+    <!-- 불나비 브릿지 (토큰 차감용) -->
     <script src="js/bullnabi-bridge.js"></script>
 
     <!-- 베타 접근 제어 (직접 URL 접근 차단) -->
@@ -1268,11 +1268,11 @@
                 if (data.success && data.analysis) {
                     applyAnalysisResults(data.analysis, data.generatedImages);
 
-                    // 크레딧 0.2 차감 (불나비 서버로 전송)
+                    // 토큰 0.2 차감 (불나비 서버로 전송)
                     try {
                         await deductLookbookCredit();
                     } catch (creditError) {
-                        console.error('크레딧 차감 중 오류:', creditError);
+                        console.error('토큰 차감 중 오류:', creditError);
                     }
                 }
 
@@ -1437,11 +1437,11 @@
                         if (data.success && data.analysis) {
                             applyAnalysisResults(data.analysis, data.generatedImages);
 
-                            // 크레딧 서버 차감 (menu.js는 로컬만 업데이트함)
+                            // 토큰 서버 차감 (menu.js는 로컬만 업데이트함)
                             try {
                                 await deductLookbookCredit();
                             } catch (creditError) {
-                                console.error('크레딧 차감 중 오류:', creditError);
+                                console.error('토큰 차감 중 오류:', creditError);
                             }
                         }
 
@@ -1491,15 +1491,15 @@
             }
         }
 
-        // ==================== 크레딧 차감 함수 ====================
+        // ==================== 토큰 차감 함수 (헤어게이터 토큰 시스템) ====================
         async function deductLookbookCredit() {
-            const LOOKBOOK_CREDIT_COST = 0.2; // 룩북 AI 분석 비용: 0.2 크레딧
+            const LOOKBOOK_TOKEN_COST = 200; // 룩북 AI 분석 비용: 200 토큰
 
             try {
                 // 불나비 사용자 정보 확인
                 const bullnabiUser = localStorage.getItem('bullnabi_user');
                 if (!bullnabiUser) {
-                    console.warn('⚠️ 불나비 사용자 정보 없음, 크레딧 차감 건너뜀');
+                    console.warn('⚠️ 불나비 사용자 정보 없음, 토큰 차감 건너뜀');
                     return;
                 }
 
@@ -1507,22 +1507,23 @@
                 const userId = user.userId || user.id;
 
                 if (!userId) {
-                    console.warn('⚠️ userId 없음, 크레딧 차감 건너뜀');
+                    console.warn('⚠️ userId 없음, 토큰 차감 건너뜀');
                     return;
                 }
 
-                console.log(`💳 서버에 크레딧 차감 요청: userId=${userId}, cost=${LOOKBOOK_CREDIT_COST}`);
+                console.log(`💳 서버에 토큰 차감 요청: userId=${userId}, cost=${LOOKBOOK_TOKEN_COST}`);
 
-                // 서버에 실제 크레딧 차감 API 호출
-                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
+                // 새 토큰 API로 차감 요청 (Firebase user_tokens)
+                const response = await fetch('/.netlify/functions/token-api', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        action: 'useCredits',
+                        action: 'deduct',
                         userId: userId,
-                        data: {
-                            uses: 'lookbook',
-                            count: LOOKBOOK_CREDIT_COST
+                        feature: 'lookbook',
+                        metadata: {
+                            styleName: styleTitle,
+                            page: 'lookbook'
                         }
                     })
                 });
@@ -1530,44 +1531,28 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    console.log(`✅ 서버 크레딧 차감 성공:`, result);
+                    console.log(`✅ 토큰 차감 성공:`, result);
 
-                    // 로컬 스토리지도 동기화
-                    user.remainCount = result.newRemainCount;
+                    // 로컬 스토리지에 토큰 잔액 저장
+                    user.tokenBalance = result.newBalance;
                     localStorage.setItem('bullnabi_user', JSON.stringify(user));
-                    console.log(`💳 로컬 크레딧 동기화: ${result.newRemainCount}`);
+                    console.log(`💳 토큰 잔액 동기화: ${result.newBalance}`);
 
-                    // 네이티브 앱에도 알림 (있는 경우)
-                    if (window.BullnabiBridge && typeof window.BullnabiBridge.requestCreditDeduction === 'function') {
-                        window.BullnabiBridge.requestCreditDeduction('lookbook', LOOKBOOK_CREDIT_COST);
+                    // BullnabiBridge로 UI 업데이트
+                    if (window.BullnabiBridge && typeof window.BullnabiBridge.updateTokenDisplay === 'function') {
+                        window.BullnabiBridge.updateTokenDisplay(result.newBalance);
                     }
                 } else {
-                    console.error('❌ 서버 크레딧 차감 실패:', result.error);
+                    console.error('❌ 토큰 차감 실패:', result.error);
 
-                    // 실패해도 로컬은 업데이트 (나중에 동기화)
-                    if (user.remainCount !== undefined) {
-                        user.remainCount = Math.round(Math.max(0, user.remainCount - LOOKBOOK_CREDIT_COST) * 10) / 10;
-                        localStorage.setItem('bullnabi_user', JSON.stringify(user));
-                        console.log(`💳 로컬 크레딧만 업데이트 (fallback): ${user.remainCount}`);
+                    // 토큰 부족 시 안내
+                    if (result.code === 'INSUFFICIENT_TOKENS') {
+                        alert('토큰이 부족합니다. 토큰을 충전해주세요.');
                     }
                 }
 
             } catch (error) {
-                console.error('크레딧 차감 오류:', error);
-
-                // 예외 시에도 로컬 업데이트 시도
-                try {
-                    const bullnabiUser = localStorage.getItem('bullnabi_user');
-                    if (bullnabiUser) {
-                        const user = JSON.parse(bullnabiUser);
-                        if (user.remainCount !== undefined) {
-                            user.remainCount = Math.round(Math.max(0, user.remainCount - LOOKBOOK_CREDIT_COST) * 10) / 10;
-                            localStorage.setItem('bullnabi_user', JSON.stringify(user));
-                        }
-                    }
-                } catch (e) {
-                    console.warn('로컬 크레딧 업데이트도 실패:', e);
-                }
+                console.error('토큰 차감 오류:', error);
             }
         }
 

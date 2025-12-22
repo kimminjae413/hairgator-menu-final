@@ -1,7 +1,7 @@
 // HAIRGATOR 불나비 API 프록시 서버 - 토큰 자동 갱신 시스템 완성 버전
 // refreshToken, getUserToken, getUserData action 지원
 
-// ========== 📊 Firebase Admin (크레딧 로그용) ==========
+// ========== 📊 Firebase Admin (토큰 로그용) ==========
 const admin = require('firebase-admin');
 
 // Firebase Admin 초기화 (중복 방지)
@@ -301,7 +301,7 @@ async function handleGetUserData(token, userId) {
 }
 
 /**
- * 크레딧 사용 로그를 Firestore에 저장
+ * 토큰 사용 로그를 Firestore에 저장
  * 컬렉션: credit_logs
  */
 async function logCreditUsage(userId, action, creditsUsed, metadata = {}) {
@@ -322,25 +322,25 @@ async function logCreditUsage(userId, action, creditsUsed, metadata = {}) {
         };
 
         const docRef = await db.collection('credit_logs').add(logData);
-        console.log(`📝 크레딧 로그 저장: ${docRef.id}`, { userId, action, creditsUsed });
+        console.log(`📝 토큰 로그 저장: ${docRef.id}`, { userId, action, creditsUsed });
 
         return { success: true, logId: docRef.id };
     } catch (error) {
-        console.error('❌ 크레딧 로그 저장 실패:', error.message);
+        console.error('❌ 토큰 로그 저장 실패:', error.message);
         return { success: false, error: error.message };
     }
 }
 
 /**
- * 크레딧 사용 (차감) 처리
- * 1. 현재 크레딧 확인
+ * 토큰 사용 (차감) 처리
+ * 1. 현재 토큰 확인
  * 2. aiTicketHistory에 히스토리 추가
  * 3. _users의 remainCount 업데이트
  * 4. Firestore에 사용 로그 저장
  */
 async function handleUseCredits(userId, uses, count) {
     try {
-        console.log('💳 크레딧 차감 시작:', { userId, uses, count });
+        console.log('💳 토큰 차감 시작:', { userId, uses, count });
 
         // 토큰 가져오기
         let adminToken = process.env.BULLNABI_TOKEN;
@@ -352,7 +352,7 @@ async function handleUseCredits(userId, uses, count) {
             adminToken = refreshResult.token;
         }
 
-        // 1. 현재 크레딧 확인
+        // 1. 현재 토큰 확인
         const currentData = await handleGetUserData(adminToken, userId);
         if (!currentData.success || !currentData.data || currentData.data.length === 0) {
             return { success: false, error: '사용자 정보를 찾을 수 없습니다' };
@@ -364,7 +364,7 @@ async function handleUseCredits(userId, uses, count) {
         const deductAmount = Math.abs(count);
 
         if (currentCredits < deductAmount) {
-            return { success: false, error: '크레딧이 부족합니다', currentCredits };
+            return { success: false, error: '토큰이 부족합니다', currentCredits };
         }
 
         // 2. aiTicketHistory에 히스토리 추가
@@ -428,11 +428,11 @@ async function handleUseCredits(userId, uses, count) {
         );
 
         const updateResult = await updateResponse.json();
-        console.log('💾 크레딧 업데이트 결과:', updateResult);
+        console.log('💾 토큰 업데이트 결과:', updateResult);
 
         // 성공 여부 확인
         if (updateResult.code === '1' || updateResult.code === 1 || updateResult.success) {
-            console.log('✅ 크레딧 차감 완료:', { userId, uses, deducted: deductAmount, newRemainCount });
+            console.log('✅ 토큰 차감 완료:', { userId, uses, deducted: deductAmount, newRemainCount });
 
             // 4. Firestore에 사용 로그 저장 (비동기, 실패해도 차감은 성공)
             logCreditUsage(userId, uses, deductAmount, {
@@ -452,12 +452,12 @@ async function handleUseCredits(userId, uses, count) {
 
         return {
             success: false,
-            error: '크레딧 업데이트 실패',
+            error: '토큰 업데이트 실패',
             updateResult
         };
 
     } catch (error) {
-        console.error('❌ 크레딧 차감 오류:', error);
+        console.error('❌ 토큰 차감 오류:', error);
         return { success: false, error: error.message };
     }
 }
@@ -552,9 +552,9 @@ exports.handler = async (event, context) => {
             };
         }
 
-        // 4. 크레딧 사용 (차감)
+        // 4. 토큰 사용 (차감)
         if (action === 'useCredits') {
-            console.log('💳 크레딧 차감 요청 처리');
+            console.log('💳 토큰 차감 요청 처리');
 
             if (!userId || !data?.uses || data?.count === undefined) {
                 return {
