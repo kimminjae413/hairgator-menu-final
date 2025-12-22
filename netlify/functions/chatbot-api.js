@@ -8646,8 +8646,28 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
     const maleParams = await analyzeManImageVision(image_base64, mime_type, geminiKey);
     console.log(`⏱️ [4] 상세 파라미터 분석: ${Date.now() - t4}ms`);
 
-    // 7. Top-1 스타일의 textRecipe 가져오기 (보충 레시피 없이 원본 사용)
+    // 7. Top-1 스타일의 textRecipe 가져오기 (폴백: captionText → captionUrl)
     let originalRecipe = top1.textRecipe || '';
+
+    // ⭐ textRecipe가 너무 짧으면 captionText 또는 captionUrl에서 가져오기
+    if (!originalRecipe || originalRecipe.length < 100) {
+      console.log(`⚠️ 남자 textRecipe 부족 (${originalRecipe.length}자), 폴백 시도...`);
+
+      // 1차 폴백: captionText
+      if (top1.captionText && top1.captionText.length > 100) {
+        originalRecipe = top1.captionText;
+        console.log(`✅ captionText 폴백 사용 (${originalRecipe.length}자)`);
+      }
+      // 2차 폴백: captionUrl에서 fetch
+      else if (top1.captionUrl) {
+        const fetchedCaption = await fetchCaptionContent(top1.captionUrl);
+        if (fetchedCaption && fetchedCaption.length > 100) {
+          originalRecipe = fetchedCaption;
+          console.log(`✅ captionUrl 폴백 사용 (${originalRecipe.length}자)`);
+        }
+      }
+    }
+
     // 스타일ID 언급 제거 (사용자에게 보이지 않도록)
     originalRecipe = originalRecipe
       .replace(/\[?[FM]?[A-Z]{2,3}\d{4}\]?/g, '')  // 스타일ID 제거 (괄호 포함)
