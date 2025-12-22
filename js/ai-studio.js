@@ -730,17 +730,30 @@ class AIStudio {
         });
       }
 
-      // ⭐ 챗봇 토큰 차감 (10토큰)
-      if (window.BullnabiBridge && typeof window.BullnabiBridge.deductTokens === 'function') {
+      // ⭐ 챗봇 크레딧 차감 (토큰 사용량 기반 구간별)
+      if (window.BullnabiBridge && typeof window.BullnabiBridge.deductTokensDynamic === 'function') {
         try {
-          const result = await window.BullnabiBridge.deductTokens(null, 'chatbot', { query: text.substring(0, 100) });
+          const totalTokens = response.tokenUsage?.totalTokens || 0;
+
+          // 토큰 구간별 크레딧 계산
+          // ~500: 3, 501~1500: 10, 1501~3000: 20, 3000+: 30
+          let creditCost = 3;  // 기본값
+          if (totalTokens > 3000) creditCost = 30;
+          else if (totalTokens > 1500) creditCost = 20;
+          else if (totalTokens > 500) creditCost = 10;
+
+          const result = await window.BullnabiBridge.deductTokensDynamic(null, creditCost, 'chatbot', {
+            query: text.substring(0, 100),
+            tokenCount: totalTokens
+          });
+
           if (result.success) {
-            console.log('💳 챗봇 토큰 차감 완료:', result.newBalance);
+            console.log(`💳 챗봇 크레딧 차감: ${creditCost} (토큰: ${totalTokens}), 잔액: ${result.newBalance}`);
           } else if (result.code === 'INSUFFICIENT_TOKENS') {
-            console.warn('⚠️ 토큰 부족 - 다음 질문부터 차감 제한');
+            console.warn('⚠️ 크레딧 부족');
           }
         } catch (tokenError) {
-          console.warn('⚠️ 토큰 차감 실패:', tokenError);
+          console.warn('⚠️ 크레딧 차감 실패:', tokenError);
         }
       }
 
@@ -926,6 +939,7 @@ class AIStudio {
     let fullContent = '';
     let guideImage = null;
     let relatedQuestions = null;
+    let tokenUsage = null;  // ⭐ 토큰 사용량
     let buffer = '';
 
     while (true) {
@@ -960,6 +974,14 @@ class AIStudio {
                 intro: data.intro,
                 questions: data.questions
               };
+            } else if (data.type === 'token_usage') {
+              // ⭐ 토큰 사용량 저장
+              tokenUsage = {
+                totalTokens: data.totalTokens || 0,
+                promptTokens: data.promptTokens || 0,
+                completionTokens: data.completionTokens || 0
+              };
+              console.log('📊 토큰 사용량:', tokenUsage.totalTokens);
             } else if (data.content) {
               fullContent += data.content;
               onChunk(fullContent);
@@ -984,7 +1006,7 @@ class AIStudio {
       }
     }
 
-    console.log('📥 스트리밍 완료, 총 길이:', fullContent.length);
+    console.log('📥 스트리밍 완료, 총 길이:', fullContent.length, '토큰:', tokenUsage?.totalTokens || 0);
 
     const hasRecipeData = this.detectRecipeContent(fullContent);
 
@@ -992,7 +1014,8 @@ class AIStudio {
       content: fullContent || '응답을 받지 못했습니다.',
       canvasData: hasRecipeData ? this.parseRecipeData(fullContent) : null,
       guideImage: guideImage,
-      relatedQuestions: relatedQuestions
+      relatedQuestions: relatedQuestions,
+      tokenUsage: tokenUsage  // ⭐ 토큰 사용량 반환
     };
   }
 

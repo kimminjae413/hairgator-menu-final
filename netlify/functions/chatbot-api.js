@@ -3944,7 +3944,11 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
     const data = await response.json();
     const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || '답변을 생성할 수 없습니다.';
 
-    console.log(`✅ Gemini 응답 완료 (${answer.length}자)`);
+    // ⭐ 토큰 사용량 추출 (크레딧 차감용)
+    const tokenUsage = data.usageMetadata || {};
+    const totalTokens = (tokenUsage.totalTokenCount || 0) ||
+                        ((tokenUsage.promptTokenCount || 0) + (tokenUsage.candidatesTokenCount || 0));
+    console.log(`✅ Gemini 응답 완료 (${answer.length}자, ${totalTokens} tokens)`);
 
     // ⭐ 가이드 이미지 감지 (기장/스타일 가이드)
     const guideImage = detectGuideImageForQuery(user_query);
@@ -4014,6 +4018,14 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
     } catch (relatedError) {
       console.error('⚠️ 연관 질문 생성 스킵:', relatedError.message);
     }
+
+    // ⭐ 토큰 사용량 전송 (크레딧 차감용)
+    sseBuffer += `data: ${JSON.stringify({
+      type: 'token_usage',
+      totalTokens: totalTokens,
+      promptTokens: tokenUsage.promptTokenCount || 0,
+      completionTokens: tokenUsage.candidatesTokenCount || 0
+    })}\n\n`;
 
     sseBuffer += 'data: [DONE]\n\n';
 

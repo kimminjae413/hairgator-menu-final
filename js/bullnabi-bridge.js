@@ -603,6 +603,77 @@
             }
         },
 
+        // ⭐ 동적 크레딧 차감 (토큰 사용량 기반)
+        async deductTokensDynamic(userId, amount, feature, metadata = {}) {
+            try {
+                if (!userId) {
+                    const user = window.getBullnabiUser?.();
+                    userId = user?.userId || user?.id;
+                }
+
+                if (!userId) {
+                    return { success: false, error: 'userId required' };
+                }
+
+                if (!amount || amount <= 0) {
+                    return { success: false, error: 'Invalid amount' };
+                }
+
+                // 클라이언트 측 Firebase Firestore 직접 사용
+                if (window.firebase && window.firebase.firestore) {
+                    const db = window.firebase.firestore();
+                    const docRef = db.collection('user_tokens').doc(userId);
+                    const doc = await docRef.get();
+
+                    let currentBalance = 0;
+                    if (doc.exists) {
+                        currentBalance = doc.data().tokenBalance || 0;
+                    }
+
+                    if (currentBalance < amount) {
+                        console.warn(`⚠️ 크레딧 부족: 현재 ${currentBalance}, 필요 ${amount}`);
+                        return { success: false, error: '크레딧이 부족합니다', code: 'INSUFFICIENT_TOKENS' };
+                    }
+
+                    const newBalance = currentBalance - amount;
+
+                    // 크레딧 차감
+                    await docRef.set({
+                        tokenBalance: newBalance,
+                        updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+
+                    // 사용 로그 저장
+                    await db.collection('token_logs').add({
+                        userId: userId,
+                        action: feature,
+                        tokensUsed: amount,
+                        previousBalance: currentBalance,
+                        newBalance: newBalance,
+                        timestamp: window.firebase.firestore.FieldValue.serverTimestamp(),
+                        metadata: metadata
+                    });
+
+                    console.log(`✅ 동적 크레딧 차감 완료: ${feature}, ${amount}크레딧 사용, 잔액: ${newBalance}`);
+
+                    // UI 업데이트
+                    this.updateTokenDisplay(newBalance);
+
+                    return {
+                        success: true,
+                        previousBalance: currentBalance,
+                        deducted: amount,
+                        newBalance: newBalance
+                    };
+                }
+
+                return { success: false, error: 'Firebase not available' };
+            } catch (error) {
+                console.error('❌ 동적 크레딧 차감 실패:', error);
+                return { success: false, error: error.message };
+            }
+        },
+
         // 토큰 잔액 UI 업데이트
         updateTokenDisplay(newBalance) {
             // 토큰 표시 요소 업데이트
