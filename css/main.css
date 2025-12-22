@@ -3445,8 +3445,8 @@ body.light-theme .pricing-modal {
 /* 요금제 카드 그리드 */
 .pricing-cards {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
     margin-bottom: 30px;
 }
 
@@ -3676,6 +3676,40 @@ body.light-theme .pricing-btn-current {
 .pricing-btn-business:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* AI 얼굴변환 애드온 카드 */
+.pricing-card-addon {
+    background: rgba(255, 152, 0, 0.05);
+    border: 1px dashed rgba(255, 152, 0, 0.4);
+}
+
+body.light-theme .pricing-card-addon {
+    background: rgba(255, 152, 0, 0.08);
+    border-color: rgba(255, 152, 0, 0.5);
+}
+
+.pricing-card-addon .pricing-plan-name {
+    color: #FF9800;
+}
+
+.pricing-card-addon .pricing-credits {
+    color: #FF9800;
+}
+
+.pricing-addon-note {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    margin-top: auto;
+    line-height: 1.5;
+}
+
+body.light-theme .pricing-addon-note {
+    background: rgba(0, 0, 0, 0.03);
 }
 
 /* 하단 노트 */
