@@ -202,33 +202,59 @@
 
         // 실제 로그인 처리
         performLogin(userInfo) {
+            const self = this;
+
+            const afterLogin = async () => {
+                // 헤어게이터 토큰 잔액 조회 및 UI 업데이트
+                const userId = userInfo.userId || userInfo.id;
+                if (userId) {
+                    try {
+                        const tokenResult = await self.getTokenBalance(userId);
+                        if (tokenResult.success) {
+                            self.updateTokenDisplay(tokenResult.tokenBalance);
+                            // currentDesigner에도 저장
+                            if (window.currentDesigner) {
+                                window.currentDesigner.tokenBalance = tokenResult.tokenBalance;
+                            }
+                            console.log('💰 헤어게이터 토큰 로드 완료:', tokenResult.tokenBalance);
+                        }
+                    } catch (e) {
+                        console.warn('⚠️ 토큰 조회 실패:', e);
+                    }
+                }
+            };
+
             if (typeof window.loginWithBullnabi === 'function') {
                 console.log('🎯 자동 로그인 함수 호출');
                 window.loginWithBullnabi(userInfo);
                 this.isConnected = true;
                 this.lastHeartbeat = Date.now();
+                // 로그인 후 토큰 조회
+                setTimeout(afterLogin, 500);
             } else {
                 console.warn('⏳ loginWithBullnabi 함수 대기 중...');
-                
+
                 // 최대 5초까지 재시도
                 let attempts = 0;
                 const maxAttempts = 10;
-                
+
                 const retryLogin = () => {
                     attempts++;
-                    
+
                     if (typeof window.loginWithBullnabi === 'function') {
                         console.log('🎯 자동 로그인 함수 호출 (재시도)');
                         window.loginWithBullnabi(userInfo);
                         this.isConnected = true;
                         this.lastHeartbeat = Date.now();
+                        // 로그인 후 토큰 조회
+                        setTimeout(afterLogin, 500);
                     } else if (attempts < maxAttempts) {
                         setTimeout(retryLogin, 500);
                     } else {
                         console.error('❌ loginWithBullnabi 함수를 찾을 수 없습니다 (최대 재시도 초과)');
                     }
                 };
-                
+
                 setTimeout(retryLogin, 500);
             }
         },
@@ -584,6 +610,12 @@
             tokenElements.forEach(el => {
                 el.textContent = newBalance.toLocaleString();
             });
+
+            // sessionStatusDisplay 요소 업데이트 (index.html 사이드바)
+            const sessionStatus = document.getElementById('sessionStatusDisplay');
+            if (sessionStatus) {
+                sessionStatus.textContent = `토큰: ${newBalance.toLocaleString()}`;
+            }
 
             // currentDesigner 업데이트 (있는 경우)
             if (window.currentDesigner) {

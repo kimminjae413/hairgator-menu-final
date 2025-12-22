@@ -1563,10 +1563,9 @@
                     designerPhone.textContent = `전화: ${currentDesigner.phone}`;
                 }
                 if (sessionStatus) {
-                    // 소수점 첫째 자리까지 표시 (정수인 경우 소수점 없이)
-                    const credits = currentDesigner.tokens || 0;
-                    const displayCredits = Number.isInteger(credits) ? credits : credits.toFixed(1);
-                    sessionStatus.textContent = `토큰: ${displayCredits}`;
+                    // 헤어게이터 토큰 표시 (tokenBalance 우선, 없으면 tokens 사용)
+                    const tokenBalance = currentDesigner.tokenBalance ?? currentDesigner.tokens ?? 0;
+                    sessionStatus.textContent = `토큰: ${tokenBalance.toLocaleString()}`;
                 }
             } else {
                 userInfo.style.display = 'none';
