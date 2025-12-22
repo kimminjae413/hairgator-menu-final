@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
 /**
  * 불나비 네이티브 앱을 통한 자동 로그인
  */
-function loginWithBullnabi(userInfo) {
+async function loginWithBullnabi(userInfo) {
     try {
         console.log('불나비 자동 로그인 시작:', userInfo);
         
@@ -161,30 +161,33 @@ function loginWithBullnabi(userInfo) {
             });
         }
 
-        // ⭐ 헤어게이터 토큰 잔액 조회 (Firebase user_tokens)
+        // ⭐ 헤어게이터 토큰 잔액 조회 (클라이언트 측 Firebase 직접 사용)
         try {
             const userId = userInfo.userId || userInfo.id;
-            if (userId) {
-                const tokenResponse = await fetch('/.netlify/functions/token-api', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'getBalance',
-                        userId: userId
-                    })
-                });
-                const tokenResult = await tokenResponse.json();
-                if (tokenResult.success) {
-                    window.currentDesigner.tokenBalance = tokenResult.tokenBalance;
-                    userInfo.tokenBalance = tokenResult.tokenBalance;
+            if (userId && window.firebase && window.firebase.firestore) {
+                const db = window.firebase.firestore();
+                const doc = await db.collection('user_tokens').doc(userId).get();
 
-                    // localStorage에도 저장
-                    const storedUser = JSON.parse(localStorage.getItem('bullnabi_user') || '{}');
-                    storedUser.tokenBalance = tokenResult.tokenBalance;
-                    localStorage.setItem('bullnabi_user', JSON.stringify(storedUser));
-
-                    console.log('💰 헤어게이터 토큰 잔액:', tokenResult.tokenBalance);
+                let tokenBalance = 0;
+                if (doc.exists) {
+                    tokenBalance = doc.data().tokenBalance || 0;
                 }
+
+                window.currentDesigner.tokenBalance = tokenBalance;
+                userInfo.tokenBalance = tokenBalance;
+
+                // localStorage에도 저장
+                const storedUser = JSON.parse(localStorage.getItem('bullnabi_user') || '{}');
+                storedUser.tokenBalance = tokenBalance;
+                localStorage.setItem('bullnabi_user', JSON.stringify(storedUser));
+
+                // UI 업데이트
+                const sessionStatus = document.getElementById('sessionStatusDisplay');
+                if (sessionStatus) {
+                    sessionStatus.textContent = `토큰: ${tokenBalance.toLocaleString()}`;
+                }
+
+                console.log('💰 헤어게이터 토큰 잔액:', tokenBalance);
             }
         } catch (tokenError) {
             console.warn('⚠️ 토큰 잔액 조회 실패:', tokenError);
