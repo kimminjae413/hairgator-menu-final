@@ -192,6 +192,51 @@
 - `document.body.classList.contains('light-theme')`: 다크모드 체크
 
 ## 최근 작업 이력
+- 2025-12-22 (저녁): 토큰 시스템 완성 + 크레딧 차감 구현
+
+  ### 프로필 이미지 버그 수정
+  - **문제**: userId 변경 시 이전 사용자 프로필 이미지가 표시됨
+  - **원인**: localStorage에 프로필 이미지 캐싱 → 사용자별 분리 안 됨
+  - **해결**:
+    - `auth.js`: 사용자 변경 감지 시 localStorage 초기화 (프로필, 브랜드 설정)
+    - `main.js`: `applyProfileImage()` Firebase `brandSettings`에서 직접 로드
+    - `ai-studio.js`: `loadUserPhoto()` Firebase에서 직접 로드
+
+  ### 챗봇 토큰 차감 구현 (가변 비용)
+  - **서버 수정** (`chatbot-api.js`):
+    - Gemini 응답에서 `usageMetadata` 추출
+    - SSE로 `token_usage` 이벤트 전송 (totalTokens, promptTokens, completionTokens)
+  - **클라이언트 수정** (`ai-studio.js`):
+    - `callAPIStreaming()`에서 token_usage 파싱
+    - `sendMessage()`에서 토큰 사용량 기반 크레딧 차감
+  - **비용 구조**:
+    - ~500 토큰: 3 크레딧
+    - 501~1500 토큰: 10 크레딧
+    - 1501~3000 토큰: 20 크레딧
+    - 3000+ 토큰: 30 크레딧
+  - **인사말/캐시 응답**: token=0이면 크레딧 차감 스킵
+
+  ### 레시피/이미지 질문 크레딧 차감
+  - `sendImageForRecipe()`: 30 크레딧 차감
+  - `sendQuestionWithImage()`: 20 크레딧 차감
+  - `deductTokensDynamic()` 함수 사용 (bullnabi-bridge.js)
+
+  ### ai-studio.html 수정
+  - **문제**: `window.BullnabiBridge` undefined → 크레딧 차감 안 됨
+  - **원인**: ai-studio.html에 `bullnabi-bridge.js` 스크립트 누락
+  - **해결**: `<script src="js/bullnabi-bridge.js"></script>` 추가
+
+  ### 어드민 토큰 직접 설정 기능
+  - `setTokenBalance()` 함수 추가 (admin.html)
+  - 기존 잔액과 관계없이 지정한 값으로 직접 설정
+  - 로그 기록: action='set_balance', previousBalance, newBalance, difference
+  - UI: 사용자 ID, 목표 토큰 수, 메모 입력
+
+  ### bullnabi-bridge.js 개선
+  - `deductTokensDynamic(userId, amount, feature, metadata)` 함수 추가
+  - 가변 금액 차감 지원 (기존 `deductTokens`는 고정 금액)
+  - `token_logs` 컬렉션에 상세 로그 기록
+
 - 2025-12-22: 결제 연동 + 남자 레시피 수정 + 레시피 번호 통일
 
   ### 포트원 V2 결제 연동 (테스트 모드)
