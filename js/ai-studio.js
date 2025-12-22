@@ -3265,19 +3265,19 @@ class AIStudio {
     formatted = formatted.replace(/^💡\s*(.+)$/gm, '<div class="recipe-tip"><span class="tip-icon">💡</span><span class="tip-text">$1</span></div>');
     formatted = formatted.replace(/\s*💡\s*([^<\n]+)/g, '<span class="beginner-tip">💡 $1</span>');
 
-    // ⭐ 키워드 강조: 섹션, 다이렉션, 천체축, 리프팅, 디자인라인 등
-    formatted = formatted.replace(/\*\s*(섹션|Section)\s*\(([^)]+)\)\s*([^:]*?):/gi,
-      '<div class="recipe-keyword"><span class="keyword-label">✂️ 섹션</span> <span class="keyword-value">$2</span></div><p class="recipe-step">');
-    formatted = formatted.replace(/\*\s*(천체축\s*각도|Celestial\s*axis\s*angle)\s*([^:]*?):/gi,
-      '<div class="recipe-keyword"><span class="keyword-label">📐 천체축 각도</span></div><p class="recipe-step">');
-    formatted = formatted.replace(/\*\s*(다이렉션|Direction)\s*및\s*(디자인라인|Design\s*line)\s*([^:]*?):/gi,
-      '<div class="recipe-keyword"><span class="keyword-label">➡️ 다이렉션 & 디자인라인</span></div><p class="recipe-step">');
-
-    // 굵은 글씨 **text**
-    formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-
-    // 기울임 *text* (단, 이미 처리된 * 제외)
-    formatted = formatted.replace(/(?<![<*])\*([^*<]+)\*(?![>*])/g, '<em>$1</em>');
+    // ⭐ 마크다운 정리: 남아있는 *, **, # 기호 제거
+    // 굵은 글씨 **text** → text
+    formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '$1');
+    // 기울임 *text* → text
+    formatted = formatted.replace(/(?<![<])\*([^*\n]+)\*(?![>])/g, '$1');
+    // 남은 단독 ** 제거
+    formatted = formatted.replace(/\*\*/g, '');
+    // 줄 시작의 * (불릿) → 공백으로 대체
+    formatted = formatted.replace(/^\*\s+/gm, '');
+    // 남은 단독 * 제거 (HTML 태그 안은 제외)
+    formatted = formatted.replace(/(?<![<a-zA-Z])\*(?![a-zA-Z>])/g, '');
+    // 서버 출력 이모지 제거 (📐, ✂️, ➡️, ⭐ 등) - 섹션 아이콘(🔵🟣🟢🟡)은 유지
+    formatted = formatted.replace(/[📐✂️➡️⭐🎯✨🌀]/g, '');
 
     // 번호 리스트 (1. 2. 3.)
     formatted = formatted.replace(/^(\d+)\.\s+(.+)$/gm, '<li class="numbered-item"><span class="num">$1</span>$2</li>');
