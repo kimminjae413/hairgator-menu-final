@@ -74,7 +74,7 @@ class AIStudio {
   // 사용자 프로필 사진 로드 (Firebase userSettings → localStorage → 불나비)
   async loadUserPhoto() {
     try {
-      // 1. Firebase userSettings에서 프로필 사진 가져오기
+      // Firebase brandSettings에서 프로필 사진 가져오기 (localStorage 사용 안 함)
       if (window.db) {
         const userStr = localStorage.getItem('bullnabi_user');
         if (userStr) {
@@ -82,12 +82,12 @@ class AIStudio {
           const docId = `${userInfo.name}_${userInfo.phone || '0000'}`;
 
           try {
-            const doc = await window.db.collection('userSettings').doc(docId).get();
+            const doc = await window.db.collection('brandSettings').doc(docId).get();
             if (doc.exists) {
               const data = doc.data();
               if (data.profileImage) {
                 this.userPhotoUrl = data.profileImage;
-                console.log('👤 Firebase userSettings 프로필 사진 로드됨');
+                console.log('👤 Firebase brandSettings 프로필 사진 로드됨:', docId);
                 return;
               }
             }
@@ -97,15 +97,7 @@ class AIStudio {
         }
       }
 
-      // 2. localStorage에서 프로필 사진 가져오기 (캐시)
-      const savedProfileImage = localStorage.getItem('hairgator_profile_image');
-      if (savedProfileImage) {
-        this.userPhotoUrl = savedProfileImage;
-        console.log('👤 localStorage 프로필 사진 로드됨');
-        return;
-      }
-
-      // 3. 불나비 사용자 정보에서 프로필 사진 가져오기
+      // 불나비 사용자 정보에서 프로필 사진 가져오기 (fallback)
       const userStr = localStorage.getItem('bullnabi_user');
       if (userStr) {
         const userInfo = JSON.parse(userStr);
