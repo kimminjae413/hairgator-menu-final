@@ -2166,6 +2166,26 @@
                 <button class="btn btn-secondary" onclick="quickCharge(50000)" style="padding: 8px 16px;">+50,000</button>
                 <button class="btn btn-secondary" onclick="quickCharge(100000)" style="padding: 8px 16px;">+100,000</button>
             </div>
+
+            <!-- 토큰 직접 설정 -->
+            <div style="margin-top: 20px; background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #f39c12;">
+                <h3 style="margin: 0 0 15px 0; font-size: 16px; color: #f39c12;">⚙️ 토큰 직접 설정</h3>
+                <p style="color: #888; font-size: 12px; margin-bottom: 15px;">현재 잔액과 관계없이 특정 값으로 설정합니다.</p>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <input type="text" id="tokenSetUserId" placeholder="사용자 ID"
+                           style="padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="tokenSetAmount" placeholder="설정할 토큰 수" min="0"
+                               style="flex: 1; padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
+                        <button class="btn" onclick="setTokenBalance()" style="background: linear-gradient(135deg, #f39c12, #e74c3c); white-space: nowrap;">설정</button>
+                    </div>
+                    <input type="text" id="tokenSetNote" placeholder="메모 (선택사항)"
+                           style="padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
+                </div>
+                <div id="tokenSetResult" style="margin-top: 15px; padding: 15px; background: #2a2a2a; border-radius: 8px; display: none;">
+                    <!-- 설정 결과 표시 -->
+                </div>
+            </div>
         </div>
 
         <div class="section">
@@ -5727,6 +5747,82 @@
                 console.error('토큰 충전 오류:', error);
                 resultDiv.innerHTML = `<span style="color: #f5576c;">❌ 충전 실패: ${error.message}</span>`;
                 showToast('토큰 충전 실패: ' + error.message);
+            }
+        }
+
+        // ⚙️ 토큰 직접 설정 (잔액을 특정 값으로 설정)
+        async function setTokenBalance() {
+            const userId = document.getElementById('tokenSetUserId').value.trim();
+            const targetAmount = parseInt(document.getElementById('tokenSetAmount').value);
+            const note = document.getElementById('tokenSetNote').value.trim();
+
+            if (!userId) {
+                showToast('사용자 ID를 입력해주세요');
+                return;
+            }
+            if (isNaN(targetAmount) || targetAmount < 0) {
+                showToast('유효한 토큰 수를 입력해주세요 (0 이상)');
+                return;
+            }
+
+            const resultDiv = document.getElementById('tokenSetResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<span class="loading-spinner" style="width: 20px; height: 20px;"></span> 설정 중...';
+            resultDiv.style.color = '#888';
+
+            try {
+                // Firebase Firestore에서 직접 설정
+                const docRef = db.collection('user_tokens').doc(userId);
+                const doc = await docRef.get();
+
+                let currentBalance = 0;
+                if (doc.exists) {
+                    currentBalance = doc.data().tokenBalance || 0;
+                }
+
+                const difference = targetAmount - currentBalance;
+
+                // 토큰 설정
+                await docRef.set({
+                    tokenBalance: targetAmount,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                // 설정 로그 저장
+                await db.collection('token_logs').add({
+                    userId: userId,
+                    action: 'set_balance',
+                    previousBalance: currentBalance,
+                    newBalance: targetAmount,
+                    difference: difference,
+                    reason: 'admin_manual_set',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    metadata: { note: note || '관리자 수동 설정' }
+                });
+
+                const differenceText = difference >= 0
+                    ? `<span style="color: #43e97b;">+${difference.toLocaleString()}</span>`
+                    : `<span style="color: #f5576c;">${difference.toLocaleString()}</span>`;
+
+                resultDiv.innerHTML = `
+                    <div style="color: #f39c12;">⚙️ 설정 완료!</div>
+                    <div style="margin-top: 10px; font-size: 14px;">
+                        <div>이전 잔액: <strong>${currentBalance.toLocaleString()}</strong></div>
+                        <div>변경량: <strong>${differenceText}</strong></div>
+                        <div>새 잔액: <strong style="color: #4facfe;">${targetAmount.toLocaleString()}</strong></div>
+                    </div>
+                `;
+
+                showToast(`토큰 잔액을 ${targetAmount.toLocaleString()}로 설정 완료!`);
+
+                // 입력 필드 초기화
+                document.getElementById('tokenSetAmount').value = '';
+                document.getElementById('tokenSetNote').value = '';
+
+            } catch (error) {
+                console.error('토큰 설정 오류:', error);
+                resultDiv.innerHTML = `<span style="color: #f5576c;">❌ 설정 실패: ${error.message}</span>`;
+                showToast('토큰 설정 실패: ' + error.message);
             }
         }
 
