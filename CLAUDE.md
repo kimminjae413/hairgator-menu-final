@@ -192,7 +192,41 @@
 - `document.body.classList.contains('light-theme')`: 다크모드 체크
 
 ## 최근 작업 이력
-- 2025-12-22: 펌 인덱스 RAG 업로드 + 베타 기능 접근 제한
+- 2025-12-22: 결제 연동 + 남자 레시피 수정 + 레시피 번호 통일
+
+  ### 포트원 V2 결제 연동 (테스트 모드)
+  - **프론트엔드**: `js/payment.js` 생성
+    - `HAIRGATOR_PAYMENT` 객체: requestPayment, purchasePlan, getUserId
+    - 요금제: basic(22,000원), standard(38,000원), business(50,000원), credits_5000(5,000원)
+    - windowType: `{ pc: 'POPUP', mobile: 'REDIRECTION' }`
+  - **서버**: `netlify/functions/payment-verify.js` 생성
+    - 포트원 API로 결제 검증 → 불나비 DB 크레딧 충전
+    - Firestore `payments` 컬렉션에 결제 내역 저장 (중복 방지)
+    - `credit_logs` 컬렉션에 충전 로그 기록
+  - **CSP 설정**: netlify.toml에 포트원/나이스페이 도메인 추가
+    - `https://cdn.portone.io`, `*.portone.io`, `*.iamport.co`, `*.nicepay.co.kr`
+  - **테스트 모드 제한**:
+    - `PAYMENT_ALLOWED_USER_IDS = ['691ceee09d868b5736d22007']`
+    - 허용 유저만 결제 버튼 표시, 다른 유저는 숨김
+  - **미해결**: NICEPAY 도메인 등록 필요 (나이스페이 가맹점 관리자에서 설정)
+  - **환경변수 필요**: `PORTONE_API_SECRET` (Netlify Dashboard에서 설정)
+
+  ### 남자 레시피 textRecipe 수정
+  - **문제**: 남자 스타일 `textRecipe` 필드가 41자밖에 없어서 레시피가 잘림
+  - **원인**: `men_styles` 컬렉션에 자막 파일 전체 내용이 저장 안 됨
+  - **해결**:
+    1. `chatbot-api.js`에 폴백 로직 추가 (textRecipe < 100자면 captionUrl에서 fetch)
+    2. `scripts/update-men-textrecipe.py` 스크립트로 69개 남자 스타일 textRecipe 업데이트
+    3. `styles` 컬렉션과 `men_styles` 컬렉션 모두 업데이트
+  - **결과**: FU0010 등 모든 남자 스타일 레시피 정상 표시
+
+  ### 레시피 번호 매기기 통일
+  - **변경 전**: External 1,2,3... → Internal 1,2,3... (리셋)
+  - **변경 후**: External 1,2,3,4,5,6 → Internal 7,8,9... (이어서)
+  - **수정 위치**: `chatbot-api.js` `formatRecipeSentences()` 함수
+  - **로직**: `[External]` 헤더에서만 sectionNum 리셋, `[Internal]`은 리셋 안 함
+
+- 2025-12-22 (오전): 펌 인덱스 RAG 업로드 + 베타 기능 접근 제한
 
   ### 펌 인덱스 텍스트 RAG 업로드
   - **Gemini Vision으로 46개 펌 인덱스 이미지에서 의미 해석 텍스트 추출**
