@@ -1728,6 +1728,7 @@
             <button class="tab" onclick="switchTab('settings')">설정</button>
             <button class="tab" onclick="switchTab('cardNews')">카드뉴스 생성</button>
             <button class="tab" onclick="switchTab('videoGen')">영상 생성</button>
+            <button class="tab" onclick="switchTab('creditLogs')">💳 사용량 추적</button>
         </div>
         
         <!-- 스타일 관리 탭 -->
@@ -2108,6 +2109,92 @@
                 <div id="videoHistoryList" style="display: flex; flex-direction: column; gap: 16px;">
                     <p style="color: #666; text-align: center; padding: 40px;">히스토리가 없습니다</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 사용량 추적 탭 -->
+    <div id="creditLogsTab" class="tab-content" style="display: none;">
+        <div class="section">
+            <h2 class="section-title">💳 크레딧 사용량 추적</h2>
+
+            <!-- 검색 필터 -->
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;">
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="display: block; margin-bottom: 5px; color: #888; font-size: 12px;">사용자 ID</label>
+                    <input type="text" id="creditLogUserId" placeholder="userId 입력 (빈칸=전체)"
+                           style="width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
+                </div>
+                <div style="min-width: 150px;">
+                    <label style="display: block; margin-bottom: 5px; color: #888; font-size: 12px;">기능 유형</label>
+                    <select id="creditLogAction" style="width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
+                        <option value="">전체</option>
+                        <option value="lookbook">룩북</option>
+                        <option value="hairTry">헤어체험</option>
+                        <option value="chatbot">챗봇</option>
+                    </select>
+                </div>
+                <div style="min-width: 150px;">
+                    <label style="display: block; margin-bottom: 5px; color: #888; font-size: 12px;">기간</label>
+                    <select id="creditLogPeriod" style="width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
+                        <option value="today">오늘</option>
+                        <option value="week">최근 7일</option>
+                        <option value="month" selected>최근 30일</option>
+                        <option value="all">전체</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button class="btn" onclick="loadCreditLogs()" style="height: 42px;">
+                        🔍 조회
+                    </button>
+                </div>
+            </div>
+
+            <!-- 통계 요약 -->
+            <div id="creditLogsSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 20px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 28px; font-weight: bold;" id="totalUsageCount">-</div>
+                    <div style="font-size: 12px; opacity: 0.8;">총 사용 횟수</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #f093fb, #f5576c); padding: 20px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 28px; font-weight: bold;" id="totalCreditsUsed">-</div>
+                    <div style="font-size: 12px; opacity: 0.8;">총 크레딧 소모</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #4facfe, #00f2fe); padding: 20px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 28px; font-weight: bold;" id="uniqueUsers">-</div>
+                    <div style="font-size: 12px; opacity: 0.8;">활성 사용자</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #43e97b, #38f9d7); padding: 20px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 28px; font-weight: bold;" id="avgCreditsPerUser">-</div>
+                    <div style="font-size: 12px; opacity: 0.8;">인당 평균 크레딧</div>
+                </div>
+            </div>
+
+            <!-- 로그 테이블 -->
+            <div style="background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid #333;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #2a2a2a;">
+                            <th style="padding: 15px; text-align: left; font-size: 12px; color: #888; border-bottom: 1px solid #333;">시간</th>
+                            <th style="padding: 15px; text-align: left; font-size: 12px; color: #888; border-bottom: 1px solid #333;">사용자 ID</th>
+                            <th style="padding: 15px; text-align: left; font-size: 12px; color: #888; border-bottom: 1px solid #333;">기능</th>
+                            <th style="padding: 15px; text-align: right; font-size: 12px; color: #888; border-bottom: 1px solid #333;">크레딧</th>
+                            <th style="padding: 15px; text-align: right; font-size: 12px; color: #888; border-bottom: 1px solid #333;">잔액</th>
+                        </tr>
+                    </thead>
+                    <tbody id="creditLogsTable">
+                        <tr>
+                            <td colspan="5" style="padding: 40px; text-align: center; color: #666;">
+                                🔍 조회 버튼을 클릭하세요
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 로딩/페이지네이션 -->
+            <div id="creditLogsPagination" style="display: none; margin-top: 20px; text-align: center;">
+                <button class="btn btn-secondary" onclick="loadMoreCreditLogs()">더 보기</button>
             </div>
         </div>
     </div>
@@ -5474,6 +5561,159 @@
         async function saveToHairstyles(imageUrl) {
             showToast('스타일 등록 기능은 준비 중입니다');
             // TODO: 스타일 등록 모달 열기 또는 자동 등록
+        }
+
+        // ==================== 크레딧 사용량 추적 ====================
+        let creditLogsLastDoc = null;
+        let allCreditLogs = [];
+
+        async function loadCreditLogs() {
+            const userId = document.getElementById('creditLogUserId').value.trim();
+            const action = document.getElementById('creditLogAction').value;
+            const period = document.getElementById('creditLogPeriod').value;
+
+            const tableBody = document.getElementById('creditLogsTable');
+            tableBody.innerHTML = '<tr><td colspan="5" style="padding: 40px; text-align: center; color: #888;"><span class="loading-spinner"></span> 로딩 중...</td></tr>';
+
+            try {
+                // Firestore에서 credit_logs 컬렉션 조회
+                let query = db.collection('credit_logs').orderBy('timestamp', 'desc');
+
+                // 필터 적용
+                if (userId) {
+                    query = query.where('userId', '==', userId);
+                }
+                if (action) {
+                    query = query.where('action', '==', action);
+                }
+
+                // 기간 필터
+                const now = new Date();
+                let startDate = null;
+                if (period === 'today') {
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                } else if (period === 'week') {
+                    startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                } else if (period === 'month') {
+                    startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                }
+
+                if (startDate) {
+                    query = query.where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(startDate));
+                }
+
+                // 첫 50개 로드
+                query = query.limit(50);
+
+                const snapshot = await query.get();
+                allCreditLogs = [];
+
+                snapshot.forEach(doc => {
+                    allCreditLogs.push({ id: doc.id, ...doc.data() });
+                });
+
+                creditLogsLastDoc = snapshot.docs[snapshot.docs.length - 1];
+
+                // 통계 계산 및 표시
+                updateCreditLogsSummary(allCreditLogs);
+                renderCreditLogsTable(allCreditLogs);
+
+                // 페이지네이션 버튼
+                if (snapshot.docs.length >= 50) {
+                    document.getElementById('creditLogsPagination').style.display = 'block';
+                } else {
+                    document.getElementById('creditLogsPagination').style.display = 'none';
+                }
+
+                showToast(`${allCreditLogs.length}개 로그 조회됨`);
+
+            } catch (error) {
+                console.error('크레딧 로그 조회 오류:', error);
+                tableBody.innerHTML = `<tr><td colspan="5" style="padding: 40px; text-align: center; color: #f44;">❌ 조회 실패: ${error.message}</td></tr>`;
+            }
+        }
+
+        function updateCreditLogsSummary(logs) {
+            const totalCount = logs.length;
+            const totalCredits = logs.reduce((sum, log) => sum + (log.creditsUsed || 0), 0);
+            const uniqueUserIds = new Set(logs.map(log => log.userId));
+            const avgPerUser = uniqueUserIds.size > 0 ? (totalCredits / uniqueUserIds.size).toFixed(1) : 0;
+
+            document.getElementById('totalUsageCount').textContent = totalCount;
+            document.getElementById('totalCreditsUsed').textContent = totalCredits.toFixed(1);
+            document.getElementById('uniqueUsers').textContent = uniqueUserIds.size;
+            document.getElementById('avgCreditsPerUser').textContent = avgPerUser;
+        }
+
+        function renderCreditLogsTable(logs) {
+            const tableBody = document.getElementById('creditLogsTable');
+
+            if (logs.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="padding: 40px; text-align: center; color: #666;">📭 조회된 로그가 없습니다</td></tr>';
+                return;
+            }
+
+            const actionLabels = {
+                'lookbook': '📚 룩북',
+                'hairTry': '💇 헤어체험',
+                'chatbot': '💬 챗봇'
+            };
+
+            tableBody.innerHTML = logs.map(log => {
+                const timestamp = log.timestamp?.toDate?.() || new Date(log.createdAt);
+                const timeStr = timestamp.toLocaleString('ko-KR', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                const shortUserId = log.userId ? log.userId.substring(0, 8) + '...' : '-';
+                const actionLabel = actionLabels[log.action] || log.action || '-';
+                const credits = log.creditsUsed?.toFixed(1) || '-';
+                const newBalance = log.metadata?.newCredits?.toFixed(1) || '-';
+
+                return `
+                    <tr style="border-bottom: 1px solid #333;">
+                        <td style="padding: 12px 15px; font-size: 13px; color: #aaa;">${timeStr}</td>
+                        <td style="padding: 12px 15px; font-size: 13px; font-family: monospace; color: #fff;" title="${log.userId}">${shortUserId}</td>
+                        <td style="padding: 12px 15px; font-size: 13px;">${actionLabel}</td>
+                        <td style="padding: 12px 15px; font-size: 13px; text-align: right; color: #f44;">-${credits}</td>
+                        <td style="padding: 12px 15px; font-size: 13px; text-align: right; color: #4CAF50;">${newBalance}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function loadMoreCreditLogs() {
+            if (!creditLogsLastDoc) return;
+
+            try {
+                let query = db.collection('credit_logs')
+                    .orderBy('timestamp', 'desc')
+                    .startAfter(creditLogsLastDoc)
+                    .limit(50);
+
+                const snapshot = await query.get();
+
+                snapshot.forEach(doc => {
+                    allCreditLogs.push({ id: doc.id, ...doc.data() });
+                });
+
+                creditLogsLastDoc = snapshot.docs[snapshot.docs.length - 1];
+
+                updateCreditLogsSummary(allCreditLogs);
+                renderCreditLogsTable(allCreditLogs);
+
+                if (snapshot.docs.length < 50) {
+                    document.getElementById('creditLogsPagination').style.display = 'none';
+                }
+
+                showToast(`총 ${allCreditLogs.length}개 로그`);
+
+            } catch (error) {
+                console.error('추가 로그 로딩 오류:', error);
+                showToast('추가 로딩 실패');
+            }
         }
         </script>
     </body>
