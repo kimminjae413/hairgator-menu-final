@@ -1,0 +1,815 @@
+# 펌 인덱스 (Perm Index) - EN
+# 총 46개 이미지에서 추출된 내용
+============================================================
+
+## 01. ☆ Heating Perm Main Point
+
+Okay, let's break down this educational material on heating perms, focusing on the chemical processes and practical applications.
+
+**Overall Structure and Purpose**
+
+The image presents a comprehensive overview of the heating perm process, from the fundamental chemical reactions to practical considerations like hair type and previous treatments. It aims to provide a hairstylist with a deeper understanding of the science behind perming, enabling them to make informed decisions and achieve optimal results.
+
+**1. Textual Elements**
+
+*   **"01 ✩ Heating Perm Main Point"**: This is the title, indicating the document's focus.
+*   **"Stable Heating Perm Process"**: This section outlines the key stages of a heating perm.
+*   **"Four Bonding"**: This section refers to the four types of chemical bonds that are broken and reformed during the perming process.
+*   **"Types of Reducing Agent & Hydrophilicity and Hydrophobicity of Reducing Agents"**: This section lists common reducing agents used in perms and their water affinity.
+*   **"Stable Pretreatment Reduction & Oxidation System"**: This section describes the chemical reactions involved in the reduction and oxidation phases of perming.
+*   **"General Softening Method"**: This section outlines a step-by-step process for softening hair during a perm.
+*   **"Reverse Softening"**: This section describes a method for softening damaged hair before a perm.
+*   **"Shape Softening"**: This section explains that shape softening is applying perm solution to 100% dry hair for softening.
+*   **"Rate of Effects of Perm Solutions"**: This section discusses how different perm solutions affect hair elasticity based on hair condition.
+*   **"Loosening Strong Curls"**: This section provides instructions on how to loosen strong curls.
+*   **"Perming Hair Dyed with Henna"**: This section offers guidance on perming hair that has been dyed with henna.
+
+**2. Diagrams and Concepts**
+
+*   **Stable Heating Perm Process**: This is a linear diagram showing the stages of a perm:
+    *   **Stable Swelling**: The initial stage where the hair shaft swells, allowing the reducing agent to penetrate.
+    *   **Setting the Perm**: The hair is shaped around perm rods.
+    *   **Stable Softening**: The reducing agent breaks disulfide bonds, softening the hair.
+    *   **Complete Oxidation**: The neutralizer reforms the disulfide bonds in the new shape.
+
+*   **Four Bonding**: This section refers to the four types of chemical bonds that are broken and reformed during the perming process:
+    *   **Chain Bonding**: Refers to the peptide bonds within the keratin chains.
+    *   **S-S Bonding**: Refers to the disulfide bonds between cysteine amino acids.
+    *   **Salt Bonding**: Refers to the ionic bonds between acidic and basic amino acids.
+    *   **Ionic Bonding**: Refers to the hydrogen bonds between polar amino acids.
+
+*   **Stable Pretreatment Reduction & Oxidation System**: This diagram illustrates the chemical reactions involved in the reduction and oxidation phases of perming.
+    *   **Phase 1**: KSSK + RSH ↔ KSSR + KSH (Cystine bonding) (Thiol group) (Reduction/Swelling)
+    *   **Phase 2**: KSSR + RSH ↔ RSSR + KSH (Reduction/Softening)
+    *   **Phase 3**: 2RSH + O ↔ RSSR + H2O (Oxidation/1st neutralization for 5 min/Oxidizing agent: Purified water = 7:3 + Anionic surfactant 10%)
+    *   **Phase 4**: 2KSH + O ↔ KSSK + H2O (Oxidation/2nd neutralization for 3 min)
+
+**3. Tables**
+
+*   **Types of Reducing Agent & Hydrophilicity and Hydrophobicity of Reducing Agents**: This table lists common reducing agents used in perms and their water affinity.
+    *   **Thioglycolic Acid**: Hair Cortex (Hydrophilic)
+    *   **Cysteine**: Cuticle (Hydrophilic)
+    *   **Cysteamine**: Cuticle (Hydrophobic)
+    *   **GMT**: Hair Cortex (Hydrophobic)
+    *   **Lactonethiol**: Hair Cortex (Hydrophobic)
+
+*   **Rate of Effects of Perm Solutions**: This table discusses how different perm solutions affect hair elasticity based on hair condition.
+    *   **Elasticity of Extremely Damaged Hair**: Cysteamine > Thioglycolic Acid (Alkali) > Cysteine
+    *   **Elasticity of Damaged Hair**: Cysteine > Cysteamine > Thioglycolic Acid (Alkali)
+    *   **Elasticity of Healthy Hair**: Thioglycolic Acid (Alkali) > Cysteamine > Cysteine
+
+**4. Arrows and Symbols**
+
+*   **Arrows in "Stable Heating Perm Process"**: Indicate the sequential progression of the perm stages.
+*   **Arrows in "Stable Pretreatment Reduction & Oxidation System"**: Represent the reversible chemical reactions between the reducing agent and disulfide bonds.
+*   **Arrows in "General Softening Method" and "Reverse Softening"**: Indicate the sequence of steps in the softening process.
+*   **Arrows in "Rate of Effects of Perm Solutions"**: Indicate the order of elasticity.
+*   **Arrows in "Loosening Strong Curls"**: Indicate the sequence of steps in the loosening strong curls process.
+*   **Arrows in "Perming Hair Dyed with Henna"**: Indicate the sequence of steps in the perming hair dyed with henna process.
+
+**5. Color-Coded Areas**
+
+There are no distinct color-coded areas in the image.
+
+**In Summary**
+
+This image is a valuable resource for hairstylists, providing a clear and concise explanation of the chemical processes involved in heating perms. By understanding these processes, stylists can make informed decisions about product selection and application techniques, ultimately leading to better results and healthier hair.
+
+----------------------------------------
+
+## 02. ☆ Softening - Moisture - Temperature
+
+Okay, here's a detailed breakdown of the image, focusing on the information relevant to a professional hairstylist and using appropriate terminology:
+
+**Overall Topic:** Softening, Moisture, and Temperature in Heating Perms
+
+**1. Textual Content Breakdown:**
+
+*   **Title:** "Softening / Moisture / Temperature" - This sets the stage for the three key elements discussed in the context of heating perms.
+
+    *   **Softening:**
+        *   **a. What is softening?** - Defines softening as the process where hair loses elasticity due to the breakdown of hydrogen, salt, and cystine bonds by the reducing agents, alkali agents, and solvents in the first perm solution. It emphasizes the importance of distinguishing softening from emulsification.
+        *   **b. What are the standards for softening test?** - Explains that the success of softening in a heating perm is assessed after the second perm solution is applied, similar to a curl test in cold perms. It highlights the difficulty in standardizing the test due to individual variations and suggests monitoring the chemical reaction time of the first perm solution.
+
+    *   **Moisture:**
+        *   **a. The Role of Moisture in a Heating Perm** - Explains that moisture acts as a medium for heat transfer in heating perms, including straight, curl, and wave designs.
+        *   **b. Why Moisture is Controlled** - Discusses the importance of controlling moisture levels to prevent protein denaturation and hardening due to excessive heat. It emphasizes maintaining a balance of moisture and oil for hydration and protection.
+        *   **c. Standard of Moisture Control** - Highlights the importance of moisture control in heating perms, especially for curls and waves. It acknowledges the lack of a standardized approach and emphasizes assessing moisture content based on hair condition (healthy or damaged).
+        *   **d. How to Control Moisture** - Suggests using towels, cold air, or warm air to control moisture levels and recommends using moisturizing agents to maintain initial moisture.
+        *   **e. Amount of Moisture by Hair Condition (Bonding Water, Free Water, Permeable Water, and Absorbed Water)** - This section presents a table (see below).
+
+    *   **Temperature:**
+        *   **a. Understanding Heat Control** - Stresses the importance of setting the temperature based on the hair condition and controlling the heat generated by the heat tool.
+        *   **b. Standards for Temperature Setting** - Explains that temperature standards vary depending on whether the heating element reaches the set temperature (hair straightener or curling iron) or not (wave machine). It provides temperature guidelines for moist and dry heat.
+        *   **c. Standards for Moisture Content By Set Temperatures** - This section presents a table (see below).
+        *   **d. Directions for Controlling Heat** - Provides specific directions for controlling heat during straight/curl straightening, ironing, and setting/digital perms.
+
+*   **Concluding Statement:** "Moisture and temperature cannot be controlled particular to healthy or damaged hair for a heating perm. The solution uses the appropriate 1st perm solution and treatment per hair condition and by controlling the heat generated by the heat tool." - This summarizes the key takeaway: successful heating perms rely on the correct first perm solution, treatment, and heat control based on hair condition.
+
+**2. Diagram Explanation:**
+
+*   **Moisture and Heat Balance:** The diagram shows a balance scale with "Moisture" on one side and "Heat (Energy)" on the other. This visually represents the critical relationship between moisture and heat in a heating perm. The fulcrum of the scale suggests that a balance must be achieved for optimal results. Too much heat with too little moisture can damage the hair, while insufficient heat with excessive moisture may not achieve the desired perm.
+
+**3. Table Explanations:**
+
+*   **Table 1: Amount of Moisture by Hair Condition**
+
+    | Hair condition    | After shampooing | Towel dry | Drying with cold air | Drying with warm air |
+    | :---------------- | :--------------- | :-------- | :------------------- | :-------------------- |
+    | Moisture content | About 30-35%     | About 20-25% | About 15%            | About 10%             |
+
+    *   This table illustrates how moisture content varies depending on the drying method applied after shampooing.
+    *   **After Shampooing:** Hair is at its most saturated state (30-35% moisture).
+    *   **Towel Dry:** Reduces moisture to 20-25%.
+    *   **Drying with Cold Air:** Further reduces moisture to approximately 15%.
+    *   **Drying with Warm Air:** Results in the lowest moisture content, around 10%.
+    *   This table helps stylists understand how to manipulate moisture levels before applying heat.
+
+*   **Table 2: Standards for Moisture Content By Set Temperatures**
+
+    | Hair condition       | Iron straight perm | Iron roll straight perm | Iron perm | Setting perm | Digital perm |
+    | :------------------- | :----------------- | :--------------------- | :-------- | :----------- | :----------- |
+    | Temperature/Time     | About 160-170°C    | About 130-140°C        | About 120-130°C | About 5-7 minutes | About 10-12 minutes |
+    | Moisture content (수분량) | About 10-13%       | About 13-15%           | About 15-20% | About 20-25% | About 20-25% |
+
+    *   This table provides guidelines for temperature/time and moisture content based on the type of perm being performed.
+    *   **Iron Straight Perm:** Highest temperature (160-170°C) and lowest moisture content (10-13%).
+    *   **Iron Roll Straight Perm:** Moderate temperature (130-140°C) and slightly higher moisture content (13-15%).
+    *   **Iron Perm:** Lower temperature (120-130°C) and higher moisture content (15-20%).
+    *   **Setting Perm:** Time-based (5-7 minutes) with higher moisture content (20-25%).
+    *   **Digital Perm:** Time-based (10-12 minutes) with higher moisture content (20-25%).
+    *   This table emphasizes the inverse relationship between temperature and moisture content. Higher temperatures require lower moisture levels to prevent damage.
+
+**4. Arrows and Symbols:**
+
+*   There are no arrows or symbols in this image.
+
+**5. Color-Coded Areas:**
+
+*   **Green:** Used for the "Softening" title, visually separating this section.
+*   **Blue:** Used for the "Moisture" title, visually separating this section.
+*   **Red:** Used for the "Temperature" title, visually separating this section.
+
+**Key Takeaways for Hairstylists:**
+
+*   **Softening is Crucial:** Understanding the chemical process of softening is essential for achieving the desired perm result.
+*   **Moisture Balance is Key:** Controlling moisture levels is critical to prevent hair damage and ensure the perm takes correctly.
+*   **Temperature Matters:** Setting the appropriate temperature based on hair condition and perm type is vital for a successful outcome.
+*   **Integration is Essential:** The success of a heating perm depends on the appropriate first perm solution, treatment, and heat control based on hair condition.
+
+By understanding these principles and guidelines, hairstylists can perform heating perms more effectively and safely, achieving optimal results for their clients.
+
+----------------------------------------
+
+## 03. ☆ Swelling - Softening - Oxidation Method
+
+Okay, let's break down this image detailing the swelling, softening, and oxidation method in a perm process.
+
+**1. Textual Elements:**
+
+*   **Title:** "03 ☆ Swelling / Softening / Oxidation Method" - This indicates that the image is part of a larger series (likely a training manual) and focuses on the core chemical processes involved in perming.
+
+*   **Pre-Shampoo:** "Remove impurities by shampooing first." - This is the initial step to ensure the hair is clean and free of buildup, allowing for even penetration of subsequent chemicals.
+
+*   **Acidic Thioglycolic Acid / Acidic Cysteine:** "Before swelling, spray either acidic thioglycolic acid or acidic cysteine." - These are reducing agents that break the disulfide bonds (S-S bonds) in the hair's keratin structure. This allows the hair to be reshaped.
+
+*   **Swelling:** "This step is to open the hair cuticle before softening to ensure stable softening." - Swelling agents are used to lift the hair cuticle, allowing the reducing agent to penetrate more effectively.
+
+*   **How to prepare the swelling agent:** This section details the mixing ratios for the swelling agent.
+
+*   **Softening:** "This refers to the cleaved S-S bond through chemical action. The softening time must be longer for soft hair as the hairs have less S-S bonding and hardened cuticles." - Softening is the process of breaking the disulfide bonds in the hair's keratin structure, allowing it to be reshaped. The softening time is adjusted based on hair type and condition.
+
+*   **Liposome:** "This process involves preheating with a press at around 80 to 100 degrees Celsius. It enables the perm solution to permeate into the hair cortex and retain moisture." - Liposomes are used to deliver the perm solution deeper into the hair cortex while retaining moisture.
+
+*   **pH Balance:** "The pH balance is sprayed to adjust the primary isoelectric point before shampooing." - This step involves adjusting the pH of the hair to prepare it for the next stage of the perming process.
+
+*   **Dead Thioglycolic Acid:** "This is when the perm solution has completed its activation in the softening. Then bubbles or foams are generated which is referred to as dead thioglycolic acid. Stable softening can be achieved by shampooing after combing out the dead thioglycolic acid using a tail comb to remove the perm solution. In addition, the purified water and PPT must be mixed in a 9:1 ratio and sprayed to comb out and remove the dead thioglycolic acid." - This refers to the neutralized or deactivated thioglycolic acid after it has done its job. It needs to be removed to prevent further damage.
+
+*   **Isoelectric Shampoo:** "A shampooing step to reach a stable isoelectric point." - This shampoo is used to bring the hair back to its isoelectric point, which is the pH at which the hair is most stable.
+
+*   **Heating Perm:** "Magic straight, Digital Perm, or Setting Perm" - This indicates that the process can be applied to various types of perms, including thermal reconditioning (straightening) and traditional perms.
+
+*   **Oxidation:** "This refers to the rebounding of the S-S bond that was cleaved through chemical action. Spray the mixed 1st oxidizing agent (oxidizing agent 7: purified water 3 + anionic surfactant 10%). Spray the 100% 2nd oxidizing agent." - Oxidation is the process of reforming the disulfide bonds in the hair's new shape, essentially "setting" the perm. Oxidizing agents (typically hydrogen peroxide or sodium bromate) are used.
+
+*   **Shampoo:** "The final shampoo should be in the direction of the curl." - This is the final cleansing step, and the direction of the shampooing can help to define the curl pattern.
+
+*   **Shape Softening:** "Softening extremely curly hair refers to applying the perm solution to 100% dry hair for softening." - This is a specific technique for softening extremely curly hair by applying the perm solution to dry hair.
+
+*   **Directions for Increasing Reduction Effects:** This section details the steps to increase the reduction effects of the perm solution.
+
+**2. Diagrams and Flowcharts:**
+
+*   **Process Flow (Shampoo -> Rinse -> Keratin -> Oil Buffer -> Treatment -> Shampoo -> Rinse):** This is a flowchart outlining the sequence of steps in the perming process.
+    *   **Shampoo:** Cleansing the hair.
+    *   **Rinse:** Removing the shampoo.
+    *   **Keratin:** Applying keratin to strengthen the hair.
+    *   **Oil Buffer:** Applying an oil buffer to protect the hair.
+    *   **Treatment:** Applying a treatment to nourish the hair.
+    *   **Shampoo:** Cleansing the hair again.
+    *   **Rinse:** Removing the shampoo.
+
+*   **pH Values:** "pH 4.5 ~ pH 5.5" - This indicates the desired pH range for the keratin step, which is slightly acidic to help close the cuticle.
+
+*   **Mixing Ratio:** "PPT or LPP : pH balance (1:1)+10~50% oil mixed" - This indicates the mixing ratio for the oil buffer, which is a 1:1 ratio of PPT or LPP to pH balance, with 10-50% oil mixed in.
+
+*   **Directions for Increasing Reduction Effects:** This is a flowchart outlining the steps to increase the reduction effects of the perm solution.
+    *   **Apply the 1st perm solution:** Apply the first perm solution to the hair.
+    *   **Leave on for 7 minutes:** Leave the perm solution on for 7 minutes.
+    *   **Remove the perm solution:** Remove the perm solution from the hair.
+    *   **Reapply the 1st perm solution:** Reapply the first perm solution to the hair.
+    *   **Leave on for 8 minutes:** Leave the perm solution on for 8 minutes.
+    *   **Shampoo:** Shampoo the hair.
+
+**3. Tables:**
+
+*   **Swelling Agent Preparation (SS1, SS2, SS3):** This is a table outlining the mixing ratios for the swelling agent.
+    *   **SS1:** Gloss 1 : Purified water 1
+    *   **SS2:** Gloss 1 : Purified water 2
+    *   **SS3:** Gloss 1 : Purified water 3
+
+**4. Arrows and Symbols:**
+
+*   **Arrows (►):** These indicate the sequence of steps in the perming process and the directions for increasing reduction effects.
+
+*   **Star (☆):** This symbol is used in the title to highlight the main topic of the image.
+
+*   **Lightbulb:** This symbol is used to highlight the "How to prepare the swelling agent" section.
+
+**5. Color-Coded Areas:**
+
+*   **Pink:** Indicates the "Gloss 1" component of the swelling agent.
+
+*   **Cyan:** Indicates the "Purified water" component of the swelling agent.
+
+In summary, this image provides a visual and textual guide to the chemical processes involved in perming, from breaking disulfide bonds to reforming them in a new shape. It highlights the importance of each step and provides specific instructions for preparing the swelling agent and increasing reduction effects.
+
+----------------------------------------
+
+## 04. ★ Heating Perm Recipe #1
+
+Okay, let's break down this "Heating Perm Recipe #1" document for professional hairstylists.
+
+**1. Overall Structure and Purpose**
+
+This document outlines six different perm recipes (Recipe No. 1 through Recipe No. 6) tailored for extremely damaged hair. Each recipe is a step-by-step guide detailing the chemical processes and treatments to achieve a desired perm result while minimizing further damage. The recipes are presented as flowcharts, illustrating the sequence of product application and treatments.
+
+**2. General Terminology and Concepts**
+
+*   **Perming:** A chemical process that alters the hair's structure to create curls or waves.
+*   **Damaged Hair:** Hair that has been weakened by chemical treatments (coloring, bleaching, previous perms), heat styling, or environmental factors.
+*   **Acidic vs. Alkaline:** Refers to the pH level of the products. Acidic products generally help to close the cuticle and neutralize alkaline residues, while alkaline products are used to swell the hair shaft for chemical processing.
+*   **Protein:** Used to reinforce the hair structure and improve elasticity.
+*   **Oil Clinic:** A treatment that provides moisture and lubrication to the hair, reducing friction and breakage.
+*   **Neutralization:** The process of stopping the action of the perming solution and re-establishing the disulfide bonds in the new configuration.
+*   **PPT (Protein Pre-Treatment):** A protein-rich product applied before or during chemical services to protect and strengthen the hair.
+*   **Swelling:** The process of opening the hair cuticle to allow chemicals to penetrate the cortex.
+*   **Softening:** The process of breaking down the disulfide bonds in the hair, allowing it to be reshaped.
+*   **Straightening:** The process of smoothing the hair shaft, often using heat.
+
+**3. Recipe Breakdown (General Structure)**
+
+Each recipe generally follows this pattern:
+
+1.  **Pre-Treatment:** Steps to prepare the hair for the perming process (e.g., shampooing, protein treatments).
+2.  **Reduction (Softening):** Application of a reducing agent (e.g., thioglycolic acid, cysteamine) to break the disulfide bonds.
+3.  **Shaping:** The hair is wound on perm rods to create the desired curl pattern.
+4.  **Neutralization:** A neutralizing agent (e.g., hydrogen peroxide, sodium bromate) is applied to re-establish the disulfide bonds in the new configuration.
+5.  **Post-Treatment:** Steps to condition and protect the hair after the perm (e.g., keratin treatments, shampoos).
+
+**4. Specific Recipe Details**
+
+Let's look at each recipe in more detail:
+
+*   **Recipe No. 1: If extremely damaged hair (1)**
+
+    *   **Swelling SS3: Protein = 1 : 2 / Leave on for 5 minutes:** This step uses a swelling agent (SS3) with a protein ratio of 1:2, left on for 5 minutes to prepare the hair for the next step.
+    *   **Acidic cysteamine: Protein = 1: 1/ Leave on for 7 minutes:** Acidic cysteamine with a protein ratio of 1:1 is applied and left on for 7 minutes.
+    *   **Prepare the shampoo bed -> Shampoo -> LPP -> Keratin -> Shampoo:** This step involves preparing the shampoo bed, shampooing, applying LPP (Liquid Protein Polymer), applying Keratin, and shampooing again.
+    *   **Straightening:**
+        *   **100% dry hair -> Mist spray -> Steam hair straightening at 120°C:** The hair is dried, misted, and straightened with steam at 120°C.
+    *   **Oxidation:**
+        *   **Sodium bromate 70% + Anionic surfactant 10% 1st neutralization for 8 minutes -> Hydrogen peroxide 100% / 2nd neutralization for 7 minutes:** The hair is neutralized with sodium bromate and then hydrogen peroxide.
+*   **Recipe No. 2: If extremely damaged hair (2)**
+
+    *   **Acidic thioglycolic acid + Protein 20% / Leave on for 5 minutes:** Thioglycolic acid with 20% protein is applied for 5 minutes.
+    *   **Swelling SS2: Protein = 1 : 1:** A swelling agent (SS2) with a protein ratio of 1:1 is applied.
+    *   **Thioglycolic acid (alkali): Protein = 1:1 on damaged hair / Leave on for 7 minutes:** Alkaline thioglycolic acid with a protein ratio of 1:1 is applied for 7 minutes.
+    *   **Damaged hair alone / Leave for 3 minutes:** The hair is left alone for 3 minutes.
+    *   **Acidic cysteine + Protein 20% / Leave on for 5 minutes:** Acidic cysteine with 20% protein is applied for 5 minutes.
+    *   **Winding -> Heat treatment at 80°C 5 minutes -> Cool down for 5 minutes -> Heat treatment at 70°C 2 minutes:** The hair is wound, heat-treated at 80°C for 5 minutes, cooled down, and heat-treated again at 70°C for 2 minutes.
+*   **Recipe No. 3: If extremely damaged hair (3)**
+
+    *   **Acidic thioglycolic acid + Protein 20%:** Thioglycolic acid with 20% protein is applied.
+    *   **Swelling SS2: Protein 20% = 1: 1/ Leave on for 5 minutes:** A swelling agent (SS2) with 20% protein and a ratio of 1:1 is applied for 5 minutes.
+    *   **Thioglycolic acid (alkali): Protein = 1 : 1 for softening of damaged hair:** Alkaline thioglycolic acid with a protein ratio of 1:1 is applied to soften the hair.
+*   **Recipe No. 4: If extremely damaged hair (4)**
+
+    *   **Acidic thioglycolic acid:** Acidic thioglycolic acid is applied.
+    *   **Cysteamine + Oil clinic:** Cysteamine with oil clinic is applied.
+    *   **PPT (Must spray before shampooing / remove any remaining alkali):** PPT is sprayed before shampooing to remove any remaining alkali.
+    *   **Shampoo + LPP:** Shampoo and LPP are applied.
+    *   **Swelling -> Softening with thioglycolic acid (alkali):** The hair is swelled and softened with alkaline thioglycolic acid.
+*   **Recipe No. 5: If extremely damaged hair (5)**
+
+    *   **Acidic thioglycolic acid:** Acidic thioglycolic acid is applied.
+    *   **Cysteamine + Oil clinic:** Cysteamine with oil clinic is applied.
+    *   **PPT (Must spray before shampooing / remove any remaining alkali):** PPT is sprayed before shampooing to remove any remaining alkali.
+    *   **Shampoo + LPP:** Shampoo and LPP are applied.
+    *   **Thioglycolic acid (alkali) + Oil clinic for damaged hair:** Alkaline thioglycolic acid with oil clinic is applied for damaged hair.
+    *   **Cysteine (acidic):** Acidic cysteine is applied.
+*   **Recipe No. 6: If extremely damaged hair (6)**
+
+    *   **Apply slightly alkaline PPT:** Slightly alkaline PPT is applied.
+    *   **Apply Cysteamine + Oil clinic = 2:8/5 minutes:** Cysteamine with oil clinic in a ratio of 2:8 is applied for 5 minutes.
+    *   **Apply slightly alkaline PPT:** Slightly alkaline PPT is applied.
+    *   **Apply oil buffer:** Oil buffer is applied.
+    *   **Acidic cysteine: Oil clinic = 1 : 1:** Acidic cysteine with oil clinic in a ratio of 1:1 is applied.
+    *   **Neutralization (hydrogen peroxide):** Hydrogen peroxide is used for neutralization.
+    *   **Shampoo -> Keratin -> Treatment -> Shampoo:** Shampoo, Keratin, treatment, and shampoo are applied.
+    *   **Straightening:** The hair is straightened.
+    *   **Neutralization (sodium bromate):** Sodium bromate is used for neutralization.
+
+**5. Arrows and Symbols**
+
+*   **Arrows:** Indicate the sequence of steps in each recipe. The product or treatment at the tail of the arrow is applied before the product or treatment at the head of the arrow.
+*   **Hourglass Icon:** Indicates a specific processing time for a product or treatment.
+*   **Flame Icon:** Indicates a heat treatment step.
+
+**6. Key Considerations for Professional Use**
+
+*   **Hair Assessment:** Before selecting a recipe, a thorough assessment of the hair's condition is crucial. Consider the level of damage, porosity, and previous chemical treatments.
+*   **Product Selection:** Choose high-quality products specifically formulated for damaged hair.
+*   **Processing Times:** Adhere to the recommended processing times to avoid over-processing and further damage.
+*   **Strand Tests:** Perform strand tests to determine the appropriate processing time and ensure the desired curl pattern is achieved.
+*   **Client Communication:** Clearly communicate the process and potential risks to the client.
+
+By understanding these details, professional hairstylists can effectively use this document to create customized perm treatments for clients with extremely damaged hair, minimizing further damage and achieving beautiful, lasting results.
+
+----------------------------------------
+
+## 05. ★ Heating Perm Recipe #2
+
+Okay, let's break down this "Heating Perm Recipe #2" guide for extremely damaged hair, focusing on the technical aspects relevant to professional hairstylists.
+
+**Overall Structure:**
+
+The image presents a series of hair perming recipes (Recipe No. 7 through Recipe No. 11), each tailored for extremely damaged hair. Each recipe outlines a step-by-step process, indicating the order of product application and techniques. The arrows indicate the sequence of steps.
+
+**Detailed Breakdown of Each Recipe:**
+
+**Recipe No. 7: If Extremely Damaged Hair (7)**
+
+*   **Apply LPP to Damaged Areas:** LPP (Low Molecular Weight Protein) is used to fill in the gaps in the hair's cuticle, providing a base for subsequent treatments. This step aims to improve the hair's porosity and strength.
+*   **Apply Cysteamine + Oil Clinic / 5 minutes:** Cysteamine is a reducing agent, similar to thioglycolate, but generally considered milder. The oil clinic helps to protect the hair during the chemical process. The 5-minute application time suggests a gentle approach.
+*   **Shampoo:** Removes the previous treatment and prepares the hair for the next step.
+*   **Swelling 2 (+ Oil Clinic 20%):** This step likely refers to a product designed to swell the hair shaft, opening the cuticle for better penetration of subsequent treatments. The addition of 20% oil clinic aims to mitigate damage during the swelling process.
+*   **Thioglycolic Acid (Alkali) for Damaged Hair:** Thioglycolic acid is a stronger reducing agent than cysteamine. Using an alkaline version helps to open the hair cuticle for better penetration.
+*   **Thioglycolic Acid (Alkali) for Damaged Hair: Purified Water = 1:2 (+ Oil Clinic 20%):** This step involves diluting the thioglycolic acid with purified water in a 1:2 ratio, further reducing its strength. The addition of 20% oil clinic provides additional protection.
+*   **Shampoo → Keratin → Treatment → Shampoo:** This sequence focuses on rebuilding the hair's structure. Keratin, a protein, helps to fill in gaps and strengthen the hair. The "Treatment" step likely involves a deep conditioning product to moisturize and repair the hair. The final shampoo removes any residue. The note "Slightly acidic product, around pH 4.5 - pH 5.5" indicates that the keratin and shampoo used in this step should be pH balanced to help close the cuticle and lock in the treatment.
+*   **Liposome at 100°C:** Liposomes are microscopic vesicles that can encapsulate and deliver active ingredients into the hair shaft. Heating them to 100°C likely helps to facilitate their penetration.
+*   **Magic Straightening:** This refers to the heat straightening process using a flat iron.
+*   **Neutralization:** This step is crucial to stop the action of the reducing agents and re-establish the disulfide bonds in the new shape.
+
+**Recipe No. 8: If Extremely Damaged Hair (8)**
+
+*   **Keratin PPT:** PPT (Polypeptide) is a smaller protein fragment than LPP, allowing for even deeper penetration.
+*   **Acidic Cysteine + Oil Clinic 80%:** This step uses acidic cysteine, which is a milder reducing agent, combined with a high concentration of oil clinic (80%) to minimize damage.
+*   **Shampoo + LPP:** Cleanses the hair and provides a protein base.
+*   **Magic Straightening:** Heat straightening.
+*   **Do Not Neutralize:** This is a critical point. Some straightening systems are designed to be self-neutralizing, and adding a separate neutralizer can disrupt the process.
+*   **Neutralization:** In this case, the neutralization step is performed.
+
+**Recipe No. 9: If Extremely Damaged Hair (9)**
+
+*   **Apply Acidic Thioglycolic Acid + Slightly Alkaline PPT:** This step combines a mild reducing agent (acidic thioglycolic acid) with a slightly alkaline PPT to open the cuticle and allow the PPT to penetrate. The note "Apply acidic thioglycolic acid - for deep and stable softening" indicates that this step is crucial for achieving the desired level of softness and manageability.
+*   **Cysteamine + Oil Clinic:** A milder reducing agent with oil for protection.
+*   **Thioglycolic Acid (Alkali) + Oil Clinic:** A stronger reducing agent with oil for protection.
+*   **Acidic Cysteine Treatment for 5 Minutes:** A quick treatment with acidic cysteine to further soften the hair. The note "Smoothing hair cuticle / Stabilization of reduction" indicates that this step helps to smooth the hair's surface and stabilize the reduction process.
+*   **Magic Straightening:** Heat straightening.
+*   **Winding 18mm:** This indicates the use of small perm rods (18mm diameter) for creating curls or waves.
+*   **Neutralization with Hydrogen Peroxide 100%:** A standard neutralization step using hydrogen peroxide to oxidize the hair and lock in the new shape.
+
+**Recipe No. 10: If Extremely Damaged Hair (10)**
+
+*   **Acidic Thioglycolic Acid:** A mild reducing agent.
+*   **Oil Clinic + 10% Henna Extract (Tannin):** Henna extract, specifically the tannin component, is used to thicken the product and potentially add strength to extremely damaged hair. The note "Tannin- Used to thicken extremely damaged hair" confirms this.
+*   **Apply Slightly Alkaline PPT:** Opens the cuticle for protein penetration.
+*   **Shampoo → Keratin:** Cleanses and adds protein. The note "Slightly acidic product, around pH 4.5 - pH 5.5" indicates that the keratin and shampoo used in this step should be pH balanced to help close the cuticle and lock in the treatment.
+*   **Oil Clinic + 10% Henna Extract (Tannin):** Provides moisture and potentially strengthens the hair.
+*   **Apply Acidic Cysteine + Slightly Alkaline PPT:** A milder reducing agent with PPT.
+*   **Shampoo:** Cleanses the hair.
+*   **Liposome:** Delivers active ingredients.
+*   **Winding 25 mm:** Larger perm rods (25mm diameter) for looser curls or waves.
+*   **1st Oxidizing Agent:** A mixture of hydrogen peroxide, purified water, and an anionic surfactant. The surfactant helps to emulsify the mixture and improve its penetration.
+*   **2nd Oxidizing Agent:** Hydrogen peroxide 100%.
+
+**Recipe No. 11: If Extremely Damaged Hair (11)**
+
+*   **Slightly Alkaline PPT:** Opens the cuticle for protein penetration. The note "For anionic activation" indicates that this PPT is designed to be activated by anionic surfactants.
+*   **Apply Shampoo Magic → Leave on for 40 minutes:** This step involves applying a "shampoo magic" product, which likely contains a combination of cleansing and conditioning agents. The 40-minute leave-on time allows the product to deeply penetrate the hair shaft.
+*   **Acidic Cysteine + Oil Clinic:** A mild reducing agent with oil for protection.
+*   **Shampoo:** Cleanses the hair.
+*   **Magic Straightening at 120°C / 150°C:** Heat straightening at a lower temperature range, likely to minimize damage.
+
+**General Observations:**
+
+*   **Focus on Mildness:** All recipes emphasize using milder reducing agents (cysteamine, acidic thioglycolate) and incorporating oil clinics to protect the hair.
+*   **Protein Infusion:** The frequent use of LPP, PPT, and keratin highlights the importance of rebuilding the hair's protein structure.
+*   **pH Balance:** The emphasis on slightly acidic products (pH 4.5-5.5) indicates an understanding of the importance of closing the cuticle after treatment.
+*   **Temperature Control:** The lower straightening temperature in Recipe No. 11 demonstrates a concern for minimizing heat damage.
+
+**In summary, this guide provides a series of customized perming recipes for extremely damaged hair, focusing on gentle chemical processes, protein infusion, and careful attention to pH balance and temperature control.**
+
+----------------------------------------
+
+## 06. ★ Heating Perm Recipe #3
+
+Okay, let's break down this hair perming guide, focusing on the technical aspects and visual cues.
+
+**Overall Structure**
+
+The image presents a series of "recipes" for different hair types, outlining the steps involved in a heating perm process. Each recipe is visually separated and follows a flowchart-like structure, indicating the sequence of treatments and processes.
+
+**1. Textual Elements**
+
+*   **"06 ★ Heating Perm Recipe #3"**:  This is the title, indicating this is the third in a series of heating perm recipes.
+*   **"<RECIPE NO.12> Extremely curly hair = Softening the shape"**: This recipe focuses on extremely curly hair and aims to soften the curl pattern.
+*   **"<RECIPE NO.13> Afro hair"**: This recipe focuses on Afro hair.
+*   **"<RECIPE NO.14> Hardened hair"**: This recipe focuses on hardened hair.
+*   **"<RECIPE NO.15> If magic straightening bleached hair"**: This recipe focuses on magic straightening bleached hair.
+*   **"Magic straightening at 170°C (softening the shape)"**: This step involves using a flat iron at a high temperature to soften the hair's structure.
+*   **"Apply 1st perm solution to dry hair (cysteamine for coarse hair)"**: This step involves applying the first perm solution to dry hair.
+*   **"Treat with cysteamine since extremely curly hair is hydrophobic"**: This step involves treating the hair with cysteamine.
+*   **"Leave on for 15 minutes"**: This step involves leaving the solution on for 15 minutes.
+*   **"Shampoo"**: This step involves shampooing the hair.
+*   **"Caution! Never overtreat!"**: This is a warning to avoid over-processing the hair.
+*   **"Apply acidic thioglycolic acid (5 minutes X)"**: This step involves applying acidic thioglycolic acid for 5 minutes.
+*   **"Apply the Thioglycolic acid (alkali): Purified water = 7:3 to damaged hair / 7 minutes"**: This step involves applying a mixture of thioglycolic acid and purified water to damaged hair for 7 minutes.
+*   **"Apply the Thioglycolic acid (alkali): Purified water = 7:3 to coarse hair / 7 minutes"**: This step involves applying a mixture of thioglycolic acid and purified water to coarse hair for 7 minutes.
+*   **"Wipe + Set the perm"**: This step involves wiping the hair and setting the perm.
+*   **"Remove the perm solution"**: This step involves removing the perm solution.
+*   **"Isoelectric shampoo (pH balance)"**: This step involves using an isoelectric shampoo to balance the hair's pH.
+*   **"Dry"**: This step involves drying the hair.
+*   **"1st oxidizing agent"**: This step involves applying the first oxidizing agent.
+*   **"2nd oxidizing agent"**: This step involves applying the second oxidizing agent.
+*   **"Keratin"**: This step involves applying keratin.
+*   **"Treatment"**: This step involves applying a treatment.
+*   **"Acidic shampoo"**: This step involves using an acidic shampoo.
+*   **"Slightly acidic product, around pH 4.5 - pH 5.5"**: This describes the pH range of the shampoo.
+*   **"Finish"**: This indicates the end of the process.
+*   **"1st oxidation"**: This step involves the first oxidation.
+*   **"Strong / Weak / Swelling"**: This describes the strength of the oxidation.
+*   **"Softening the shape"**: This step involves softening the shape of the hair.
+*   **"2nd oxidation"**: This step involves the second oxidation.
+*   **"Straightening"**: This step involves straightening the hair.
+*   **"Caution! Apply strong chemicals after softening the shape, for this type of hair becomes immediately curly. It is effective to proceed by 1st oxidation → Softening the shape → 2nd oxidation"**: This is a warning to apply strong chemicals after softening the shape.
+*   **"Keratin"**: This step involves applying keratin.
+*   **"Mist for 15 minutes X"**: This step involves misting the hair for 15 minutes.
+*   **"Rinse"**: This step involves rinsing the hair.
+*   **"PPT"**: This step involves applying PPT.
+*   **"Cysteamine + Oil clinic"**: This step involves applying cysteamine and oil clinic.
+*   **"pH Balance"**: This step involves balancing the pH of the hair.
+*   **"Acidic thioglycolic acid"**: This step involves applying acidic thioglycolic acid.
+*   **"Leave on for 3 minutes"**: This step involves leaving the solution on for 3 minutes.
+*   **"Thioglycolic acid (alkali) SS2+ Oil clinic + Liposome"**: This step involves applying thioglycolic acid, oil clinic, and liposome.
+*   **"Thioglycolic acid (alkali) + Oil clinic for 15 minutes"**: This step involves applying thioglycolic acid and oil clinic for 15 minutes.
+*   **"Steam hair straightening at 100°C"**: This step involves steam hair straightening at 100°C.
+*   **"2nd oxidizing agent + Cream"**: This step involves applying the second oxidizing agent and cream.
+*   **"Leave on for 7 minutes"**: This step involves leaving the solution on for 7 minutes.
+*   **"Apply the perm solution four times starting from the ends"**: This step involves applying the perm solution four times starting from the ends.
+*   **"Start softening from the top"**: This step involves starting to soften the hair from the top.
+*   **"Apply isoelectric point pH and leave on for 15 minutes"**: This step involves applying the isoelectric point pH and leaving it on for 15 minutes.
+*   **"Use the hair straightener at 140°C on hair ends"**: This step involves using the hair straightener at 140°C on the hair ends.
+*   **"Use the hair straightener again at 180°C"**: This step involves using the hair straightener again at 180°C.
+*   **"Oxidizing agent + pH balance = Use in the order of 50: 50, 70: 30, 100%"**: This step involves using the oxidizing agent and pH balance in the specified order.
+
+**2. Diagrams and Flowcharts**
+
+*   **Flowchart Structure:** Each recipe is presented as a flowchart.  Boxes represent steps in the process (application of chemicals, treatments, heat styling). Arrows indicate the sequence of these steps.
+*   **Branching:**  In some recipes, there are branching paths.  For example, after the first oxidizing agent, there are options for shampoo, keratin, and treatment. This suggests that the stylist can choose the next step based on the hair's condition and desired outcome.
+
+**3. Tables**
+
+There are no tables in the image.
+
+**4. Arrows and Symbols**
+
+*   **Arrows:** Arrows indicate the sequence of steps.  They show the progression from one treatment to the next.
+*   **Clock Icon:** The clock icon with a number (e.g., "15 minutes") indicates the processing time for a particular chemical or treatment.
+*   **Flame Icon:** The flame icon with a temperature (e.g., "170°C") indicates the temperature used for heat styling.
+*   **"X" Icon:** The "X" icon indicates the time for a particular chemical or treatment.
+
+**5. Color-Coded Areas**
+
+There are no color-coded areas in the image.
+
+**Technical Interpretation and Relationships**
+
+*   **Perming Chemistry:** The recipes involve a combination of reducing agents (like thioglycolic acid and cysteamine) to break disulfide bonds in the hair's keratin structure, followed by shaping (through rollers or straightening) and then oxidizing agents (like hydrogen peroxide) to reform the bonds in the new shape.
+*   **pH Balance:** The use of "isoelectric shampoo" is crucial. The isoelectric point is the pH at which a protein (like keratin) has no net electrical charge. Using a shampoo at this pH helps to stabilize the hair and prevent damage.
+*   **Heat Styling:** The use of flat irons at specific temperatures is a key part of the "heating perm" process. The heat helps to soften the hair and make it more pliable for shaping.
+*   **Hair Condition:** The recipes acknowledge that different hair types (extremely curly, Afro, hardened, bleached) require different approaches. The specific chemicals, processing times, and heat settings are adjusted accordingly.
+*   **Keratin and Treatments:** The inclusion of keratin treatments suggests that these are used to strengthen and protect the hair during and after the perming process.
+
+In summary, this image provides a visual guide to heating perm techniques, emphasizing the importance of understanding hair chemistry, pH balance, and the specific needs of different hair types. The flowchart structure makes it easy to follow the sequence of steps, while the textual annotations provide essential details about the chemicals, processing times, and heat settings involved.
+
+----------------------------------------
+
+## 07. ★ Heating Perm Recipe #4
+
+Okay, let's break down this "Heating Perm Recipe" document for professional hairstylists.
+
+**Overall Purpose:**
+
+This document outlines several different heating perm recipes (numbered 16-20) tailored to specific hair types and conditions. It provides a step-by-step guide, including chemical applications, processing times, and heat settings.
+
+**General Layout and Visual Elements:**
+
+*   **Recipe Number:** Each recipe is clearly labeled (e.g., "<RECIPE NO.16>").
+*   **Hair Type Description:** Each recipe begins with a description of the target hair type (e.g., "Curly hair that is short, soft hair, extremely frizzy..."). This helps stylists choose the appropriate recipe.
+*   **Flowcharts:** The core of each recipe is presented as a flowchart. Each step is represented by a gray box, and arrows indicate the sequence of actions.
+*   **Chemicals and Products:** The boxes contain the names of chemicals and products used in each step (e.g., "Acidic thioglycolic acid," "Shampoo," "Keratin").
+*   **Processing Times:** Many steps include processing times, often indicated with a clock icon (e.g., "5 minutes").
+*   **Heat Settings:** Steps involving heat styling specify the temperature (e.g., "Liposome at 100°C"). A flame icon indicates heat.
+*   **Notes and Cautions:** Some recipes include brief notes or cautions about specific steps.
+
+**Detailed Breakdown of Each Recipe:**
+
+Let's examine each recipe in detail, focusing on the key steps and considerations:
+
+**Recipe #16:**
+
+*   **Target Hair:** Curly, short, soft, extremely frizzy, and damaged from dyeing.
+*   **Key Steps:**
+    *   **Acidic Thioglycolic Acid (5 minutes):** This is the primary reducing agent, breaking disulfide bonds in the hair to allow for reshaping. The acidic pH helps to control the speed of the reaction.
+    *   **Alkaliamine:** Purified water = 1:1/7 minutes: This step is to calm frizzy curls and target hydrophobicity for damages from hair dyes.
+    *   **Shampoo:** To remove any residue.
+    *   **Acidic Thioglycolic Acid (5 minutes):** This is the primary reducing agent, breaking disulfide bonds in the hair to allow for reshaping. The acidic pH helps to control the speed of the reaction.
+    *   **Thioglycolic Acid (Alkali) for Damaged Hair:** Purified water = 1:2/5 minutes: This step is to reapply thioglycolic acid (alkali) separately for damaged hair.
+    *   **Apply Acidic Cysteine (2 minutes):** Cysteine is another reducing agent, potentially used to further soften the hair.
+    *   **Oil Buffer:** This is likely a protective oil to prevent excessive damage during the chemical process.
+    *   **Keratin:** To help strengthen the hair.
+    *   **Treatment:** To help strengthen the hair.
+    *   **Shampoo:** To remove any residue.
+    *   **Liposome at 100°C:** Liposomes are used to deliver active ingredients into the hair shaft.
+    *   **Test No. 20 at 90°C:** This is likely a heat setting for a specific test.
+    *   **Dry and Straighten at 150°C:** This step uses heat to reshape the hair.
+    *   **Digital Nape No. 16, Back No. 18, Top No. 20, Side No. 16, 18, and 20 at 100°C for 5 minutes:** This step uses heat to reshape the hair.
+    *   **Use Nape Iron 10 mm and 16 mm for the roots:** This step uses heat to reshape the hair.
+    *   **Neutralize with water:** This step uses water to neutralize the hair.
+    *   **Keratin:** To help strengthen the hair.
+    *   **Treatment:** To help strengthen the hair.
+    *   **Shampoo:** To remove any residue.
+    *   **Oil Buffer Emulsion after 2nd Neutralization:** This is likely a protective oil to prevent excessive damage during the chemical process.
+
+**Recipe #17:**
+
+*   **Target Hair:** Hair with metallic components due to bleaching and dyeing, extremely frizzy curly hair.
+*   **Key Steps:**
+    *   **Acidic Thioglycolic Acid (5 minutes):** This is the primary reducing agent, breaking disulfide bonds in the hair to allow for reshaping. The acidic pH helps to control the speed of the reaction.
+    *   **Thioglycolic Acid (Alkali) for Damaged Hair:** Water = 1:4/4 minutes: This step is to reapply thioglycolic acid (alkali) separately for damaged hair.
+    *   **Cysteamine (Neutral):** Water = 1:1/3 minutes: This step is to reapply thioglycolic acid (alkali) separately for damaged hair.
+    *   **Cysteine (acidic):** Cysteine is another reducing agent, potentially used to further soften the hair.
+    *   **Shampoo:** To remove any residue.
+    *   **Keratin:** To help strengthen the hair.
+    *   **Treatment:** To help strengthen the hair.
+    *   **Shampoo:** To remove any residue.
+    *   **Liposome at 100°C:** Liposomes are used to deliver active ingredients into the hair shaft.
+    *   **Completely Dry after the Curl Test:** This step is to completely dry the hair after the curl test.
+    *   **Magic Straightening at 150°C (roots at 180°C/dyed hair at 150°C):** This step uses heat to reshape the hair.
+    *   **Curl at 100°C / 5 minutes:** This step uses heat to reshape the hair.
+    *   **100°C after removing nonwoven fabric / 5 minutes:** This step uses heat to reshape the hair.
+
+**Recipe #18:**
+
+*   **Target Hair:** If curly hair.
+*   **Key Steps:**
+    *   **Acidic Thioglycolic Acid (5 minutes):** This is the primary reducing agent, breaking disulfide bonds in the hair to allow for reshaping. The acidic pH helps to control the speed of the reaction.
+    *   **Thioglycolic Acid (Alkali) for Damaged Hair:** Water = 1:4: This step is to reapply thioglycolic acid (alkali) separately for damaged hair.
+    *   **Raise the concentration to 1:2 and reapply, wait 5 minutes:** This step is to reapply thioglycolic acid (alkali) separately for damaged hair.
+    *   **Acidic Cysteine for 3 minutes:** Cysteine is another reducing agent, potentially used to further soften the hair.
+    *   **Oil Buffer:** This is likely a protective oil to prevent excessive damage during the chemical process.
+    *   **Thioglycolic Acid (Alkali) for Damaged Hair:** Water = 1:2: This step is to reapply thioglycolic acid (alkali) separately for damaged hair.
+    *   **Liposome at 100°C:** Liposomes are used to deliver active ingredients into the hair shaft.
+    *   **Magic Straightening at 150°C (mist spray):** This step uses heat to reshape the hair.
+    *   **1st Neutralization:** This step is to neutralize the hair.
+    *   **Oil Buffer:** This is likely a protective oil to prevent excessive damage during the chemical process.
+    *   **2nd Neutralization:** This step is to neutralize the hair.
+    *   **Shampoo:** To remove any residue.
+    *   **Keratin:** To help strengthen the hair.
+    *   **Treatment:** To help strengthen the hair.
+    *   **Shampoo:** To remove any residue.
+    *   **Finish:** This step is to finish the hair.
+
+**Recipe #19:**
+
+*   **Target Hair:** If the perm is under-processed, 7 cm of new hair grown is dyed hair, the lower 10 cm is bleached hair, and the hair roots are frizzy curly hair.
+*   **Key Steps:**
+    *   **Acidic Thioglycolic Acid (5 minutes):** This is the primary reducing agent, breaking disulfide bonds in the hair to allow for reshaping. The acidic pH helps to control the speed of the reaction.
+    *   **Cysteamine (acidic):** Purified water = 1:1: This step is to reapply thioglycolic acid (alkali) separately for damaged hair.
+    *   **Apply only to the bleached part of the hair:** This step is to apply only to the bleached part of the hair.
+    *   **Apply PPT:** This step is to apply PPT.
+    *   **Apply thioglycolic acid (alkali) to only the healthy hair at the top (coarse hair), wait 8 minutes:** This step is to reapply thioglycolic acid (alkali) separately for damaged hair.
+    *   **Shampoo:** To remove any residue.
+    *   **Keratin:** To help strengthen the hair.
+    *   **Treatment:** To help strengthen the hair.
+    *   **Shampoo:** To remove any residue.
+    *   **Nape no. 18 and overall no. 20:** This step uses heat to reshape the hair.
+    *   **80°C/5 minutes:** This step uses heat to reshape the hair.
+    *   **80°C/8 minutes:** This step uses heat to reshape the hair.
+    *   **100°C / 2 minutes:** This step uses heat to reshape the hair.
+
+**Recipe #20:**
+
+*   **Target Hair:** If stiff hair due to frequent use of heat styling.
+*   **Key Steps:**
+    *   **Thioglycolic Acid (Alkali) for Damaged Hair:** Water = 1:4 / 4 minutes: This step is to reapply thioglycolic acid (alkali) separately for damaged hair.
+    *   **Thioglycolic Acid (Alkali):** Purified Water = 1:1: This step is to reapply thioglycolic acid (alkali) separately for damaged hair.
+    *   **Apply cysteamine (neutral) to all hair, wait for 6 minutes:** This step is to reapply thioglycolic acid (alkali) separately for damaged hair.
+    *   **Liposome at 100°C:** Liposomes are used to deliver active ingredients into the hair shaft.
+    *   **Magic Straightening at 160°C:** This step uses heat to reshape the hair.
+    *   **Apply moisturizing hair essence:** This step is to apply moisturizing hair essence.
+    *   **Winding all sections at 80°C / 5 minutes:** This step uses heat to reshape the hair.
+    *   **1st Neutralization - Hydrogen peroxide, wait for 3 minutes:** This step is to neutralize the hair.
+    *   **Oil buffer for 1-2 minutes:** This is likely a protective oil to prevent excessive damage during the chemical process.
+    *   **2nd Neutralization - Hydrogen peroxide, wait for 3 minutes:** This step is to neutralize the hair.
+
+**Key Considerations for Stylists:**
+
+*   **Hair Assessment:** Accurate assessment of hair type, condition, and previous chemical treatments is crucial for selecting the right recipe.
+*   **Chemical Sensitivity:** Be aware of potential sensitivities to chemicals, especially in clients with a history of allergies or scalp irritation.
+*   **Strand Testing:** Always perform a strand test before applying chemicals to the entire head to assess processing time and potential damage.
+*   **Heat Control:** Precise heat control is essential to avoid over-processing or damaging the hair.
+*   **Neutralization:** Thorough neutralization is critical to stop the chemical reaction and prevent further damage.
+*   **Post-Treatment Care:** Advise clients on proper post-treatment care to maintain the health and integrity of their hair.
+
+Let me know if you'd like a deeper dive into any specific recipe or aspect of this document!
+
+----------------------------------------
+
+## 08. 1st Ingredients
+
+Here's a detailed description of the image, focusing on the educational content related to hair perming:
+
+**Overall Purpose:**
+
+The image is an educational graphic explaining the key ingredients and their functions in a hair perming solution. It uses a visual analogy of a bottle to represent the composition of the solution.
+
+**Text Elements:**
+
+*   **"08"**: Likely a page number or section identifier within a larger document.
+*   **"1st Ingredients"**: The title of the graphic, indicating that it focuses on the primary components of a perming solution.
+*   **"1st"**: A label placed on the bottle graphic, visually associating the bottle's contents with the "1st Ingredients" title.
+*   **"Reducing Agent"**: A heading introducing the first key ingredient.
+    *   **Description:** "Cleaves the cysteine bond inside of the hair. This is a perm solution with main ingredients of thioglycolic acid (alkali) and cysteamine. As an alkali agent, it swells the hair and opens the cuticle, like ingredients such as ammonia and monoethanolamine, for the reducing agent to penetrate into the cortex. It includes a stabilizer and hair protectant."
+*   **"Alkali Agent"**: A heading introducing the second key ingredient.
+    *   **Description:** "It swells the hair by raising the pH and allows the reducing agent to easily penetrate into the hair. It also cleaves the ionic bonding inside the hair."
+*   **"Stabilizer, water, etc."**: A heading introducing the third key ingredient.
+    *   **Description:** "It is an ingredient that prevents oxidation of the reducing agent and conditions the hair."
+
+**Diagram Explanation (Bottle Analogy):**
+
+The bottle graphic is a visual representation of the perming solution's composition. The different colored layers within the bottle correspond to the different ingredients and their relative proportions.
+
+*   **Top (Dark Brown):** Represents the "Reducing Agent." This layer is the smallest, suggesting it's present in a smaller concentration compared to the other ingredients. The description explains that the reducing agent, containing thioglycolic acid (alkali) and cysteamine, breaks the disulfide bonds (cysteine bonds) in the hair's cortex. This is the core chemical process that allows the hair to be reshaped during perming. The description also mentions that the reducing agent includes a stabilizer and hair protectant.
+*   **Middle (Light Brown):** Represents the "Alkali Agent." This layer is larger than the reducing agent layer, indicating a higher concentration. The description explains that the alkali agent raises the pH of the solution, causing the hair to swell and the cuticle to open. This allows the reducing agent to penetrate the cortex more effectively. The alkali agent also cleaves the ionic bonding inside the hair.
+*   **Bottom (Cream):** Represents the "Stabilizer, water, etc." This layer is the largest, suggesting it's the primary component by volume. The description explains that the stabilizer prevents oxidation of the reducing agent, ensuring its effectiveness over time. Water is likely the main solvent and carrier for the other ingredients.
+
+**Relationships and Concepts:**
+
+*   **Synergistic Action:** The graphic illustrates the synergistic relationship between the reducing agent and the alkali agent. The alkali agent prepares the hair by swelling it and opening the cuticle, allowing the reducing agent to access and break the disulfide bonds.
+*   **Importance of Stabilizers:** The inclusion of a stabilizer highlights the importance of maintaining the reducing agent's effectiveness. Oxidation can deactivate the reducing agent, leading to a poor perm result.
+*   **Hair Structure:** The descriptions implicitly refer to the hair's structure (cuticle, cortex, disulfide bonds, ionic bonds) and how the perming solution interacts with these components.
+
+**Color-Coded Areas:**
+
+*   The different shades of brown and cream are used to visually differentiate the three main components of the perming solution. The relative size of each colored area represents the approximate proportion of each ingredient in the solution.
+
+**In summary,** the image provides a simplified yet informative overview of the key ingredients in a hair perming solution and their roles in the perming process. It uses a visual analogy to make the information more accessible and memorable.
+
+----------------------------------------
+
+## 09. 2nd Ingredients
+
+Here's a breakdown of the image, focusing on the educational content relevant to hairstylists:
+
+**1. Text Elements:**
+
+*   **"09"**: Likely a page number or section identifier within a larger document.
+*   **"2nd Ingredients"**: This is the title of the section, indicating that it will discuss the ingredients used in the second step of a perming process.
+*   **"2nd"**: This is a label on the bottle illustration, referring to the second solution used in the perming process.
+*   **"Oxidizing Agent"**: This is the primary ingredient in the 2nd perm solution.
+*   **"The main ingredient of the 2nd perm solution is the oxidizing agent which enables re-bonding of the cleaved S-S bonding by oxidation."**: This is a description of the oxidizing agent's function. It highlights that the oxidizing agent is crucial for re-establishing disulfide bonds (S-S bonds) in the hair's keratin structure after they have been broken during the first step of the perming process (reduction).
+*   **"Stabilizer, water, etc."**: This indicates other ingredients present in the 2nd perm solution.
+*   **"A pH adjuster that maintains and stabilizes the pH; also a conditioning ingredient"**: This describes the function of the stabilizer. It emphasizes the importance of pH control for the effectiveness and safety of the perming process, as well as the inclusion of conditioning agents to help mitigate damage.
+
+**2. Diagram Explanation:**
+
+*   **Bottle Illustration:** The bottle visually represents the 2nd perm solution. The division of the bottle into two sections (darker and lighter) visually separates the primary ingredient (oxidizing agent) from the other ingredients (stabilizer, water, etc.).
+
+**3. Concepts and Relationships:**
+
+*   **Perming Process:** The image focuses on the second step of a two-step perming process.
+*   **1st Step (Reduction):** In the first step, a reducing agent (e.g., ammonium thioglycolate) is used to break the disulfide bonds in the hair's keratin structure. This allows the hair to be reshaped around a perm rod.
+*   **2nd Step (Oxidation):** The second step, represented in the image, involves applying an oxidizing agent (e.g., hydrogen peroxide or sodium bromate). The oxidizing agent neutralizes the reducing agent and reforms the disulfide bonds in the new, desired configuration. This "locks in" the curl or wave pattern.
+*   **Disulfide Bonds (S-S Bonds):** These are crucial for the hair's strength, elasticity, and shape. Breaking and reforming these bonds is the fundamental principle behind perming.
+*   **Oxidizing Agent Function:** The oxidizing agent is essential for re-establishing the disulfide bonds. Without it, the hair would not hold the new shape.
+*   **Stabilizer Function:** The stabilizer (pH adjuster) is important for several reasons:
+    *   **Neutralization:** It helps neutralize any remaining reducing agent.
+    *   **pH Control:** Maintaining the correct pH is crucial for the oxidizing agent to function effectively and to minimize damage to the hair.
+    *   **Conditioning:** The inclusion of conditioning ingredients helps to restore moisture and improve the overall health of the hair after the chemical process.
+
+**In Summary:**
+
+The image provides a concise overview of the key ingredients and their functions in the second step of a perming process. It emphasizes the role of the oxidizing agent in re-establishing disulfide bonds, which is essential for setting the new hair shape. It also highlights the importance of stabilizers for pH control and conditioning. This information is crucial for hairstylists to understand the chemical processes involved in perming and to ensure safe and effective results.
+
+----------------------------------------
+
+## 10. Amino Acid Type
+
+Okay, let's break down this table of amino acids and their properties relevant to hair perming.
+
+**1. Text and Titles:**
+
+*   **"10 Amino Acid Type"**: This is likely a section heading within a larger document, indicating that the following information pertains to amino acids.
+*   **"Types of Amino Acids"**: This is the header for the first column of the table, indicating the specific amino acids listed.
+*   **"Content (%)"**: This is the header for the second column, indicating the percentage of each amino acid present in a given context (likely hair protein, though not explicitly stated).
+*   **"pH"**: This is the header for the third column, indicating the pH value associated with each amino acid.
+*   **"Acidic"**: This label groups amino acids with acidic properties.
+*   **"Neutral"**: This label groups amino acids with neutral properties.
+*   **"Alkaline"**: This label groups amino acids with alkaline properties.
+*   **Amino Acid Names**: The table lists specific amino acids: Aspartic acid, Glutamate, Glycine, Alanine, Valine, Leucine, Isoleucine, Phenylalanine, Proline, Serine, Threonine, Tyrosine, Cystine, Cysteine, Tryptophan, Methionine, Lysine, and Arginine.
+
+**2. Table Explanation:**
+
+This table presents information about the amino acid composition and pH characteristics, which are crucial for understanding hair structure and the chemical processes involved in perming.
+
+*   **Amino Acid Types:** The first column lists the different amino acids found in hair protein (keratin).
+*   **Content (%):** The second column shows the relative abundance of each amino acid in hair. This is important because the specific amino acid composition influences the hair's physical and chemical properties. For example, a higher percentage of cystine will lead to more disulfide bonds, making the hair stronger and more resistant to perming.
+*   **pH:** The third column indicates the pH associated with each amino acid. pH is a measure of acidity or alkalinity. The pH of the perming solution and the hair itself are critical factors in determining the effectiveness and safety of the perming process.
+
+**3. Amino Acid Groupings (Acidic, Neutral, Alkaline):**
+
+*   **Acidic Amino Acids (Aspartic acid, Glutamate):** These amino acids have acidic side chains, meaning they can donate protons (H+). They contribute to the overall negative charge of hair protein at neutral pH.
+*   **Neutral Amino Acids (Glycine, Alanine, Valine, Leucine, Isoleucine, Phenylalanine, Proline, Serine, Threonine, Tyrosine, Cystine, Cysteine, Tryptophan, Methionine):** These amino acids have side chains that are neither acidic nor basic at neutral pH. They contribute to the overall structure and properties of hair protein.
+*   **Alkaline Amino Acids (Lysine, Arginine):** These amino acids have basic side chains, meaning they can accept protons (H+). They contribute to the overall positive charge of hair protein at neutral pH.
+
+**4. Significance for Hair Perming:**
+
+*   **Disulfide Bonds:** Cystine is particularly important because it forms disulfide bonds (S-S) between keratin chains. These bonds are responsible for the hair's strength and shape. Perming involves breaking and reforming these disulfide bonds to change the hair's structure.
+*   **pH and Perming Solutions:** The pH of the perming solution is critical for controlling the rate of the chemical reactions that break and reform disulfide bonds. Alkaline perming solutions (high pH) cause the hair shaft to swell, allowing the reducing agent (e.g., ammonium thioglycolate) to penetrate and break the disulfide bonds. Acid perms (lower pH) are gentler but may take longer to process.
+*   **Amino Acid Composition and Perming Results:** The amino acid composition of the hair can influence how well it takes a perm. Hair with a higher percentage of cystine may require a stronger or longer-lasting perming solution. Damaged hair may have a lower cystine content, making it more susceptible to damage during perming.
+*   **Neutralizing:** After the hair has been reshaped, a neutralizing solution (usually hydrogen peroxide) is applied to reform the disulfide bonds in the new configuration. The pH of the neutralizing solution is also important for ensuring that the bonds are reformed correctly and that the hair is not damaged.
+
+In summary, this table provides essential information about the amino acid composition and pH characteristics of hair, which are critical factors in understanding the chemical processes involved in perming and achieving desired results.
+
+----------------------------------------
+
+## 11. Base Control
+
+Here's a detailed description of the image, focusing on the information relevant to hairstyling and perming techniques:
+
+**1. Text Elements:**
+
+*   **"11 Base Control"**: This is the title of the section, indicating that the image focuses on different base control techniques used in perming.
+
+*   **"a. On Base"**: This is the first technique. The description states: "A base with a diameter of 1 and placed between the upper and lower parting to maximize base support; it is preferable for minimizing tension."
+
+*   **"b. Half Off"**: This is the second technique. The description states: "Places the rod in the middle of the on base and off base."
+
+*   **"c. Off Base"**: This is the third technique. The description states: "Keeps the rod placed off the base to minimize lifting of the base. The hair is wrapped at 45° below the center of the base."
+
+*   **"d. Under Directed"**: This is the fourth technique. The description states: "A base with a diameter of 1.5 and the hair is wrapped at 90° from the center of the base."
+
+*   **"e. Over Directed"**: This is the fifth technique. The description states: "The rod is placed on the top section of the base."
+
+**2. Diagrams and Concepts:**
+
+The image presents five different base control techniques for perming, each illustrated with two diagrams: a frontal view and a side view of a head form. These diagrams demonstrate the placement of perm rods relative to the base section of hair.
+
+*   **a. On Base:** The perm rod is placed directly on the base section. The base diameter is 1 (presumably inches or centimeters). The description emphasizes that this placement maximizes base support and minimizes tension. This technique is used to achieve maximum volume and lift at the scalp.
+
+*   **b. Half Off:** The perm rod is placed partially on the base and partially off the base. This technique provides a moderate amount of volume and lift.
+
+*   **c. Off Base:** The perm rod is placed completely off the base section. The description notes that this minimizes lifting of the base and that the hair is wrapped at a 45° angle below the center of the base. This technique is used to create a softer, more relaxed curl with less volume at the scalp.
+
+*   **d. Under Directed:** The perm rod is placed on a base with a diameter of 1.5. The hair is wrapped at a 90° angle from the center of the base. This technique is used to create a curl that is directed underneath the base, providing a more controlled and defined curl pattern.
+
+*   **e. Over Directed:** The perm rod is placed on the top section of the base. This technique is used to create a curl that is directed over the base, providing a more dramatic and voluminous curl pattern.
+
+**3. Arrows and Symbols:**
+
+*   The diagrams use lines to represent the hair strands and their direction of wrapping around the perm rod.
+*   The circles represent the perm rods.
+*   The lines connecting the perm rods to the head form indicate the direction and angle of the hair wrap.
+
+**4. Color-Coded Areas:**
+
+*   The head form is gray.
+*   The perm rods are orange.
+*   The lines representing the hair strands are yellow.
+
+**In Summary:**
+
+The image provides a visual guide to different base control techniques used in perming. Each technique affects the volume, lift, and direction of the curl. The diagrams illustrate the placement of the perm rod relative to the base section of hair, and the descriptions provide additional information about the base diameter and hair wrapping angle. By understanding these techniques, hairstylists can customize the perm to achieve the desired curl pattern and volume for their clients.
+
