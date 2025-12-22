@@ -3,14 +3,19 @@
 
 const admin = require('firebase-admin');
 
-// Firebase Admin 초기화
+// Firebase Admin 초기화 (bullnabi-proxy.js와 동일한 방식)
 if (!admin.apps.length) {
-  const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
-  if (serviceAccountBase64) {
-    const serviceAccount = JSON.parse(Buffer.from(serviceAccountBase64, 'base64').toString('utf8'));
+  try {
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+      })
     });
+    console.log('✅ Firebase Admin 초기화 완료 (payment-verify)');
+  } catch (error) {
+    console.error('⚠️ Firebase Admin 초기화 실패:', error.message);
   }
 }
 
