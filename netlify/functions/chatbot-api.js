@@ -6435,9 +6435,16 @@ function formatRecipeSentences(text) {
       continue;
     }
 
-    // 섹션 헤더에서 번호 리셋 ([External], [Internal], C존 등)
-    if (/\[External\]/i.test(trimmed) || /\[Internal\]/i.test(trimmed)) {
-      sectionNum = 0;
+    // 섹션 헤더 처리: External에서만 번호 리셋, Internal은 이어서 번호 매김
+    if (/\[External\]/i.test(trimmed)) {
+      sectionNum = 0;  // External에서만 리셋
+      result.push('');
+      result.push(trimmed);
+      result.push('');
+      continue;
+    }
+    if (/\[Internal\]/i.test(trimmed)) {
+      // Internal은 번호 리셋 안 함 - External에서 이어서 번호 매김
       result.push('');
       result.push(trimmed);
       result.push('');
