@@ -5,7 +5,7 @@
 ### RAG 시스템
 - **Gemini File Search API** 사용
 - Store ID: `fileSearchStores/hairgator-theory-final-2025-kkb6n1ftfbf2`
-- **46개 문서**, 524MB (영구 저장됨)
+- **51개 문서**, 524MB (영구 저장됨)
 - 업로드된 자료:
   - 이론 PDF 38개
   - 펌 레시피 자막 4개
@@ -13,6 +13,9 @@
   - **헤어 용어 사전(hair_diagram_glossary.txt)**: 도해도 기호, 두상 포인트, 커트 테크닉, 펌/염색 용어
   - **기초학 개론(hair_basic_science.txt)**: 모발학, 케미컬, 두피학, 색채학, 소독학
   - **헤어케어 제품 가이드(hair_care_products_guide.txt)**: 트리트먼트/린스/컨디셔너 차이, 카티온 계면활성제 작용, FAQ (2025-12-19 추가)
+  - **펌 인덱스 텍스트(perm_index_ko.txt)**: 46개 펌 인덱스 이미지에서 Gemini Vision으로 추출 (2025-12-22 추가)
+    - 다이어그램/표/화살표 의미까지 해석한 상세 텍스트
+    - 복구펌, 연화법, 환원/산화 시스템, 로드/와인딩 기법 등 펌 이론 전반
 
 ### Firestore
 - 컬렉션: `theory_indexes` - 키워드 매칭 + 이미지 URL 저장 (커트 164개 + 펌 46개 = 210개)
@@ -188,6 +191,21 @@
 - `document.body.classList.contains('light-theme')`: 다크모드 체크
 
 ## 최근 작업 이력
+- 2025-12-22: 펌 인덱스 RAG 업로드 + 베타 기능 접근 제한
+
+  ### 펌 인덱스 텍스트 RAG 업로드
+  - **Gemini Vision으로 46개 펌 인덱스 이미지에서 의미 해석 텍스트 추출**
+  - 단순 OCR이 아닌 다이어그램/표/화살표의 의미까지 해석
+  - 추출 내용: 복구펌 레시피, 연화법(일반/역연화), 환원/산화 시스템, 로드/와인딩 기법 등
+  - 스크립트: `scripts/extract-perm-index-to-rag.py`
+  - RAG Store 문서 수: 46개 → 51개
+
+  ### 베타 기능 접근 제한 (4개 기능)
+  - **제한 기능**: 룩북, 헤어체험, 퍼스널 이미지 분석, 챗봇
+  - **허용 ID**: 691ceee09d868b5736d22007, 6536474789a3ad49553b46d7
+  - 비허용 사용자: 버튼 클릭 시 "아직 오픈 전입니다." 메시지 표시
+  - 구현 위치: main.js(ALLOWED_USER_IDS, isAllowedUser), menu.js, ai-studio.js
+
 - 2025-12-19: 다국어 버그 수정 + 기술 용어 노출 방지 + 모바일 UI 개선
 
   ### 고객 화면 기술 용어 노출 방지

@@ -3271,6 +3271,8 @@ function startNewChat() {
   const quickALength = typeof t === 'function' ? t('aiStudio.quickALength') : 'A Length란?';
   const quickLayerGrad = typeof t === 'function' ? t('aiStudio.quickLayerGrad') : 'Layer vs Graduation';
   const quickLifting = typeof t === 'function' ? t('aiStudio.quickLifting') : 'Lifting 설명';
+  const quickDamagedPerm = typeof t === 'function' ? t('aiStudio.quickDamagedPerm') : '극손상모 펌 레시피';
+  const quickHardenedHair = typeof t === 'function' ? t('aiStudio.quickHardenedHair') : '경화된 모발 펌 방법';
 
   messages.innerHTML = `
     <div class="message bot">
@@ -3282,6 +3284,8 @@ function startNewChat() {
           <button class="action-btn" onclick="quickAction('${quickALength.replace(/'/g, "\\'")}')">${quickALength}</button>
           <button class="action-btn" onclick="quickAction('${quickLayerGrad.replace(/'/g, "\\'")}')">${quickLayerGrad}</button>
           <button class="action-btn" onclick="quickAction('${quickLifting.replace(/'/g, "\\'")}')">${quickLifting}</button>
+          <button class="action-btn" onclick="quickAction('${quickDamagedPerm.replace(/'/g, "\\'")}')">${quickDamagedPerm}</button>
+          <button class="action-btn" onclick="quickAction('${quickHardenedHair.replace(/'/g, "\\'")}')">${quickHardenedHair}</button>
         </div>
       </div>
     </div>
