@@ -21,6 +21,7 @@
 - 컬렉션: `theory_indexes` - 키워드 매칭 + 이미지 URL 저장 (커트 164개 + 펌 46개 = 210개)
 - 컬렉션: `styles` - 레시피 도해도 이미지
 - 컬렉션: `recipe_samples` - 벡터 검색용 레시피
+- 컬렉션: `credit_logs` - 크레딧 사용 로그 (2025-12-22 추가)
 
 ### theory_indexes 구조 (헷갈리기 쉬움!)
 ```javascript
@@ -621,6 +622,24 @@
 - 불나비 DB의 _users.remainCount 필드에 크레딧 저장
 - Hairgator는 bullnabi-proxy.js를 통해 크레딧 조회/차감
 - 현재 크레딧 비용: 룩북 0.2, 헤어체험 0.2
+
+### 크레딧 사용 로그 (2025-12-22 추가)
+- Firestore `credit_logs` 컬렉션에 사용 기록 저장
+- 구조:
+  ```javascript
+  {
+    userId: "불나비_사용자_ID",
+    action: "lookbook" | "hair_try" | "chatbot",
+    creditsUsed: 200,
+    timestamp: Firestore.Timestamp,
+    createdAt: "2025-12-22T10:00:00.000Z",
+    metadata: {
+      previousCredits: 1000,
+      newCredits: 800
+    }
+  }
+  ```
+- 비동기 저장: 로그 실패해도 크레딧 차감은 성공 처리
 
 ### TODO
 - 불나비 앱에 헤어게이터 전용 상품 추가
