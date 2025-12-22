@@ -1238,6 +1238,12 @@ async function openStyleModal(style) {
         btnLookbook.onclick = async function (e) {
             e.stopPropagation();
 
+            // 허용된 사용자 체크 (베타 테스트)
+            if (typeof window.isAllowedUser === 'function' && !window.isAllowedUser()) {
+                window.showNotOpenYetMessage();
+                return;
+            }
+
             // 크레딧 체크
             if (!hasEnoughCredits()) {
                 const currentCredits = getUserCredits();
@@ -1372,6 +1378,12 @@ async function openStyleModal(style) {
 
         btnHairTry.onclick = async function (e) {
             e.stopPropagation();
+
+            // 허용된 사용자 체크 (베타 테스트)
+            if (typeof window.isAllowedUser === 'function' && !window.isAllowedUser()) {
+                window.showNotOpenYetMessage();
+                return;
+            }
 
             // 크레딧 체크
             if (!hasEnoughCredits()) {

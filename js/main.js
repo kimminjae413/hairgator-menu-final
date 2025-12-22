@@ -1,4 +1,52 @@
 // HAIRGATOR Main Application - 최종 버전 (goBack display:none 추가)
+
+// ========== 허용된 사용자 ID 관리 (베타 테스트용) ==========
+const ALLOWED_USER_IDS = [
+    '691ceee09d868b5736d22007',
+    '6536474789a3ad49553b46d7'
+];
+
+// 현재 사용자가 허용된 사용자인지 체크
+window.isAllowedUser = function() {
+    // URL에서 userId 확인
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlUserId = urlParams.get('userId');
+    if (urlUserId && ALLOWED_USER_IDS.includes(urlUserId)) {
+        return true;
+    }
+
+    // bullnabi 사용자 확인
+    try {
+        const bullnabiUser = JSON.parse(localStorage.getItem('bullnabi_user') || '{}');
+        if (bullnabiUser.userId && ALLOWED_USER_IDS.includes(bullnabiUser.userId)) {
+            return true;
+        }
+        // _id 필드도 확인 (MongoDB ObjectId)
+        if (bullnabiUser._id && ALLOWED_USER_IDS.includes(bullnabiUser._id)) {
+            return true;
+        }
+    } catch (e) {}
+
+    // userInfo 확인
+    try {
+        const userInfo = JSON.parse(localStorage.getItem('hairgator_user_info') || '{}');
+        if (userInfo.docId && ALLOWED_USER_IDS.includes(userInfo.docId)) {
+            return true;
+        }
+    } catch (e) {}
+
+    return false;
+};
+
+// 허용되지 않은 사용자에게 메시지 표시
+window.showNotOpenYetMessage = function() {
+    if (typeof showToast === 'function') {
+        showToast('아직 오픈 전입니다.', 'info');
+    } else {
+        alert('아직 오픈 전입니다.');
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🦎 HAIRGATOR 메인 앱 시작...');
 
@@ -197,6 +245,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (personalColorBtn) {
             personalColorBtn.addEventListener('click', function() {
                 console.log('🎨 퍼스널 이미지 분석 클릭');
+                // 허용된 사용자 체크
+                if (!window.isAllowedUser()) {
+                    window.showNotOpenYetMessage();
+                    return;
+                }
                 const gender = window.currentGender || 'female';
                 window.location.href = `/personal-color/?gender=${gender}`;
             });
