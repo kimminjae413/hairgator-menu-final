@@ -5573,7 +5573,7 @@
         let allCreditLogs = [];
 
         async function loadCreditLogs() {
-            const userName = document.getElementById('creditLogUserName').value.trim();
+            const userName = document.getElementById('creditLogUserName').value.trim().toLowerCase();
             const userId = document.getElementById('creditLogUserId').value.trim();
             const action = document.getElementById('creditLogAction').value;
             const period = document.getElementById('creditLogPeriod').value;
@@ -5582,22 +5582,18 @@
             tableBody.innerHTML = '<tr><td colspan="5" style="padding: 40px; text-align: center; color: #888;"><span class="loading-spinner"></span> 로딩 중...</td></tr>';
 
             try {
-                // Firestore에서 credit_logs 컬렉션 조회
-                let query = db.collection('credit_logs').orderBy('timestamp', 'desc');
+                // Firestore에서 최근 500개 로그 가져온 후 클라이언트에서 필터링 (복합 인덱스 불필요)
+                const snapshot = await db.collection('credit_logs')
+                    .orderBy('timestamp', 'desc')
+                    .limit(500)
+                    .get();
 
-                // 필터 적용
-                if (userId) {
-                    query = query.where('userId', '==', userId);
-                }
-                if (userName) {
-                    // Firestore는 부분 일치 검색이 안되므로, 전체 가져와서 클라이언트에서 필터링
-                    // 또는 userName 필드에 where 사용 (정확히 일치하는 경우)
-                    query = query.where('userName', '==', userName);
-                }
-                if (action) {
-                    query = query.where('action', '==', action);
-                }
+                let logs = [];
+                snapshot.forEach(doc => {
+                    logs.push({ id: doc.id, ...doc.data() });
+                });
 
+                // 클라이언트 필터링
                 // 기간 필터
                 const now = new Date();
                 let startDate = null;
@@ -5610,31 +5606,38 @@
                 }
 
                 if (startDate) {
-                    query = query.where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(startDate));
+                    logs = logs.filter(log => {
+                        const logTime = log.timestamp?.toDate?.() || new Date(log.createdAt);
+                        return logTime >= startDate;
+                    });
                 }
 
-                // 첫 50개 로드
-                query = query.limit(50);
+                // userId 필터
+                if (userId) {
+                    logs = logs.filter(log => log.userId === userId);
+                }
 
-                const snapshot = await query.get();
-                allCreditLogs = [];
+                // userName 필터 (부분 일치)
+                if (userName) {
+                    logs = logs.filter(log =>
+                        log.userName && log.userName.toLowerCase().includes(userName)
+                    );
+                }
 
-                snapshot.forEach(doc => {
-                    allCreditLogs.push({ id: doc.id, ...doc.data() });
-                });
+                // action 필터
+                if (action) {
+                    logs = logs.filter(log => log.action === action);
+                }
 
+                allCreditLogs = logs;
                 creditLogsLastDoc = snapshot.docs[snapshot.docs.length - 1];
 
                 // 통계 계산 및 표시
                 updateCreditLogsSummary(allCreditLogs);
                 renderCreditLogsTable(allCreditLogs);
 
-                // 페이지네이션 버튼
-                if (snapshot.docs.length >= 50) {
-                    document.getElementById('creditLogsPagination').style.display = 'block';
-                } else {
-                    document.getElementById('creditLogsPagination').style.display = 'none';
-                }
+                // 페이지네이션 숨김 (클라이언트 필터링이므로)
+                document.getElementById('creditLogsPagination').style.display = 'none';
 
                 showToast(`${allCreditLogs.length}개 로그 조회됨`);
 
