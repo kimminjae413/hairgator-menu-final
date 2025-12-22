@@ -7166,6 +7166,8 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     } else {
       // ⭐ External/Internal 형식으로 통일 (커트만)
       originalRecipe = normalizeRecipeFormat(originalRecipe);
+      // ⭐ 문장별 번호 강제 적용
+      originalRecipe = formatRecipeSentences(originalRecipe);
     }
 
     // ⭐⭐⭐ Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
@@ -8638,6 +8640,8 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
       .trim();
     // ⭐ External/Internal 형식으로 통일
     originalRecipe = normalizeRecipeFormat(originalRecipe);
+    // ⭐ 문장별 번호 강제 적용
+    originalRecipe = formatRecipeSentences(originalRecipe);
 
     // ⭐⭐⭐ Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
     const top1Params = extractRecipeParamsFromStyle(top1);
