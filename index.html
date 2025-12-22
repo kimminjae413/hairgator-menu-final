@@ -610,9 +610,9 @@
     </div>
 </div>
 
-          <!-- 결제하기 섹션 -->
+          <!-- 결제하기 섹션 (테스트 중 - 허용된 유저만 표시) -->
           <div class="sidebar-divider"></div>
-          <div class="sidebar-section sidebar-payment-section" id="paymentSection">
+          <div class="sidebar-section sidebar-payment-section" id="paymentSection" style="display: none;">
               <div class="sidebar-menu-item sidebar-payment-btn" onclick="openPricingModal()">
                   <span class="sidebar-icon">💎</span>
                   <div class="sidebar-text">
@@ -1449,7 +1449,28 @@
         }
 
         // ========== 요금제 모달 함수 ==========
+        // 결제 기능 테스트 허용 유저 ID (테스트 완료 후 제거 예정)
+        const PAYMENT_ALLOWED_USER_IDS = ['691ceee09d868b5736d22007'];
+
+        function isPaymentAllowed() {
+            const userId = HAIRGATOR_PAYMENT?.getUserId?.() || null;
+            return PAYMENT_ALLOWED_USER_IDS.includes(userId);
+        }
+
+        function updatePaymentSectionVisibility() {
+            const paymentSection = document.getElementById('paymentSection');
+            if (paymentSection) {
+                paymentSection.style.display = isPaymentAllowed() ? 'block' : 'none';
+            }
+        }
+
         function openPricingModal() {
+            // 허용된 유저만 모달 열기
+            if (!isPaymentAllowed()) {
+                console.log('💳 결제 기능은 현재 테스트 중입니다.');
+                return;
+            }
+
             // 사이드바 닫기
             const sidebar = document.getElementById('sidebar');
             if (sidebar) sidebar.classList.remove('active');
@@ -1813,6 +1834,8 @@
             // updateUserInfo를 약간 지연시켜 DOM이 완전히 로드된 후 실행
             setTimeout(() => {
                 updateUserInfo();
+                // 결제 섹션 표시 여부 업데이트 (허용된 유저만)
+                updatePaymentSectionVisibility();
             }, 100);
 
             // 입력 필드 변경시 상태 확인
