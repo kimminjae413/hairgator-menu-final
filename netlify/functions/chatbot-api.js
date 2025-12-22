@@ -6409,96 +6409,74 @@ function calculateFeatureScore(style, params56, captionText) {
 
 /**
  * 레시피 문장별 번호 강제 적용 후처리
- * - [External]과 [Internal] 섹션 내 문장을 마침표 기준으로 분리
- * - 각 문장에 1. 2. 3. 번호 부여
+ * - [External]과 [Internal] 섹션 내 문장에 번호 부여
+ * - 이미 줄바꿈된 문장도 처리
  */
 function formatRecipeSentences(text) {
   if (!text) return text;
 
-  // 기존 번호 제거 (1. 2. 3. 또는 1) 2) 3) 형태)
-  let cleaned = text.replace(/^\d+[\.\)]\s*/gm, '');
+  const lines = text.split('\n');
+  const result = [];
+  let currentSection = null;  // 'external' or 'internal'
+  let sectionNum = 0;
 
-  // 섹션 분리 (External, Internal)
-  const sections = [];
-  let currentSection = null;
-  let currentContent = [];
-
-  const lines = cleaned.split('\n');
-
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     const trimmed = line.trim();
+
+    // 기존 번호 제거
+    const cleanedLine = trimmed.replace(/^\d+[\.\)]\s*/, '');
 
     // 섹션 헤더 감지
     if (/\[External\]/i.test(trimmed) || /\[엑스터널/i.test(trimmed)) {
-      if (currentSection) {
-        sections.push({ type: currentSection, content: currentContent.join(' ') });
-      }
       currentSection = 'external';
-      currentContent = [];
-      sections.push({ type: 'header', text: trimmed });
+      sectionNum = 0;
+      result.push('');
+      result.push(trimmed);
+      result.push('');
       continue;
     }
 
     if (/\[Internal\]/i.test(trimmed) || /\[인터널/i.test(trimmed)) {
-      if (currentSection) {
-        sections.push({ type: currentSection, content: currentContent.join(' ') });
-      }
       currentSection = 'internal';
-      currentContent = [];
-      sections.push({ type: 'header', text: trimmed });
+      sectionNum = 0;
+      result.push('');
+      result.push(trimmed);
+      result.push('');
       continue;
     }
 
-    // 스타일 정보 헤더 (그대로 유지)
-    if (/^스타일\s*정보/i.test(trimmed) || /^-\s*(스타일명|기장|Cut Form|특징)/i.test(trimmed)) {
-      sections.push({ type: 'info', text: trimmed });
+    // 빈 줄
+    if (!trimmed) {
       continue;
     }
 
-    // 빈 줄이나 구분선
-    if (!trimmed || /^[-=]+$/.test(trimmed)) {
+    // 구분선
+    if (/^[-=]+$/.test(trimmed)) {
       continue;
     }
 
-    // 섹션 내 콘텐츠
-    if (currentSection) {
-      currentContent.push(trimmed);
+    // 스타일 정보, 헤더 등 (번호 안 붙임)
+    if (/^스타일\s*정보/i.test(cleanedLine) ||
+        /^-\s*(스타일명|기장|Cut Form|특징)/i.test(cleanedLine) ||
+        /존\s*\(/i.test(cleanedLine) ||  // B존 (뒷머리), C존 (앞머리) 등
+        /부분\s*\(/i.test(cleanedLine) ||  // 프린지 부분 (앞머리)
+        /^(첫 번째|두 번째|세 번째)/i.test(cleanedLine) ||  // 첫 번째 과정:
+        cleanedLine.length < 15) {  // 너무 짧은 줄
+      result.push(cleanedLine);
+      continue;
+    }
+
+    // 섹션 내 문장 (번호 붙임)
+    if (currentSection && cleanedLine.endsWith('.') && cleanedLine.length > 15) {
+      sectionNum++;
+      result.push(`${sectionNum}. ${cleanedLine}`);
+    } else if (currentSection && cleanedLine.endsWith('다') && cleanedLine.length > 15) {
+      sectionNum++;
+      result.push(`${sectionNum}. ${cleanedLine}.`);
     } else {
-      sections.push({ type: 'other', text: trimmed });
-    }
-  }
-
-  // 마지막 섹션 추가
-  if (currentSection && currentContent.length > 0) {
-    sections.push({ type: currentSection, content: currentContent.join(' ') });
-  }
-
-  // 결과 조립
-  const result = [];
-
-  for (const section of sections) {
-    if (section.type === 'header') {
-      result.push('');
-      result.push(section.text);
-      result.push('');
-    } else if (section.type === 'info' || section.type === 'other') {
-      result.push(section.text);
-    } else if (section.type === 'external' || section.type === 'internal') {
-      // 마침표로 문장 분리 (단, 숫자.숫자 패턴은 제외)
-      const sentences = section.content
-        .replace(/(\d)\.(\d)/g, '$1<DOT>$2')  // 숫자.숫자 보호
-        .split(/\.\s+/)
-        .map(s => s.replace(/<DOT>/g, '.').trim())
-        .filter(s => s.length > 10);  // 너무 짧은 문장 제외
-
-      let num = 1;
-      for (const sentence of sentences) {
-        // 이미 ~한다, ~진행한다 등으로 끝나면 마침표만 추가
-        const finalSentence = sentence.endsWith('다') ? sentence + '.' :
-                              sentence.endsWith('.') ? sentence : sentence + '.';
-        result.push(`${num}. ${finalSentence}`);
-        num++;
-      }
+      // 섹션 밖이거나 조건 안 맞으면 그대로
+      result.push(cleanedLine);
     }
   }
 
