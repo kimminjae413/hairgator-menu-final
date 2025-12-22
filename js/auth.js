@@ -73,7 +73,29 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loginWithBullnabi(userInfo) {
     try {
         console.log('불나비 자동 로그인 시작:', userInfo);
-        
+
+        // ⭐ 사용자 변경 감지: 이전 사용자와 다르면 프로필 이미지 초기화
+        const previousUser = localStorage.getItem('bullnabi_user');
+        if (previousUser) {
+            try {
+                const prevUserInfo = JSON.parse(previousUser);
+                const prevUserId = prevUserInfo.userId || prevUserInfo.id;
+                const currentUserId = userInfo.userId || userInfo.id;
+
+                if (prevUserId && currentUserId && prevUserId !== currentUserId) {
+                    console.log('👤 사용자 변경 감지:', prevUserId, '→', currentUserId);
+                    // 이전 사용자의 프로필 이미지 및 브랜드 설정 초기화
+                    localStorage.removeItem('hairgator_profile_image');
+                    localStorage.removeItem('hairgator_brand_name');
+                    localStorage.removeItem('hairgator_brand_font');
+                    localStorage.removeItem('hairgator_brand_color_light');
+                    localStorage.removeItem('hairgator_brand_color_dark');
+                }
+            } catch (e) {
+                console.warn('이전 사용자 정보 파싱 실패:', e);
+            }
+        }
+
         // 불나비 사용자 정보 저장
         localStorage.setItem('bullnabi_user', JSON.stringify(userInfo));
         localStorage.setItem('bullnabi_login_time', new Date().getTime());
