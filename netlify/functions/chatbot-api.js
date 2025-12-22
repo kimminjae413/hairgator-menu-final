@@ -6408,6 +6408,104 @@ function calculateFeatureScore(style, params56, captionText) {
 }
 
 /**
+ * 레시피 문장별 번호 강제 적용 후처리
+ * - [External]과 [Internal] 섹션 내 문장을 마침표 기준으로 분리
+ * - 각 문장에 1. 2. 3. 번호 부여
+ */
+function formatRecipeSentences(text) {
+  if (!text) return text;
+
+  // 기존 번호 제거 (1. 2. 3. 또는 1) 2) 3) 형태)
+  let cleaned = text.replace(/^\d+[\.\)]\s*/gm, '');
+
+  // 섹션 분리 (External, Internal)
+  const sections = [];
+  let currentSection = null;
+  let currentContent = [];
+
+  const lines = cleaned.split('\n');
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // 섹션 헤더 감지
+    if (/\[External\]/i.test(trimmed) || /\[엑스터널/i.test(trimmed)) {
+      if (currentSection) {
+        sections.push({ type: currentSection, content: currentContent.join(' ') });
+      }
+      currentSection = 'external';
+      currentContent = [];
+      sections.push({ type: 'header', text: trimmed });
+      continue;
+    }
+
+    if (/\[Internal\]/i.test(trimmed) || /\[인터널/i.test(trimmed)) {
+      if (currentSection) {
+        sections.push({ type: currentSection, content: currentContent.join(' ') });
+      }
+      currentSection = 'internal';
+      currentContent = [];
+      sections.push({ type: 'header', text: trimmed });
+      continue;
+    }
+
+    // 스타일 정보 헤더 (그대로 유지)
+    if (/^스타일\s*정보/i.test(trimmed) || /^-\s*(스타일명|기장|Cut Form|특징)/i.test(trimmed)) {
+      sections.push({ type: 'info', text: trimmed });
+      continue;
+    }
+
+    // 빈 줄이나 구분선
+    if (!trimmed || /^[-=]+$/.test(trimmed)) {
+      continue;
+    }
+
+    // 섹션 내 콘텐츠
+    if (currentSection) {
+      currentContent.push(trimmed);
+    } else {
+      sections.push({ type: 'other', text: trimmed });
+    }
+  }
+
+  // 마지막 섹션 추가
+  if (currentSection && currentContent.length > 0) {
+    sections.push({ type: currentSection, content: currentContent.join(' ') });
+  }
+
+  // 결과 조립
+  const result = [];
+
+  for (const section of sections) {
+    if (section.type === 'header') {
+      result.push('');
+      result.push(section.text);
+      result.push('');
+    } else if (section.type === 'info' || section.type === 'other') {
+      result.push(section.text);
+    } else if (section.type === 'external' || section.type === 'internal') {
+      // 마침표로 문장 분리 (단, 숫자.숫자 패턴은 제외)
+      const sentences = section.content
+        .replace(/(\d)\.(\d)/g, '$1<DOT>$2')  // 숫자.숫자 보호
+        .split(/\.\s+/)
+        .map(s => s.replace(/<DOT>/g, '.').trim())
+        .filter(s => s.length > 10);  // 너무 짧은 문장 제외
+
+      let num = 1;
+      for (const sentence of sentences) {
+        // 이미 ~한다, ~진행한다 등으로 끝나면 마침표만 추가
+        const finalSentence = sentence.endsWith('다') ? sentence + '.' :
+                              sentence.endsWith('.') ? sentence : sentence + '.';
+        result.push(`${num}. ${finalSentence}`);
+        num++;
+      }
+    }
+  }
+
+  return result.join('\n');
+}
+
+/**
  * Gemini로 맞춤 레시피 생성 - 스타일 분석 기반 + abcde 북 참조
  */
 async function generateCustomRecipe(params56, top3Styles, geminiKey) {
@@ -6716,6 +6814,9 @@ ${recipeTexts}
       console.error('❌ 레시피 텍스트 없음, 응답 구조:', JSON.stringify(data).substring(0, 500));
       throw new Error('레시피 텍스트를 찾을 수 없습니다');
     }
+
+    // ⭐ 후처리: 문장별 번호 강제 적용
+    recipeText = formatRecipeSentences(recipeText);
 
     console.log('✅ abcde 북 참조 레시피 생성 완료');
     console.log(`📝 레시피 길이: ${recipeText.length}자`);
