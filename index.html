@@ -1470,23 +1470,7 @@
             }
         }
 
-        function selectPlan(planType) {
-            const plans = {
-                basic: { name: '베이직', price: 22000, credits: 10000 },
-                pro: { name: '프로', price: 38000, credits: 18000 },
-                business: { name: '비즈니스', price: 50000, credits: 25000 }
-            };
-
-            const plan = plans[planType];
-            if (!plan) return;
-
-            console.log(`📦 요금제 선택: ${plan.name} (₩${plan.price.toLocaleString()})`);
-
-            // TODO: 불나비 앱 결제 연동
-            // 현재는 안내 메시지만 표시
-            showToast(`${plan.name} 플랜 선택됨. 결제 기능은 곧 제공됩니다.`);
-            closePricingModal();
-        }
+        // selectPlan 함수는 payment.js에서 정의됨 (포트원 V2 결제 연동)
 
         // 모달 외부 클릭 시 닫기
         document.addEventListener('click', function(e) {
