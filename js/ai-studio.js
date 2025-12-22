@@ -4048,6 +4048,22 @@ ${data.customRecipe ? `\n생성된 레시피:\n${data.customRecipe}` : ''}`;
       // 캔버스에 맞춤 레시피 표시 (영구 URL 사용)
       window.aiStudio.showCustomRecipeCanvas(data, permanentImageUrl);
 
+      // ⭐ 레시피 생성 크레딧 차감 (Vision 분석 포함 = 30크레딧)
+      if (window.BullnabiBridge && typeof window.BullnabiBridge.deductTokensDynamic === 'function') {
+        try {
+          const result = await window.BullnabiBridge.deductTokensDynamic(null, 30, 'recipe', {
+            gender: data.gender,
+            series: data.targetSeries?.code,
+            service: selectedService || 'cut'
+          });
+          if (result.success) {
+            console.log(`💳 레시피 생성 크레딧 차감: 30, 잔액: ${result.newBalance}`);
+          }
+        } catch (e) {
+          console.warn('⚠️ 레시피 크레딧 차감 실패:', e);
+        }
+      }
+
     } else {
       window.aiStudio.addMessageToUI('bot', result.error || '레시피 생성에 실패했습니다. 다시 시도해주세요.');
     }
