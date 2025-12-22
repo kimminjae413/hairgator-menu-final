@@ -70,7 +70,7 @@ const HAIRGATOR_PAYMENT = {
         totalAmount: plan.price,
         currency: 'KRW',
         payMethod: 'CARD',
-        windowType: 'POPUP',  // iframe 대신 팝업으로 열기
+        windowType: { pc: 'POPUP', mobile: 'REDIRECTION' },  // PC는 팝업, 모바일은 리다이렉션
         customer: {
           customerId: userId,
           email: userEmail || undefined,
