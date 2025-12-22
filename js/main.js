@@ -1353,12 +1353,12 @@ async function loadBrandFromFirebase() {
             const data = doc.data();
             console.log('🏷️ Firebase에서 브랜드 로드 성공:', data.brandName);
 
-            // localStorage에도 동기화
+            // localStorage에도 동기화 (브랜드 설정만, 프로필 이미지는 Firebase 직접 조회)
             if (data.brandName !== undefined) localStorage.setItem('hairgator_brand_name', data.brandName);
             if (data.brandFont) localStorage.setItem('hairgator_brand_font', data.brandFont);
             if (data.brandColorLight) localStorage.setItem('hairgator_brand_color_light', data.brandColorLight);
             if (data.brandColorDark) localStorage.setItem('hairgator_brand_color_dark', data.brandColorDark);
-            if (data.profileImage !== undefined) localStorage.setItem('hairgator_profile_image', data.profileImage);
+            // 프로필 이미지는 localStorage에 저장하지 않음 (Firebase에서 직접 조회)
 
             return data;
         }
@@ -1673,11 +1673,24 @@ window.applyCustomBrand = applyCustomBrand;
 
 // ========== 프로필 이미지 기능 ==========
 
-function showProfileImageModal() {
+async function showProfileImageModal() {
     const existingModal = document.getElementById('profile-image-modal');
     if (existingModal) existingModal.remove();
 
-    const savedImage = localStorage.getItem('hairgator_profile_image');
+    // Firebase에서 현재 사용자의 프로필 이미지 로드
+    let savedImage = null;
+    try {
+        const userInfo = getUserInfo();
+        if (window.db && userInfo) {
+            const docId = `${userInfo.name}_${userInfo.phone}`;
+            const doc = await window.db.collection('brandSettings').doc(docId).get();
+            if (doc.exists && doc.data().profileImage) {
+                savedImage = doc.data().profileImage;
+            }
+        }
+    } catch (e) {
+        console.warn('프로필 이미지 로드 실패:', e);
+    }
 
     const modal = document.createElement('div');
     modal.id = 'profile-image-modal';
@@ -1782,9 +1795,8 @@ function showProfileImageModal() {
     const removeBtn = document.getElementById('removeProfileBtn');
     if (removeBtn) {
         removeBtn.onclick = async () => {
-            localStorage.removeItem('hairgator_profile_image');
-            await saveProfileImageToFirebase(''); // Firebase에서도 삭제
-            applyProfileImage();
+            await saveProfileImageToFirebase(''); // Firebase에서 삭제
+            await applyProfileImage();
             modal.remove();
             if (window.showToast) window.showToast(t('ui.profileDeleted'));
         };
@@ -1816,9 +1828,8 @@ function showProfileImageModal() {
                     ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
                     const resizedImage = canvas.toDataURL('image/jpeg', 0.92); // 화질 향상
 
-                    localStorage.setItem('hairgator_profile_image', resizedImage);
-                    await saveProfileImageToFirebase(resizedImage); // Firebase에도 저장
-                    applyProfileImage();
+                    await saveProfileImageToFirebase(resizedImage); // Firebase에 저장
+                    await applyProfileImage();
                     modal.remove();
                     if (window.showToast) window.showToast(t('ui.profileSaved'));
                 };
@@ -1850,18 +1861,29 @@ async function saveProfileImageToFirebase(imageData) {
     }
 }
 
-// 프로필 이미지 적용
-function applyProfileImage() {
-    const savedImage = localStorage.getItem('hairgator_profile_image');
+// 프로필 이미지 적용 (Firebase 우선, localStorage 캐시 사용 안 함)
+async function applyProfileImage() {
     const profileImage = document.getElementById('profileImage');
-    const profileInitial = document.getElementById('profileInitial');
+    if (!profileImage) return;
 
-    if (profileImage) {
-        if (savedImage) {
-            profileImage.innerHTML = `<img src="${savedImage}" style="width: 100%; height: 100%; object-fit: cover;">`;
-        } else {
-            profileImage.innerHTML = `<span id="profileInitial">👤</span>`;
+    // 기본값: 👤 아이콘
+    profileImage.innerHTML = `<span id="profileInitial">👤</span>`;
+
+    try {
+        // Firebase에서 현재 사용자의 프로필 이미지 로드
+        const userInfo = getUserInfo();
+        if (!window.db || !userInfo) return;
+
+        const docId = `${userInfo.name}_${userInfo.phone}`;
+        const doc = await window.db.collection('brandSettings').doc(docId).get();
+
+        if (doc.exists && doc.data().profileImage) {
+            const imageUrl = doc.data().profileImage;
+            profileImage.innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
+            console.log('👤 Firebase에서 프로필 이미지 로드:', docId);
         }
+    } catch (e) {
+        console.warn('프로필 이미지 로드 실패:', e);
     }
 }
 
