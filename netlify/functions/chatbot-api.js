@@ -405,17 +405,14 @@ exports.handler = async (event, context) => {
   try {
     const { action, payload } = JSON.parse(event.body);
 
-    const OPENAI_KEY = process.env.OPENAI_API_KEY;
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
-
-    if (!OPENAI_KEY) throw new Error('OpenAI API key not configured');
     if (!GEMINI_KEY) throw new Error('AI 서비스 설정 오류');
 
     console.log('🔑 환경변수 확인 완료 (Firebase 기반)');
 
     switch (action) {
       case 'analyze_image':
-        return await analyzeImage(payload, OPENAI_KEY);
+        return await analyzeImage(payload, GEMINI_KEY);
 
       // ⭐ 이미지+질문 분석 (Gemini Vision)
       case 'analyze_image_with_question':
@@ -528,7 +525,9 @@ exports.handler = async (event, context) => {
   }
 };
 
-// ==================== 전문 답변 생성 (일반대화 통합) ⭐⭐⭐ NEW ⭐⭐⭐ ====================
+// ==================== [DEPRECATED] 전문 답변 생성 - 사용 안 함 ====================
+// ⚠️ 이 함수는 더 이상 호출되지 않습니다. 모든 Q&A는 generateGeminiFileSearchResponse()로 처리됩니다.
+// GPT/OpenAI 레거시 코드 - 삭제 예정 (2025-12-22 표시)
 async function generateProfessionalResponse(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
   const { user_query, search_results } = payload;
   const userLanguage = detectLanguage(user_query);
@@ -1155,15 +1154,14 @@ async function analyzeImageWithQuestion(payload, geminiKey) {
 }
 
 // ==================== 이미지 분석 (Gemini 2.0 Flash Vision) ====================
-async function analyzeImage(payload, openaiKey) {
+async function analyzeImage(payload, geminiKey) {
   const { image_base64, mime_type, user_gender } = payload;
 
-  // Gemini API 키 가져오기
-  const GEMINI_KEY = process.env.GEMINI_API_KEY;
-  if (!GEMINI_KEY) {
+  if (!geminiKey) {
     console.error('❌ GEMINI_API_KEY not configured');
     throw new Error('AI 서비스 설정 오류');
   }
+  const GEMINI_KEY = geminiKey;
 
   console.log(`🎯 이미지 분석 시작 (Gemini 2.0 Flash) - 사용자 선택 성별: ${user_gender || 'unspecified'}`);
 
@@ -2202,7 +2200,9 @@ async function fallbackKeywordSearch(query, supabaseUrl, supabaseKey, matchCount
   }
 }
 
-// ==================== 레시피 생성 ====================
+// ==================== [DEPRECATED] 레시피 생성 - 사용 안 함 ====================
+// ⚠️ 이 함수는 더 이상 호출되지 않습니다. 레시피는 generateCustomRecipe()로 처리됩니다.
+// GPT/OpenAI 레거시 코드 - 삭제 예정 (2025-12-22 표시)
 async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
   const { params56, language = 'ko' } = payload;
 
@@ -2376,7 +2376,9 @@ async function searchStyles(payload, geminiKey, supabaseUrl, supabaseKey) {
   };
 }
 
-// ==================== 스트리밍 응답 생성 (확장 검색 + 시스템 지식 주입) ====================
+// ==================== [DEPRECATED] 스트리밍 응답 생성 - 사용 안 함 ====================
+// ⚠️ 이 함수는 더 이상 호출되지 않습니다. 스트리밍은 generateGeminiFileSearchResponseStream()으로 처리됩니다.
+// GPT/OpenAI 레거시 코드 - 삭제 예정 (2025-12-22 표시)
 async function generateProfessionalResponseStream(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
   const { user_query } = payload;
   console.log('🔄 스트리밍 응답 시작:', user_query);
@@ -10400,34 +10402,34 @@ ${diagramsContext}
 
 💡 설명을 포함하여 충분히 상세하게 작성하세요.`;
 
-  const openaiKey = process.env.OPENAI_API_KEY;
-  if (!openaiKey) {
-    throw new Error('OpenAI API key not configured');
-  }
-
-  const completion = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openaiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ],
-      temperature: 0.5,
-      max_tokens: 3000
-    })
-  });
+  // Gemini API로 레시피 생성 (OpenAI에서 변환됨 - 2025-12-22)
+  const completion = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          role: 'user',
+          parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
+        }],
+        generationConfig: {
+          temperature: 0.5,
+          maxOutputTokens: 3000,
+          topP: 0.8,
+          thinkingConfig: { thinkingBudget: 0 }
+        }
+      })
+    }
+  );
 
   if (!completion.ok) {
-    throw new Error(`OpenAI API Error: ${completion.status}`);
+    throw new Error(`AI 레시피 생성 오류: ${completion.status}`);
   }
 
   const data = await completion.json();
-  return data.choices[0].message.content;
+  const parts = data.candidates?.[0]?.content?.parts || [];
+  return parts.map(p => p.text || '').join('');
 }
 
 // 남자 도해도 선별

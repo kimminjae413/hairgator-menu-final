@@ -1,4 +1,6 @@
 // lib/female-recipe.js
+// ⚠️ [DEPRECATED] 이 파일은 더 이상 사용되지 않습니다 (2025-12-22)
+// 실제 여자 레시피 생성은 chatbot-api.js의 analyzeAndMatchRecipe(), generateCustomRecipe() 함수 사용
 // 여자 커트 레시피 생성 모듈 (기장별 분류: A~H Length)
 
 const { searchFirestoreStyles, selectBestDiagrams, queryFileSearchForTheory } = require('./embedding');

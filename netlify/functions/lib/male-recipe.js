@@ -1,4 +1,6 @@
 // lib/male-recipe.js
+// ⚠️ [DEPRECATED] 이 파일은 더 이상 사용되지 않습니다 (2025-12-22)
+// 실제 남자 레시피 생성은 chatbot-api.js의 analyzeAndMatchMaleRecipe(), generateMaleCustomRecipe() 함수 사용
 // 남자 커트 레시피 생성 모듈 (스타일별 분류: SF, SP, FU, PB, BZ, CP, MC)
 
 const { searchFirestoreStyles, selectBestDiagrams, getMenStyles, queryFileSearchForTheory } = require('./embedding');
