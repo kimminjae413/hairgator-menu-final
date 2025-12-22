@@ -2115,6 +2115,59 @@
 
     <!-- 사용량 추적 탭 -->
     <div id="creditLogsTab" class="tab-content" style="display: none;">
+
+        <!-- 토큰 관리 섹션 -->
+        <div class="section" style="margin-bottom: 30px;">
+            <h2 class="section-title">🪙 토큰 관리</h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- 토큰 조회 -->
+                <div style="background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 16px; color: #4facfe;">🔍 토큰 잔액 조회</h3>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <input type="text" id="tokenQueryUserId" placeholder="사용자 ID 입력"
+                               style="flex: 1; padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
+                        <button class="btn" onclick="queryTokenBalance()" style="white-space: nowrap;">조회</button>
+                    </div>
+                    <div id="tokenQueryResult" style="padding: 15px; background: #2a2a2a; border-radius: 8px; display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #888;">현재 잔액</span>
+                            <span id="tokenQueryBalance" style="font-size: 24px; font-weight: bold; color: #4facfe;">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 토큰 충전 -->
+                <div style="background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 16px; color: #43e97b;">➕ 토큰 수동 충전</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <input type="text" id="tokenChargeUserId" placeholder="사용자 ID"
+                               style="padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="tokenChargeAmount" placeholder="충전할 토큰 수" min="1"
+                                   style="flex: 1; padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
+                            <button class="btn" onclick="chargeTokens()" style="background: linear-gradient(135deg, #43e97b, #38f9d7); white-space: nowrap;">충전</button>
+                        </div>
+                        <input type="text" id="tokenChargeNote" placeholder="메모 (선택사항)"
+                               style="padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
+                    </div>
+                    <div id="tokenChargeResult" style="margin-top: 15px; padding: 15px; background: #2a2a2a; border-radius: 8px; display: none;">
+                        <!-- 충전 결과 표시 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 빠른 충전 버튼들 -->
+            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <span style="color: #888; line-height: 36px;">빠른 충전:</span>
+                <button class="btn btn-secondary" onclick="quickCharge(1000)" style="padding: 8px 16px;">+1,000</button>
+                <button class="btn btn-secondary" onclick="quickCharge(5000)" style="padding: 8px 16px;">+5,000</button>
+                <button class="btn btn-secondary" onclick="quickCharge(10000)" style="padding: 8px 16px;">+10,000</button>
+                <button class="btn btn-secondary" onclick="quickCharge(50000)" style="padding: 8px 16px;">+50,000</button>
+                <button class="btn btn-secondary" onclick="quickCharge(100000)" style="padding: 8px 16px;">+100,000</button>
+            </div>
+        </div>
+
         <div class="section">
             <h2 class="section-title">💳 토큰 사용량 추적</h2>
 
@@ -5566,6 +5619,133 @@
         async function saveToHairstyles(imageUrl) {
             showToast('스타일 등록 기능은 준비 중입니다');
             // TODO: 스타일 등록 모달 열기 또는 자동 등록
+        }
+
+        // ==================== 토큰 관리 (조회/충전) ====================
+
+        // 토큰 잔액 조회
+        async function queryTokenBalance() {
+            const userId = document.getElementById('tokenQueryUserId').value.trim();
+            if (!userId) {
+                showToast('사용자 ID를 입력해주세요');
+                return;
+            }
+
+            const resultDiv = document.getElementById('tokenQueryResult');
+            const balanceSpan = document.getElementById('tokenQueryBalance');
+
+            resultDiv.style.display = 'block';
+            balanceSpan.innerHTML = '<span class="loading-spinner" style="width: 20px; height: 20px;"></span>';
+
+            try {
+                // Firebase Firestore에서 직접 조회
+                const doc = await db.collection('user_tokens').doc(userId).get();
+
+                if (doc.exists) {
+                    const data = doc.data();
+                    const balance = data.tokenBalance || 0;
+                    balanceSpan.textContent = balance.toLocaleString() + ' 토큰';
+                    balanceSpan.style.color = balance > 0 ? '#43e97b' : '#f5576c';
+                } else {
+                    balanceSpan.textContent = '0 토큰 (신규 사용자)';
+                    balanceSpan.style.color = '#888';
+                }
+            } catch (error) {
+                console.error('토큰 조회 오류:', error);
+                balanceSpan.textContent = '조회 실패';
+                balanceSpan.style.color = '#f5576c';
+                showToast('토큰 조회 실패: ' + error.message);
+            }
+        }
+
+        // 토큰 충전
+        async function chargeTokens() {
+            const userId = document.getElementById('tokenChargeUserId').value.trim();
+            const amount = parseInt(document.getElementById('tokenChargeAmount').value);
+            const note = document.getElementById('tokenChargeNote').value.trim();
+
+            if (!userId) {
+                showToast('사용자 ID를 입력해주세요');
+                return;
+            }
+            if (!amount || amount <= 0) {
+                showToast('유효한 토큰 수를 입력해주세요');
+                return;
+            }
+
+            const resultDiv = document.getElementById('tokenChargeResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<span class="loading-spinner" style="width: 20px; height: 20px;"></span> 충전 중...';
+            resultDiv.style.color = '#888';
+
+            try {
+                // Firebase Firestore에서 직접 충전
+                const docRef = db.collection('user_tokens').doc(userId);
+                const doc = await docRef.get();
+
+                let currentBalance = 0;
+                if (doc.exists) {
+                    currentBalance = doc.data().tokenBalance || 0;
+                }
+
+                const newBalance = currentBalance + amount;
+
+                // 토큰 업데이트
+                await docRef.set({
+                    tokenBalance: newBalance,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                // 충전 로그 저장
+                await db.collection('token_logs').add({
+                    userId: userId,
+                    action: 'charge',
+                    tokensAdded: amount,
+                    previousBalance: currentBalance,
+                    newBalance: newBalance,
+                    reason: 'admin_manual',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    metadata: { note: note || '관리자 수동 충전' }
+                });
+
+                resultDiv.innerHTML = `
+                    <div style="color: #43e97b;">✅ 충전 완료!</div>
+                    <div style="margin-top: 10px; font-size: 14px;">
+                        <div>이전 잔액: <strong>${currentBalance.toLocaleString()}</strong></div>
+                        <div>충전 토큰: <strong style="color: #43e97b;">+${amount.toLocaleString()}</strong></div>
+                        <div>새 잔액: <strong style="color: #4facfe;">${newBalance.toLocaleString()}</strong></div>
+                    </div>
+                `;
+
+                showToast(`${amount.toLocaleString()} 토큰 충전 완료!`);
+
+                // 입력 필드 초기화
+                document.getElementById('tokenChargeAmount').value = '';
+                document.getElementById('tokenChargeNote').value = '';
+
+            } catch (error) {
+                console.error('토큰 충전 오류:', error);
+                resultDiv.innerHTML = `<span style="color: #f5576c;">❌ 충전 실패: ${error.message}</span>`;
+                showToast('토큰 충전 실패: ' + error.message);
+            }
+        }
+
+        // 빠른 충전 (사용자 ID가 입력된 상태에서)
+        function quickCharge(amount) {
+            const userIdInput = document.getElementById('tokenChargeUserId');
+            if (!userIdInput.value.trim()) {
+                // 조회 필드에서 ID 가져오기
+                const queryUserId = document.getElementById('tokenQueryUserId').value.trim();
+                if (queryUserId) {
+                    userIdInput.value = queryUserId;
+                } else {
+                    showToast('먼저 사용자 ID를 입력해주세요');
+                    userIdInput.focus();
+                    return;
+                }
+            }
+            document.getElementById('tokenChargeAmount').value = amount;
+            chargeTokens();
         }
 
         // ==================== 토큰 사용량 추적 ====================
