@@ -730,6 +730,20 @@ class AIStudio {
         });
       }
 
+      // ⭐ 챗봇 토큰 차감 (10토큰)
+      if (window.BullnabiBridge && typeof window.BullnabiBridge.deductTokens === 'function') {
+        try {
+          const result = await window.BullnabiBridge.deductTokens(null, 'chatbot', { query: text.substring(0, 100) });
+          if (result.success) {
+            console.log('💳 챗봇 토큰 차감 완료:', result.newBalance);
+          } else if (result.code === 'INSUFFICIENT_TOKENS') {
+            console.warn('⚠️ 토큰 부족 - 다음 질문부터 차감 제한');
+          }
+        } catch (tokenError) {
+          console.warn('⚠️ 토큰 차감 실패:', tokenError);
+        }
+      }
+
     } catch (error) {
       // 에러 시 스트리밍 메시지에 에러 표시
       if (contentEl) {
