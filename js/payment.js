@@ -135,13 +135,49 @@ const HAIRGATOR_PAYMENT = {
   },
 
   /**
+   * 현재 로그인한 사용자 ID 가져오기
+   */
+  getUserId() {
+    // 1. URL 파라미터에서 가져오기
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlUserId = urlParams.get('userId');
+    if (urlUserId) return urlUserId;
+
+    // 2. localStorage의 bullnabi_user에서 가져오기
+    try {
+      const bullnabiUser = localStorage.getItem('bullnabi_user');
+      if (bullnabiUser) {
+        const parsed = JSON.parse(bullnabiUser);
+        if (parsed.id) return parsed.id;
+      }
+    } catch (e) {}
+
+    // 3. window.currentDesigner에서 가져오기
+    if (window.currentDesigner?.id) return window.currentDesigner.id;
+
+    return null;
+  },
+
+  /**
    * 결제 모달에서 플랜 선택 시 호출
    */
   async purchasePlan(planKey) {
     // 현재 로그인한 사용자 정보 가져오기
-    const userId = localStorage.getItem('bullnabi_user_id');
-    const userEmail = localStorage.getItem('bullnabi_user_email') || '';
-    const userName = localStorage.getItem('bullnabi_user_name') || '';
+    const userId = this.getUserId();
+
+    // 사용자 이름/이메일 가져오기
+    let userEmail = '';
+    let userName = '';
+    try {
+      const bullnabiUser = localStorage.getItem('bullnabi_user');
+      if (bullnabiUser) {
+        const parsed = JSON.parse(bullnabiUser);
+        userEmail = parsed.email || '';
+        userName = parsed.nickname || parsed.name || '';
+      }
+    } catch (e) {}
+
+    console.log('💳 결제 시도 - userId:', userId);
 
     if (!userId) {
       alert(t('payment.loginRequired') || '로그인이 필요합니다.');
