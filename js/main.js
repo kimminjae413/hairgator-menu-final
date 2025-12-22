@@ -339,8 +339,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 loginInfoTimeout = null;
             }
             if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${bullnabiUser.name}`;
-            const credit = parseFloat(bullnabiUser.remainCount) || 0;
-            if (creditDisplay) creditDisplay.textContent = credit.toFixed(2);
+            // 헤어게이터 토큰 표시 (tokenBalance 우선, 없으면 remainCount 폴백)
+            const tokenBalance = bullnabiUser.tokenBalance ?? window.currentDesigner?.tokenBalance;
+            if (tokenBalance !== undefined && tokenBalance !== null) {
+                if (creditDisplay) creditDisplay.textContent = tokenBalance.toLocaleString();
+            } else {
+                const credit = parseFloat(bullnabiUser.remainCount) || 0;
+                if (creditDisplay) creditDisplay.textContent = credit.toFixed(2);
+            }
         } else {
             const designerName = localStorage.getItem('designerName');
             if (designerName) {

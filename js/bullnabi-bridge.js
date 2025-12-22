@@ -617,6 +617,12 @@
                 sessionStatus.textContent = `토큰: ${newBalance.toLocaleString()}`;
             }
 
+            // creditDisplay 요소 업데이트 (main.js 사이드바)
+            const creditDisplay = document.getElementById('creditDisplay');
+            if (creditDisplay) {
+                creditDisplay.textContent = newBalance.toLocaleString();
+            }
+
             // currentDesigner 업데이트 (있는 경우)
             if (window.currentDesigner) {
                 window.currentDesigner.tokenBalance = newBalance;
