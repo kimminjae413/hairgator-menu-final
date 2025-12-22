@@ -912,6 +912,43 @@ const HAIRGATOR_I18N = {
       content1: '헤어게이터에서 제공하는 이미지, 그래픽, 텍스트, 영상 등의 모든 콘텐츠의 소유권에 대한 저작권(프로그램등록 포함), 특허권, 상표권은 <strong>(주)에이아이더블유</strong>에서 소유하고 있으며 관련 법의 보호를 받습니다.',
       content2: '헤어게이터 콘텐츠를 사전허가 없이 유사한 서비스를 제공하는 어플리케이션 또는 온라인에 무단으로 도용하여 복사, 배포, 판매, 전시, 변조하여 사용하는 경우 <strong>민형사상의 책임</strong>이 따를 수 있으므로 이점 양지하시기 바랍니다.',
       agreeBtn: '확인 및 동의'
+    },
+
+    // ========== 결제/요금제 ==========
+    payment: {
+      upgrade: '프리미엄 업그레이드',
+      unlockAll: '모든 기능 잠금 해제',
+      choosePlan: '요금제 선택',
+      unlockPremium: '프리미엄 기능을 잠금 해제하세요',
+      currentPlan: '현재',
+      freePlan: '무료',
+      basicPlan: '베이직',
+      proPlan: '프로',
+      businessPlan: '비즈니스',
+      perMonth: '/월',
+      credits: '크레딧',
+      recommended: '추천',
+      savePercent: '크레딧 4% 추가',
+      savePercentBiz: '크레딧 11% 추가',
+      selectPlan: '선택하기',
+      currentPlanBtn: '현재 플랜',
+      note: '* 크레딧은 매월 초기화되며, 미사용 크레딧은 이월되지 않습니다.',
+      feature: {
+        styleMenu: '스타일 메뉴판',
+        personalColor: '퍼스널컬러 분석',
+        drapeMode: '드레이프 모드',
+        chatbotLimited: '챗봇 (제한적)',
+        chatbotFull: '챗봇 무제한',
+        lookbook: '룩북',
+        hairTry: '헤어체험',
+        allFree: '무료 플랜 모든 기능',
+        allBasic: '베이직 플랜 모든 기능',
+        allPro: '프로 플랜 모든 기능',
+        moreCredits: '더 많은 크레딧',
+        maxCredits: '최대 크레딧',
+        prioritySupport: '우선 지원',
+        teamUse: '팀 사용 가능'
+      }
     }
   },
 
@@ -1791,6 +1828,43 @@ const HAIRGATOR_I18N = {
       content1: 'All content provided by HAIRGATOR, including images, graphics, text, and videos, is owned by <strong>AIW Inc.</strong> and protected by copyright (including software registration), patent, and trademark laws.',
       content2: 'Unauthorized copying, distribution, sale, display, or modification of HAIRGATOR content for similar services without prior permission may result in <strong>civil and criminal liability</strong>.',
       agreeBtn: 'Agree and Continue'
+    },
+
+    // ========== Payment/Plans ==========
+    payment: {
+      upgrade: 'Upgrade to Premium',
+      unlockAll: 'Unlock all features',
+      choosePlan: 'Choose Your Plan',
+      unlockPremium: 'Unlock premium features',
+      currentPlan: 'Current',
+      freePlan: 'Free',
+      basicPlan: 'Basic',
+      proPlan: 'Pro',
+      businessPlan: 'Business',
+      perMonth: '/mo',
+      credits: 'credits',
+      recommended: 'Best Value',
+      savePercent: '+4% bonus credits',
+      savePercentBiz: '+11% bonus credits',
+      selectPlan: 'Select Plan',
+      currentPlanBtn: 'Current Plan',
+      note: '* Credits reset monthly. Unused credits do not roll over.',
+      feature: {
+        styleMenu: 'Style Menu',
+        personalColor: 'Personal Color Analysis',
+        drapeMode: 'Drape Mode',
+        chatbotLimited: 'Chatbot (Limited)',
+        chatbotFull: 'Unlimited Chatbot',
+        lookbook: 'Lookbook',
+        hairTry: 'Hair Try-On',
+        allFree: 'All Free features',
+        allBasic: 'All Basic features',
+        allPro: 'All Pro features',
+        moreCredits: 'More credits',
+        maxCredits: 'Maximum credits',
+        prioritySupport: 'Priority support',
+        teamUse: 'Team access'
+      }
     }
   },
 
@@ -2666,6 +2740,43 @@ const HAIRGATOR_I18N = {
       content1: 'HAIRGATORが提供する画像、グラフィック、テキスト、動画などのすべてのコンテンツの著作権（プログラム登録を含む）、特許権、商標権は<strong>AIW株式会社</strong>が所有し、関連法により保護されています。',
       content2: 'HAIRGATORのコンテンツを事前許可なく、類似サービスへの無断転載、コピー、配布、販売、展示、改変などを行った場合、<strong>民事・刑事上の責任</strong>が生じる可能性がありますのでご注意ください。',
       agreeBtn: '同意して続ける'
+    },
+
+    // ========== 料金プラン ==========
+    payment: {
+      upgrade: 'プレミアムにアップグレード',
+      unlockAll: 'すべての機能をアンロック',
+      choosePlan: 'プランを選択',
+      unlockPremium: 'プレミアム機能をアンロック',
+      currentPlan: '現在',
+      freePlan: '無料',
+      basicPlan: 'ベーシック',
+      proPlan: 'プロ',
+      businessPlan: 'ビジネス',
+      perMonth: '/月',
+      credits: 'クレジット',
+      recommended: 'おすすめ',
+      savePercent: '+4%ボーナスクレジット',
+      savePercentBiz: '+11%ボーナスクレジット',
+      selectPlan: 'プランを選択',
+      currentPlanBtn: '現在のプラン',
+      note: '※クレジットは毎月リセットされます。未使用分は繰り越されません。',
+      feature: {
+        styleMenu: 'スタイルメニュー',
+        personalColor: 'パーソナルカラー分析',
+        drapeMode: 'ドレープモード',
+        chatbotLimited: 'チャットボット（制限あり）',
+        chatbotFull: 'チャットボット無制限',
+        lookbook: 'ルックブック',
+        hairTry: 'ヘアトライ',
+        allFree: '無料プランの全機能',
+        allBasic: 'ベーシックプランの全機能',
+        allPro: 'プロプランの全機能',
+        moreCredits: 'より多くのクレジット',
+        maxCredits: '最大クレジット',
+        prioritySupport: '優先サポート',
+        teamUse: 'チームでの利用'
+      }
     }
   },
 
@@ -3544,6 +3655,43 @@ const HAIRGATOR_I18N = {
       content1: 'HAIRGATOR提供的所有内容，包括图片、图形、文字、视频等的著作权（包括软件登记）、专利权、商标权均归<strong>AIW株式会社</strong>所有，受相关法律保护。',
       content2: '未经事先许可，擅自将HAIRGATOR内容用于类似服务的复制、分发、销售、展示、篡改等行为，将承担<strong>民事和刑事责任</strong>，请知悉。',
       agreeBtn: '同意并继续'
+    },
+
+    // ========== 付款/套餐 ==========
+    payment: {
+      upgrade: '升级到高级版',
+      unlockAll: '解锁所有功能',
+      choosePlan: '选择套餐',
+      unlockPremium: '解锁高级功能',
+      currentPlan: '当前',
+      freePlan: '免费',
+      basicPlan: '基础版',
+      proPlan: '专业版',
+      businessPlan: '商业版',
+      perMonth: '/月',
+      credits: '积分',
+      recommended: '推荐',
+      savePercent: '+4%额外积分',
+      savePercentBiz: '+11%额外积分',
+      selectPlan: '选择套餐',
+      currentPlanBtn: '当前套餐',
+      note: '* 积分每月重置，未使用的积分不予保留。',
+      feature: {
+        styleMenu: '造型菜单',
+        personalColor: '个人色彩分析',
+        drapeMode: '披巾模式',
+        chatbotLimited: '聊天机器人（限制）',
+        chatbotFull: '无限聊天机器人',
+        lookbook: '造型册',
+        hairTry: '发型试戴',
+        allFree: '免费版所有功能',
+        allBasic: '基础版所有功能',
+        allPro: '专业版所有功能',
+        moreCredits: '更多积分',
+        maxCredits: '最大积分',
+        prioritySupport: '优先支持',
+        teamUse: '团队使用'
+      }
     }
   },
 
@@ -4409,6 +4557,43 @@ const HAIRGATOR_I18N = {
       content1: 'Tất cả nội dung do HAIRGATOR cung cấp bao gồm hình ảnh, đồ họa, văn bản, video đều thuộc quyền sở hữu của <strong>AIW Inc.</strong> và được bảo vệ bởi luật bản quyền, bằng sáng chế và nhãn hiệu.',
       content2: 'Việc sao chép, phân phối, bán, trưng bày hoặc sửa đổi nội dung HAIRGATOR mà không có sự cho phép trước có thể dẫn đến <strong>trách nhiệm dân sự và hình sự</strong>.',
       agreeBtn: 'Đồng ý và tiếp tục'
+    },
+
+    // ========== Thanh toán/Gói dịch vụ ==========
+    payment: {
+      upgrade: 'Nâng cấp Premium',
+      unlockAll: 'Mở khóa tất cả tính năng',
+      choosePlan: 'Chọn gói dịch vụ',
+      unlockPremium: 'Mở khóa tính năng cao cấp',
+      currentPlan: 'Hiện tại',
+      freePlan: 'Miễn phí',
+      basicPlan: 'Cơ bản',
+      proPlan: 'Chuyên nghiệp',
+      businessPlan: 'Doanh nghiệp',
+      perMonth: '/tháng',
+      credits: 'điểm',
+      recommended: 'Khuyên dùng',
+      savePercent: '+4% điểm thưởng',
+      savePercentBiz: '+11% điểm thưởng',
+      selectPlan: 'Chọn gói',
+      currentPlanBtn: 'Gói hiện tại',
+      note: '* Điểm được đặt lại hàng tháng. Điểm chưa sử dụng không được chuyển sang.',
+      feature: {
+        styleMenu: 'Menu kiểu tóc',
+        personalColor: 'Phân tích màu sắc cá nhân',
+        drapeMode: 'Chế độ khăn choàng',
+        chatbotLimited: 'Chatbot (Giới hạn)',
+        chatbotFull: 'Chatbot không giới hạn',
+        lookbook: 'Lookbook',
+        hairTry: 'Thử kiểu tóc',
+        allFree: 'Tất cả tính năng miễn phí',
+        allBasic: 'Tất cả tính năng cơ bản',
+        allPro: 'Tất cả tính năng chuyên nghiệp',
+        moreCredits: 'Nhiều điểm hơn',
+        maxCredits: 'Điểm tối đa',
+        prioritySupport: 'Hỗ trợ ưu tiên',
+        teamUse: 'Sử dụng nhóm'
+      }
     }
   },
 
@@ -5248,6 +5433,43 @@ const HAIRGATOR_I18N = {
       content1: 'Semua konten yang disediakan oleh HAIRGATOR termasuk gambar, grafik, teks, dan video dimiliki oleh <strong>AIW Inc.</strong> dan dilindungi oleh hak cipta, paten, dan undang-undang merek dagang.',
       content2: 'Penyalinan, distribusi, penjualan, tampilan, atau modifikasi konten HAIRGATOR tanpa izin sebelumnya dapat mengakibatkan <strong>tanggung jawab perdata dan pidana</strong>.',
       agreeBtn: 'Setuju dan Lanjutkan'
+    },
+
+    // ========== Pembayaran/Paket ==========
+    payment: {
+      upgrade: 'Upgrade ke Premium',
+      unlockAll: 'Buka semua fitur',
+      choosePlan: 'Pilih Paket',
+      unlockPremium: 'Buka fitur premium',
+      currentPlan: 'Saat ini',
+      freePlan: 'Gratis',
+      basicPlan: 'Dasar',
+      proPlan: 'Pro',
+      businessPlan: 'Bisnis',
+      perMonth: '/bulan',
+      credits: 'kredit',
+      recommended: 'Rekomendasi',
+      savePercent: '+4% bonus kredit',
+      savePercentBiz: '+11% bonus kredit',
+      selectPlan: 'Pilih Paket',
+      currentPlanBtn: 'Paket Saat Ini',
+      note: '* Kredit direset setiap bulan. Kredit yang tidak digunakan tidak akan dipindahkan.',
+      feature: {
+        styleMenu: 'Menu Gaya',
+        personalColor: 'Analisis Warna Personal',
+        drapeMode: 'Mode Drape',
+        chatbotLimited: 'Chatbot (Terbatas)',
+        chatbotFull: 'Chatbot Tak Terbatas',
+        lookbook: 'Lookbook',
+        hairTry: 'Coba Gaya Rambut',
+        allFree: 'Semua fitur Gratis',
+        allBasic: 'Semua fitur Dasar',
+        allPro: 'Semua fitur Pro',
+        moreCredits: 'Lebih banyak kredit',
+        maxCredits: 'Kredit maksimum',
+        prioritySupport: 'Dukungan prioritas',
+        teamUse: 'Akses tim'
+      }
     }
   },
 
@@ -5805,6 +6027,43 @@ const HAIRGATOR_I18N = {
       content1: 'Todo el contenido proporcionado por HAIRGATOR, incluyendo imágenes, gráficos, textos y videos, es propiedad de <strong>AIW Inc.</strong> y está protegido por leyes de derechos de autor, patentes y marcas registradas.',
       content2: 'La copia, distribución, venta, exhibición o modificación no autorizada del contenido de HAIRGATOR puede resultar en <strong>responsabilidad civil y penal</strong>.',
       agreeBtn: 'Aceptar y Continuar'
+    },
+
+    // ========== Pago/Planes ==========
+    payment: {
+      upgrade: 'Actualizar a Premium',
+      unlockAll: 'Desbloquear todas las funciones',
+      choosePlan: 'Elige tu Plan',
+      unlockPremium: 'Desbloquear funciones premium',
+      currentPlan: 'Actual',
+      freePlan: 'Gratis',
+      basicPlan: 'Básico',
+      proPlan: 'Pro',
+      businessPlan: 'Negocios',
+      perMonth: '/mes',
+      credits: 'créditos',
+      recommended: 'Recomendado',
+      savePercent: '+4% créditos extra',
+      savePercentBiz: '+11% créditos extra',
+      selectPlan: 'Seleccionar Plan',
+      currentPlanBtn: 'Plan Actual',
+      note: '* Los créditos se reinician mensualmente. Los créditos no utilizados no se transfieren.',
+      feature: {
+        styleMenu: 'Menú de Estilos',
+        personalColor: 'Análisis de Color Personal',
+        drapeMode: 'Modo Drape',
+        chatbotLimited: 'Chatbot (Limitado)',
+        chatbotFull: 'Chatbot Ilimitado',
+        lookbook: 'Lookbook',
+        hairTry: 'Prueba de Peinado',
+        allFree: 'Todas las funciones gratuitas',
+        allBasic: 'Todas las funciones básicas',
+        allPro: 'Todas las funciones Pro',
+        moreCredits: 'Más créditos',
+        maxCredits: 'Créditos máximos',
+        prioritySupport: 'Soporte prioritario',
+        teamUse: 'Acceso de equipo'
+      }
     }
   }
 };

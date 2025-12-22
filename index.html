@@ -605,8 +605,116 @@
         <span class="sidebar-arrow">→</span>
     </div>
 </div>
+
+          <!-- 결제하기 섹션 -->
+          <div class="sidebar-divider"></div>
+          <div class="sidebar-section sidebar-payment-section" id="paymentSection">
+              <div class="sidebar-menu-item sidebar-payment-btn" onclick="openPricingModal()">
+                  <span class="sidebar-icon">💎</span>
+                  <div class="sidebar-text">
+                      <div class="sidebar-title" data-i18n="payment.upgrade">프리미엄 업그레이드</div>
+                      <div class="sidebar-subtitle" data-i18n="payment.unlockAll">모든 기능 잠금 해제</div>
+                  </div>
+                  <span class="sidebar-arrow sidebar-premium-arrow">✨</span>
+              </div>
+          </div>
         </div>
     </aside>
+
+    <!-- 요금제 선택 모달 -->
+    <div class="pricing-modal-overlay" id="pricingModal">
+        <div class="pricing-modal">
+            <button class="pricing-modal-close" onclick="closePricingModal()">×</button>
+
+            <div class="pricing-header">
+                <h2 class="pricing-title" data-i18n="payment.choosePlan">요금제 선택</h2>
+                <p class="pricing-subtitle" data-i18n="payment.unlockPremium">프리미엄 기능을 잠금 해제하세요</p>
+            </div>
+
+            <div class="pricing-cards">
+                <!-- 무료 플랜 -->
+                <div class="pricing-card pricing-card-free">
+                    <div class="pricing-card-header">
+                        <span class="pricing-badge pricing-badge-free" data-i18n="payment.currentPlan">현재</span>
+                        <h3 class="pricing-plan-name" data-i18n="payment.freePlan">무료</h3>
+                        <div class="pricing-price">
+                            <span class="pricing-amount">₩0</span>
+                            <span class="pricing-period" data-i18n="payment.perMonth">/월</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.styleMenu">스타일 메뉴판</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.personalColor">퍼스널컬러 분석</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.drapeMode">드레이프 모드</span></li>
+                        <li class="feature-limited"><span class="feature-icon">○</span> <span data-i18n="payment.feature.chatbotLimited">챗봇 (제한적)</span></li>
+                        <li class="feature-locked"><span class="feature-icon">✗</span> <span data-i18n="payment.feature.lookbook">룩북</span></li>
+                        <li class="feature-locked"><span class="feature-icon">✗</span> <span data-i18n="payment.feature.hairTry">헤어체험</span></li>
+                    </ul>
+                    <button class="pricing-btn pricing-btn-current" disabled data-i18n="payment.currentPlanBtn">현재 플랜</button>
+                </div>
+
+                <!-- 베이직 플랜 -->
+                <div class="pricing-card pricing-card-basic">
+                    <div class="pricing-card-header">
+                        <h3 class="pricing-plan-name" data-i18n="payment.basicPlan">베이직</h3>
+                        <div class="pricing-price">
+                            <span class="pricing-amount">₩22,000</span>
+                            <span class="pricing-period" data-i18n="payment.perMonth">/월</span>
+                        </div>
+                        <div class="pricing-credits">10,000 <span data-i18n="payment.credits">크레딧</span></div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.allFree">무료 플랜 모든 기능</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.chatbotFull">챗봇 무제한</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.lookbook">룩북</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.hairTry">헤어체험</span></li>
+                    </ul>
+                    <button class="pricing-btn pricing-btn-basic" onclick="selectPlan('basic')" data-i18n="payment.selectPlan">선택하기</button>
+                </div>
+
+                <!-- 프로 플랜 (추천) -->
+                <div class="pricing-card pricing-card-pro pricing-card-recommended">
+                    <div class="pricing-card-ribbon" data-i18n="payment.recommended">추천</div>
+                    <div class="pricing-card-header">
+                        <h3 class="pricing-plan-name" data-i18n="payment.proPlan">프로</h3>
+                        <div class="pricing-price">
+                            <span class="pricing-amount">₩38,000</span>
+                            <span class="pricing-period" data-i18n="payment.perMonth">/월</span>
+                        </div>
+                        <div class="pricing-credits">18,000 <span data-i18n="payment.credits">크레딧</span></div>
+                        <div class="pricing-save" data-i18n="payment.savePercent">크레딧 4% 추가</div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.allBasic">베이직 플랜 모든 기능</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.moreCredits">더 많은 크레딧</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.prioritySupport">우선 지원</span></li>
+                    </ul>
+                    <button class="pricing-btn pricing-btn-pro" onclick="selectPlan('pro')" data-i18n="payment.selectPlan">선택하기</button>
+                </div>
+
+                <!-- 비즈니스 플랜 -->
+                <div class="pricing-card pricing-card-business">
+                    <div class="pricing-card-header">
+                        <h3 class="pricing-plan-name" data-i18n="payment.businessPlan">비즈니스</h3>
+                        <div class="pricing-price">
+                            <span class="pricing-amount">₩50,000</span>
+                            <span class="pricing-period" data-i18n="payment.perMonth">/월</span>
+                        </div>
+                        <div class="pricing-credits">25,000 <span data-i18n="payment.credits">크레딧</span></div>
+                        <div class="pricing-save" data-i18n="payment.savePercentBiz">크레딧 11% 추가</div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.allPro">프로 플랜 모든 기능</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.maxCredits">최대 크레딧</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.teamUse">팀 사용 가능</span></li>
+                    </ul>
+                    <button class="pricing-btn pricing-btn-business" onclick="selectPlan('business')" data-i18n="payment.selectPlan">선택하기</button>
+                </div>
+            </div>
+
+            <p class="pricing-note" data-i18n="payment.note">* 크레딧은 매월 초기화되며, 미사용 크레딧은 이월되지 않습니다.</p>
+        </div>
+    </div>
 
     <!-- 로딩 오버레이 -->
     <div class="loading-overlay" id="loadingOverlay">
@@ -1334,6 +1442,61 @@
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('active');
         }
+
+        // ========== 요금제 모달 함수 ==========
+        function openPricingModal() {
+            // 사이드바 닫기
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) sidebar.classList.remove('active');
+
+            // 모달 열기
+            const modal = document.getElementById('pricingModal');
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closePricingModal() {
+            const modal = document.getElementById('pricingModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function selectPlan(planType) {
+            const plans = {
+                basic: { name: '베이직', price: 22000, credits: 10000 },
+                pro: { name: '프로', price: 38000, credits: 18000 },
+                business: { name: '비즈니스', price: 50000, credits: 25000 }
+            };
+
+            const plan = plans[planType];
+            if (!plan) return;
+
+            console.log(`📦 요금제 선택: ${plan.name} (₩${plan.price.toLocaleString()})`);
+
+            // TODO: 불나비 앱 결제 연동
+            // 현재는 안내 메시지만 표시
+            showToast(`${plan.name} 플랜 선택됨. 결제 기능은 곧 제공됩니다.`);
+            closePricingModal();
+        }
+
+        // 모달 외부 클릭 시 닫기
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('pricingModal');
+            if (e.target === modal) {
+                closePricingModal();
+            }
+        });
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePricingModal();
+            }
+        });
 
         function goBack() {
             if (menuContainer.classList.contains('active')) {
