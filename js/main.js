@@ -188,10 +188,25 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
 
                         <!-- 로그아웃 -->
-                        <div class="menu-item" id="logoutBtn" style="padding: 15px 20px; cursor: pointer;">
+                        <div class="menu-item" id="logoutBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <span style="font-size: 20px;">🚪</span>
                                 <span style="color: #ff4444; font-size: 14px;">${t('ui.logout')}</span>
+                            </div>
+                        </div>
+
+                        <!-- 구분선 -->
+                        <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(128,128,128,0.3), transparent); margin: 15px 20px;"></div>
+
+                        <!-- 프리미엄 업그레이드 -->
+                        <div class="menu-item premium-upgrade-btn" id="premiumUpgradeBtn" style="padding: 15px 20px; cursor: pointer; background: linear-gradient(135deg, rgba(233, 30, 99, 0.1), rgba(74, 144, 226, 0.1)); border-radius: 12px; margin: 10px 15px; border: 1px solid rgba(233, 30, 99, 0.2);">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 20px;">💎</span>
+                                <div style="flex: 1;">
+                                    <div class="sidebar-menu-text" style="font-size: 14px; font-weight: 600;">${t('payment.upgrade') || '프리미엄 업그레이드'}</div>
+                                    <div style="font-size: 11px; color: var(--text-secondary, #888); margin-top: 2px;">${t('payment.unlockAll') || '모든 기능 잠금 해제'}</div>
+                                </div>
+                                <span style="font-size: 14px; animation: sparkle 2s ease-in-out infinite;">✨</span>
                             </div>
                         </div>
 
@@ -232,6 +247,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     body.light-theme .sidebar-header h3,
                     body.light-theme .sidebar-close {
                         color: #333;
+                    }
+
+                    /* 프리미엄 업그레이드 버튼 */
+                    .premium-upgrade-btn:hover {
+                        background: linear-gradient(135deg, rgba(233, 30, 99, 0.2), rgba(74, 144, 226, 0.2)) !important;
+                        border-color: rgba(233, 30, 99, 0.4) !important;
+                    }
+
+                    @keyframes sparkle {
+                        0%, 100% { opacity: 1; transform: scale(1); }
+                        50% { opacity: 0.6; transform: scale(1.2); }
                     }
                 `;
                 document.head.appendChild(style);
@@ -280,6 +306,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (logoutBtn) {
             logoutBtn.addEventListener('click', handleLogout);
+        }
+
+        // 프리미엄 업그레이드 버튼
+        const premiumUpgradeBtn = document.getElementById('premiumUpgradeBtn');
+        if (premiumUpgradeBtn) {
+            premiumUpgradeBtn.addEventListener('click', function() {
+                console.log('💎 프리미엄 업그레이드 클릭');
+                closeSidebar();
+                // openPricingModal 함수 호출 (index.html에 정의됨)
+                if (typeof openPricingModal === 'function') {
+                    openPricingModal();
+                } else {
+                    console.warn('openPricingModal 함수를 찾을 수 없음');
+                }
+            });
         }
 
         console.log('✅ 사이드바 메뉴 이벤트 리스너 설정 완료');
