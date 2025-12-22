@@ -198,12 +198,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         <!-- 구분선 -->
                         <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(128,128,128,0.3), transparent); margin: 15px 20px;"></div>
 
-                        <!-- 프리미엄 업그레이드 -->
+                        <!-- 플랜 업그레이드 -->
                         <div class="menu-item premium-upgrade-btn" id="premiumUpgradeBtn" style="padding: 15px 20px; cursor: pointer; background: linear-gradient(135deg, rgba(233, 30, 99, 0.1), rgba(74, 144, 226, 0.1)); border-radius: 12px; margin: 10px 15px; border: 1px solid rgba(233, 30, 99, 0.2);">
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                <span style="font-size: 20px;">💎</span>
+                                <span style="font-size: 20px;">⬆️</span>
                                 <div style="flex: 1;">
-                                    <div class="sidebar-menu-text" style="font-size: 14px; font-weight: 600;">${t('payment.upgrade') || '프리미엄 업그레이드'}</div>
+                                    <div class="sidebar-menu-text" style="font-size: 14px; font-weight: 600;">${t('payment.upgrade') || '플랜 업그레이드'}</div>
                                     <div style="font-size: 11px; color: var(--text-secondary, #888); margin-top: 2px;">${t('payment.unlockAll') || '모든 기능 잠금 해제'}</div>
                                 </div>
                                 <span style="font-size: 14px; animation: sparkle 2s ease-in-out infinite;">✨</span>
@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const premiumUpgradeBtn = document.getElementById('premiumUpgradeBtn');
         if (premiumUpgradeBtn) {
             premiumUpgradeBtn.addEventListener('click', function() {
-                console.log('💎 프리미엄 업그레이드 클릭');
+                console.log('⬆️ 플랜 업그레이드 클릭');
                 closeSidebar();
                 // openPricingModal 함수 호출 (index.html에 정의됨)
                 if (typeof openPricingModal === 'function') {

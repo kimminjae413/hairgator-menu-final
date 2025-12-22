@@ -916,7 +916,7 @@ const HAIRGATOR_I18N = {
 
     // ========== 결제/요금제 ==========
     payment: {
-      upgrade: '프리미엄 업그레이드',
+      upgrade: '플랜 업그레이드',
       unlockAll: '모든 기능 잠금 해제',
       choosePlan: '요금제 선택',
       unlockPremium: '프리미엄 기능을 잠금 해제하세요',
@@ -928,8 +928,8 @@ const HAIRGATOR_I18N = {
       perMonth: '/월',
       credits: '크레딧',
       recommended: '추천',
-      savePercent: '크레딧 4% 추가',
-      savePercentBiz: '크레딧 11% 추가',
+      savePercent: '원당 4% 효율 증가',
+      savePercentBiz: '원당 11% 효율 증가',
       selectPlan: '선택하기',
       currentPlanBtn: '현재 플랜',
       note: '* 크레딧은 매월 초기화되며, 미사용 크레딧은 이월되지 않습니다.',
@@ -938,16 +938,13 @@ const HAIRGATOR_I18N = {
         personalColor: '퍼스널컬러 분석',
         drapeMode: '드레이프 모드',
         chatbotLimited: '챗봇 (제한적)',
-        chatbotFull: '챗봇 무제한',
+        chatbot: '챗봇',
         lookbook: '룩북',
         hairTry: '헤어체험',
         allFree: '무료 플랜 모든 기능',
         allBasic: '베이직 플랜 모든 기능',
-        allPro: '프로 플랜 모든 기능',
-        moreCredits: '더 많은 크레딧',
-        maxCredits: '최대 크레딧',
-        prioritySupport: '우선 지원',
-        teamUse: '팀 사용 가능'
+        moreCredits: '80% 더 많은 크레딧',
+        maxCredits: '150% 더 많은 크레딧'
       }
     }
   },
@@ -1832,7 +1829,7 @@ const HAIRGATOR_I18N = {
 
     // ========== Payment/Plans ==========
     payment: {
-      upgrade: 'Upgrade to Premium',
+      upgrade: 'Upgrade Plan',
       unlockAll: 'Unlock all features',
       choosePlan: 'Choose Your Plan',
       unlockPremium: 'Unlock premium features',
@@ -1844,8 +1841,8 @@ const HAIRGATOR_I18N = {
       perMonth: '/mo',
       credits: 'credits',
       recommended: 'Best Value',
-      savePercent: '+4% bonus credits',
-      savePercentBiz: '+11% bonus credits',
+      savePercent: '+4% efficiency per credit',
+      savePercentBiz: '+11% efficiency per credit',
       selectPlan: 'Select Plan',
       currentPlanBtn: 'Current Plan',
       note: '* Credits reset monthly. Unused credits do not roll over.',
@@ -1854,16 +1851,13 @@ const HAIRGATOR_I18N = {
         personalColor: 'Personal Color Analysis',
         drapeMode: 'Drape Mode',
         chatbotLimited: 'Chatbot (Limited)',
-        chatbotFull: 'Unlimited Chatbot',
+        chatbot: 'Chatbot',
         lookbook: 'Lookbook',
         hairTry: 'Hair Try-On',
         allFree: 'All Free features',
         allBasic: 'All Basic features',
-        allPro: 'All Pro features',
-        moreCredits: 'More credits',
-        maxCredits: 'Maximum credits',
-        prioritySupport: 'Priority support',
-        teamUse: 'Team access'
+        moreCredits: '80% more credits',
+        maxCredits: '150% more credits'
       }
     }
   },
@@ -2744,7 +2738,7 @@ const HAIRGATOR_I18N = {
 
     // ========== 料金プラン ==========
     payment: {
-      upgrade: 'プレミアムにアップグレード',
+      upgrade: 'プランをアップグレード',
       unlockAll: 'すべての機能をアンロック',
       choosePlan: 'プランを選択',
       unlockPremium: 'プレミアム機能をアンロック',
@@ -2756,8 +2750,8 @@ const HAIRGATOR_I18N = {
       perMonth: '/月',
       credits: 'クレジット',
       recommended: 'おすすめ',
-      savePercent: '+4%ボーナスクレジット',
-      savePercentBiz: '+11%ボーナスクレジット',
+      savePercent: '1クレジットあたり4%効率アップ',
+      savePercentBiz: '1クレジットあたり11%効率アップ',
       selectPlan: 'プランを選択',
       currentPlanBtn: '現在のプラン',
       note: '※クレジットは毎月リセットされます。未使用分は繰り越されません。',
@@ -2766,16 +2760,13 @@ const HAIRGATOR_I18N = {
         personalColor: 'パーソナルカラー分析',
         drapeMode: 'ドレープモード',
         chatbotLimited: 'チャットボット（制限あり）',
-        chatbotFull: 'チャットボット無制限',
+        chatbot: 'チャットボット',
         lookbook: 'ルックブック',
         hairTry: 'ヘアトライ',
         allFree: '無料プランの全機能',
         allBasic: 'ベーシックプランの全機能',
-        allPro: 'プロプランの全機能',
-        moreCredits: 'より多くのクレジット',
-        maxCredits: '最大クレジット',
-        prioritySupport: '優先サポート',
-        teamUse: 'チームでの利用'
+        moreCredits: '80%多いクレジット',
+        maxCredits: '150%多いクレジット'
       }
     }
   },
@@ -3659,7 +3650,7 @@ const HAIRGATOR_I18N = {
 
     // ========== 付款/套餐 ==========
     payment: {
-      upgrade: '升级到高级版',
+      upgrade: '升级套餐',
       unlockAll: '解锁所有功能',
       choosePlan: '选择套餐',
       unlockPremium: '解锁高级功能',
@@ -3671,8 +3662,8 @@ const HAIRGATOR_I18N = {
       perMonth: '/月',
       credits: '积分',
       recommended: '推荐',
-      savePercent: '+4%额外积分',
-      savePercentBiz: '+11%额外积分',
+      savePercent: '每积分效率提高4%',
+      savePercentBiz: '每积分效率提高11%',
       selectPlan: '选择套餐',
       currentPlanBtn: '当前套餐',
       note: '* 积分每月重置，未使用的积分不予保留。',
@@ -3681,16 +3672,13 @@ const HAIRGATOR_I18N = {
         personalColor: '个人色彩分析',
         drapeMode: '披巾模式',
         chatbotLimited: '聊天机器人（限制）',
-        chatbotFull: '无限聊天机器人',
+        chatbot: '聊天机器人',
         lookbook: '造型册',
         hairTry: '发型试戴',
         allFree: '免费版所有功能',
         allBasic: '基础版所有功能',
-        allPro: '专业版所有功能',
-        moreCredits: '更多积分',
-        maxCredits: '最大积分',
-        prioritySupport: '优先支持',
-        teamUse: '团队使用'
+        moreCredits: '积分增加80%',
+        maxCredits: '积分增加150%'
       }
     }
   },
@@ -4561,7 +4549,7 @@ const HAIRGATOR_I18N = {
 
     // ========== Thanh toán/Gói dịch vụ ==========
     payment: {
-      upgrade: 'Nâng cấp Premium',
+      upgrade: 'Nâng cấp gói',
       unlockAll: 'Mở khóa tất cả tính năng',
       choosePlan: 'Chọn gói dịch vụ',
       unlockPremium: 'Mở khóa tính năng cao cấp',
@@ -4573,8 +4561,8 @@ const HAIRGATOR_I18N = {
       perMonth: '/tháng',
       credits: 'điểm',
       recommended: 'Khuyên dùng',
-      savePercent: '+4% điểm thưởng',
-      savePercentBiz: '+11% điểm thưởng',
+      savePercent: 'Hiệu quả tăng 4% mỗi điểm',
+      savePercentBiz: 'Hiệu quả tăng 11% mỗi điểm',
       selectPlan: 'Chọn gói',
       currentPlanBtn: 'Gói hiện tại',
       note: '* Điểm được đặt lại hàng tháng. Điểm chưa sử dụng không được chuyển sang.',
@@ -4583,16 +4571,13 @@ const HAIRGATOR_I18N = {
         personalColor: 'Phân tích màu sắc cá nhân',
         drapeMode: 'Chế độ khăn choàng',
         chatbotLimited: 'Chatbot (Giới hạn)',
-        chatbotFull: 'Chatbot không giới hạn',
+        chatbot: 'Chatbot',
         lookbook: 'Lookbook',
         hairTry: 'Thử kiểu tóc',
         allFree: 'Tất cả tính năng miễn phí',
         allBasic: 'Tất cả tính năng cơ bản',
-        allPro: 'Tất cả tính năng chuyên nghiệp',
-        moreCredits: 'Nhiều điểm hơn',
-        maxCredits: 'Điểm tối đa',
-        prioritySupport: 'Hỗ trợ ưu tiên',
-        teamUse: 'Sử dụng nhóm'
+        moreCredits: 'Nhiều hơn 80% điểm',
+        maxCredits: 'Nhiều hơn 150% điểm'
       }
     }
   },
@@ -5437,7 +5422,7 @@ const HAIRGATOR_I18N = {
 
     // ========== Pembayaran/Paket ==========
     payment: {
-      upgrade: 'Upgrade ke Premium',
+      upgrade: 'Upgrade Paket',
       unlockAll: 'Buka semua fitur',
       choosePlan: 'Pilih Paket',
       unlockPremium: 'Buka fitur premium',
@@ -5449,8 +5434,8 @@ const HAIRGATOR_I18N = {
       perMonth: '/bulan',
       credits: 'kredit',
       recommended: 'Rekomendasi',
-      savePercent: '+4% bonus kredit',
-      savePercentBiz: '+11% bonus kredit',
+      savePercent: 'Efisiensi +4% per kredit',
+      savePercentBiz: 'Efisiensi +11% per kredit',
       selectPlan: 'Pilih Paket',
       currentPlanBtn: 'Paket Saat Ini',
       note: '* Kredit direset setiap bulan. Kredit yang tidak digunakan tidak akan dipindahkan.',
@@ -5459,16 +5444,13 @@ const HAIRGATOR_I18N = {
         personalColor: 'Analisis Warna Personal',
         drapeMode: 'Mode Drape',
         chatbotLimited: 'Chatbot (Terbatas)',
-        chatbotFull: 'Chatbot Tak Terbatas',
+        chatbot: 'Chatbot',
         lookbook: 'Lookbook',
         hairTry: 'Coba Gaya Rambut',
         allFree: 'Semua fitur Gratis',
         allBasic: 'Semua fitur Dasar',
-        allPro: 'Semua fitur Pro',
-        moreCredits: 'Lebih banyak kredit',
-        maxCredits: 'Kredit maksimum',
-        prioritySupport: 'Dukungan prioritas',
-        teamUse: 'Akses tim'
+        moreCredits: '80% lebih banyak kredit',
+        maxCredits: '150% lebih banyak kredit'
       }
     }
   },
@@ -6031,7 +6013,7 @@ const HAIRGATOR_I18N = {
 
     // ========== Pago/Planes ==========
     payment: {
-      upgrade: 'Actualizar a Premium',
+      upgrade: 'Actualizar Plan',
       unlockAll: 'Desbloquear todas las funciones',
       choosePlan: 'Elige tu Plan',
       unlockPremium: 'Desbloquear funciones premium',
@@ -6043,8 +6025,8 @@ const HAIRGATOR_I18N = {
       perMonth: '/mes',
       credits: 'créditos',
       recommended: 'Recomendado',
-      savePercent: '+4% créditos extra',
-      savePercentBiz: '+11% créditos extra',
+      savePercent: '+4% eficiencia por crédito',
+      savePercentBiz: '+11% eficiencia por crédito',
       selectPlan: 'Seleccionar Plan',
       currentPlanBtn: 'Plan Actual',
       note: '* Los créditos se reinician mensualmente. Los créditos no utilizados no se transfieren.',
@@ -6053,16 +6035,13 @@ const HAIRGATOR_I18N = {
         personalColor: 'Análisis de Color Personal',
         drapeMode: 'Modo Drape',
         chatbotLimited: 'Chatbot (Limitado)',
-        chatbotFull: 'Chatbot Ilimitado',
+        chatbot: 'Chatbot',
         lookbook: 'Lookbook',
         hairTry: 'Prueba de Peinado',
         allFree: 'Todas las funciones gratuitas',
         allBasic: 'Todas las funciones básicas',
-        allPro: 'Todas las funciones Pro',
-        moreCredits: 'Más créditos',
-        maxCredits: 'Créditos máximos',
-        prioritySupport: 'Soporte prioritario',
-        teamUse: 'Acceso de equipo'
+        moreCredits: '80% más créditos',
+        maxCredits: '150% más créditos'
       }
     }
   }
