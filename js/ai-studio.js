@@ -4163,6 +4163,20 @@ async function sendQuestionWithImage(question) {
         window.aiStudio.saveMessageToFirebase('user', question);
         window.aiStudio.saveMessageToFirebase('bot', data.answer);
       }
+
+      // ⭐ 이미지 질문 크레딧 차감 (Vision 분석 = 20크레딧)
+      if (window.BullnabiBridge && typeof window.BullnabiBridge.deductTokensDynamic === 'function') {
+        try {
+          const result = await window.BullnabiBridge.deductTokensDynamic(null, 20, 'image_question', {
+            question: question.substring(0, 100)
+          });
+          if (result.success) {
+            console.log(`💳 이미지 질문 크레딧 차감: 20, 잔액: ${result.newBalance}`);
+          }
+        } catch (e) {
+          console.warn('⚠️ 이미지 질문 크레딧 차감 실패:', e);
+        }
+      }
     } else {
       window.aiStudio.addMessageToUI('bot', '<p>답변을 생성하지 못했습니다. 다시 시도해주세요.</p>');
     }
