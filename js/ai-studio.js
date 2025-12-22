@@ -731,10 +731,11 @@ class AIStudio {
       }
 
       // ⭐ 챗봇 크레딧 차감 (토큰 사용량 기반 구간별)
-      if (window.BullnabiBridge && typeof window.BullnabiBridge.deductTokensDynamic === 'function') {
-        try {
-          const totalTokens = response.tokenUsage?.totalTokens || 0;
+      const totalTokens = response.tokenUsage?.totalTokens || 0;
 
+      // 인사말 등 API 미호출 시(토큰 0)는 차감 스킵
+      if (totalTokens > 0 && window.BullnabiBridge && typeof window.BullnabiBridge.deductTokensDynamic === 'function') {
+        try {
           // 토큰 구간별 크레딧 계산
           // ~500: 3, 501~1500: 10, 1501~3000: 20, 3000+: 30
           let creditCost = 3;  // 기본값
@@ -755,6 +756,8 @@ class AIStudio {
         } catch (tokenError) {
           console.warn('⚠️ 크레딧 차감 실패:', tokenError);
         }
+      } else if (totalTokens === 0) {
+        console.log('💬 인사말/캐시 응답 - 크레딧 차감 스킵');
       }
 
     } catch (error) {
