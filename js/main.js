@@ -8,33 +8,48 @@ const ALLOWED_USER_IDS = [
 
 // 현재 사용자가 허용된 사용자인지 체크
 window.isAllowedUser = function() {
+    console.log('🔐 isAllowedUser() 체크 시작...');
+    console.log('   허용된 ID 목록:', ALLOWED_USER_IDS);
+
     // URL에서 userId 확인
     const urlParams = new URLSearchParams(window.location.search);
     const urlUserId = urlParams.get('userId');
+    console.log('   URL userId:', urlUserId);
     if (urlUserId && ALLOWED_USER_IDS.includes(urlUserId)) {
+        console.log('   ✅ URL userId로 허용됨');
         return true;
     }
 
     // bullnabi 사용자 확인
     try {
         const bullnabiUser = JSON.parse(localStorage.getItem('bullnabi_user') || '{}');
+        console.log('   bullnabi_user:', { userId: bullnabiUser.userId, _id: bullnabiUser._id });
         if (bullnabiUser.userId && ALLOWED_USER_IDS.includes(bullnabiUser.userId)) {
+            console.log('   ✅ bullnabi userId로 허용됨');
             return true;
         }
         // _id 필드도 확인 (MongoDB ObjectId)
         if (bullnabiUser._id && ALLOWED_USER_IDS.includes(bullnabiUser._id)) {
+            console.log('   ✅ bullnabi _id로 허용됨');
             return true;
         }
-    } catch (e) {}
+    } catch (e) {
+        console.log('   bullnabi_user 파싱 오류:', e);
+    }
 
     // userInfo 확인
     try {
         const userInfo = JSON.parse(localStorage.getItem('hairgator_user_info') || '{}');
+        console.log('   hairgator_user_info:', { docId: userInfo.docId });
         if (userInfo.docId && ALLOWED_USER_IDS.includes(userInfo.docId)) {
+            console.log('   ✅ userInfo docId로 허용됨');
             return true;
         }
-    } catch (e) {}
+    } catch (e) {
+        console.log('   hairgator_user_info 파싱 오류:', e);
+    }
 
+    console.log('   ❌ 허용되지 않은 사용자');
     return false;
 };
 
