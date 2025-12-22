@@ -6425,9 +6425,6 @@ function formatRecipeSentences(text) {
     const line = lines[i];
     const trimmed = line.trim();
 
-    // 기존 번호 제거
-    const cleanedLine = trimmed.replace(/^\d+[\.\)]\s*/, '');
-
     // 빈 줄 스킵
     if (!trimmed) {
       continue;
@@ -6447,6 +6444,9 @@ function formatRecipeSentences(text) {
       continue;
     }
 
+    // 기존 번호 제거
+    const cleanedLine = trimmed.replace(/^\d+[\.\)]\s*/, '');
+
     // 번호 안 붙이는 줄들
     const skipNumbering =
       /^스타일\s*정보/i.test(cleanedLine) ||
@@ -6455,28 +6455,44 @@ function formatRecipeSentences(text) {
       /부분\s*\(/i.test(cleanedLine) ||      // 프린지 부분 (앞머리)
       /^(첫 번째|두 번째|세 번째)/i.test(cleanedLine) ||
       /^HAIRGATOR/i.test(cleanedLine) ||
-      cleanedLine.length < 20;
+      cleanedLine.length < 15;
 
     if (skipNumbering) {
       result.push(cleanedLine);
       continue;
     }
 
-    // 레시피 문장 감지: ~합니다. 또는 ~한다. 로 끝나는 문장
-    const isRecipeSentence =
-      (cleanedLine.endsWith('.') || cleanedLine.endsWith('다')) &&
-      (cleanedLine.includes('섹션') || cleanedLine.includes('각도') ||
-       cleanedLine.includes('다이렉션') || cleanedLine.includes('디자인라인') ||
-       cleanedLine.includes('커트') || cleanedLine.includes('나눕니다') ||
-       cleanedLine.includes('들어 올') || cleanedLine.includes('적용') ||
-       cleanedLine.includes('활용하여') || cleanedLine.includes('진행'));
+    // ⭐ 핵심: 한 줄에 여러 문장이 있으면 분리하여 각각 번호 붙이기
+    // "A존은 진행한다. B존은 진행한다." → ["A존은 진행한다.", "B존은 진행한다."]
+    // 패턴: 마침표 뒤에 공백과 한글/영문이 오면 분리
+    const sentences = cleanedLine.split(/(?<=\.)(?:\s+)(?=[A-Za-z가-힣])/);
 
-    if (isRecipeSentence && cleanedLine.length > 20) {
-      sectionNum++;
-      const finalLine = cleanedLine.endsWith('.') ? cleanedLine : cleanedLine + '.';
-      result.push(`${sectionNum}. ${finalLine}`);
-    } else {
-      result.push(cleanedLine);
+    for (const sentence of sentences) {
+      const trimmedSentence = sentence.trim();
+      if (!trimmedSentence || trimmedSentence.length < 15) {
+        if (trimmedSentence) result.push(trimmedSentence);
+        continue;
+      }
+
+      // 기존 번호 제거 (분리된 문장에도 적용)
+      const cleanSentence = trimmedSentence.replace(/^\d+[\.\)]\s*/, '');
+
+      // 레시피 문장 감지: 기술 용어 포함 여부
+      const isRecipeSentence =
+        (cleanSentence.includes('섹션') || cleanSentence.includes('각도') ||
+         cleanSentence.includes('다이렉션') || cleanSentence.includes('디자인라인') ||
+         cleanSentence.includes('커트') || cleanSentence.includes('나눕니다') ||
+         cleanSentence.includes('들어 올') || cleanSentence.includes('적용') ||
+         cleanSentence.includes('활용하여') || cleanSentence.includes('진행') ||
+         cleanSentence.includes('존은') || cleanSentence.includes('부분은'));
+
+      if (isRecipeSentence && cleanSentence.length > 15) {
+        sectionNum++;
+        const finalSentence = cleanSentence.endsWith('.') ? cleanSentence : cleanSentence + '.';
+        result.push(`${sectionNum}. ${finalSentence}`);
+      } else {
+        result.push(cleanSentence);
+      }
     }
   }
 
