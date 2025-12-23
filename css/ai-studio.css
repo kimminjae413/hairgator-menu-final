@@ -200,6 +200,16 @@ body.ai-studio-page {
   background: rgba(255, 255, 255, 0.25);
 }
 
+/* 라이트 모드 헤더 버튼 */
+body.light-theme .header-btn {
+  background: rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+body.light-theme .header-btn:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
 /* Messages Area */
 .chat-messages {
   flex: 1;
