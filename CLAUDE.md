@@ -224,6 +224,13 @@
   - ai-studio 공유 버튼 제거
   - 라이트 모드 헤더 버튼 색상 수정
   - hair-change.js 12월 19일 상태로 복구 (node-fetch 제거)
+  - bullnabi-bridge.js `planName is not defined` 에러 수정
+
+  ### 마이그레이션 배경
+  - **정지환 개발자(불나비)**: "불나비API를 통해 유저정보(_users)에 tokenBalance 데이터를 넘겨주면 조회할 때도 보일거예요"
+  - 기존: Firestore `user_tokens` 컬렉션에 별도 저장
+  - 변경: 불나비 MongoDB `_users.tokenBalance` 필드에 저장
+  - 장점: 불나비 앱에서도 토큰 잔액 확인 가능
 
 - 2025-12-22 (저녁): 토큰 시스템 완성 + 크레딧 차감 구현
 
