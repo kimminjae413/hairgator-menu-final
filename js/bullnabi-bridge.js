@@ -211,12 +211,13 @@
                     try {
                         const tokenResult = await self.getTokenBalance(userId);
                         if (tokenResult.success) {
-                            self.updateTokenDisplay(tokenResult.tokenBalance);
+                            self.updateTokenDisplay(tokenResult.tokenBalance, tokenResult.plan);
                             // currentDesigner에도 저장
                             if (window.currentDesigner) {
                                 window.currentDesigner.tokenBalance = tokenResult.tokenBalance;
+                                window.currentDesigner.plan = tokenResult.plan;
                             }
-                            console.log('💰 헤어게이터 토큰 로드 완료:', tokenResult.tokenBalance);
+                            console.log('💰 헤어게이터 토큰 로드 완료:', tokenResult.tokenBalance, '플랜:', tokenResult.plan);
                         }
                     } catch (e) {
                         console.warn('⚠️ 토큰 조회 실패:', e);
@@ -556,8 +557,10 @@
                     const doc = await docRef.get();
 
                     let currentBalance = 0;
+                    let currentPlan = 'free';
                     if (doc.exists) {
                         currentBalance = doc.data().tokenBalance || 0;
+                        currentPlan = doc.data().plan || 'free';
                     }
 
                     if (currentBalance < cost) {
@@ -587,7 +590,7 @@
                     console.log(`✅ 토큰 차감 완료 (Firestore): ${feature}, ${cost}토큰 사용, 잔액: ${newBalance}`);
 
                     // UI 업데이트
-                    this.updateTokenDisplay(newBalance);
+                    this.updateTokenDisplay(newBalance, currentPlan);
 
                     return {
                         success: true,
@@ -613,7 +616,10 @@
 
                 if (result.success) {
                     console.log(`✅ 토큰 차감 완료 (API): ${feature}, ${result.deducted}토큰 사용, 잔액: ${result.newBalance}`);
-                    this.updateTokenDisplay(result.newBalance);
+                    // 현재 플랜 가져오기 (캐시된 값 사용)
+                    const cachedPlan = window.currentDesigner?.plan ||
+                        JSON.parse(localStorage.getItem('bullnabi_user') || '{}').plan || 'free';
+                    this.updateTokenDisplay(result.newBalance, cachedPlan);
                 } else {
                     console.warn(`⚠️ 토큰 차감 실패: ${result.error}`);
                 }
@@ -648,8 +654,10 @@
                     const doc = await docRef.get();
 
                     let currentBalance = 0;
+                    let currentPlan = 'free';
                     if (doc.exists) {
                         currentBalance = doc.data().tokenBalance || 0;
+                        currentPlan = doc.data().plan || 'free';
                     }
 
                     if (currentBalance < amount) {
@@ -679,7 +687,7 @@
                     console.log(`✅ 동적 크레딧 차감 완료: ${feature}, ${amount}크레딧 사용, 잔액: ${newBalance}`);
 
                     // UI 업데이트
-                    this.updateTokenDisplay(newBalance);
+                    this.updateTokenDisplay(newBalance, currentPlan);
 
                     return {
                         success: true,
@@ -696,35 +704,87 @@
             }
         },
 
-        // 토큰 잔액 UI 업데이트
-        updateTokenDisplay(newBalance) {
-            // 토큰 표시 요소 업데이트
+        // 관리자 ID 목록 (토큰 잔액 표시용)
+        ADMIN_USER_IDS: [
+            '691ceee09d868b5736d22007',
+            '6536474789a3ad49553b46d7'
+        ],
+
+        // 플랜 이름 매핑 (내부 키 → 한국어 표시)
+        PLAN_NAMES: {
+            'free': '무료',
+            'basic': '베이직',
+            'standard': '프로',
+            'business': '비즈니스'
+        },
+
+        // 현재 사용자가 관리자인지 체크
+        isAdminUser() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlUserId = urlParams.get('userId');
+                if (urlUserId && this.ADMIN_USER_IDS.includes(urlUserId)) return true;
+
+                const bullnabiUser = JSON.parse(localStorage.getItem('bullnabi_user') || '{}');
+                if (bullnabiUser.userId && this.ADMIN_USER_IDS.includes(bullnabiUser.userId)) return true;
+                if (bullnabiUser._id && this.ADMIN_USER_IDS.includes(bullnabiUser._id)) return true;
+                if (bullnabiUser.id && this.ADMIN_USER_IDS.includes(bullnabiUser.id)) return true;
+            } catch (e) {}
+            return false;
+        },
+
+        // 토큰 잔액 UI 업데이트 (관리자용)
+        updateTokenDisplay(newBalance, plan) {
+            // 관리자만 토큰 잔액 표시
+            const isAdmin = this.isAdminUser();
+
+            // 토큰 표시 요소 업데이트 (관리자 전용)
             const tokenElements = document.querySelectorAll('.token-balance, .credit-balance, [data-token-balance]');
             tokenElements.forEach(el => {
-                el.textContent = newBalance.toLocaleString();
+                if (isAdmin) {
+                    el.textContent = newBalance.toLocaleString();
+                    el.style.display = '';
+                } else {
+                    el.style.display = 'none';
+                }
             });
 
             // sessionStatusDisplay 요소 업데이트 (index.html 사이드바)
             const sessionStatus = document.getElementById('sessionStatusDisplay');
             if (sessionStatus) {
-                sessionStatus.textContent = `토큰: ${newBalance.toLocaleString()}`;
+                if (isAdmin) {
+                    // 관리자: 플랜 + 토큰 둘 다 표시
+                    const planName = this.PLAN_NAMES[plan] || plan || '무료';
+                    sessionStatus.textContent = `${planName} 플랜 | 토큰: ${newBalance.toLocaleString()}`;
+                } else {
+                    // 일반 유저: 플랜만 표시
+                    const planName = this.PLAN_NAMES[plan] || plan || '무료';
+                    sessionStatus.textContent = `현재 플랜: ${planName}`;
+                }
             }
 
-            // creditDisplay 요소 업데이트 (main.js 사이드바)
+            // creditDisplay 요소 업데이트 (main.js 사이드바) - 관리자만
             const creditDisplay = document.getElementById('creditDisplay');
             if (creditDisplay) {
-                creditDisplay.textContent = newBalance.toLocaleString();
+                if (isAdmin) {
+                    creditDisplay.textContent = newBalance.toLocaleString();
+                    creditDisplay.parentElement && (creditDisplay.parentElement.style.display = '');
+                } else {
+                    creditDisplay.parentElement && (creditDisplay.parentElement.style.display = 'none');
+                }
             }
 
             // currentDesigner 업데이트 (있는 경우)
             if (window.currentDesigner) {
                 window.currentDesigner.tokenBalance = newBalance;
+                window.currentDesigner.plan = plan;
             }
 
             // 불나비 사용자 정보에도 저장 (localStorage)
             const user = window.getBullnabiUser?.();
             if (user) {
                 user.tokenBalance = newBalance;
+                user.plan = plan;
                 localStorage.setItem('bullnabi_user', JSON.stringify(user));
             }
         },

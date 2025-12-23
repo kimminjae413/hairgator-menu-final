@@ -191,34 +191,44 @@ async function loginWithBullnabi(userInfo) {
                 const doc = await db.collection('user_tokens').doc(userId).get();
 
                 let tokenBalance = 0;
+                let userPlan = 'free';
                 if (doc.exists) {
                     tokenBalance = doc.data().tokenBalance || 0;
+                    userPlan = doc.data().plan || 'free';
                 }
 
                 window.currentDesigner.tokenBalance = tokenBalance;
+                window.currentDesigner.plan = userPlan;
                 userInfo.tokenBalance = tokenBalance;
+                userInfo.plan = userPlan;
 
                 // localStorage에도 저장
                 const storedUser = JSON.parse(localStorage.getItem('bullnabi_user') || '{}');
                 storedUser.tokenBalance = tokenBalance;
+                storedUser.plan = userPlan;
                 localStorage.setItem('bullnabi_user', JSON.stringify(storedUser));
 
-                // UI 업데이트
-                const sessionStatus = document.getElementById('sessionStatusDisplay');
-                if (sessionStatus) {
-                    sessionStatus.textContent = `토큰: ${tokenBalance.toLocaleString()}`;
+                // UI 업데이트 (BullnabiBridge 사용)
+                if (window.BullnabiBridge && typeof window.BullnabiBridge.updateTokenDisplay === 'function') {
+                    window.BullnabiBridge.updateTokenDisplay(tokenBalance, userPlan);
+                } else {
+                    // 폴백: 직접 업데이트
+                    const sessionStatus = document.getElementById('sessionStatusDisplay');
+                    if (sessionStatus) {
+                        const planNames = { 'free': '무료', 'basic': '베이직', 'standard': '프로', 'business': '비즈니스' };
+                        sessionStatus.textContent = `현재 플랜: ${planNames[userPlan] || userPlan}`;
+                    }
                 }
 
-                console.log('💰 헤어게이터 토큰 잔액:', tokenBalance);
+                console.log('💰 헤어게이터 토큰 잔액:', tokenBalance, '플랜:', userPlan);
             }
         } catch (tokenError) {
             console.warn('⚠️ 토큰 잔액 조회 실패:', tokenError);
         }
 
-        // 성공 알림 (헤어게이터 토큰 표시)
+        // 성공 알림
         if (typeof showToast === 'function') {
-            const tokenBalance = window.currentDesigner.tokenBalance || 0;
-            showToast(`${userInfo.name}님 환영합니다! (토큰: ${tokenBalance.toLocaleString()})`, 'success');
+            showToast(`${userInfo.name}님 환영합니다!`, 'success');
         }
         
     } catch (error) {

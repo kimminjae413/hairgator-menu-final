@@ -213,7 +213,7 @@ const HAIRGATOR_PAYMENT = {
 
         // 토큰 표시 업데이트 (bullnabi-bridge.js의 함수 호출)
         if (window.BullnabiBridge && typeof window.BullnabiBridge.updateTokenDisplay === 'function') {
-          window.BullnabiBridge.updateTokenDisplay(result.newBalance);
+          window.BullnabiBridge.updateTokenDisplay(result.newBalance, result.plan || planKey);
         }
       }
 
