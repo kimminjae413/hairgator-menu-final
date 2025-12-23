@@ -2,6 +2,7 @@
 // 포트원 V2 결제 검증 및 토큰 충전 (Firebase user_tokens 사용)
 
 const admin = require('firebase-admin');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 // Firebase Admin 초기화 (bullnabi-proxy.js와 동일한 방식)
 if (!admin.apps.length) {
