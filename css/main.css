@@ -1783,30 +1783,28 @@ body.light-theme .style-detail-row {
     transform: translateY(-2px);
 }
 
-/* 고객용 버튼 (룩북, 헤어체험) 호버 효과 */
+/* 고객용 버튼 (룩북, 헤어체험) 호버 효과 - 앱 메인 컬러(핑크) */
 .modal-action-btn.customer-btn:hover {
-    border-color: rgba(201, 169, 110, 0.8) !important;
-    color: #D4B896 !important;
-    box-shadow: 0 4px 20px rgba(201, 169, 110, 0.15), inset 0 1px 0 rgba(255,255,255,0.1) !important;
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, rgba(233,30,99,0.25) 0%, rgba(194,24,91,0.2) 100%) !important;
+    border-color: rgba(233,30,99,0.6) !important;
+    color: #fff !important;
+    transform: translateY(-1px);
 }
 
 .modal-action-btn.customer-btn:active {
     transform: translateY(0);
-    box-shadow: 0 1px 8px rgba(0,0,0,0.3) !important;
+    background: linear-gradient(135deg, rgba(233,30,99,0.3) 0%, rgba(194,24,91,0.25) 100%) !important;
 }
 
-/* 디자이너용 버튼 (레시피) 호버 효과 */
+/* 디자이너용 버튼 (레시피) 호버 효과 - 미니멀 그레이 */
 .modal-action-btn.designer-btn:hover {
-    border-color: rgba(120, 144, 156, 0.8) !important;
-    color: #B0BEC5 !important;
-    background: rgba(120, 144, 156, 0.1) !important;
-    transform: translateY(-1px);
+    border-color: rgba(255,255,255,0.3) !important;
+    color: rgba(255,255,255,0.8) !important;
+    background: rgba(255,255,255,0.05) !important;
 }
 
 .modal-action-btn.designer-btn:active {
-    transform: translateY(0);
-    background: rgba(120, 144, 156, 0.05) !important;
+    background: rgba(255,255,255,0.08) !important;
 }
 
 .modal-action-btn.secondary {

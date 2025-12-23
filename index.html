@@ -1092,89 +1092,77 @@
 
         <!-- 액션 버튼들 -->
         <div class="style-modal-actions" style="
-            padding: 20px;
+            padding: 16px 20px;
             background: linear-gradient(180deg, rgba(17,17,17,1) 0%, rgba(10,10,10,1) 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         ">
-            <!-- 고객용 버튼 그룹 -->
+            <!-- 고객용 버튼 그룹 (핑크 강조) -->
             <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-                <!-- 룩북 버튼 (고객용) -->
+                <!-- 룩북 버튼 -->
                 <button class="modal-action-btn customer-btn" id="btnOpenLookbook" data-i18n="lookbook.button" style="
-                    background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
-                    border: 1px solid rgba(201, 169, 110, 0.4);
-                    color: #C9A96E;
+                    background: linear-gradient(135deg, rgba(233,30,99,0.15) 0%, rgba(194,24,91,0.1) 100%);
+                    border: 1px solid rgba(233,30,99,0.4);
+                    color: #F8BBD9;
                     font-weight: 500;
-                    padding: 12px 22px;
-                    border-radius: 8px;
+                    padding: 11px 20px;
+                    border-radius: 6px;
                     font-size: 13px;
                     cursor: pointer;
-                    box-shadow: 0 2px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    transition: all 0.25s ease;
-                    letter-spacing: 0.5px;
-                    position: relative;
-                    overflow: hidden;
+                    gap: 7px;
+                    transition: all 0.2s ease;
+                    letter-spacing: 0.3px;
                 ">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
                         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                     </svg>
                     <span>Lookbook</span>
                 </button>
-                <!-- 헤어체험 버튼 (고객용) -->
+                <!-- 헤어체험 버튼 -->
                 <button class="modal-action-btn customer-btn" id="btnHairTry" data-i18n="hairTry.button" style="
-                    background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
-                    border: 1px solid rgba(201, 169, 110, 0.4);
-                    color: #C9A96E;
+                    background: linear-gradient(135deg, rgba(233,30,99,0.15) 0%, rgba(194,24,91,0.1) 100%);
+                    border: 1px solid rgba(233,30,99,0.4);
+                    color: #F8BBD9;
                     font-weight: 500;
-                    padding: 12px 22px;
-                    border-radius: 8px;
+                    padding: 11px 20px;
+                    border-radius: 6px;
                     font-size: 13px;
                     cursor: pointer;
-                    box-shadow: 0 2px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    transition: all 0.25s ease;
-                    letter-spacing: 0.5px;
-                    position: relative;
-                    overflow: hidden;
+                    gap: 7px;
+                    transition: all 0.2s ease;
+                    letter-spacing: 0.3px;
                 ">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="8" r="5"></circle>
                         <path d="M3 21v-2a7 7 0 0 1 7-7h4a7 7 0 0 1 7 7v2"></path>
                     </svg>
                     <span>Hair Try</span>
                 </button>
             </div>
-            <!-- 디자이너용 버튼 (구분선 + PRO 표시) -->
-            <div style="width: 100%; display: flex; align-items: center; gap: 12px; padding: 8px 0 4px;">
-                <div style="flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);"></div>
-                <span style="font-size: 9px; color: rgba(255,255,255,0.3); letter-spacing: 2px; font-weight: 600;">DESIGNER</span>
-                <div style="flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);"></div>
-            </div>
+            <!-- 디자이너용 버튼 (회색 미니멀) -->
             <button class="modal-action-btn designer-btn" id="btnViewRecipe" data-i18n="recipe.button" style="
                 background: transparent;
-                border: 1px solid rgba(120, 144, 156, 0.5);
-                color: #90A4AE;
-                font-weight: 500;
-                padding: 10px 20px;
-                border-radius: 6px;
-                font-size: 12px;
+                border: 1px solid rgba(255,255,255,0.15);
+                color: rgba(255,255,255,0.5);
+                font-weight: 400;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-size: 11px;
                 cursor: pointer;
-                box-shadow: none;
                 display: flex;
                 align-items: center;
-                gap: 6px;
-                transition: all 0.25s ease;
-                letter-spacing: 0.5px;
+                gap: 5px;
+                transition: all 0.2s ease;
+                letter-spacing: 0.3px;
             ">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
                     <line x1="16" y1="13" x2="8" y2="13"></line>
