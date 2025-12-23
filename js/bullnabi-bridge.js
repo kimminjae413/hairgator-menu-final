@@ -709,12 +709,20 @@
             '691ceee09d868b5736d22007'
         ],
 
-        // 플랜 이름 매핑 (내부 키 → 한국어 표시)
-        PLAN_NAMES: {
-            'free': '무료',
-            'basic': '베이직',
-            'standard': '프로',
-            'business': '비즈니스'
+        // 플랜 이름 가져오기 (다국어 지원)
+        getPlanName(planKey) {
+            if (typeof t === 'function') {
+                const i18nKeys = {
+                    'free': 'pricing.freePlan',
+                    'basic': 'pricing.basicPlan',
+                    'standard': 'pricing.proPlan',
+                    'business': 'pricing.businessPlan'
+                };
+                return t(i18nKeys[planKey]) || planKey || 'Free';
+            }
+            // fallback (t 함수 없을 때)
+            const fallback = { 'free': '무료', 'basic': '베이직', 'standard': '프로', 'business': '비즈니스' };
+            return fallback[planKey] || planKey || '무료';
         },
 
         // 현재 사용자가 관리자인지 체크
@@ -751,13 +759,15 @@
             // sessionStatusDisplay 요소 업데이트 (index.html 사이드바)
             const sessionStatus = document.getElementById('sessionStatusDisplay');
             if (sessionStatus) {
-                const planName = this.PLAN_NAMES[plan] || plan || '무료';
+                const planName = this.getPlanName(plan);
+                const planLabel = (typeof t === 'function' ? t('pricing.plan') : null) || '플랜';
+                const currentLabel = (typeof t === 'function' ? t('pricing.currentPlanBtn') : null) || '현재 플랜';
                 if (isAdmin) {
-                    // 관리자: 플랜 + 토큰 (괄호 형식)
-                    sessionStatus.textContent = `${planName} 플랜 (토큰: ${newBalance.toLocaleString()})`;
+                    // 관리자: 플랜 + 토큰
+                    sessionStatus.textContent = `${planName} ${planLabel} (${newBalance.toLocaleString()})`;
                 } else {
                     // 일반 유저: 플랜만 표시
-                    sessionStatus.textContent = `현재 플랜: ${planName}`;
+                    sessionStatus.textContent = `${currentLabel}: ${planName}`;
                 }
             }
 
