@@ -174,9 +174,8 @@ function deductLookbookCreditFromMenu(creditCost) {
 function showTokenConfirmDialog(type) {
     return new Promise((resolve) => {
         // type: 'lookbook' 또는 'hairTry'
-        const tokenCost = HAIRGATOR_TOKEN_COSTS[type] || 200;
         const title = t(`${type}.confirmTitle`) || '토큰 차감 안내';
-        const defaultMessage = `${tokenCost.toLocaleString()}토큰이 차감됩니다.\n계속하시겠습니까?`;
+        const defaultMessage = '토큰이 차감됩니다.\n계속하시겠습니까?';
         const message = t(`${type}.confirmMessage`) || defaultMessage;
         const confirmText = t(`${type}.confirmButton`) || '동의';
         const cancelText = t(`${type}.cancelButton`) || '취소';
