@@ -2201,12 +2201,17 @@
 
             <!-- 필터 영역 -->
             <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; background: #1a1a1a; padding: 20px; border-radius: 12px;">
-                <div style="flex: 1; min-width: 150px;">
-                    <label style="display: block; color: #888; font-size: 12px; margin-bottom: 6px;">사용자 ID</label>
-                    <input type="text" id="paymentFilterUserId" placeholder="사용자 ID"
+                <div style="flex: 1; min-width: 120px;">
+                    <label style="display: block; color: #888; font-size: 12px; margin-bottom: 6px;">사용자 이름</label>
+                    <input type="text" id="paymentFilterUserName" placeholder="이름 검색"
                            style="width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 13px;">
                 </div>
                 <div style="flex: 1; min-width: 120px;">
+                    <label style="display: block; color: #888; font-size: 12px; margin-bottom: 6px;">사용자 ID</label>
+                    <input type="text" id="paymentFilterUserId" placeholder="ID 검색"
+                           style="width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 13px;">
+                </div>
+                <div style="flex: 1; min-width: 100px;">
                     <label style="display: block; color: #888; font-size: 12px; margin-bottom: 6px;">상태</label>
                     <select id="paymentFilterStatus" style="width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 13px;">
                         <option value="">전체</option>
@@ -6115,6 +6120,7 @@
 
         // 결제 내역 실시간 조회
         function loadPayments() {
+            const userName = document.getElementById('paymentFilterUserName').value.trim().toLowerCase();
             const userId = document.getElementById('paymentFilterUserId').value.trim();
             const status = document.getElementById('paymentFilterStatus').value;
             const period = document.getElementById('paymentFilterPeriod').value;
@@ -6150,6 +6156,7 @@
                         const data = { id: doc.id, ...doc.data() };
 
                         // 클라이언트 필터링
+                        if (userName && !data.userName?.toLowerCase().includes(userName)) return;
                         if (userId && !data.userId?.includes(userId)) return;
                         if (status && data.status !== status) return;
 
