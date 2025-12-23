@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>결제 완료 - HAIRGATOR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            max-width: 400px;
+        }
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top-color: #E91E63;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 24px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        p {
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+        }
+        .success-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        .error-message {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="content">
+        <div class="spinner"></div>
+        <h1>결제 확인 중...</h1>
+        <p>잠시만 기다려주세요.</p>
+    </div>
+
+    <script>
+        // URL 파라미터에서 결제 정보 추출
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentId = urlParams.get('paymentId') || urlParams.get('imp_uid');
+        const code = urlParams.get('code');
+        const message = urlParams.get('message');
+
+        console.log('💳 결제 완료 페이지 - 파라미터:', { paymentId, code, message });
+
+        async function processPayment() {
+            const container = document.getElementById('content');
+
+            // 결제 실패/취소 처리
+            if (code && code !== '0') {
+                container.innerHTML = `
+                    <div class="success-icon">❌</div>
+                    <h1>결제 실패</h1>
+                    <p>${message || '결제가 완료되지 않았습니다.'}</p>
+                    <div class="error-message">
+                        <p>3초 후 메인 페이지로 이동합니다...</p>
+                    </div>
+                `;
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 3000);
+                return;
+            }
+
+            // paymentId가 없으면 오류
+            if (!paymentId) {
+                container.innerHTML = `
+                    <div class="success-icon">⚠️</div>
+                    <h1>결제 정보 없음</h1>
+                    <p>결제 정보를 확인할 수 없습니다.</p>
+                    <div class="error-message">
+                        <p>3초 후 메인 페이지로 이동합니다...</p>
+                    </div>
+                `;
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 3000);
+                return;
+            }
+
+            try {
+                // sessionStorage에서 결제 정보 가져오기
+                const pendingPayment = sessionStorage.getItem('pending_payment');
+                let planKey = 'basic';
+                let userId = '';
+
+                if (pendingPayment) {
+                    const parsed = JSON.parse(pendingPayment);
+                    planKey = parsed.planKey || 'basic';
+                    userId = parsed.userId || '';
+                }
+
+                // userId가 없으면 localStorage에서 가져오기
+                if (!userId) {
+                    try {
+                        const bullnabiUser = localStorage.getItem('bullnabi_user');
+                        if (bullnabiUser) {
+                            userId = JSON.parse(bullnabiUser).id || '';
+                        }
+                    } catch (e) {}
+                }
+
+                console.log('💳 결제 검증 요청:', { paymentId, planKey, userId });
+
+                // 서버에 결제 검증 요청
+                const response = await fetch('/.netlify/functions/payment-verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paymentId: paymentId,
+                        planKey: planKey,
+                        userId: userId
+                    })
+                });
+
+                const result = await response.json();
+                console.log('💳 결제 검증 결과:', result);
+
+                if (result.success) {
+                    // 결제 성공
+                    container.innerHTML = `
+                        <div class="success-icon">✅</div>
+                        <h1>결제 완료!</h1>
+                        <p>${result.tokens?.toLocaleString() || ''} 토큰이 충전되었습니다.</p>
+                        <p style="margin-top: 12px;">3초 후 메인 페이지로 이동합니다...</p>
+                    `;
+
+                    // pending_payment 삭제
+                    sessionStorage.removeItem('pending_payment');
+
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 3000);
+                } else {
+                    throw new Error(result.error || '결제 검증에 실패했습니다.');
+                }
+
+            } catch (error) {
+                console.error('💳 결제 검증 오류:', error);
+                container.innerHTML = `
+                    <div class="success-icon">❌</div>
+                    <h1>결제 검증 실패</h1>
+                    <p>${error.message}</p>
+                    <div class="error-message">
+                        <p>문제가 지속되면 고객센터에 문의해주세요.</p>
+                        <p style="margin-top: 8px;">5초 후 메인 페이지로 이동합니다...</p>
+                    </div>
+                `;
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 5000);
+            }
+        }
+
+        // 페이지 로드 시 결제 처리
+        processPayment();
+    </script>
+</body>
+</html>

@@ -60,6 +60,14 @@ const HAIRGATOR_PAYMENT = {
 
     console.log('💳 결제 요청 시작:', { planKey, plan, paymentId, userId });
 
+    // 리다이렉션 모드를 위해 결제 정보 저장
+    sessionStorage.setItem('pending_payment', JSON.stringify({
+      paymentId,
+      planKey,
+      userId,
+      tokens: plan.tokens
+    }));
+
     try {
       // 포트원 V2 결제 요청
       const response = await PortOne.requestPayment({
@@ -186,25 +194,22 @@ const HAIRGATOR_PAYMENT = {
     }
 
     try {
-      // 로딩 표시
-      showPaymentLoading(true);
+      // ⚠️ 결제 팝업 열기 전에는 로딩 표시하지 않음 (팝업을 가리기 때문)
+      // 요금제 모달 닫기 (결제 팝업과 겹치지 않도록)
+      closePricingModal();
 
       const result = await this.requestPayment(planKey, userId, userEmail, userName);
 
       if (result.cancelled) {
-        // 사용자 취소
-        showPaymentLoading(false);
+        // 사용자 취소 - 모달 다시 열기
+        openPricingModal();
         return;
       }
 
       if (result.success) {
         // 성공 메시지
-        showPaymentLoading(false);
         const plan = this.plans[planKey];
         alert(`${plan.tokens.toLocaleString()} 토큰이 충전되었습니다!`);
-
-        // 모달 닫기 및 UI 업데이트
-        closePricingModal();
 
         // 토큰 표시 업데이트 (bullnabi-bridge.js의 함수 호출)
         if (window.BullnabiBridge && typeof window.BullnabiBridge.updateTokenDisplay === 'function') {
@@ -213,9 +218,10 @@ const HAIRGATOR_PAYMENT = {
       }
 
     } catch (error) {
-      showPaymentLoading(false);
       console.error('💳 구매 실패:', error);
       alert(error.message || '결제 처리 중 오류가 발생했습니다.');
+      // 실패 시 모달 다시 열기
+      openPricingModal();
     }
   },
 
