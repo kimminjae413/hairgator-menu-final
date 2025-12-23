@@ -762,15 +762,36 @@
                 }
             }
 
-            // planDisplay 요소 업데이트 (main.js 사이드바)
-            const planDisplayEl = document.getElementById('planDisplay');
-            if (planDisplayEl) {
+            // planBadge 요소 업데이트 (main.js 사이드바)
+            const planBadge = document.getElementById('planBadge');
+            const planIcon = document.getElementById('planIcon');
+            const planTextEl = document.getElementById('planText');
+            const tokenInfo = document.getElementById('tokenInfo');
+
+            // 플랜별 스타일 설정
+            const planStyles = {
+                'free': { icon: '🎁', gradient: 'linear-gradient(135deg, #78909c, #546e7a)', color: '#fff' },
+                'basic': { icon: '💎', gradient: 'linear-gradient(135deg, #4FC3F7, #0288D1)', color: '#fff' },
+                'standard': { icon: '🚀', gradient: 'linear-gradient(135deg, #BA68C8, #7B1FA2)', color: '#fff' },
+                'business': { icon: '👑', gradient: 'linear-gradient(135deg, #FFD54F, #FF8F00)', color: '#333' }
+            };
+            const style = planStyles[plan] || planStyles['free'];
+
+            if (planBadge) {
+                planBadge.style.background = style.gradient;
+                planBadge.style.color = style.color;
+                planBadge.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+            }
+            if (planIcon) planIcon.textContent = style.icon;
+            if (planTextEl) planTextEl.textContent = planName;
+
+            // 관리자만 토큰 정보 표시
+            if (tokenInfo) {
                 if (isAdmin) {
-                    // 관리자: 플랜 + 토큰
-                    planDisplayEl.textContent = `${planName} 플랜 (토큰: ${newBalance.toLocaleString()})`;
+                    tokenInfo.style.display = 'block';
+                    tokenInfo.innerHTML = `💰 토큰: <strong style="color: #4FC3F7;">${newBalance.toLocaleString()}</strong>`;
                 } else {
-                    // 일반 유저: 플랜만
-                    planDisplayEl.textContent = `현재 플랜: ${planName}`;
+                    tokenInfo.style.display = 'none';
                 }
             }
 
