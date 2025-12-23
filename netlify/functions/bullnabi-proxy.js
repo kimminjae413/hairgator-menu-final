@@ -214,7 +214,7 @@ async function handleGetUserToken(userId) {
 async function handleGetUserData(token, userId) {
     try {
         console.log('📊 사용자 데이터 조회:', userId);
-        
+
         const metaCode = '_users';
         const collectionName = '_users';
         const documentJson = {
@@ -226,6 +226,7 @@ async function handleGetUserData(token, userId) {
                     "nickname": 1,
                     "email": 1,
                     "remainCount": 1,
+                    "tokenBalance": 1,  // ⭐ 헤어게이터 토큰
                     "name": 1,
                     "phone": 1,
                     "_createTime": 1,
@@ -269,7 +270,7 @@ async function handleGetUserData(token, userId) {
         
         if (apiData.data && apiData.data.length > 0) {
             const userData = apiData.data[0];
-            
+
             return {
                 success: true,
                 data: [{
@@ -279,6 +280,7 @@ async function handleGetUserData(token, userId) {
                     email: userData.email || '',
                     phone: userData.phone || '',
                     remainCount: userData.remainCount || 0,
+                    tokenBalance: userData.tokenBalance || 0,  // ⭐ 헤어게이터 토큰
                     _createTime: userData._createTime,
                     _updateTime: userData._updateTime
                 }]
@@ -462,6 +464,208 @@ async function handleUseCredits(userId, uses, count) {
     }
 }
 
+// ========== 🎯 헤어게이터 토큰 (tokenBalance) 관리 ==========
+
+/**
+ * 토큰 잔액 조회 (tokenBalance)
+ */
+async function handleGetTokenBalance(userId) {
+    try {
+        console.log('💰 토큰 잔액 조회:', userId);
+
+        let adminToken = process.env.BULLNABI_TOKEN;
+        if (!adminToken) {
+            const refreshResult = await handleRefreshToken();
+            if (!refreshResult.success) {
+                return { success: false, error: '토큰 발급 실패' };
+            }
+            adminToken = refreshResult.token;
+        }
+
+        const result = await handleGetUserData(adminToken, userId);
+        if (!result.success || !result.data || result.data.length === 0) {
+            return { success: false, error: '사용자 정보를 찾을 수 없습니다' };
+        }
+
+        const userData = result.data[0];
+        return {
+            success: true,
+            tokenBalance: userData.tokenBalance || 0,
+            userId: userId
+        };
+
+    } catch (error) {
+        console.error('❌ 토큰 잔액 조회 오류:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * 토큰 잔액 설정 (관리자용)
+ */
+async function handleSetTokenBalance(userId, newBalance) {
+    try {
+        console.log('⚙️ 토큰 잔액 설정:', { userId, newBalance });
+
+        let adminToken = process.env.BULLNABI_TOKEN;
+        if (!adminToken) {
+            const refreshResult = await handleRefreshToken();
+            if (!refreshResult.success) {
+                return { success: false, error: '토큰 발급 실패' };
+            }
+            adminToken = refreshResult.token;
+        }
+
+        // 현재 잔액 조회
+        const currentData = await handleGetUserData(adminToken, userId);
+        const previousBalance = currentData.success && currentData.data?.[0]
+            ? currentData.data[0].tokenBalance || 0
+            : 0;
+
+        // _users 업데이트
+        const updateData = {
+            "_id": { "$oid": userId },
+            "tokenBalance": newBalance
+        };
+
+        const updateParams = new URLSearchParams();
+        updateParams.append('metaCode', '_users');
+        updateParams.append('collectionName', '_users');
+        updateParams.append('documentJson', JSON.stringify(updateData));
+
+        const FormData = require('form-data');
+        const updateFormData = new FormData();
+
+        const updateResponse = await fetch(
+            `http://drylink.ohmyapp.io/bnb/update?${updateParams.toString()}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${adminToken}`,
+                    'Accept': 'application/json',
+                    ...updateFormData.getHeaders()
+                },
+                body: updateFormData
+            }
+        );
+
+        const updateResult = await updateResponse.json();
+        console.log('💾 토큰 설정 결과:', updateResult);
+
+        if (updateResult.code === '1' || updateResult.code === 1 || updateResult.success) {
+            console.log('✅ 토큰 설정 완료:', { userId, previousBalance, newBalance });
+
+            return {
+                success: true,
+                previousBalance: previousBalance,
+                newBalance: newBalance,
+                userId: userId
+            };
+        }
+
+        return { success: false, error: '토큰 설정 실패', updateResult };
+
+    } catch (error) {
+        console.error('❌ 토큰 설정 오류:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * 토큰 차감 (헤어게이터 기능 사용 시)
+ */
+async function handleDeductTokenBalance(userId, amount, feature) {
+    try {
+        console.log('💳 토큰 차감:', { userId, amount, feature });
+
+        let adminToken = process.env.BULLNABI_TOKEN;
+        if (!adminToken) {
+            const refreshResult = await handleRefreshToken();
+            if (!refreshResult.success) {
+                return { success: false, error: '토큰 발급 실패' };
+            }
+            adminToken = refreshResult.token;
+        }
+
+        // 현재 잔액 조회
+        const currentData = await handleGetUserData(adminToken, userId);
+        if (!currentData.success || !currentData.data || currentData.data.length === 0) {
+            return { success: false, error: '사용자 정보를 찾을 수 없습니다' };
+        }
+
+        const userData = currentData.data[0];
+        const currentBalance = userData.tokenBalance || 0;
+        const userName = userData.nickname || userData.name || null;
+
+        if (currentBalance < amount) {
+            return {
+                success: false,
+                error: '토큰이 부족합니다',
+                currentBalance: currentBalance,
+                required: amount
+            };
+        }
+
+        const newBalance = currentBalance - amount;
+
+        // _users 업데이트
+        const updateData = {
+            "_id": { "$oid": userId },
+            "tokenBalance": newBalance
+        };
+
+        const updateParams = new URLSearchParams();
+        updateParams.append('metaCode', '_users');
+        updateParams.append('collectionName', '_users');
+        updateParams.append('documentJson', JSON.stringify(updateData));
+
+        const FormData = require('form-data');
+        const updateFormData = new FormData();
+
+        const updateResponse = await fetch(
+            `http://drylink.ohmyapp.io/bnb/update?${updateParams.toString()}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${adminToken}`,
+                    'Accept': 'application/json',
+                    ...updateFormData.getHeaders()
+                },
+                body: updateFormData
+            }
+        );
+
+        const updateResult = await updateResponse.json();
+        console.log('💾 토큰 차감 결과:', updateResult);
+
+        if (updateResult.code === '1' || updateResult.code === 1 || updateResult.success) {
+            console.log('✅ 토큰 차감 완료:', { userId, feature, deducted: amount, newBalance });
+
+            // Firestore에 사용 로그 저장 (비동기)
+            logCreditUsage(userId, feature, amount, {
+                userName: userName,
+                previousBalance: currentBalance,
+                newBalance: newBalance,
+                type: 'tokenBalance'
+            }).catch(err => console.error('⚠️ 로그 저장 실패 (무시):', err.message));
+
+            return {
+                success: true,
+                previousBalance: currentBalance,
+                deducted: amount,
+                newBalance: newBalance,
+                feature: feature
+            };
+        }
+
+        return { success: false, error: '토큰 차감 실패', updateResult };
+
+    } catch (error) {
+        console.error('❌ 토큰 차감 오류:', error);
+        return { success: false, error: error.message };
+    }
+}
+
 // ========== 메인 핸들러 ==========
 
 exports.handler = async (event, context) => {
@@ -552,7 +756,7 @@ exports.handler = async (event, context) => {
             };
         }
 
-        // 4. 토큰 사용 (차감)
+        // 4. 토큰 사용 (차감) - 기존 remainCount용
         if (action === 'useCredits') {
             console.log('💳 토큰 차감 요청 처리');
 
@@ -565,6 +769,68 @@ exports.handler = async (event, context) => {
             }
 
             const result = await handleUseCredits(userId, data.uses, data.count);
+            return {
+                statusCode: result.success ? 200 : 500,
+                headers: corsHeaders,
+                body: JSON.stringify(result)
+            };
+        }
+
+        // ========== 🎯 헤어게이터 토큰 (tokenBalance) ==========
+
+        // 5. 토큰 잔액 조회
+        if (action === 'getTokenBalance') {
+            console.log('💰 토큰 잔액 조회 요청');
+
+            if (!userId) {
+                return {
+                    statusCode: 400,
+                    headers: corsHeaders,
+                    body: JSON.stringify({ success: false, error: 'userId required' })
+                };
+            }
+
+            const result = await handleGetTokenBalance(userId);
+            return {
+                statusCode: result.success ? 200 : 500,
+                headers: corsHeaders,
+                body: JSON.stringify(result)
+            };
+        }
+
+        // 6. 토큰 잔액 설정 (관리자용)
+        if (action === 'setTokenBalance') {
+            console.log('⚙️ 토큰 잔액 설정 요청');
+
+            if (!userId || data?.newBalance === undefined) {
+                return {
+                    statusCode: 400,
+                    headers: corsHeaders,
+                    body: JSON.stringify({ success: false, error: 'userId and newBalance required' })
+                };
+            }
+
+            const result = await handleSetTokenBalance(userId, data.newBalance);
+            return {
+                statusCode: result.success ? 200 : 500,
+                headers: corsHeaders,
+                body: JSON.stringify(result)
+            };
+        }
+
+        // 7. 토큰 차감 (헤어게이터 기능 사용)
+        if (action === 'deductTokenBalance') {
+            console.log('💳 토큰 차감 요청 (tokenBalance)');
+
+            if (!userId || !data?.amount || !data?.feature) {
+                return {
+                    statusCode: 400,
+                    headers: corsHeaders,
+                    body: JSON.stringify({ success: false, error: 'userId, amount, feature required' })
+                };
+            }
+
+            const result = await handleDeductTokenBalance(userId, data.amount, data.feature);
             return {
                 statusCode: result.success ? 200 : 500,
                 headers: corsHeaders,

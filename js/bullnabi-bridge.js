@@ -405,7 +405,7 @@
             chatbot: 10
         },
 
-        // 토큰 잔액 조회 (클라이언트 측 Firebase 직접 사용)
+        // 토큰 잔액 조회 (불나비 API 사용)
         async getTokenBalance(userId) {
             try {
                 if (!userId) {
@@ -418,64 +418,36 @@
                     return { success: false, error: 'userId required' };
                 }
 
-                // 클라이언트 측 Firebase Firestore 직접 조회
-                if (window.firebase && window.firebase.firestore) {
-                    const db = window.firebase.firestore();
-                    const doc = await db.collection('user_tokens').doc(userId).get();
-
-                    if (doc.exists) {
-                        const data = doc.data();
-                        const balance = data.tokenBalance || 0;
-                        console.log('💰 토큰 잔액 조회 (Firestore):', balance);
-                        return { success: true, tokenBalance: balance, plan: data.plan || 'free' };
-                    } else {
-                        // 신규 사용자: 무료 200 토큰 지급
-                        const FREE_INITIAL_TOKENS = 200;
-                        console.log('🎁 신규 사용자 감지! 무료 토큰 지급:', FREE_INITIAL_TOKENS);
-
-                        await db.collection('user_tokens').doc(userId).set({
-                            tokenBalance: FREE_INITIAL_TOKENS,
-                            plan: 'free',
-                            createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
-                        });
-
-                        // 토큰 지급 로그 기록
-                        await db.collection('token_logs').add({
-                            userId: userId,
-                            action: 'welcome_bonus',
-                            tokensAdded: FREE_INITIAL_TOKENS,
-                            previousBalance: 0,
-                            newBalance: FREE_INITIAL_TOKENS,
-                            timestamp: window.firebase.firestore.FieldValue.serverTimestamp(),
-                            metadata: { reason: '신규 가입 무료 토큰' }
-                        });
-
-                        console.log('✅ 신규 사용자 토큰 지급 완료:', FREE_INITIAL_TOKENS);
-                        return { success: true, tokenBalance: FREE_INITIAL_TOKENS, isNewUser: true, plan: 'free' };
-                    }
-                }
-
-                // Firebase가 없으면 서버 API 폴백
-                const response = await fetch('/.netlify/functions/token-api', {
+                // 불나비 API로 tokenBalance 조회
+                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        action: 'getBalance',
+                        action: 'getTokenBalance',
                         userId: userId
                     })
                 });
 
                 const result = await response.json();
-                console.log('💰 토큰 잔액 조회 (API):', result);
-                return result;
+
+                if (result.success) {
+                    console.log('💰 토큰 잔액 조회 (불나비 API):', result.tokenBalance);
+                    return {
+                        success: true,
+                        tokenBalance: result.tokenBalance || 0,
+                        plan: 'free' // 플랜은 userInfo에서 별도 관리
+                    };
+                }
+
+                console.warn('⚠️ 토큰 잔액 조회 실패:', result.error);
+                return { success: false, tokenBalance: 0, error: result.error };
             } catch (error) {
                 console.error('❌ 토큰 잔액 조회 실패:', error);
                 return { success: false, error: error.message };
             }
         },
 
-        // 기능 사용 가능 여부 확인 (클라이언트 측 Firebase 직접 사용)
+        // 기능 사용 가능 여부 확인 (불나비 API 사용)
         async canUseFeature(userId, feature) {
             try {
                 if (!userId) {
@@ -492,48 +464,35 @@
                     return { success: false, canUse: false, error: `Unknown feature: ${feature}` };
                 }
 
-                // 클라이언트 측 Firebase Firestore 직접 조회
-                if (window.firebase && window.firebase.firestore) {
-                    const db = window.firebase.firestore();
-                    const doc = await db.collection('user_tokens').doc(userId).get();
-
-                    let currentBalance = 0;
-                    if (doc.exists) {
-                        currentBalance = doc.data().tokenBalance || 0;
-                    }
-
-                    const canUse = currentBalance >= cost;
-                    console.log(`🔍 ${feature} 사용 가능 여부 (Firestore):`, { canUse, currentBalance, requiredTokens: cost });
-                    return {
-                        success: true,
-                        canUse: canUse,
-                        currentBalance: currentBalance,
-                        requiredTokens: cost,
-                        shortfall: canUse ? 0 : cost - currentBalance
-                    };
-                }
-
-                // Firebase가 없으면 서버 API 폴백
-                const response = await fetch('/.netlify/functions/token-api', {
+                // 불나비 API로 tokenBalance 조회
+                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        action: 'canUse',
-                        userId: userId,
-                        feature: feature
+                        action: 'getTokenBalance',
+                        userId: userId
                     })
                 });
 
                 const result = await response.json();
-                console.log(`🔍 ${feature} 사용 가능 여부 (API):`, result);
-                return result;
+                const currentBalance = result.success ? (result.tokenBalance || 0) : 0;
+                const canUse = currentBalance >= cost;
+
+                console.log(`🔍 ${feature} 사용 가능 여부 (불나비 API):`, { canUse, currentBalance, requiredTokens: cost });
+                return {
+                    success: true,
+                    canUse: canUse,
+                    currentBalance: currentBalance,
+                    requiredTokens: cost,
+                    shortfall: canUse ? 0 : cost - currentBalance
+                };
             } catch (error) {
                 console.error('❌ 기능 사용 가능 여부 확인 실패:', error);
                 return { success: false, canUse: false, error: error.message };
             }
         },
 
-        // 토큰 차감 (클라이언트 측 Firebase 직접 사용)
+        // 토큰 차감 (불나비 API 사용)
         async deductTokens(userId, feature, metadata = {}) {
             try {
                 if (!userId) {
@@ -550,88 +509,47 @@
                     return { success: false, error: `Unknown feature: ${feature}` };
                 }
 
-                // 클라이언트 측 Firebase Firestore 직접 사용
-                if (window.firebase && window.firebase.firestore) {
-                    const db = window.firebase.firestore();
-                    const docRef = db.collection('user_tokens').doc(userId);
-                    const doc = await docRef.get();
-
-                    let currentBalance = 0;
-                    let currentPlan = 'free';
-                    if (doc.exists) {
-                        currentBalance = doc.data().tokenBalance || 0;
-                        currentPlan = doc.data().plan || 'free';
-                    }
-
-                    if (currentBalance < cost) {
-                        console.warn(`⚠️ 토큰 부족: 현재 ${currentBalance}, 필요 ${cost}`);
-                        return { success: false, error: '토큰이 부족합니다', code: 'INSUFFICIENT_TOKENS' };
-                    }
-
-                    const newBalance = currentBalance - cost;
-
-                    // 토큰 차감
-                    await docRef.set({
-                        tokenBalance: newBalance,
-                        updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
-
-                    // 사용 로그 저장
-                    await db.collection('token_logs').add({
-                        userId: userId,
-                        action: feature,
-                        tokensUsed: cost,
-                        previousBalance: currentBalance,
-                        newBalance: newBalance,
-                        timestamp: window.firebase.firestore.FieldValue.serverTimestamp(),
-                        metadata: metadata
-                    });
-
-                    console.log(`✅ 토큰 차감 완료 (Firestore): ${feature}, ${cost}토큰 사용, 잔액: ${newBalance}`);
-
-                    // UI 업데이트
-                    this.updateTokenDisplay(newBalance, currentPlan);
-
-                    return {
-                        success: true,
-                        previousBalance: currentBalance,
-                        deducted: cost,
-                        newBalance: newBalance
-                    };
-                }
-
-                // Firebase가 없으면 서버 API 폴백
-                const response = await fetch('/.netlify/functions/token-api', {
+                // 불나비 API로 토큰 차감
+                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        action: 'deduct',
+                        action: 'deductTokenBalance',
                         userId: userId,
-                        feature: feature,
-                        metadata: metadata
+                        data: {
+                            amount: cost,
+                            feature: feature
+                        }
                     })
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    console.log(`✅ 토큰 차감 완료 (API): ${feature}, ${result.deducted}토큰 사용, 잔액: ${result.newBalance}`);
-                    // 현재 플랜 가져오기 (캐시된 값 사용)
+                    console.log(`✅ 토큰 차감 완료 (불나비 API): ${feature}, ${cost}토큰 사용, 잔액: ${result.newBalance}`);
+
+                    // UI 업데이트
                     const cachedPlan = window.currentDesigner?.plan ||
                         JSON.parse(localStorage.getItem('bullnabi_user') || '{}').plan || 'free';
                     this.updateTokenDisplay(result.newBalance, cachedPlan);
+
+                    return {
+                        success: true,
+                        previousBalance: result.previousBalance,
+                        deducted: cost,
+                        newBalance: result.newBalance
+                    };
                 } else {
                     console.warn(`⚠️ 토큰 차감 실패: ${result.error}`);
+                    return result;
                 }
-
-                return result;
             } catch (error) {
                 console.error('❌ 토큰 차감 실패:', error);
                 return { success: false, error: error.message };
             }
         },
 
-        // ⭐ 동적 크레딧 차감 (토큰 사용량 기반)
+        // ⭐ 동적 크레딧 차감 (토큰 사용량 기반) - 불나비 API 사용
         async deductTokensDynamic(userId, amount, feature, metadata = {}) {
             try {
                 if (!userId) {
@@ -647,57 +565,40 @@
                     return { success: false, error: 'Invalid amount' };
                 }
 
-                // 클라이언트 측 Firebase Firestore 직접 사용
-                if (window.firebase && window.firebase.firestore) {
-                    const db = window.firebase.firestore();
-                    const docRef = db.collection('user_tokens').doc(userId);
-                    const doc = await docRef.get();
-
-                    let currentBalance = 0;
-                    let currentPlan = 'free';
-                    if (doc.exists) {
-                        currentBalance = doc.data().tokenBalance || 0;
-                        currentPlan = doc.data().plan || 'free';
-                    }
-
-                    if (currentBalance < amount) {
-                        console.warn(`⚠️ 크레딧 부족: 현재 ${currentBalance}, 필요 ${amount}`);
-                        return { success: false, error: '크레딧이 부족합니다', code: 'INSUFFICIENT_TOKENS' };
-                    }
-
-                    const newBalance = currentBalance - amount;
-
-                    // 크레딧 차감
-                    await docRef.set({
-                        tokenBalance: newBalance,
-                        updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
-
-                    // 사용 로그 저장
-                    await db.collection('token_logs').add({
+                // 불나비 API로 토큰 차감
+                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'deductTokenBalance',
                         userId: userId,
-                        action: feature,
-                        tokensUsed: amount,
-                        previousBalance: currentBalance,
-                        newBalance: newBalance,
-                        timestamp: window.firebase.firestore.FieldValue.serverTimestamp(),
-                        metadata: metadata
-                    });
+                        data: {
+                            amount: amount,
+                            feature: feature
+                        }
+                    })
+                });
 
-                    console.log(`✅ 동적 크레딧 차감 완료: ${feature}, ${amount}크레딧 사용, 잔액: ${newBalance}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    console.log(`✅ 동적 크레딧 차감 완료 (불나비 API): ${feature}, ${amount}크레딧 사용, 잔액: ${result.newBalance}`);
 
                     // UI 업데이트
-                    this.updateTokenDisplay(newBalance, currentPlan);
+                    const cachedPlan = window.currentDesigner?.plan ||
+                        JSON.parse(localStorage.getItem('bullnabi_user') || '{}').plan || 'free';
+                    this.updateTokenDisplay(result.newBalance, cachedPlan);
 
                     return {
                         success: true,
-                        previousBalance: currentBalance,
+                        previousBalance: result.previousBalance,
                         deducted: amount,
-                        newBalance: newBalance
+                        newBalance: result.newBalance
                     };
+                } else {
+                    console.warn(`⚠️ 동적 크레딧 차감 실패: ${result.error}`);
+                    return result;
                 }
-
-                return { success: false, error: 'Firebase not available' };
             } catch (error) {
                 console.error('❌ 동적 크레딧 차감 실패:', error);
                 return { success: false, error: error.message };
