@@ -792,7 +792,7 @@
                 planBadge.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
             }
             if (planIcon) planIcon.textContent = style.icon;
-            if (planTextEl) planTextEl.textContent = planName;
+            if (planTextEl) planTextEl.textContent = this.getPlanName(plan);
 
             // 관리자만 토큰 정보 표시
             if (tokenInfo) {
