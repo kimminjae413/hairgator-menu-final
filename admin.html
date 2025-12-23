@@ -1189,7 +1189,12 @@
                 opacity: 1;
             }
         }
-        
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
         /* 토큰 정보 박스 (화이트 톤) */
         .token-info-box {
             background: linear-gradient(135deg, #f8f9fa, #ffffff);
@@ -3225,6 +3230,13 @@
             // 통계 탭으로 전환 시 데이터 로드
             if (tabName === 'stats') {
                 updateStats();
+            }
+
+            // 결제 내역 탭에서 벗어나면 실시간 리스너 해제
+            if (tabName !== 'payments' && paymentsUnsubscribe) {
+                paymentsUnsubscribe();
+                paymentsUnsubscribe = null;
+                console.log('💳 결제 내역 실시간 리스너 해제');
             }
         }
 
@@ -6091,6 +6103,7 @@
         let paymentsData = [];
         let paymentsLastDoc = null;
         let selectedPayment = null;
+        let paymentsUnsubscribe = null; // 실시간 리스너 해제용
 
         // 요금제 이름 매핑
         const PLAN_NAMES = {
@@ -6100,14 +6113,20 @@
             'tokens_5000': '추가 토큰'
         };
 
-        // 결제 내역 조회
-        async function loadPayments() {
+        // 결제 내역 실시간 조회
+        function loadPayments() {
             const userId = document.getElementById('paymentFilterUserId').value.trim();
             const status = document.getElementById('paymentFilterStatus').value;
             const period = document.getElementById('paymentFilterPeriod').value;
 
             const tableBody = document.getElementById('paymentsTableBody');
-            tableBody.innerHTML = '<tr><td colspan="6" style="padding: 40px; text-align: center; color: #888;"><span class="loading-spinner"></span> 로딩 중...</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="6" style="padding: 40px; text-align: center; color: #888;"><span class="loading-spinner"></span> 실시간 연결 중...</td></tr>';
+
+            // 기존 리스너 해제
+            if (paymentsUnsubscribe) {
+                paymentsUnsubscribe();
+                paymentsUnsubscribe = null;
+            }
 
             try {
                 // 기간 필터 계산
@@ -6124,42 +6143,74 @@
                     query = query.where('createdAt', '>=', firebase.firestore.Timestamp.fromDate(startDate));
                 }
 
-                const snapshot = await query.limit(100).get();
+                // 실시간 리스너 설정
+                paymentsUnsubscribe = query.limit(100).onSnapshot((snapshot) => {
+                    paymentsData = [];
+                    snapshot.forEach(doc => {
+                        const data = { id: doc.id, ...doc.data() };
 
-                paymentsData = [];
-                snapshot.forEach(doc => {
-                    const data = { id: doc.id, ...doc.data() };
+                        // 클라이언트 필터링
+                        if (userId && !data.userId?.includes(userId)) return;
+                        if (status && data.status !== status) return;
 
-                    // 클라이언트 필터링
-                    if (userId && !data.userId?.includes(userId)) return;
-                    if (status && data.status !== status) return;
+                        paymentsData.push(data);
+                    });
 
-                    paymentsData.push(data);
+                    paymentsLastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+
+                    // 통계 계산
+                    const completedPayments = paymentsData.filter(p => p.status === 'completed');
+                    const cancelledPayments = paymentsData.filter(p => p.status === 'cancelled' || p.status === 'refunded');
+                    const totalAmount = completedPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+
+                    document.getElementById('paymentTotalCount').textContent = completedPayments.length;
+                    document.getElementById('paymentTotalAmount').textContent = `₩${totalAmount.toLocaleString()}`;
+                    document.getElementById('paymentCancelCount').textContent = cancelledPayments.length;
+
+                    // 테이블 렌더링
+                    renderPaymentsTable();
+
+                    // 더보기 버튼 (실시간 모드에서는 숨김)
+                    document.getElementById('paymentLoadMore').style.display = 'none';
+
+                    // 실시간 상태 표시
+                    updateRealtimeStatus(true);
+
+                }, (error) => {
+                    console.error('결제 내역 실시간 조회 오류:', error);
+                    tableBody.innerHTML = `<tr><td colspan="6" style="padding: 40px; text-align: center; color: #f5576c;">❌ 연결 실패: ${error.message}</td></tr>`;
+                    showToast('실시간 연결 실패');
+                    updateRealtimeStatus(false);
                 });
 
-                paymentsLastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
-
-                // 통계 계산
-                const completedPayments = paymentsData.filter(p => p.status === 'completed');
-                const cancelledPayments = paymentsData.filter(p => p.status === 'cancelled' || p.status === 'refunded');
-                const totalAmount = completedPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
-
-                document.getElementById('paymentTotalCount').textContent = completedPayments.length;
-                document.getElementById('paymentTotalAmount').textContent = `₩${totalAmount.toLocaleString()}`;
-                document.getElementById('paymentCancelCount').textContent = cancelledPayments.length;
-
-                // 테이블 렌더링
-                renderPaymentsTable();
-
-                // 더보기 버튼
-                document.getElementById('paymentLoadMore').style.display = snapshot.docs.length >= 100 ? 'block' : 'none';
-
-                showToast(`${paymentsData.length}건 조회 완료`);
+                showToast('🔴 실시간 모드 활성화');
 
             } catch (error) {
                 console.error('결제 내역 조회 오류:', error);
                 tableBody.innerHTML = `<tr><td colspan="6" style="padding: 40px; text-align: center; color: #f5576c;">❌ 조회 실패: ${error.message}</td></tr>`;
                 showToast('결제 내역 조회 실패');
+            }
+        }
+
+        // 실시간 상태 표시 업데이트
+        function updateRealtimeStatus(isConnected) {
+            let statusEl = document.getElementById('paymentsRealtimeStatus');
+            if (!statusEl) {
+                // 상태 표시 요소 생성
+                const filterDiv = document.querySelector('#paymentsTab .section > div:first-of-type');
+                if (filterDiv) {
+                    statusEl = document.createElement('div');
+                    statusEl.id = 'paymentsRealtimeStatus';
+                    statusEl.style.cssText = 'margin-top: 10px; font-size: 12px; display: flex; align-items: center; gap: 6px;';
+                    filterDiv.appendChild(statusEl);
+                }
+            }
+            if (statusEl) {
+                if (isConnected) {
+                    statusEl.innerHTML = '<span style="width: 8px; height: 8px; background: #43e97b; border-radius: 50%; animation: pulse 1.5s infinite;"></span> <span style="color: #43e97b;">실시간 연결됨</span>';
+                } else {
+                    statusEl.innerHTML = '<span style="width: 8px; height: 8px; background: #f5576c; border-radius: 50%;"></span> <span style="color: #f5576c;">연결 끊김</span>';
+                }
             }
         }
 
