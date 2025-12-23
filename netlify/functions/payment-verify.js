@@ -32,6 +32,14 @@ const PLANS = {
 // 포트원 API 설정
 const PORTONE_API_SECRET = process.env.PORTONE_API_SECRET;
 
+// 환경변수 체크 로그
+console.log('🔑 환경변수 체크:', {
+  hasPortoneSecret: !!PORTONE_API_SECRET,
+  hasFirebaseProjectId: !!process.env.FIREBASE_PROJECT_ID,
+  hasFirebaseClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
+  hasFirebasePrivateKey: !!process.env.FIREBASE_PRIVATE_KEY
+});
+
 exports.handler = async (event) => {
   // CORS 헤더
   const headers = {
@@ -54,6 +62,16 @@ exports.handler = async (event) => {
   }
 
   try {
+    // 환경변수 체크
+    if (!PORTONE_API_SECRET) {
+      console.error('❌ PORTONE_API_SECRET 환경변수가 설정되지 않았습니다.');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: '결제 시스템 설정 오류 (API_SECRET)' })
+      };
+    }
+
     const { paymentId, planKey, userId, userName } = JSON.parse(event.body);
 
     console.log('💳 결제 검증 요청:', { paymentId, planKey, userId, userName });
