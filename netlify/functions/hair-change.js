@@ -5,9 +5,6 @@
 // 1. action: 'start' - vModel Task 생성 후 taskId 반환 (빠름)
 // 2. action: 'status' - taskId로 상태 확인, 성공 시 Gemini 후처리
 
-// Node.js 환경에서 fetch 지원 (동적 import)
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-
 const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
