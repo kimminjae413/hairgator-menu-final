@@ -400,7 +400,7 @@
         // 토큰 비용 상수
         TOKEN_COSTS: {
             lookbook: 200,
-            hairTry: 300,
+            hairTry: 350,
             chatbot: 10
         },
 
