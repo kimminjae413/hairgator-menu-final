@@ -130,8 +130,8 @@ exports.handler = async (event) => {
       };
     }
 
-    // 5. Firestore user_tokens에 토큰 충전
-    const chargeResult = await chargeTokens(userId, plan.tokens);
+    // 5. Firestore user_tokens에 토큰 충전 + 플랜 업그레이드
+    const chargeResult = await chargeTokens(userId, plan.tokens, planKey);
 
     if (!chargeResult.success) {
       return {
@@ -164,7 +164,9 @@ exports.handler = async (event) => {
         planKey: planKey,
         amount: plan.price,
         previousTokens: chargeResult.previousTokens,
-        newTokens: chargeResult.newTokens
+        newTokens: chargeResult.newTokens,
+        previousPlan: chargeResult.previousPlan,
+        newPlan: chargeResult.newPlan
       }
     });
 
@@ -172,7 +174,8 @@ exports.handler = async (event) => {
       paymentId,
       userId,
       tokens: plan.tokens,
-      newBalance: chargeResult.newTokens
+      newBalance: chargeResult.newTokens,
+      plan: chargeResult.newPlan
     });
 
     return {
@@ -182,6 +185,7 @@ exports.handler = async (event) => {
         success: true,
         tokens: plan.tokens,
         newBalance: chargeResult.newTokens,
+        plan: chargeResult.newPlan,
         message: `${plan.tokens.toLocaleString()} 토큰이 충전되었습니다.`
       })
     };
@@ -226,9 +230,9 @@ async function verifyPaymentWithPortone(paymentId) {
 }
 
 /**
- * Firestore user_tokens에 토큰 충전
+ * Firestore user_tokens에 토큰 충전 + 플랜 업그레이드
  */
-async function chargeTokens(userId, tokens) {
+async function chargeTokens(userId, tokens, planKey) {
   try {
     const docRef = db.collection('user_tokens').doc(userId);
 
@@ -237,29 +241,48 @@ async function chargeTokens(userId, tokens) {
       const doc = await transaction.get(docRef);
 
       let currentTokens = 0;
+      let currentPlan = 'free';
       if (doc.exists) {
         currentTokens = doc.data().tokenBalance || 0;
+        currentPlan = doc.data().plan || 'free';
       }
 
       const newTokens = currentTokens + tokens;
 
+      // 플랜 결정: 추가 토큰 구매(tokens_5000)가 아니면 해당 플랜으로 업그레이드
+      // 플랜 우선순위: business > standard > basic > free
+      const planPriority = { 'free': 0, 'basic': 1, 'standard': 2, 'business': 3, 'tokens_5000': -1 };
+      let newPlan = currentPlan;
+
+      if (planKey !== 'tokens_5000') {
+        // 새 플랜이 현재 플랜보다 높거나 같으면 업그레이드
+        if ((planPriority[planKey] || 0) >= (planPriority[currentPlan] || 0)) {
+          newPlan = planKey;
+        }
+      }
+
       transaction.set(docRef, {
         tokenBalance: newTokens,
+        plan: newPlan,
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
 
       return {
         previousTokens: currentTokens,
-        newTokens: newTokens
+        newTokens: newTokens,
+        previousPlan: currentPlan,
+        newPlan: newPlan
       };
     });
 
-    console.log(`✅ 토큰 충전 완료: userId=${userId}, added=${tokens}, newBalance=${result.newTokens}`);
+    console.log(`✅ 토큰 충전 완료: userId=${userId}, added=${tokens}, newBalance=${result.newTokens}, plan=${result.newPlan}`);
 
     return {
       success: true,
       previousTokens: result.previousTokens,
-      newTokens: result.newTokens
+      newTokens: result.newTokens,
+      previousPlan: result.previousPlan,
+      newPlan: result.newPlan
     };
 
   } catch (error) {
