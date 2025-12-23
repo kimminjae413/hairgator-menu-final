@@ -370,25 +370,25 @@ document.addEventListener('DOMContentLoaded', function() {
         // 플랜 설정 (이름, 아이콘, 그라데이션) - 다국어 지원
         const planConfig = {
             'free': {
-                name: t('pricing.freePlan') || '무료',
+                name: t('payment.freePlan') || '무료',
                 icon: '🎁',
                 gradient: 'linear-gradient(135deg, #78909c, #546e7a)',
                 color: '#fff'
             },
             'basic': {
-                name: t('pricing.basicPlan') || '베이직',
+                name: t('payment.basicPlan') || '베이직',
                 icon: '💎',
                 gradient: 'linear-gradient(135deg, #4FC3F7, #0288D1)',
                 color: '#fff'
             },
             'standard': {
-                name: t('pricing.proPlan') || '프로',
+                name: t('payment.proPlan') || '프로',
                 icon: '🚀',
                 gradient: 'linear-gradient(135deg, #BA68C8, #7B1FA2)',
                 color: '#fff'
             },
             'business': {
-                name: t('pricing.businessPlan') || '비즈니스',
+                name: t('payment.businessPlan') || '비즈니스',
                 icon: '👑',
                 gradient: 'linear-gradient(135deg, #FFD54F, #FF8F00)',
                 color: '#333'
