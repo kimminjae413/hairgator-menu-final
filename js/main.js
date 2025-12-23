@@ -396,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         // 관리자 ID 목록
-        const ADMIN_IDS = ['691ceee09d868b5736d22007', '6536474789a3ad49553b46d7'];
+        const ADMIN_IDS = ['691ceee09d868b5736d22007'];
 
         const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
         if (bullnabiUser) {
@@ -427,8 +427,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // 관리자만 토큰 정보 표시
             if (tokenInfo) {
                 if (isAdmin) {
-                    tokenInfo.style.display = 'block';
-                    tokenInfo.innerHTML = `💰 토큰: <strong style="color: #4FC3F7;">${tokenBalance.toLocaleString()}</strong>`;
+                    tokenInfo.style.display = 'inline';
+                    tokenInfo.innerHTML = `💰 ${tokenBalance.toLocaleString()}`;
                 } else {
                     tokenInfo.style.display = 'none';
                 }
