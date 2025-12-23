@@ -94,7 +94,7 @@ function getThumbnailUrl(style) {
     return url;
 }
 
-// ========== 헤어게이터 토큰 차감 (Firebase user_tokens) ==========
+// ========== 헤어게이터 토큰 차감 (Bullnabi API _users.tokenBalance) ==========
 
 // 토큰 비용 상수
 const HAIRGATOR_TOKEN_COSTS = {

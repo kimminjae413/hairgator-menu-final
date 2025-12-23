@@ -1513,17 +1513,16 @@
 
                 console.log(`💳 서버에 토큰 차감 요청: userId=${userId}, cost=${LOOKBOOK_TOKEN_COST}`);
 
-                // 새 토큰 API로 차감 요청 (Firebase user_tokens)
-                const response = await fetch('/.netlify/functions/token-api', {
+                // Bullnabi API로 토큰 차감 요청
+                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        action: 'deduct',
+                        action: 'deductTokenBalance',
                         userId: userId,
-                        feature: 'lookbook',
-                        metadata: {
-                            styleName: styleTitle,
-                            page: 'lookbook'
+                        data: {
+                            amount: LOOKBOOK_TOKEN_COST,
+                            feature: 'lookbook'
                         }
                     })
                 });

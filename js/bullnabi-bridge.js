@@ -396,7 +396,7 @@
             });
         },
 
-        // ========== 헤어게이터 토큰 시스템 (Firebase user_tokens) ==========
+        // ========== 헤어게이터 토큰 시스템 (Bullnabi API _users.tokenBalance) ==========
 
         // 토큰 비용 상수
         TOKEN_COSTS: {

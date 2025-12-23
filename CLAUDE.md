@@ -205,6 +205,19 @@
     - `canUseFeature()`: Firestore → 불나비 API
     - `deductTokens()`: Firestore → 불나비 API
     - `deductTokensDynamic()`: Firestore → 불나비 API
+  - **admin.html 수정**:
+    - `queryTokenBalance()`: Firestore → 불나비 API
+    - `chargeTokens()`: Firestore → 불나비 API
+    - 결제 취소 토큰 차감: Firestore → 불나비 API
+  - **auth.js 수정**:
+    - 로그인 시 토큰 잔액 조회: Firestore → 불나비 API
+  - **payment-verify.js 수정**:
+    - `chargeTokens()`: Firestore → 불나비 API (결제 검증 후 토큰 충전)
+    - `refreshBullnabiToken()`, `getBullnabiUserData()` 함수 추가
+  - **lookbook.html 수정**:
+    - 토큰 차감: token-api → bullnabi-proxy
+  - **DEPRECATED 파일**:
+    - `netlify/functions/token-api.js`: 더 이상 사용 안 함
   - **정지환 개발자 요청 반영**: 불나비 _users 컬렉션에 tokenBalance 필드 사용
 
   ### 기타 수정

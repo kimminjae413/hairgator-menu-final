@@ -5680,7 +5680,7 @@
 
         // ==================== 토큰 관리 (조회/충전) ====================
 
-        // 토큰 잔액 조회
+        // 토큰 잔액 조회 (불나비 API 사용)
         async function queryTokenBalance() {
             const userId = document.getElementById('tokenQueryUserId').value.trim();
             if (!userId) {
@@ -5695,16 +5695,24 @@
             balanceSpan.innerHTML = '<span class="loading-spinner" style="width: 20px; height: 20px;"></span>';
 
             try {
-                // Firebase Firestore에서 직접 조회
-                const doc = await db.collection('user_tokens').doc(userId).get();
+                // 불나비 API로 토큰 조회
+                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'getTokenBalance',
+                        userId: userId
+                    })
+                });
 
-                if (doc.exists) {
-                    const data = doc.data();
-                    const balance = data.tokenBalance || 0;
+                const result = await response.json();
+
+                if (result.success) {
+                    const balance = result.tokenBalance || 0;
                     balanceSpan.textContent = balance.toLocaleString() + ' 토큰';
                     balanceSpan.style.color = balance > 0 ? '#43e97b' : '#f5576c';
                 } else {
-                    balanceSpan.textContent = '0 토큰 (신규 사용자)';
+                    balanceSpan.textContent = '0 토큰';
                     balanceSpan.style.color = '#888';
                 }
             } catch (error) {
@@ -5736,25 +5744,42 @@
             resultDiv.style.color = '#888';
 
             try {
-                // Firebase Firestore에서 직접 충전
-                const docRef = db.collection('user_tokens').doc(userId);
-                const doc = await docRef.get();
+                // 1. 현재 잔액 조회 (Bullnabi API)
+                const getResponse = await fetch('/.netlify/functions/bullnabi-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'getTokenBalance',
+                        userId: userId
+                    })
+                });
+                const getResult = await getResponse.json();
 
                 let currentBalance = 0;
-                if (doc.exists) {
-                    currentBalance = doc.data().tokenBalance || 0;
+                if (getResult.success) {
+                    currentBalance = getResult.tokenBalance || 0;
                 }
 
                 const newBalance = currentBalance + amount;
 
-                // 토큰 업데이트
-                await docRef.set({
-                    tokenBalance: newBalance,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
+                // 2. 토큰 업데이트 (Bullnabi API)
+                const setResponse = await fetch('/.netlify/functions/bullnabi-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'setTokenBalance',
+                        userId: userId,
+                        data: { newBalance: newBalance }
+                    })
+                });
+                const setResult = await setResponse.json();
 
-                // 충전 로그 저장
-                await db.collection('token_logs').add({
+                if (!setResult.success) {
+                    throw new Error(setResult.error || '토큰 업데이트 실패');
+                }
+
+                // 3. 충전 로그 저장 (Firestore)
+                await db.collection('credit_logs').add({
                     userId: userId,
                     action: 'charge',
                     tokensAdded: amount,
@@ -5817,20 +5842,11 @@
             });
         }
 
-        // ⚙️ 토큰 직접 설정 (잔액을 특정 값으로 설정)
+        // ⚙️ 토큰 직접 설정 (불나비 API 사용)
         async function setTokenBalance() {
             const userId = document.getElementById('tokenSetUserId').value.trim();
             const targetAmount = parseInt(document.getElementById('tokenSetAmount').value);
             const note = document.getElementById('tokenSetNote').value.trim();
-            const selectedPlan = document.getElementById('tokenSetPlan').value;
-
-            // 플랜 이름 매핑
-            const planNames = {
-                'free': '무료',
-                'basic': '베이직',
-                'standard': '프로',
-                'business': '비즈니스'
-            };
 
             if (!userId) {
                 showToast('사용자 ID를 입력해주세요');
@@ -5847,51 +5863,29 @@
             resultDiv.style.color = '#888';
 
             try {
-                // Firebase Firestore에서 직접 설정
-                const docRef = db.collection('user_tokens').doc(userId);
-                const doc = await docRef.get();
-
-                let currentBalance = 0;
-                let currentPlan = 'free';
-                if (doc.exists) {
-                    currentBalance = doc.data().tokenBalance || 0;
-                    currentPlan = doc.data().plan || 'free';
-                }
-
-                const difference = targetAmount - currentBalance;
-                const newPlan = selectedPlan || currentPlan;
-
-                // 토큰 및 플랜 설정
-                const updateData = {
-                    tokenBalance: targetAmount,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                if (selectedPlan) {
-                    updateData.plan = selectedPlan;
-                }
-                await docRef.set(updateData, { merge: true });
-
-                // 설정 로그 저장
-                await db.collection('token_logs').add({
-                    userId: userId,
-                    action: 'set_balance',
-                    previousBalance: currentBalance,
-                    newBalance: targetAmount,
-                    difference: difference,
-                    previousPlan: currentPlan,
-                    newPlan: newPlan,
-                    reason: 'admin_manual_set',
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    metadata: { note: note || '관리자 수동 설정' }
+                // 불나비 API로 토큰 설정
+                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'setTokenBalance',
+                        userId: userId,
+                        data: { newBalance: targetAmount }
+                    })
                 });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.error || '토큰 설정 실패');
+                }
+
+                const currentBalance = result.previousBalance || 0;
+                const difference = targetAmount - currentBalance;
 
                 const differenceText = difference >= 0
                     ? `<span style="color: #43e97b;">+${difference.toLocaleString()}</span>`
                     : `<span style="color: #f5576c;">${difference.toLocaleString()}</span>`;
-
-                const planChangeText = selectedPlan && selectedPlan !== currentPlan
-                    ? `<div>플랜 변경: <strong style="color: #888;">${planNames[currentPlan] || currentPlan}</strong> → <strong style="color: #f39c12;">${planNames[newPlan] || newPlan}</strong></div>`
-                    : `<div>현재 플랜: <strong style="color: #f39c12;">${planNames[newPlan] || newPlan}</strong></div>`;
 
                 resultDiv.innerHTML = `
                     <div style="color: #f39c12;">⚙️ 설정 완료!</div>
@@ -5899,7 +5893,7 @@
                         <div>이전 잔액: <strong>${currentBalance.toLocaleString()}</strong></div>
                         <div>변경량: <strong>${differenceText}</strong></div>
                         <div>새 잔액: <strong style="color: #4facfe;">${targetAmount.toLocaleString()}</strong></div>
-                        ${planChangeText}
+                        <div style="color: #888; font-size: 12px; margin-top: 5px;">📍 불나비 _users.tokenBalance에 저장됨</div>
                     </div>
                 `;
 
@@ -5908,14 +5902,6 @@
                 // 입력 필드 초기화
                 document.getElementById('tokenSetAmount').value = '';
                 document.getElementById('tokenSetNote').value = '';
-                document.getElementById('tokenSetPlan').value = '';
-
-                // 플랜 버튼 스타일 리셋
-                document.querySelectorAll('.plan-select-btn').forEach(btn => {
-                    btn.style.borderColor = '#444';
-                    btn.style.color = '#888';
-                    btn.style.background = '#2a2a2a';
-                });
 
             } catch (error) {
                 console.error('토큰 설정 오류:', error);
@@ -6447,22 +6433,38 @@
                         cancelReason: '관리자 취소'
                     });
 
-                    // 사용자 토큰 차감
-                    const userTokenRef = db.collection('user_tokens').doc(selectedPayment.userId);
-                    const userDoc = await userTokenRef.get();
-                    if (userDoc.exists) {
-                        const currentTokens = userDoc.data().tokenBalance || 0;
-                        const newTokens = Math.max(0, currentTokens - (selectedPayment.tokens || 0));
-                        await userTokenRef.update({
-                            tokenBalance: newTokens,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    // 사용자 토큰 차감 (Bullnabi API)
+                    const tokensToDeduct = selectedPayment.tokens || 0;
+                    if (tokensToDeduct > 0) {
+                        // 현재 잔액 조회
+                        const getResponse = await fetch('/.netlify/functions/bullnabi-proxy', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'getTokenBalance',
+                                userId: selectedPayment.userId
+                            })
+                        });
+                        const getResult = await getResponse.json();
+                        const currentTokens = getResult.success ? (getResult.tokenBalance || 0) : 0;
+                        const newTokens = Math.max(0, currentTokens - tokensToDeduct);
+
+                        // 토큰 업데이트
+                        await fetch('/.netlify/functions/bullnabi-proxy', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'setTokenBalance',
+                                userId: selectedPayment.userId,
+                                data: { newBalance: newTokens }
+                            })
                         });
 
                         // 토큰 차감 로그
-                        await db.collection('token_logs').add({
+                        await db.collection('credit_logs').add({
                             userId: selectedPayment.userId,
                             action: 'refund_deduction',
-                            tokensDeducted: selectedPayment.tokens || 0,
+                            tokensDeducted: tokensToDeduct,
                             previousBalance: currentTokens,
                             newBalance: newTokens,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),

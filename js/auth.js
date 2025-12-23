@@ -183,18 +183,30 @@ async function loginWithBullnabi(userInfo) {
             });
         }
 
-        // ⭐ 헤어게이터 토큰 잔액 조회 (클라이언트 측 Firebase 직접 사용)
+        // ⭐ 헤어게이터 토큰 잔액 조회 (Bullnabi API 사용)
         try {
             const userId = userInfo.userId || userInfo.id;
-            if (userId && window.firebase && window.firebase.firestore) {
-                const db = window.firebase.firestore();
-                const doc = await db.collection('user_tokens').doc(userId).get();
-
+            if (userId) {
                 let tokenBalance = 0;
                 let userPlan = 'free';
-                if (doc.exists) {
-                    tokenBalance = doc.data().tokenBalance || 0;
-                    userPlan = doc.data().plan || 'free';
+
+                // Bullnabi API로 토큰 잔액 조회
+                try {
+                    const response = await fetch('/.netlify/functions/bullnabi-proxy', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'getTokenBalance',
+                            userId: userId
+                        })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        tokenBalance = result.tokenBalance || 0;
+                        userPlan = result.plan || 'free';
+                    }
+                } catch (apiError) {
+                    console.warn('⚠️ Bullnabi API 토큰 조회 실패:', apiError);
                 }
 
                 window.currentDesigner.tokenBalance = tokenBalance;

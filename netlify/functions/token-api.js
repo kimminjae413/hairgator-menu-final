@@ -1,6 +1,11 @@
 // netlify/functions/token-api.js
-// 헤어게이터 전용 토큰 시스템 API
-// Firebase Firestore user_tokens 컬렉션 사용
+//
+// ⚠️ DEPRECATED (2025-12-23): 이 파일은 더 이상 사용되지 않습니다.
+// 토큰 시스템이 Bullnabi API (_users.tokenBalance)로 마이그레이션되었습니다.
+// 사용: bullnabi-proxy.js의 getTokenBalance, setTokenBalance, deductTokenBalance actions
+//
+// 이전: Firebase Firestore user_tokens 컬렉션 사용
+// 현재: Bullnabi API http://drylink.ohmyapp.io/bnb/ 사용
 
 const admin = require('firebase-admin');
 
