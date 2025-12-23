@@ -284,13 +284,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (personalColorBtn) {
-            personalColorBtn.addEventListener('click', function() {
+            personalColorBtn.addEventListener('click', async function() {
                 console.log('🎨 퍼스널 이미지 분석 클릭');
-                // 허용된 사용자 체크
+
+                // 허용된 사용자 체크 (베타 테스트 기간)
                 if (!window.isAllowedUser()) {
                     window.showNotOpenYetMessage();
                     return;
                 }
+
+                // 무료 플랜 사용자는 이용 불가
+                if (window.BullnabiBridge) {
+                    const result = await window.BullnabiBridge.getTokenBalance();
+                    if (result.success && result.plan === 'free') {
+                        if (typeof showToast === 'function') {
+                            showToast(t('payment.freePlanRestricted') || '유료 플랜 구독 시 이용 가능합니다.', 'warning');
+                        } else {
+                            alert('유료 플랜 구독 시 이용 가능합니다.');
+                        }
+                        return;
+                    }
+                }
+
                 const gender = window.currentGender || 'female';
                 window.location.href = `/personal-color/?gender=${gender}`;
             });

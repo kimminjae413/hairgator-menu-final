@@ -426,10 +426,32 @@
                         const data = doc.data();
                         const balance = data.tokenBalance || 0;
                         console.log('💰 토큰 잔액 조회 (Firestore):', balance);
-                        return { success: true, tokenBalance: balance };
+                        return { success: true, tokenBalance: balance, plan: data.plan || 'free' };
                     } else {
-                        console.log('💰 토큰 잔액 조회: 신규 사용자 (0 토큰)');
-                        return { success: true, tokenBalance: 0, isNewUser: true };
+                        // 신규 사용자: 무료 200 토큰 지급
+                        const FREE_INITIAL_TOKENS = 200;
+                        console.log('🎁 신규 사용자 감지! 무료 토큰 지급:', FREE_INITIAL_TOKENS);
+
+                        await db.collection('user_tokens').doc(userId).set({
+                            tokenBalance: FREE_INITIAL_TOKENS,
+                            plan: 'free',
+                            createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
+                        });
+
+                        // 토큰 지급 로그 기록
+                        await db.collection('token_logs').add({
+                            userId: userId,
+                            action: 'welcome_bonus',
+                            tokensAdded: FREE_INITIAL_TOKENS,
+                            previousBalance: 0,
+                            newBalance: FREE_INITIAL_TOKENS,
+                            timestamp: window.firebase.firestore.FieldValue.serverTimestamp(),
+                            metadata: { reason: '신규 가입 무료 토큰' }
+                        });
+
+                        console.log('✅ 신규 사용자 토큰 지급 완료:', FREE_INITIAL_TOKENS);
+                        return { success: true, tokenBalance: FREE_INITIAL_TOKENS, isNewUser: true, plan: 'free' };
                     }
                 }
 
