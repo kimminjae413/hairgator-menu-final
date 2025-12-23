@@ -4265,4 +4265,224 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }, { passive: true });
+
+  // ⭐ 자동 레시피 생성 모드 처리 (스타일 메뉴에서 레시피 버튼 클릭 시)
+  setTimeout(() => {
+    handleAutoRecipeMode();
+  }, 500);
 });
+
+// ========== 자동 레시피 생성 모드 ==========
+async function handleAutoRecipeMode() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const autoRecipe = urlParams.get('autoRecipe');
+
+  if (autoRecipe !== 'true') return;
+
+  console.log('📋 자동 레시피 모드 감지');
+
+  // URL 파라미터 파싱
+  const imageUrl = urlParams.get('imageUrl');
+  const gender = urlParams.get('gender') || 'female';
+  const service = urlParams.get('service') || 'cut';
+  const category = urlParams.get('category');
+  const series = urlParams.get('series');
+  const styleName = urlParams.get('styleName') || '';
+  const styleId = urlParams.get('styleId') || '';
+
+  if (!imageUrl) {
+    console.error('❌ 이미지 URL이 없습니다');
+    window.aiStudio.addMessageToUI('bot', '이미지 정보가 없어 레시피를 생성할 수 없습니다.');
+    return;
+  }
+
+  console.log('📋 자동 레시피 파라미터:', { gender, service, category, series, styleName });
+
+  // 로딩 메시지 표시
+  const loadingMsg = gender === 'male'
+    ? `📋 ${styleName || '선택한 스타일'}의 커트 레시피를 생성하고 있습니다...`
+    : `📋 ${styleName || '선택한 스타일'}의 ${service === 'perm' ? '펌' : '커트'} 레시피를 생성하고 있습니다...`;
+
+  window.aiStudio.addMessageToUI('bot', loadingMsg);
+  window.aiStudio.showTypingIndicator();
+
+  try {
+    // 1. 이미지 URL을 base64로 변환
+    const base64Data = await fetchImageAsBase64(imageUrl);
+    if (!base64Data) {
+      throw new Error('이미지를 가져올 수 없습니다');
+    }
+
+    // 2. 전역 변수 설정 (기존 로직 호환)
+    selectedGender = gender;
+    selectedService = service;
+    selectedCategory = { code: category, series: series };
+
+    // UI 업데이트
+    updateAutoRecipeUI(gender, service, category);
+
+    // 3. API 호출
+    console.log('📤 자동 레시피 API 호출...');
+    const requestPayload = {
+      action: 'analyze_and_match_recipe',
+      payload: {
+        image_base64: base64Data.base64,
+        mime_type: base64Data.mimeType,
+        gender: gender,
+        service: service,
+        category: category,
+        series: series
+      }
+    };
+
+    const response = await fetch(window.aiStudio.apiEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestPayload)
+    });
+
+    const result = await response.json();
+    console.log('📥 자동 레시피 API 응답:', result);
+
+    window.aiStudio.hideTypingIndicator();
+
+    if (result.success && result.data) {
+      const data = result.data;
+
+      // 분석 결과 메시지
+      let analysisMsg;
+      if (data.gender === 'male') {
+        analysisMsg = `**👨 남자 스타일 분석 완료!**
+
+💇 **스타일**: ${data.analysis.styleName || styleName || '분석중'}
+📏 **탑 길이**: ${data.analysis.topLength || '-'}
+📐 **사이드 길이**: ${data.analysis.sideLength || '-'}
+✂️ **페이드**: ${data.analysis.fadeType || 'None'}
+
+👉 **오른쪽 캔버스에서 맞춤 레시피를 확인하세요!**`;
+      } else {
+        const serviceText = service === 'perm' ? '펌' : '커트';
+        analysisMsg = `**👩 여자 ${serviceText} 스타일 분석 완료!**
+
+📏 **기장**: ${data.analysis.lengthName || '-'}
+🎨 **형태**: ${data.analysis.form || '-'}
+💇 **앞머리**: ${data.analysis.hasBangs ? data.analysis.bangsType : '없음'}
+🌊 **텍스처**: ${data.analysis.texture || '-'}
+
+👉 **오른쪽 캔버스에서 맞춤 레시피를 확인하세요!**`;
+      }
+
+      window.aiStudio.addMessageToUI('bot', analysisMsg);
+
+      // 캔버스에 레시피 표시
+      window.aiStudio.showCustomRecipeCanvas(data, imageUrl);
+
+      // 크레딧 차감
+      if (window.BullnabiBridge && typeof window.BullnabiBridge.deductTokensDynamic === 'function') {
+        try {
+          const deductResult = await window.BullnabiBridge.deductTokensDynamic(null, 30, 'recipe', {
+            gender: data.gender,
+            series: series,
+            service: service,
+            autoRecipe: true
+          });
+          if (deductResult.success) {
+            console.log(`💳 자동 레시피 크레딧 차감: 30, 잔액: ${deductResult.newBalance}`);
+          }
+        } catch (e) {
+          console.warn('⚠️ 레시피 크레딧 차감 실패:', e);
+        }
+      }
+
+    } else {
+      window.aiStudio.addMessageToUI('bot', result.error || '레시피 생성에 실패했습니다. 다시 시도해주세요.');
+    }
+
+  } catch (error) {
+    console.error('❌ 자동 레시피 생성 오류:', error);
+    window.aiStudio.hideTypingIndicator();
+    window.aiStudio.addMessageToUI('bot', `레시피 생성 중 오류가 발생했습니다: ${error.message}`);
+  }
+
+  // URL 파라미터 정리 (히스토리에서 제거)
+  const cleanUrl = window.location.pathname;
+  window.history.replaceState({}, document.title, cleanUrl);
+}
+
+// 이미지 URL을 base64로 변환
+async function fetchImageAsBase64(imageUrl) {
+  try {
+    // Firebase Storage URL인 경우 직접 fetch
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`이미지 로드 실패: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const mimeType = blob.type || 'image/jpeg';
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result.split(',')[1];
+        resolve({ base64, mimeType });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('이미지 base64 변환 실패:', error);
+    return null;
+  }
+}
+
+// 자동 레시피 모드 UI 업데이트
+function updateAutoRecipeUI(gender, service, category) {
+  // 성별 버튼 선택
+  const femaleBtn = document.getElementById('gender-female');
+  const maleBtn = document.getElementById('gender-male');
+
+  if (femaleBtn && maleBtn) {
+    femaleBtn.classList.remove('selected');
+    maleBtn.classList.remove('selected');
+
+    if (gender === 'male') {
+      maleBtn.classList.add('selected');
+    } else {
+      femaleBtn.classList.add('selected');
+    }
+  }
+
+  // 시술 선택 (여자만)
+  if (gender === 'female') {
+    const serviceSelection = document.getElementById('service-selection');
+    const cutBtn = document.getElementById('service-cut');
+    const permBtn = document.getElementById('service-perm');
+
+    if (serviceSelection) serviceSelection.style.display = 'flex';
+    if (cutBtn && permBtn) {
+      cutBtn.classList.remove('selected');
+      permBtn.classList.remove('selected');
+      if (service === 'perm') {
+        permBtn.classList.add('selected');
+      } else {
+        cutBtn.classList.add('selected');
+      }
+    }
+  }
+
+  // 카테고리 선택 표시
+  const categorySelection = document.getElementById('category-selection');
+  if (categorySelection) {
+    categorySelection.style.display = 'flex';
+
+    // 해당 카테고리 버튼 선택
+    setTimeout(() => {
+      const categoryBtn = document.querySelector(`.category-btn[data-code="${category}"]`);
+      if (categoryBtn) {
+        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('selected'));
+        categoryBtn.classList.add('selected');
+      }
+    }, 100);
+  }
+}

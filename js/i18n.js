@@ -331,6 +331,15 @@ const HAIRGATOR_I18N = {
       }
     },
 
+    // ========== 레시피 (Recipe) ==========
+    recipe: {
+      button: '레시피',
+      selectType: '레시피 유형 선택',
+      cutRecipe: '커트 레시피',
+      permRecipe: '펌 레시피',
+      loading: '레시피를 불러오는 중...'
+    },
+
     // ========== 퍼스널컬러 ==========
     personalColor: {
       title: 'HAIRGATOR Personal Color',
@@ -1278,6 +1287,15 @@ const HAIRGATOR_I18N = {
       }
     },
 
+    // ========== Recipe ==========
+    recipe: {
+      button: 'Recipe',
+      selectType: 'Select Recipe Type',
+      cutRecipe: 'Cut Recipe',
+      permRecipe: 'Perm Recipe',
+      loading: 'Loading recipe...'
+    },
+
     // ========== Personal Color ==========
     personalColor: {
       title: 'HAIRGATOR Personal Color',
@@ -2198,6 +2216,15 @@ const HAIRGATOR_I18N = {
       }
     },
 
+    // ========== レシピ ==========
+    recipe: {
+      button: 'レシピ',
+      selectType: 'レシピタイプを選択',
+      cutRecipe: 'カットレシピ',
+      permRecipe: 'パーマレシピ',
+      loading: 'レシピを読み込み中...'
+    },
+
     // ========== パーソナルカラー ==========
     personalColor: {
       title: 'HAIRGATOR Personal Color',
@@ -3112,6 +3139,15 @@ const HAIRGATOR_I18N = {
         item3: '大胆耳环',
         desc3: '金圈耳环会被淹没；选择厚重的声明首饰。'
       }
+    },
+
+    // ========== 配方 ==========
+    recipe: {
+      button: '配方',
+      selectType: '选择配方类型',
+      cutRecipe: '剪发配方',
+      permRecipe: '烫发配方',
+      loading: '正在加载配方...'
     },
 
     // ========== 个人色彩 ==========
@@ -4033,6 +4069,15 @@ const HAIRGATOR_I18N = {
       }
     },
 
+    // ========== Công thức ==========
+    recipe: {
+      button: 'Công thức',
+      selectType: 'Chọn loại công thức',
+      cutRecipe: 'Công thức cắt',
+      permRecipe: 'Công thức uốn',
+      loading: 'Đang tải công thức...'
+    },
+
     // ========== Màu cá nhân ==========
     personalColor: {
       title: 'HAIRGATOR Personal Color',
@@ -4940,6 +4985,15 @@ const HAIRGATOR_I18N = {
       }
     },
 
+    // ========== Resep ==========
+    recipe: {
+      button: 'Resep',
+      selectType: 'Pilih Jenis Resep',
+      cutRecipe: 'Resep Potong',
+      permRecipe: 'Resep Perm',
+      loading: 'Memuat resep...'
+    },
+
     // ========== Personal Color ==========
     personalColor: {
       title: 'HAIRGATOR Personal Color',
@@ -5809,6 +5863,15 @@ const HAIRGATOR_I18N = {
         item3: 'Aretes Llamativos',
         desc3: 'Los aros dorados se pierden; opta por declaraciones gruesas.'
       }
+    },
+
+    // ========== Receta ==========
+    recipe: {
+      button: 'Receta',
+      selectType: 'Seleccionar Tipo de Receta',
+      cutRecipe: 'Receta de Corte',
+      permRecipe: 'Receta de Permanente',
+      loading: 'Cargando receta...'
     },
 
     // ========== Color Personal ==========

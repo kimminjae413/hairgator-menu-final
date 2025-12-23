@@ -1473,6 +1473,43 @@ async function openStyleModal(style) {
         };
     }
 
+    // 레시피 버튼 이벤트 연결
+    const btnViewRecipe = document.getElementById('btnViewRecipe');
+    if (btnViewRecipe) {
+        // 다국어 버튼 텍스트 설정
+        const recipeText = t('recipe.button') || '레시피';
+        const svgIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>`;
+        btnViewRecipe.innerHTML = `${svgIcon}<span>${recipeText}</span>`;
+
+        btnViewRecipe.onclick = async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // 허용된 사용자 체크 (베타 테스트)
+            if (typeof window.isAllowedUser === 'function' && !window.isAllowedUser()) {
+                window.showNotOpenYetMessage();
+                return;
+            }
+
+            console.log('📋 레시피 버튼 클릭:', style.name, style.gender);
+
+            // 성별에 따라 처리 분기
+            if (style.gender === 'male') {
+                // 남자: 바로 AI Studio로 이동
+                navigateToRecipe(style, 'cut');
+            } else {
+                // 여자: 커트/펌 선택 모달 표시
+                showRecipeTypeModal(style);
+            }
+        };
+    }
+
     console.log('✅ 스타일 모달 열림:', {
         code: style.code,
         name: style.name,
@@ -3874,6 +3911,333 @@ window.goBack = function () {
         if (typeof window.createSnowflakes === 'function') window.createSnowflakes();
     }, 300);
 };
+
+// ========== 레시피 보기 기능 ==========
+
+// 카테고리 → 시리즈 매핑
+const CATEGORY_TO_SERIES = {
+    // 남자 스타일
+    'SIDE FRINGE': 'SF',
+    'SIDE PART': 'SP',
+    'FRINGE UP': 'FU',
+    'PUSHED BACK': 'PB',
+    'BUZZ': 'BZ',
+    'CROP': 'CP',
+    'MOHICAN': 'MC',
+    'TWO BLOCK': 'TB',
+    // 여자 스타일 (첫 글자 추출)
+    'A LENGTH': { code: 'A', cutSeries: 'FAL', permSeries: 'FALP' },
+    'B LENGTH': { code: 'B', cutSeries: 'FBL', permSeries: 'FBLP' },
+    'C LENGTH': { code: 'C', cutSeries: 'FCL', permSeries: 'FCLP' },
+    'D LENGTH': { code: 'D', cutSeries: 'FDL', permSeries: 'FDLP' },
+    'E LENGTH': { code: 'E', cutSeries: 'FEL', permSeries: 'FELP' },
+    'F LENGTH': { code: 'F', cutSeries: 'FFL', permSeries: 'FFLP' },
+    'G LENGTH': { code: 'G', cutSeries: 'FGL', permSeries: 'FGLP' },
+    'H LENGTH': { code: 'H', cutSeries: 'FHL', permSeries: 'FHLP' }
+};
+
+// AI Studio로 레시피 페이지 이동
+function navigateToRecipe(style, service = 'cut') {
+    const gender = style.gender || 'female';
+    const mainCategory = style.mainCategory || '';
+
+    let categoryCode = '';
+    let series = '';
+
+    if (gender === 'male') {
+        // 남자: mainCategory에서 시리즈 코드 추출
+        series = CATEGORY_TO_SERIES[mainCategory] || mainCategory.substring(0, 2).toUpperCase();
+        categoryCode = series;
+    } else {
+        // 여자: mainCategory에서 기장 코드 추출
+        const mapping = CATEGORY_TO_SERIES[mainCategory];
+        if (mapping && typeof mapping === 'object') {
+            categoryCode = mapping.code;
+            series = service === 'perm' ? mapping.permSeries : mapping.cutSeries;
+        } else {
+            // fallback: 첫 글자 추출
+            categoryCode = mainCategory.charAt(0).toUpperCase();
+            series = service === 'perm' ? `F${categoryCode}LP` : `F${categoryCode}L`;
+        }
+    }
+
+    // URL 파라미터 구성
+    const params = new URLSearchParams({
+        autoRecipe: 'true',
+        imageUrl: style.imageUrl || '',
+        gender: gender,
+        service: service,
+        category: categoryCode,
+        series: series,
+        styleName: style.name || '',
+        styleId: style.styleId || style.id || ''
+    });
+
+    console.log('📋 레시피 페이지 이동:', {
+        gender,
+        service,
+        categoryCode,
+        series,
+        imageUrl: style.imageUrl
+    });
+
+    // 스타일 모달 닫기
+    closeStyleModal();
+
+    // AI Studio 페이지로 이동
+    window.location.href = `/ai-studio.html?${params.toString()}`;
+}
+
+// 여자 스타일용 커트/펌 선택 모달
+function showRecipeTypeModal(style) {
+    // 기존 모달이 있으면 제거
+    const existingModal = document.querySelector('.recipe-type-modal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.className = 'recipe-type-modal';
+
+    // 성별 기반 테마 색상
+    const primaryColor = '#E91E63';
+    const primaryDark = '#C2185B';
+
+    modal.innerHTML = `
+        <div class="recipe-type-overlay" onclick="closeRecipeTypeModal()"></div>
+        <div class="recipe-type-content">
+            <div class="recipe-type-header">
+                <h3>📋 ${t('recipe.selectType') || '레시피 유형 선택'}</h3>
+                <p>${style.name}</p>
+                <button class="recipe-type-close" onclick="closeRecipeTypeModal()">×</button>
+            </div>
+            <div class="recipe-type-preview">
+                <img src="${style.imageUrl}" alt="${style.name}" />
+            </div>
+            <div class="recipe-type-buttons">
+                <button class="recipe-type-btn cut-btn" onclick="selectRecipeType('${style.id}', 'cut')">
+                    <span class="recipe-type-icon">✂️</span>
+                    <span class="recipe-type-label">${t('recipe.cutRecipe') || '커트 레시피'}</span>
+                </button>
+                <button class="recipe-type-btn perm-btn" onclick="selectRecipeType('${style.id}', 'perm')">
+                    <span class="recipe-type-icon">🌀</span>
+                    <span class="recipe-type-label">${t('recipe.permRecipe') || '펌 레시피'}</span>
+                </button>
+            </div>
+        </div>
+    `;
+
+    // 스타일 추가
+    addRecipeTypeModalStyles();
+
+    // 모달에 스타일 데이터 저장
+    modal.dataset.style = JSON.stringify(style);
+
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+
+    // 애니메이션
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+// 레시피 유형 선택 처리
+function selectRecipeType(styleId, service) {
+    const modal = document.querySelector('.recipe-type-modal');
+    if (!modal) return;
+
+    try {
+        const style = JSON.parse(modal.dataset.style);
+        closeRecipeTypeModal();
+        navigateToRecipe(style, service);
+    } catch (e) {
+        console.error('레시피 유형 선택 오류:', e);
+        closeRecipeTypeModal();
+    }
+}
+
+// 레시피 유형 모달 닫기
+function closeRecipeTypeModal() {
+    const modal = document.querySelector('.recipe-type-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.remove();
+            document.body.style.overflow = '';
+        }, 300);
+    }
+}
+
+// 레시피 유형 모달 스타일
+function addRecipeTypeModalStyles() {
+    if (document.getElementById('recipe-type-modal-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'recipe-type-modal-styles';
+    style.textContent = `
+        .recipe-type-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .recipe-type-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .recipe-type-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: -1;
+        }
+
+        .recipe-type-content {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 380px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .recipe-type-modal.active .recipe-type-content {
+            transform: translateY(0);
+        }
+
+        .recipe-type-header {
+            text-align: center;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .recipe-type-header h3 {
+            color: #fff;
+            font-size: 18px;
+            margin: 0 0 8px 0;
+        }
+
+        .recipe-type-header p {
+            color: #aaa;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .recipe-type-close {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .recipe-type-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .recipe-type-preview {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .recipe-type-preview img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .recipe-type-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .recipe-type-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 20px 16px;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .recipe-type-btn.cut-btn {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 50%, #E65100 100%);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .recipe-type-btn.perm-btn {
+            background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 50%, #6A1B9A 100%);
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+        }
+
+        .recipe-type-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .recipe-type-btn:active {
+            transform: translateY(0);
+        }
+
+        .recipe-type-icon {
+            font-size: 32px;
+        }
+
+        .recipe-type-label {
+            font-size: 14px;
+        }
+
+        @media (max-width: 480px) {
+            .recipe-type-content {
+                padding: 20px;
+            }
+
+            .recipe-type-btn {
+                padding: 16px 12px;
+            }
+
+            .recipe-type-icon {
+                font-size: 28px;
+            }
+
+            .recipe-type-label {
+                font-size: 13px;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// 전역 함수 등록
+window.selectRecipeType = selectRecipeType;
+window.closeRecipeTypeModal = closeRecipeTypeModal;
+window.navigateToRecipe = navigateToRecipe;
 
 // ========== 기존 console.log 유지 ==========
 console.log('HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 헤어체험 연동 최종 버전');
