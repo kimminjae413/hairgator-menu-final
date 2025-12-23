@@ -133,13 +133,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                     font-size: 10px;
                                 ">📷</div>
                             </div>
-                            <!-- 이름 & 토큰 -->
+                            <!-- 이름 & 플랜 -->
                             <div style="flex: 1;">
                                 <div class="login-status" id="loginStatus" style="color: #4A90E2; font-size: 14px; font-weight: 600; margin-bottom: 6px;">
                                     ${t('ui.loading')}
                                 </div>
-                                <div style="color: var(--text-secondary, #aaa); font-size: 12px;">
-                                    ${t('ui.credit')}: <span id="creditDisplay" style="color: #4A90E2; font-weight: bold;">-</span>
+                                <div id="planDisplayArea" style="color: var(--text-secondary, #aaa); font-size: 12px;">
+                                    <span id="planDisplay">-</span>
+                                    <span id="creditDisplay" style="color: #4A90E2; font-weight: bold; display: none;"></span>
                                 </div>
                             </div>
                             <!-- 언어 선택 버튼 -->
@@ -358,7 +359,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateLoginInfo() {
         const loginStatus = document.getElementById('loginStatus');
+        const planDisplay = document.getElementById('planDisplay');
         const creditDisplay = document.getElementById('creditDisplay');
+
+        // 플랜 이름 매핑
+        const planNames = { 'free': '무료', 'basic': '베이직', 'standard': '프로', 'business': '비즈니스' };
+
+        // 관리자 ID 목록
+        const ADMIN_IDS = ['691ceee09d868b5736d22007', '6536474789a3ad49553b46d7'];
 
         const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
         if (bullnabiUser) {
@@ -369,13 +377,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 loginInfoTimeout = null;
             }
             if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${bullnabiUser.name}`;
-            // 헤어게이터 토큰 표시 (tokenBalance 우선, 없으면 remainCount 폴백)
-            const tokenBalance = bullnabiUser.tokenBalance ?? window.currentDesigner?.tokenBalance;
-            if (tokenBalance !== undefined && tokenBalance !== null) {
-                if (creditDisplay) creditDisplay.textContent = tokenBalance.toLocaleString();
-            } else {
-                const credit = parseFloat(bullnabiUser.remainCount) || 0;
-                if (creditDisplay) creditDisplay.textContent = credit.toFixed(2);
+
+            // 플랜 & 토큰 표시
+            const tokenBalance = bullnabiUser.tokenBalance ?? window.currentDesigner?.tokenBalance ?? 0;
+            const plan = bullnabiUser.plan || window.currentDesigner?.plan || 'free';
+            const userId = bullnabiUser.userId || bullnabiUser.id || bullnabiUser._id;
+            const isAdmin = ADMIN_IDS.includes(userId);
+
+            if (planDisplay) {
+                const planName = planNames[plan] || plan;
+                if (isAdmin) {
+                    // 관리자: 플랜 + 토큰
+                    planDisplay.textContent = `${planName} 플랜 (토큰: ${tokenBalance.toLocaleString()})`;
+                } else {
+                    // 일반 유저: 플랜만
+                    planDisplay.textContent = `현재 플랜: ${planName}`;
+                }
             }
         } else {
             const designerName = localStorage.getItem('designerName');
@@ -383,11 +400,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 // localStorage에서 로그인 정보 있음
                 loginInfoPending = false;
                 if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${designerName}`;
-                if (creditDisplay) creditDisplay.textContent = '∞';
+                if (planDisplay) planDisplay.textContent = '-';
             } else if (loginInfoPending) {
                 // 아직 로그인 정보 대기 중 - 로딩 표시
                 if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ...`;
-                if (creditDisplay) creditDisplay.textContent = '-';
+                if (planDisplay) planDisplay.textContent = '-';
 
                 // 2초 후에도 로그인 정보 없으면 게스트로 표시
                 if (!loginInfoTimeout) {
@@ -397,14 +414,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         const currentDesignerName = localStorage.getItem('designerName');
                         if (!currentUser && !currentDesignerName) {
                             if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${t('ui.guest')}`;
-                            if (creditDisplay) creditDisplay.textContent = '0';
+                            if (planDisplay) planDisplay.textContent = '-';
                         }
                     }, 2000);
                 }
             } else {
                 // 대기 완료 후 게스트로 확정
                 if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${t('ui.guest')}`;
-                if (creditDisplay) creditDisplay.textContent = '0';
+                if (planDisplay) planDisplay.textContent = '-';
             }
         }
     }

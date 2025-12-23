@@ -762,14 +762,15 @@
                 }
             }
 
-            // creditDisplay 요소 업데이트 (main.js 사이드바) - 관리자만
-            const creditDisplay = document.getElementById('creditDisplay');
-            if (creditDisplay) {
+            // planDisplay 요소 업데이트 (main.js 사이드바)
+            const planDisplayEl = document.getElementById('planDisplay');
+            if (planDisplayEl) {
                 if (isAdmin) {
-                    creditDisplay.textContent = newBalance.toLocaleString();
-                    creditDisplay.parentElement && (creditDisplay.parentElement.style.display = '');
+                    // 관리자: 플랜 + 토큰
+                    planDisplayEl.textContent = `${planName} 플랜 (토큰: ${newBalance.toLocaleString()})`;
                 } else {
-                    creditDisplay.parentElement && (creditDisplay.parentElement.style.display = 'none');
+                    // 일반 유저: 플랜만
+                    planDisplayEl.textContent = `현재 플랜: ${planName}`;
                 }
             }
 
