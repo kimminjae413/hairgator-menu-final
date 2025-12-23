@@ -4307,13 +4307,7 @@ async function handleAutoRecipeMode() {
   window.aiStudio.showTypingIndicator();
 
   try {
-    // 1. 이미지 URL을 base64로 변환
-    const base64Data = await fetchImageAsBase64(imageUrl);
-    if (!base64Data) {
-      throw new Error('이미지를 가져올 수 없습니다');
-    }
-
-    // 2. 전역 변수 설정 (기존 로직 호환)
+    // 1. 전역 변수 설정 (기존 로직 호환)
     selectedGender = gender;
     selectedService = service;
     selectedCategory = { code: category, series: series };
@@ -4321,13 +4315,12 @@ async function handleAutoRecipeMode() {
     // UI 업데이트
     updateAutoRecipeUI(gender, service, category);
 
-    // 3. API 호출
-    console.log('📤 자동 레시피 API 호출...');
+    // 2. API 호출 - 서버에서 이미지 URL 직접 가져오도록 (더 빠름)
+    console.log('📤 자동 레시피 API 호출 (image_url 전달)...');
     const requestPayload = {
       action: 'analyze_and_match_recipe',
       payload: {
-        image_base64: base64Data.base64,
-        mime_type: base64Data.mimeType,
+        image_url: imageUrl,  // ⭐ 서버에서 직접 fetch
         gender: gender,
         service: service,
         category: category,

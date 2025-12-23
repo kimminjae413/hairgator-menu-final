@@ -7075,15 +7075,42 @@ function analyzeDifferences(userParams, matchedStyle) {
 }
 
 async function analyzeAndMatchRecipe(payload, geminiKey) {
-  const { image_base64, mime_type, gender, category, series, service } = payload;
+  let { image_base64, mime_type, gender, category, series, service, image_url } = payload;
   const startTime = Date.now();
   const serviceType = service || 'cut';  // ⭐ 기본값: 커트
 
   console.log(`🎯 이미지 분석 + 맞춤 레시피 생성 시작 (성별: ${gender || 'female'}, 시술: ${serviceType}, 카테고리: ${category || 'auto'}, 시리즈: ${series || 'auto'})...`);
 
+  // ⭐ image_url이 제공된 경우 서버에서 직접 fetch하여 base64로 변환
+  if (image_url && !image_base64) {
+    console.log('🔗 이미지 URL에서 직접 가져오기:', image_url);
+    try {
+      const imageResponse = await fetch(image_url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
+      if (!imageResponse.ok) {
+        throw new Error(`이미지를 가져올 수 없습니다: ${imageResponse.status}`);
+      }
+      const imageBuffer = await imageResponse.arrayBuffer();
+      image_base64 = Buffer.from(imageBuffer).toString('base64');
+      mime_type = imageResponse.headers.get('content-type') || 'image/jpeg';
+      console.log('✅ 이미지 URL에서 base64 변환 완료:', mime_type);
+    } catch (urlError) {
+      console.error('❌ 이미지 URL 가져오기 실패:', urlError);
+      return {
+        success: false,
+        error: '이미지를 가져올 수 없습니다. 다시 시도해주세요.'
+      };
+    }
+  }
+
   // 남자 스타일인 경우 별도 처리 (펌은 아직 미지원)
   if (gender === 'male') {
-    return await analyzeAndMatchMaleRecipe(payload, geminiKey);
+    // ⭐ URL에서 변환된 base64 전달
+    const malePayload = { ...payload, image_base64, mime_type };
+    return await analyzeAndMatchMaleRecipe(malePayload, geminiKey);
   }
 
   // ⭐⭐⭐ 사용자가 선택한 시리즈 사용 (AI 분석 X) ⭐⭐⭐
