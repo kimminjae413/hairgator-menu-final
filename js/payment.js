@@ -65,6 +65,7 @@ const HAIRGATOR_PAYMENT = {
       paymentId,
       planKey,
       userId,
+      userName,
       tokens: plan.tokens
     }));
 
@@ -105,7 +106,7 @@ const HAIRGATOR_PAYMENT = {
       }
 
       // 결제 성공 - 서버에서 검증 및 토큰 충전
-      const verifyResult = await this.verifyAndChargeTokens(paymentId, planKey, userId);
+      const verifyResult = await this.verifyAndChargeTokens(paymentId, planKey, userId, userName);
 
       return {
         success: true,
@@ -123,14 +124,15 @@ const HAIRGATOR_PAYMENT = {
   /**
    * 결제 검증 및 토큰 충전 (서버 호출)
    */
-  async verifyAndChargeTokens(paymentId, planKey, userId) {
+  async verifyAndChargeTokens(paymentId, planKey, userId, userName = '') {
     const response = await fetch('/.netlify/functions/payment-verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         paymentId: paymentId,
         planKey: planKey,
-        userId: userId
+        userId: userId,
+        userName: userName
       })
     });
 

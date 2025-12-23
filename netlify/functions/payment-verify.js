@@ -54,9 +54,9 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { paymentId, planKey, userId } = JSON.parse(event.body);
+    const { paymentId, planKey, userId, userName } = JSON.parse(event.body);
 
-    console.log('💳 결제 검증 요청:', { paymentId, planKey, userId });
+    console.log('💳 결제 검증 요청:', { paymentId, planKey, userId, userName });
 
     // 필수 파라미터 확인
     if (!paymentId || !planKey || !userId) {
@@ -145,6 +145,7 @@ exports.handler = async (event) => {
     await db.collection('payments').doc(paymentId).set({
       paymentId: paymentId,
       userId: userId,
+      userName: userName || '', // 사용자 이름 저장
       planKey: planKey,
       amount: plan.price,
       tokens: plan.tokens,
