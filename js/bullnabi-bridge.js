@@ -752,13 +752,12 @@
             // sessionStatusDisplay 요소 업데이트 (index.html 사이드바)
             const sessionStatus = document.getElementById('sessionStatusDisplay');
             if (sessionStatus) {
+                const planName = this.PLAN_NAMES[plan] || plan || '무료';
                 if (isAdmin) {
-                    // 관리자: 플랜 + 토큰 둘 다 표시
-                    const planName = this.PLAN_NAMES[plan] || plan || '무료';
-                    sessionStatus.textContent = `${planName} 플랜 | 토큰: ${newBalance.toLocaleString()}`;
+                    // 관리자: 플랜 + 토큰 (괄호 형식)
+                    sessionStatus.textContent = `${planName} 플랜 (토큰: ${newBalance.toLocaleString()})`;
                 } else {
                     // 일반 유저: 플랜만 표시
-                    const planName = this.PLAN_NAMES[plan] || plan || '무료';
                     sessionStatus.textContent = `현재 플랜: ${planName}`;
                 }
             }
