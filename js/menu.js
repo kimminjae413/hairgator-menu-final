@@ -2229,8 +2229,8 @@ async function processAIFaceSwap() {
         showHairTryResult(result.resultImageUrl, styleName);
 
         // 토큰 차감 (성공 시에만)
-        console.log('💳 헤어체험 토큰 차감 시도...', { styleId, styleName });
-        const deductResult = await deductHairTryTokens({ styleId: styleId, styleName: styleName });
+        console.log('💳 헤어체험 토큰 차감 시도...', { styleName });
+        const deductResult = await deductHairTryTokens({ styleName: styleName });
         console.log('💳 헤어체험 토큰 차감 결과:', deductResult);
 
     } catch (error) {
