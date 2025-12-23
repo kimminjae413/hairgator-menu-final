@@ -99,7 +99,7 @@ function getThumbnailUrl(style) {
 // 토큰 비용 상수
 const HAIRGATOR_TOKEN_COSTS = {
     lookbook: 200,
-    hairTry: 300,
+    hairTry: 350,
     chatbot: 10
 };
 
@@ -2503,7 +2503,7 @@ function showHairTryResult(resultImageUrl, styleName) {
                     <span>🔄</span>
                     <span>${t('hairTry.retry') || '다시 시도'}</span>
                 </button>
-                <button class="result-action-btn save-btn" onclick="saveHairTryResult('${resultImageUrl}')">
+                <button class="result-action-btn save-btn" id="saveHairTryBtn">
                     <span>💾</span>
                     <span>${t('hairTry.save') || '저장하기'}</span>
                 </button>
@@ -2517,6 +2517,14 @@ function showHairTryResult(resultImageUrl, styleName) {
 
     document.body.appendChild(modal);
     document.body.style.overflow = 'hidden';
+
+    // 저장 버튼 이벤트 리스너 추가
+    const saveBtn = document.getElementById('saveHairTryBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            saveHairTryResult(resultImageUrl);
+        });
+    }
 
     // 애니메이션
     setTimeout(() => {
@@ -2551,8 +2559,40 @@ function retryHairTry() {
 async function saveHairTryResult(imageUrl) {
     console.log('saveHairTryResult 호출됨:', imageUrl);
 
-    // 저장용 오버레이 표시
-    showSaveImageOverlay(imageUrl);
+    if (!imageUrl) {
+        console.error('이미지 URL이 없습니다');
+        showToast('이미지를 저장할 수 없습니다', 'error');
+        return;
+    }
+
+    // 모바일 체크
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    if (isMobile) {
+        // 모바일: 오버레이로 길게 눌러 저장 안내
+        showSaveImageOverlay(imageUrl);
+    } else {
+        // 데스크톱: 직접 다운로드 시도
+        try {
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `hairtry_${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+
+            showToast(t('hairTry.saved') || '이미지가 저장되었습니다', 'success');
+        } catch (error) {
+            console.error('다운로드 실패:', error);
+            // 실패 시 오버레이로 폴백
+            showSaveImageOverlay(imageUrl);
+        }
+    }
 }
 
 // 이미지 저장 오버레이 (길게 눌러서 저장)
