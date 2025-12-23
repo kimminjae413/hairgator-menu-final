@@ -5,6 +5,12 @@
 // 1. action: 'start' - vModel Task 생성 후 taskId 반환 (빠름)
 // 2. action: 'status' - taskId로 상태 확인, 성공 시 Gemini 후처리
 
+// Node.js 환경에서 fetch 지원 (동적 import)
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
+// Gemini API 타임아웃 (ms) - Netlify 10초 제한 고려
+const GEMINI_TIMEOUT_MS = 7000;
+
 const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -215,19 +221,54 @@ exports.handler = async (event) => {
 };
 
 /**
+ * 타임아웃 가능한 fetch wrapper
+ */
+async function fetchWithTimeout(url, options, timeoutMs) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        return response;
+    } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+            throw new Error(`Request timed out after ${timeoutMs}ms`);
+        }
+        throw error;
+    }
+}
+
+/**
  * Gemini로 헤어 이미지 후처리 (REST API 직접 호출)
+ * - 타임아웃 적용: GEMINI_TIMEOUT_MS 내에 완료되지 않으면 null 반환
  */
 async function enhanceWithGemini(imageUrl, gender, apiKey) {
+    const startTime = Date.now();
+
     try {
-        // 이미지 다운로드
+        // 이미지 다운로드 (2초 타임아웃)
         console.log('📥 vModel 결과 이미지 다운로드...');
-        const imageResponse = await fetch(imageUrl);
+        const imageResponse = await fetchWithTimeout(imageUrl, {}, 2000);
         if (!imageResponse.ok) {
             throw new Error(`Image download failed: ${imageResponse.status}`);
         }
         const imageBuffer = await imageResponse.arrayBuffer();
         const imageBase64 = Buffer.from(imageBuffer).toString('base64');
         console.log('✅ 이미지 다운로드 완료, 크기:', Math.round(imageBuffer.byteLength / 1024), 'KB');
+
+        // 남은 시간 계산
+        const elapsed = Date.now() - startTime;
+        const remainingTime = GEMINI_TIMEOUT_MS - elapsed - 500; // 0.5초 여유
+
+        if (remainingTime < 2000) {
+            console.log('⏰ 시간 부족으로 Gemini 후처리 스킵');
+            return null;
+        }
 
         // 성별에 따른 프롬프트 조정
         const genderSpecificPrompt = gender === 'female'
@@ -264,9 +305,9 @@ ABSOLUTELY DO NOT CHANGE:
 
 OUTPUT: The same photo with improved hair-face integration. The hair must look like it naturally belongs to this person.`;
 
-        // Gemini REST API 호출
-        console.log('🤖 Gemini API 호출 중...');
-        const response = await fetch(
+        // Gemini REST API 호출 (남은 시간만큼 타임아웃)
+        console.log(`🤖 Gemini API 호출 중... (타임아웃: ${remainingTime}ms)`);
+        const response = await fetchWithTimeout(
             `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_IMAGE_MODEL}:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
@@ -288,7 +329,8 @@ OUTPUT: The same photo with improved hair-face integration. The hair must look l
                         temperature: 0.4
                     }
                 })
-            }
+            },
+            remainingTime
         );
 
         if (!response.ok) {
