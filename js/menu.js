@@ -1278,6 +1278,19 @@ async function openStyleModal(style) {
                 return;
             }
 
+            // 무료 플랜 사용자 제한
+            if (window.BullnabiBridge) {
+                const planCheck = await window.BullnabiBridge.getTokenBalance();
+                if (planCheck.success && planCheck.plan === 'free') {
+                    if (typeof showToast === 'function') {
+                        showToast(t('payment.freePlanRestricted') || '유료 플랜 구독 시 이용 가능합니다.', 'warning');
+                    } else {
+                        alert('유료 플랜 구독 시 이용 가능합니다.');
+                    }
+                    return;
+                }
+            }
+
             // 토큰 체크 (비동기)
             const tokenCheck = await canUseHairgatorFeature('lookbook');
             if (!tokenCheck.success || !tokenCheck.canUse) {
@@ -1410,6 +1423,19 @@ async function openStyleModal(style) {
             if (typeof window.isAllowedUser === 'function' && !window.isAllowedUser()) {
                 window.showNotOpenYetMessage();
                 return;
+            }
+
+            // 무료 플랜 사용자 제한
+            if (window.BullnabiBridge) {
+                const planCheck = await window.BullnabiBridge.getTokenBalance();
+                if (planCheck.success && planCheck.plan === 'free') {
+                    if (typeof showToast === 'function') {
+                        showToast(t('payment.freePlanRestricted') || '유료 플랜 구독 시 이용 가능합니다.', 'warning');
+                    } else {
+                        alert('유료 플랜 구독 시 이용 가능합니다.');
+                    }
+                    return;
+                }
             }
 
             // 토큰 체크 (비동기)
