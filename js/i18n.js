@@ -946,8 +946,13 @@ const HAIRGATOR_I18N = {
         allFree: '무료 플랜 모든 기능',
         allBasic: '베이직 플랜 모든 기능',
         moreCredits: '80% 더 많은 토큰',
-        maxCredits: '150% 더 많은 토큰'
-      }
+        maxCredits: '150% 더 많은 토큰',
+        faceSwap: 'AI 얼굴 변환',
+        videoSwap: 'AI 영상 변환'
+      },
+      faceSwapPlan: 'AI 얼굴변환&영상변환',
+      times: '회',
+      addonNote: '이 상품은 상품 탭에서만 결제가 가능합니다.'
     }
   },
 
@@ -1861,8 +1866,13 @@ const HAIRGATOR_I18N = {
         allFree: 'All Free features',
         allBasic: 'All Basic features',
         moreCredits: '80% more credits',
-        maxCredits: '150% more credits'
-      }
+        maxCredits: '150% more credits',
+        faceSwap: 'AI Face Swap',
+        videoSwap: 'AI Video Swap'
+      },
+      faceSwapPlan: 'AI Face & Video Swap',
+      times: 'times',
+      addonNote: 'This product can only be purchased from the Products tab.'
     }
   },
 
@@ -2772,8 +2782,13 @@ const HAIRGATOR_I18N = {
         allFree: '無料プランの全機能',
         allBasic: 'ベーシックプランの全機能',
         moreCredits: '80%多いクレジット',
-        maxCredits: '150%多いクレジット'
-      }
+        maxCredits: '150%多いクレジット',
+        faceSwap: 'AI顔変換',
+        videoSwap: 'AI動画変換'
+      },
+      faceSwapPlan: 'AI顔変換＆動画変換',
+      times: '回',
+      addonNote: 'この商品は商品タブからのみ購入可能です。'
     }
   },
 
@@ -3686,8 +3701,13 @@ const HAIRGATOR_I18N = {
         allFree: '免费版所有功能',
         allBasic: '基础版所有功能',
         moreCredits: '积分增加80%',
-        maxCredits: '积分增加150%'
-      }
+        maxCredits: '积分增加150%',
+        faceSwap: 'AI换脸',
+        videoSwap: 'AI视频换脸'
+      },
+      faceSwapPlan: 'AI换脸&视频换脸',
+      times: '次',
+      addonNote: '此产品只能在产品标签页购买。'
     }
   },
 
@@ -4587,8 +4607,13 @@ const HAIRGATOR_I18N = {
         allFree: 'Tất cả tính năng miễn phí',
         allBasic: 'Tất cả tính năng cơ bản',
         moreCredits: 'Nhiều hơn 80% điểm',
-        maxCredits: 'Nhiều hơn 150% điểm'
-      }
+        maxCredits: 'Nhiều hơn 150% điểm',
+        faceSwap: 'AI đổi mặt',
+        videoSwap: 'AI đổi mặt video'
+      },
+      faceSwapPlan: 'AI đổi mặt & video',
+      times: 'lần',
+      addonNote: 'Sản phẩm này chỉ có thể mua từ tab Sản phẩm.'
     }
   },
 
@@ -5462,8 +5487,13 @@ const HAIRGATOR_I18N = {
         allFree: 'Semua fitur Gratis',
         allBasic: 'Semua fitur Dasar',
         moreCredits: '80% lebih banyak kredit',
-        maxCredits: '150% lebih banyak kredit'
-      }
+        maxCredits: '150% lebih banyak kredit',
+        faceSwap: 'AI Tukar Wajah',
+        videoSwap: 'AI Tukar Wajah Video'
+      },
+      faceSwapPlan: 'AI Tukar Wajah & Video',
+      times: 'kali',
+      addonNote: 'Produk ini hanya dapat dibeli dari tab Produk.'
     }
   },
 
@@ -6055,8 +6085,13 @@ const HAIRGATOR_I18N = {
         allFree: 'Todas las funciones gratuitas',
         allBasic: 'Todas las funciones básicas',
         moreCredits: '80% más créditos',
-        maxCredits: '150% más créditos'
-      }
+        maxCredits: '150% más créditos',
+        faceSwap: 'Cambio de rostro IA',
+        videoSwap: 'Cambio de rostro en video IA'
+      },
+      faceSwapPlan: 'IA Cambio de Rostro & Video',
+      times: 'veces',
+      addonNote: 'Este producto solo se puede comprar desde la pestaña Productos.'
     }
   }
 };
