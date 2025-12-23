@@ -139,11 +139,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                     ${t('ui.loading')}
                                 </div>
                                 <div id="planDisplayArea">
-                                    <div id="planBadge" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: linear-gradient(135deg, #e0e0e0, #bdbdbd); color: #666;">
-                                        <span id="planIcon">⭐</span>
+                                    <div id="planBadge" style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background: linear-gradient(135deg, #e0e0e0, #bdbdbd); color: #666;">
+                                        <span id="planIcon" style="font-size: 10px;">⭐</span>
                                         <span id="planText">-</span>
                                     </div>
-                                    <div id="tokenInfo" style="display: none; margin-top: 4px; font-size: 10px; color: var(--text-secondary, #888);"></div>
+                                    <span id="tokenInfo" style="display: none; margin-left: 6px; font-size: 10px; color: var(--text-secondary, #888);"></span>
                                 </div>
                             </div>
                             <!-- 언어 선택 버튼 -->
