@@ -192,6 +192,26 @@
 - `document.body.classList.contains('light-theme')`: 다크모드 체크
 
 ## 최근 작업 이력
+- 2025-12-23: 토큰 시스템 불나비 API로 전환
+
+  ### Firestore → 불나비 _users.tokenBalance 마이그레이션
+  - **bullnabi-proxy.js 수정**:
+    - `handleGetTokenBalance()`: tokenBalance 조회
+    - `handleSetTokenBalance()`: tokenBalance 설정 (관리자용)
+    - `handleDeductTokenBalance()`: tokenBalance 차감
+    - `handleGetUserData()`에 tokenBalance 필드 추가
+  - **bullnabi-bridge.js 수정**:
+    - `getTokenBalance()`: Firestore → 불나비 API
+    - `canUseFeature()`: Firestore → 불나비 API
+    - `deductTokens()`: Firestore → 불나비 API
+    - `deductTokensDynamic()`: Firestore → 불나비 API
+  - **정지환 개발자 요청 반영**: 불나비 _users 컬렉션에 tokenBalance 필드 사용
+
+  ### 기타 수정
+  - ai-studio 공유 버튼 제거
+  - 라이트 모드 헤더 버튼 색상 수정
+  - hair-change.js 12월 19일 상태로 복구 (node-fetch 제거)
+
 - 2025-12-22 (저녁): 토큰 시스템 완성 + 크레딧 차감 구현
 
   ### 프로필 이미지 버그 수정
@@ -697,30 +717,38 @@
 - 프로 20회: 38,000원
 - 비즈니스 50회: 80,000원
 
-### 현재 크레딧 시스템 구조
-- 불나비 DB의 _users.remainCount 필드에 크레딧 저장
-- Hairgator는 bullnabi-proxy.js를 통해 크레딧 조회/차감
-- 현재 크레딧 비용: 룩북 0.2, 헤어체험 0.2
+### 현재 토큰 시스템 구조 (2025-12-23 업데이트)
+- **불나비 DB `_users.tokenBalance`** 필드에 헤어게이터 토큰 저장
+- `remainCount`는 불나비 기존 크레딧 (분리됨)
+- bullnabi-proxy.js API 엔드포인트:
+  - `getTokenBalance`: 토큰 잔액 조회
+  - `setTokenBalance`: 토큰 잔액 설정 (관리자용)
+  - `deductTokenBalance`: 토큰 차감
+- 토큰 비용:
+  - 룩북: 200 토큰
+  - 헤어체험: 350 토큰
+  - 챗봇: 10 토큰
 
-### 크레딧 사용 로그 (2025-12-22 추가)
+### 토큰 사용 로그
 - Firestore `credit_logs` 컬렉션에 사용 기록 저장
 - 구조:
   ```javascript
   {
     userId: "불나비_사용자_ID",
-    action: "lookbook" | "hair_try" | "chatbot",
+    action: "lookbook" | "hairTry" | "chatbot",
     creditsUsed: 200,
     timestamp: Firestore.Timestamp,
-    createdAt: "2025-12-22T10:00:00.000Z",
+    createdAt: "2025-12-23T10:00:00.000Z",
     metadata: {
-      previousCredits: 1000,
-      newCredits: 800
+      userName: "김민재",
+      previousBalance: 1000,
+      newBalance: 800,
+      type: "tokenBalance"
     }
   }
   ```
-- 비동기 저장: 로그 실패해도 크레딧 차감은 성공 처리
+- 비동기 저장: 로그 실패해도 토큰 차감은 성공 처리
 
 ### TODO
+- 불나비 앱에서 userInfo에 tokenBalance 필드 전달 확인
 - 불나비 앱에 헤어게이터 전용 상품 추가
-- 헤어게이터 전용 크레딧 필드 추가 (remainCount와 분리)
-- 크레딧 차감 로직을 새 필드로 변경
