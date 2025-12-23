@@ -1728,7 +1728,7 @@
             <button class="tab" onclick="switchTab('settings')">설정</button>
             <button class="tab" onclick="switchTab('cardNews')">카드뉴스 생성</button>
             <button class="tab" onclick="switchTab('videoGen')">영상 생성</button>
-            <button class="tab" onclick="switchTab('creditLogs')">💳 사용량 추적</button>
+            <button class="tab" onclick="switchTab('creditLogs')">🎫 플랜 설정</button>
         </div>
         
         <!-- 스타일 관리 탭 -->
@@ -2113,166 +2113,76 @@
         </div>
     </div>
 
-    <!-- 사용량 추적 탭 -->
+    <!-- 플랜 설정 탭 -->
     <div id="creditLogsTab" class="tab-content" style="display: none;">
 
-        <!-- 토큰 관리 섹션 -->
-        <div class="section" style="margin-bottom: 30px;">
-            <h2 class="section-title">🪙 토큰 관리</h2>
+        <!-- 플랜 & 토큰 설정 섹션 -->
+        <div class="section">
+            <h2 class="section-title">🎫 플랜 & 토큰 설정</h2>
+            <p style="color: #888; font-size: 14px; margin-bottom: 25px;">사용자의 요금제 플랜과 토큰을 설정합니다.</p>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <!-- 토큰 조회 -->
-                <div style="background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333;">
-                    <h3 style="margin: 0 0 15px 0; font-size: 16px; color: #4facfe;">🔍 토큰 잔액 조회</h3>
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <input type="text" id="tokenQueryUserId" placeholder="사용자 ID 입력"
-                               style="flex: 1; padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
-                        <button class="btn" onclick="queryTokenBalance()" style="white-space: nowrap;">조회</button>
-                    </div>
-                    <div id="tokenQueryResult" style="padding: 15px; background: #2a2a2a; border-radius: 8px; display: none;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #888;">현재 잔액</span>
-                            <span id="tokenQueryBalance" style="font-size: 24px; font-weight: bold; color: #4facfe;">0</span>
-                        </div>
-                    </div>
+            <!-- 플랜 설정 카드 -->
+            <div style="background: #1a1a1a; padding: 25px; border-radius: 16px; border: 1px solid #f39c12; max-width: 600px;">
+
+                <!-- 사용자 ID 입력 -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; color: #f39c12; font-size: 13px; margin-bottom: 8px; font-weight: 600;">사용자 ID</label>
+                    <input type="text" id="tokenSetUserId" placeholder="사용자 ID 입력"
+                           style="width: 100%; padding: 14px; background: #2a2a2a; border: 1px solid #444; border-radius: 10px; color: #fff; font-size: 15px;">
                 </div>
 
-                <!-- 토큰 충전 -->
-                <div style="background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333;">
-                    <h3 style="margin: 0 0 15px 0; font-size: 16px; color: #43e97b;">➕ 토큰 수동 충전</h3>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <input type="text" id="tokenChargeUserId" placeholder="사용자 ID"
-                               style="padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
-                        <div style="display: flex; gap: 10px;">
-                            <input type="number" id="tokenChargeAmount" placeholder="충전할 토큰 수" min="1"
-                                   style="flex: 1; padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
-                            <button class="btn" onclick="chargeTokens()" style="background: linear-gradient(135deg, #43e97b, #38f9d7); white-space: nowrap;">충전</button>
-                        </div>
-                        <input type="text" id="tokenChargeNote" placeholder="메모 (선택사항)"
-                               style="padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
+                <!-- 플랜 선택 -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; color: #f39c12; font-size: 13px; margin-bottom: 8px; font-weight: 600;">요금제 플랜</label>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                        <button type="button" class="plan-select-btn" data-plan="free" onclick="selectPlanBtn('free')"
+                                style="padding: 14px 10px; background: #2a2a2a; border: 2px solid #444; border-radius: 10px; color: #888; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-size: 14px; font-weight: 600;">무료</div>
+                            <div style="font-size: 11px; margin-top: 4px; opacity: 0.7;">200 토큰</div>
+                        </button>
+                        <button type="button" class="plan-select-btn" data-plan="basic" onclick="selectPlanBtn('basic')"
+                                style="padding: 14px 10px; background: #2a2a2a; border: 2px solid #444; border-radius: 10px; color: #888; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-size: 14px; font-weight: 600;">베이직</div>
+                            <div style="font-size: 11px; margin-top: 4px; opacity: 0.7;">10,000 토큰</div>
+                        </button>
+                        <button type="button" class="plan-select-btn" data-plan="standard" onclick="selectPlanBtn('standard')"
+                                style="padding: 14px 10px; background: #2a2a2a; border: 2px solid #444; border-radius: 10px; color: #888; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-size: 14px; font-weight: 600;">프로</div>
+                            <div style="font-size: 11px; margin-top: 4px; opacity: 0.7;">18,000 토큰</div>
+                        </button>
+                        <button type="button" class="plan-select-btn" data-plan="business" onclick="selectPlanBtn('business')"
+                                style="padding: 14px 10px; background: #2a2a2a; border: 2px solid #444; border-radius: 10px; color: #888; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-size: 14px; font-weight: 600;">비즈니스</div>
+                            <div style="font-size: 11px; margin-top: 4px; opacity: 0.7;">25,000 토큰</div>
+                        </button>
                     </div>
-                    <div id="tokenChargeResult" style="margin-top: 15px; padding: 15px; background: #2a2a2a; border-radius: 8px; display: none;">
-                        <!-- 충전 결과 표시 -->
-                    </div>
+                    <input type="hidden" id="tokenSetPlan" value="">
                 </div>
-            </div>
 
-            <!-- 빠른 충전 버튼들 -->
-            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-                <span style="color: #888; line-height: 36px;">빠른 충전:</span>
-                <button class="btn btn-secondary" onclick="quickCharge(1000)" style="padding: 8px 16px;">+1,000</button>
-                <button class="btn btn-secondary" onclick="quickCharge(5000)" style="padding: 8px 16px;">+5,000</button>
-                <button class="btn btn-secondary" onclick="quickCharge(10000)" style="padding: 8px 16px;">+10,000</button>
-                <button class="btn btn-secondary" onclick="quickCharge(50000)" style="padding: 8px 16px;">+50,000</button>
-                <button class="btn btn-secondary" onclick="quickCharge(100000)" style="padding: 8px 16px;">+100,000</button>
-            </div>
-
-            <!-- 토큰 직접 설정 -->
-            <div style="margin-top: 20px; background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #f39c12;">
-                <h3 style="margin: 0 0 15px 0; font-size: 16px; color: #f39c12;">⚙️ 토큰 직접 설정</h3>
-                <p style="color: #888; font-size: 12px; margin-bottom: 15px;">현재 잔액과 관계없이 특정 값으로 설정합니다.</p>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <input type="text" id="tokenSetUserId" placeholder="사용자 ID"
-                           style="padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
-                    <div style="display: flex; gap: 10px;">
-                        <input type="number" id="tokenSetAmount" placeholder="설정할 토큰 수" min="0"
-                               style="flex: 1; padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
-                        <button class="btn" onclick="setTokenBalance()" style="background: linear-gradient(135deg, #f39c12, #e74c3c); white-space: nowrap;">설정</button>
-                    </div>
-                    <input type="text" id="tokenSetNote" placeholder="메모 (선택사항)"
-                           style="padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
+                <!-- 토큰 수 입력 -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; color: #f39c12; font-size: 13px; margin-bottom: 8px; font-weight: 600;">토큰 수 (직접 입력)</label>
+                    <input type="number" id="tokenSetAmount" placeholder="설정할 토큰 수" min="0"
+                           style="width: 100%; padding: 14px; background: #2a2a2a; border: 1px solid #444; border-radius: 10px; color: #fff; font-size: 15px;">
+                    <p style="color: #666; font-size: 11px; margin-top: 6px;">플랜을 선택하면 자동으로 입력됩니다. 원하는 값으로 수정 가능합니다.</p>
                 </div>
-                <div id="tokenSetResult" style="margin-top: 15px; padding: 15px; background: #2a2a2a; border-radius: 8px; display: none;">
+
+                <!-- 메모 -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; color: #888; font-size: 13px; margin-bottom: 8px;">메모 (선택)</label>
+                    <input type="text" id="tokenSetNote" placeholder="메모"
+                           style="width: 100%; padding: 14px; background: #2a2a2a; border: 1px solid #444; border-radius: 10px; color: #fff; font-size: 15px;">
+                </div>
+
+                <!-- 설정 버튼 -->
+                <button class="btn" onclick="setTokenBalance()" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #f39c12, #e74c3c); font-size: 16px; font-weight: 600; border-radius: 10px;">
+                    ✅ 플랜 & 토큰 설정
+                </button>
+
+                <!-- 결과 표시 -->
+                <div id="tokenSetResult" style="margin-top: 20px; padding: 20px; background: #2a2a2a; border-radius: 10px; display: none;">
                     <!-- 설정 결과 표시 -->
                 </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title">💳 토큰 사용량 추적</h2>
-
-            <!-- 검색 필터 -->
-            <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;">
-                <div style="flex: 1; min-width: 150px;">
-                    <label style="display: block; margin-bottom: 5px; color: #888; font-size: 12px;">사용자 이름</label>
-                    <input type="text" id="creditLogUserName" placeholder="이름 검색"
-                           style="width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
-                </div>
-                <div style="flex: 1; min-width: 150px;">
-                    <label style="display: block; margin-bottom: 5px; color: #888; font-size: 12px;">사용자 ID</label>
-                    <input type="text" id="creditLogUserId" placeholder="userId (선택)"
-                           style="width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
-                </div>
-                <div style="min-width: 150px;">
-                    <label style="display: block; margin-bottom: 5px; color: #888; font-size: 12px;">기능 유형</label>
-                    <select id="creditLogAction" style="width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
-                        <option value="">전체</option>
-                        <option value="lookbook">룩북</option>
-                        <option value="hairTry">헤어체험</option>
-                        <option value="chatbot">챗봇</option>
-                    </select>
-                </div>
-                <div style="min-width: 150px;">
-                    <label style="display: block; margin-bottom: 5px; color: #888; font-size: 12px;">기간</label>
-                    <select id="creditLogPeriod" style="width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff;">
-                        <option value="today">오늘</option>
-                        <option value="week">최근 7일</option>
-                        <option value="month" selected>최근 30일</option>
-                        <option value="all">전체</option>
-                    </select>
-                </div>
-                <div style="display: flex; align-items: flex-end;">
-                    <button class="btn" onclick="loadCreditLogs()" style="height: 42px;">
-                        🔍 조회
-                    </button>
-                </div>
-            </div>
-
-            <!-- 통계 요약 -->
-            <div id="creditLogsSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px;">
-                <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 20px; border-radius: 12px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: bold;" id="totalUsageCount">-</div>
-                    <div style="font-size: 12px; opacity: 0.8;">총 사용 횟수</div>
-                </div>
-                <div style="background: linear-gradient(135deg, #f093fb, #f5576c); padding: 20px; border-radius: 12px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: bold;" id="totalCreditsUsed">-</div>
-                    <div style="font-size: 12px; opacity: 0.8;">총 토큰 소모</div>
-                </div>
-                <div style="background: linear-gradient(135deg, #4facfe, #00f2fe); padding: 20px; border-radius: 12px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: bold;" id="uniqueUsers">-</div>
-                    <div style="font-size: 12px; opacity: 0.8;">활성 사용자</div>
-                </div>
-                <div style="background: linear-gradient(135deg, #43e97b, #38f9d7); padding: 20px; border-radius: 12px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: bold;" id="avgCreditsPerUser">-</div>
-                    <div style="font-size: 12px; opacity: 0.8;">인당 평균 토큰</div>
-                </div>
-            </div>
-
-            <!-- 로그 테이블 -->
-            <div style="background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid #333;">
-                <table style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #2a2a2a;">
-                            <th style="padding: 15px; text-align: left; font-size: 12px; color: #888; border-bottom: 1px solid #333;">시간</th>
-                            <th style="padding: 15px; text-align: left; font-size: 12px; color: #888; border-bottom: 1px solid #333;">이름</th>
-                            <th style="padding: 15px; text-align: left; font-size: 12px; color: #888; border-bottom: 1px solid #333;">기능</th>
-                            <th style="padding: 15px; text-align: right; font-size: 12px; color: #888; border-bottom: 1px solid #333;">토큰</th>
-                            <th style="padding: 15px; text-align: right; font-size: 12px; color: #888; border-bottom: 1px solid #333;">잔액</th>
-                        </tr>
-                    </thead>
-                    <tbody id="creditLogsTable">
-                        <tr>
-                            <td colspan="5" style="padding: 40px; text-align: center; color: #666;">
-                                🔍 조회 버튼을 클릭하세요
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- 로딩/페이지네이션 -->
-            <div id="creditLogsPagination" style="display: none; margin-top: 20px; text-align: center;">
-                <button class="btn btn-secondary" onclick="loadMoreCreditLogs()">더 보기</button>
             </div>
         </div>
     </div>
@@ -5750,11 +5660,50 @@
             }
         }
 
+        // 🎫 플랜 버튼 선택
+        function selectPlanBtn(plan) {
+            // 플랜별 토큰 수
+            const planTokens = {
+                'free': 200,
+                'basic': 10000,
+                'standard': 18000,
+                'business': 25000
+            };
+
+            // 선택된 플랜 저장
+            document.getElementById('tokenSetPlan').value = plan;
+
+            // 토큰 수 자동 입력
+            document.getElementById('tokenSetAmount').value = planTokens[plan] || 0;
+
+            // 버튼 스타일 업데이트
+            document.querySelectorAll('.plan-select-btn').forEach(btn => {
+                if (btn.dataset.plan === plan) {
+                    btn.style.borderColor = '#f39c12';
+                    btn.style.color = '#f39c12';
+                    btn.style.background = 'rgba(243, 156, 18, 0.1)';
+                } else {
+                    btn.style.borderColor = '#444';
+                    btn.style.color = '#888';
+                    btn.style.background = '#2a2a2a';
+                }
+            });
+        }
+
         // ⚙️ 토큰 직접 설정 (잔액을 특정 값으로 설정)
         async function setTokenBalance() {
             const userId = document.getElementById('tokenSetUserId').value.trim();
             const targetAmount = parseInt(document.getElementById('tokenSetAmount').value);
             const note = document.getElementById('tokenSetNote').value.trim();
+            const selectedPlan = document.getElementById('tokenSetPlan').value;
+
+            // 플랜 이름 매핑
+            const planNames = {
+                'free': '무료',
+                'basic': '베이직',
+                'standard': '프로',
+                'business': '비즈니스'
+            };
 
             if (!userId) {
                 showToast('사용자 ID를 입력해주세요');
@@ -5776,17 +5725,24 @@
                 const doc = await docRef.get();
 
                 let currentBalance = 0;
+                let currentPlan = 'free';
                 if (doc.exists) {
                     currentBalance = doc.data().tokenBalance || 0;
+                    currentPlan = doc.data().plan || 'free';
                 }
 
                 const difference = targetAmount - currentBalance;
+                const newPlan = selectedPlan || currentPlan;
 
-                // 토큰 설정
-                await docRef.set({
+                // 토큰 및 플랜 설정
+                const updateData = {
                     tokenBalance: targetAmount,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
+                };
+                if (selectedPlan) {
+                    updateData.plan = selectedPlan;
+                }
+                await docRef.set(updateData, { merge: true });
 
                 // 설정 로그 저장
                 await db.collection('token_logs').add({
@@ -5795,6 +5751,8 @@
                     previousBalance: currentBalance,
                     newBalance: targetAmount,
                     difference: difference,
+                    previousPlan: currentPlan,
+                    newPlan: newPlan,
                     reason: 'admin_manual_set',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     metadata: { note: note || '관리자 수동 설정' }
@@ -5804,12 +5762,17 @@
                     ? `<span style="color: #43e97b;">+${difference.toLocaleString()}</span>`
                     : `<span style="color: #f5576c;">${difference.toLocaleString()}</span>`;
 
+                const planChangeText = selectedPlan && selectedPlan !== currentPlan
+                    ? `<div>플랜 변경: <strong style="color: #888;">${planNames[currentPlan] || currentPlan}</strong> → <strong style="color: #f39c12;">${planNames[newPlan] || newPlan}</strong></div>`
+                    : `<div>현재 플랜: <strong style="color: #f39c12;">${planNames[newPlan] || newPlan}</strong></div>`;
+
                 resultDiv.innerHTML = `
                     <div style="color: #f39c12;">⚙️ 설정 완료!</div>
                     <div style="margin-top: 10px; font-size: 14px;">
                         <div>이전 잔액: <strong>${currentBalance.toLocaleString()}</strong></div>
                         <div>변경량: <strong>${differenceText}</strong></div>
                         <div>새 잔액: <strong style="color: #4facfe;">${targetAmount.toLocaleString()}</strong></div>
+                        ${planChangeText}
                     </div>
                 `;
 
@@ -5818,6 +5781,14 @@
                 // 입력 필드 초기화
                 document.getElementById('tokenSetAmount').value = '';
                 document.getElementById('tokenSetNote').value = '';
+                document.getElementById('tokenSetPlan').value = '';
+
+                // 플랜 버튼 스타일 리셋
+                document.querySelectorAll('.plan-select-btn').forEach(btn => {
+                    btn.style.borderColor = '#444';
+                    btn.style.color = '#888';
+                    btn.style.background = '#2a2a2a';
+                });
 
             } catch (error) {
                 console.error('토큰 설정 오류:', error);
