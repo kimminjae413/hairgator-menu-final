@@ -1564,9 +1564,16 @@
                     designerPhone.textContent = `전화: ${currentDesigner.phone}`;
                 }
                 if (sessionStatus) {
-                    // 헤어게이터 토큰 표시 (tokenBalance 우선, 없으면 tokens 사용)
+                    // BullnabiBridge를 사용해 플랜/토큰 표시 (관리자만 토큰 표시)
                     const tokenBalance = currentDesigner.tokenBalance ?? currentDesigner.tokens ?? 0;
-                    sessionStatus.textContent = `토큰: ${tokenBalance.toLocaleString()}`;
+                    const plan = currentDesigner.plan || 'free';
+                    if (window.BullnabiBridge && typeof window.BullnabiBridge.updateTokenDisplay === 'function') {
+                        window.BullnabiBridge.updateTokenDisplay(tokenBalance, plan);
+                    } else {
+                        // 폴백: 플랜만 표시
+                        const planNames = { 'free': '무료', 'basic': '베이직', 'standard': '프로', 'business': '비즈니스' };
+                        sessionStatus.textContent = `현재 플랜: ${planNames[plan] || plan}`;
+                    }
                 }
             } else {
                 userInfo.style.display = 'none';
