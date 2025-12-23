@@ -349,9 +349,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     // 다른 사용자는 오픈 전 메시지 표시
                     if (typeof showToast === 'function') {
-                        showToast('아직 오픈 전입니다.', 'info');
+                        showToast('결제 기능은 곧 오픈 예정입니다.', 'info');
                     } else {
-                        alert('아직 오픈 전입니다.');
+                        alert('결제 기능은 곧 오픈 예정입니다.');
                     }
                 }
             });

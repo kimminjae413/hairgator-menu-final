@@ -1485,6 +1485,7 @@
             // 허용된 유저만 모달 열기
             if (!isPaymentAllowed()) {
                 console.log('💳 결제 기능은 현재 테스트 중입니다.');
+                showToast('결제 기능은 곧 오픈 예정입니다.', 'info');
                 return;
             }
 
