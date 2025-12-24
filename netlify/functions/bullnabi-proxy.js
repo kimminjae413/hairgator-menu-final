@@ -572,6 +572,116 @@ async function handleSetTokenBalance(userId, newBalance) {
 }
 
 /**
+ * 플랜 조회
+ */
+async function handleGetPlan(userId) {
+    try {
+        console.log('📋 플랜 조회:', userId);
+
+        let adminToken = process.env.BULLNABI_TOKEN;
+        if (!adminToken) {
+            const refreshResult = await handleRefreshToken();
+            if (!refreshResult.success) {
+                return { success: false, error: '토큰 발급 실패' };
+            }
+            adminToken = refreshResult.token;
+        }
+
+        const result = await handleGetUserData(adminToken, userId);
+        if (!result.success || !result.data || result.data.length === 0) {
+            return { success: false, error: '사용자 정보를 찾을 수 없습니다' };
+        }
+
+        const userData = result.data[0];
+        return {
+            success: true,
+            plan: userData.plan || 'free',
+            userId: userId
+        };
+
+    } catch (error) {
+        console.error('❌ 플랜 조회 오류:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * 플랜 설정 (관리자용)
+ */
+async function handleSetPlan(userId, plan) {
+    try {
+        console.log('⚙️ 플랜 설정:', { userId, plan });
+
+        const validPlans = ['free', 'basic', 'standard', 'business'];
+        if (!validPlans.includes(plan)) {
+            return { success: false, error: `유효하지 않은 플랜: ${plan}. 가능한 값: ${validPlans.join(', ')}` };
+        }
+
+        let adminToken = process.env.BULLNABI_TOKEN;
+        if (!adminToken) {
+            const refreshResult = await handleRefreshToken();
+            if (!refreshResult.success) {
+                return { success: false, error: '토큰 발급 실패' };
+            }
+            adminToken = refreshResult.token;
+        }
+
+        // 현재 플랜 조회
+        const currentData = await handleGetUserData(adminToken, userId);
+        const previousPlan = currentData.success && currentData.data?.[0]
+            ? currentData.data[0].plan || 'free'
+            : 'free';
+
+        // _users 업데이트
+        const updateData = {
+            "_id": { "$oid": userId },
+            "plan": plan
+        };
+
+        const updateParams = new URLSearchParams();
+        updateParams.append('metaCode', '_users');
+        updateParams.append('collectionName', '_users');
+        updateParams.append('documentJson', JSON.stringify(updateData));
+
+        const FormData = require('form-data');
+        const updateFormData = new FormData();
+
+        const updateResponse = await fetch(
+            `http://drylink.ohmyapp.io/bnb/update?${updateParams.toString()}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${adminToken}`,
+                    'Accept': 'application/json',
+                    ...updateFormData.getHeaders()
+                },
+                body: updateFormData
+            }
+        );
+
+        const updateResult = await updateResponse.json();
+        console.log('💾 플랜 설정 결과:', updateResult);
+
+        if (updateResult.code === '1' || updateResult.code === 1 || updateResult.success) {
+            console.log('✅ 플랜 설정 완료:', { userId, previousPlan, plan });
+
+            return {
+                success: true,
+                previousPlan: previousPlan,
+                plan: plan,
+                userId: userId
+            };
+        }
+
+        return { success: false, error: '플랜 설정 실패', updateResult };
+
+    } catch (error) {
+        console.error('❌ 플랜 설정 오류:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
  * 토큰 차감 (헤어게이터 기능 사용 시)
  */
 async function handleDeductTokenBalance(userId, amount, feature) {
@@ -831,6 +941,46 @@ exports.handler = async (event, context) => {
             }
 
             const result = await handleDeductTokenBalance(userId, data.amount, data.feature);
+            return {
+                statusCode: result.success ? 200 : 500,
+                headers: corsHeaders,
+                body: JSON.stringify(result)
+            };
+        }
+
+        // 8. 플랜 조회
+        if (action === 'getPlan') {
+            console.log('📋 플랜 조회 요청');
+
+            if (!userId) {
+                return {
+                    statusCode: 400,
+                    headers: corsHeaders,
+                    body: JSON.stringify({ success: false, error: 'userId required' })
+                };
+            }
+
+            const result = await handleGetPlan(userId);
+            return {
+                statusCode: result.success ? 200 : 500,
+                headers: corsHeaders,
+                body: JSON.stringify(result)
+            };
+        }
+
+        // 9. 플랜 설정 (관리자용)
+        if (action === 'setPlan') {
+            console.log('⚙️ 플랜 설정 요청');
+
+            if (!userId || !data?.plan) {
+                return {
+                    statusCode: 400,
+                    headers: corsHeaders,
+                    body: JSON.stringify({ success: false, error: 'userId and plan required' })
+                };
+            }
+
+            const result = await handleSetPlan(userId, data.plan);
             return {
                 statusCode: result.success ? 200 : 500,
                 headers: corsHeaders,

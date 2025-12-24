@@ -5845,10 +5845,11 @@
             });
         }
 
-        // ⚙️ 토큰 직접 설정 (불나비 API 사용)
+        // ⚙️ 플랜 & 토큰 직접 설정 (불나비 API 사용)
         async function setTokenBalance() {
             const userId = document.getElementById('tokenSetUserId').value.trim();
             const targetAmount = parseInt(document.getElementById('tokenSetAmount').value);
+            const selectedPlan = document.getElementById('tokenSetPlan').value || 'free';
             const note = document.getElementById('tokenSetNote').value.trim();
 
             if (!userId) {
@@ -5866,8 +5867,24 @@
             resultDiv.style.color = '#888';
 
             try {
-                // 불나비 API로 토큰 설정
-                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
+                // 1. 플랜 설정 (불나비 API)
+                const planResponse = await fetch('/.netlify/functions/bullnabi-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'setPlan',
+                        userId: userId,
+                        data: { plan: selectedPlan }
+                    })
+                });
+
+                const planResult = await planResponse.json();
+                if (!planResult.success) {
+                    throw new Error(planResult.error || '플랜 설정 실패');
+                }
+
+                // 2. 토큰 설정 (불나비 API)
+                const tokenResponse = await fetch('/.netlify/functions/bullnabi-proxy', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -5877,39 +5894,50 @@
                     })
                 });
 
-                const result = await response.json();
+                const tokenResult = await tokenResponse.json();
 
-                if (!result.success) {
-                    throw new Error(result.error || '토큰 설정 실패');
+                if (!tokenResult.success) {
+                    throw new Error(tokenResult.error || '토큰 설정 실패');
                 }
 
-                const currentBalance = result.previousBalance || 0;
+                const currentBalance = tokenResult.previousBalance || 0;
                 const difference = targetAmount - currentBalance;
+                const previousPlan = planResult.previousPlan || 'free';
 
                 const differenceText = difference >= 0
                     ? `<span style="color: #43e97b;">+${difference.toLocaleString()}</span>`
                     : `<span style="color: #f5576c;">${difference.toLocaleString()}</span>`;
 
+                const planNames = { free: '무료', basic: '베이직', standard: '프로', business: '비즈니스' };
+
                 resultDiv.innerHTML = `
                     <div style="color: #f39c12;">⚙️ 설정 완료!</div>
                     <div style="margin-top: 10px; font-size: 14px;">
-                        <div>이전 잔액: <strong>${currentBalance.toLocaleString()}</strong></div>
+                        <div>플랜: <strong>${planNames[previousPlan]}</strong> → <strong style="color: #ba68c8;">${planNames[selectedPlan]}</strong></div>
+                        <div style="margin-top: 8px;">이전 잔액: <strong>${currentBalance.toLocaleString()}</strong></div>
                         <div>변경량: <strong>${differenceText}</strong></div>
                         <div>새 잔액: <strong style="color: #4facfe;">${targetAmount.toLocaleString()}</strong></div>
-                        <div style="color: #888; font-size: 12px; margin-top: 5px;">📍 불나비 _users.tokenBalance에 저장됨</div>
+                        <div style="color: #888; font-size: 12px; margin-top: 5px;">📍 불나비 _users.plan, _users.tokenBalance에 저장됨</div>
                     </div>
                 `;
 
-                showToast(`토큰 잔액을 ${targetAmount.toLocaleString()}로 설정 완료!`);
+                showToast(`${planNames[selectedPlan]} 플랜 / ${targetAmount.toLocaleString()} 토큰 설정 완료!`);
 
                 // 입력 필드 초기화
                 document.getElementById('tokenSetAmount').value = '';
                 document.getElementById('tokenSetNote').value = '';
+                document.getElementById('tokenSetPlan').value = '';
+                // 플랜 버튼 선택 해제
+                document.querySelectorAll('.plan-select-btn').forEach(btn => {
+                    btn.style.borderColor = '#444';
+                    btn.style.color = '#888';
+                    btn.style.background = '#2a2a2a';
+                });
 
             } catch (error) {
-                console.error('토큰 설정 오류:', error);
+                console.error('설정 오류:', error);
                 resultDiv.innerHTML = `<span style="color: #f5576c;">❌ 설정 실패: ${error.message}</span>`;
-                showToast('토큰 설정 실패: ' + error.message);
+                showToast('설정 실패: ' + error.message);
             }
         }
 

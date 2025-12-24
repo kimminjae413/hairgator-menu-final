@@ -431,11 +431,15 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    console.log('💰 토큰 잔액 조회 (불나비 API):', result.tokenBalance);
+                    // 플랜도 함께 조회
+                    const planResult = await this.getPlan(userId);
+                    const plan = planResult.success ? planResult.plan : 'free';
+
+                    console.log('💰 토큰 잔액 조회 (불나비 API):', result.tokenBalance, '플랜:', plan);
                     return {
                         success: true,
                         tokenBalance: result.tokenBalance || 0,
-                        plan: 'free' // 플랜은 userInfo에서 별도 관리
+                        plan: plan
                     };
                 }
 
@@ -445,6 +449,104 @@
                 console.error('❌ 토큰 잔액 조회 실패:', error);
                 return { success: false, error: error.message };
             }
+        },
+
+        // 플랜 조회 (불나비 API 사용)
+        async getPlan(userId) {
+            try {
+                if (!userId) {
+                    const user = window.getBullnabiUser?.();
+                    userId = user?.userId || user?.id;
+                }
+
+                if (!userId) {
+                    console.error('❌ userId가 없습니다');
+                    return { success: false, error: 'userId required', plan: 'free' };
+                }
+
+                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'getPlan',
+                        userId: userId
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    console.log('📋 플랜 조회 (불나비 API):', result.plan);
+                    return {
+                        success: true,
+                        plan: result.plan || 'free',
+                        userId: userId
+                    };
+                }
+
+                console.warn('⚠️ 플랜 조회 실패:', result.error);
+                return { success: false, plan: 'free', error: result.error };
+            } catch (error) {
+                console.error('❌ 플랜 조회 실패:', error);
+                return { success: false, plan: 'free', error: error.message };
+            }
+        },
+
+        // 플랜 설정 (관리자용)
+        async setPlan(userId, plan) {
+            try {
+                if (!userId) {
+                    return { success: false, error: 'userId required' };
+                }
+
+                const validPlans = ['free', 'basic', 'standard', 'business'];
+                if (!validPlans.includes(plan)) {
+                    return { success: false, error: `유효하지 않은 플랜: ${plan}` };
+                }
+
+                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'setPlan',
+                        userId: userId,
+                        data: { plan: plan }
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    console.log('✅ 플랜 설정 완료:', result.previousPlan, '→', result.plan);
+
+                    // currentDesigner 업데이트
+                    if (window.currentDesigner) {
+                        window.currentDesigner.plan = plan;
+                    }
+
+                    // localStorage 업데이트
+                    const user = window.getBullnabiUser?.();
+                    if (user) {
+                        user.plan = plan;
+                        localStorage.setItem('bullnabi_user', JSON.stringify(user));
+                    }
+
+                    return result;
+                }
+
+                console.warn('⚠️ 플랜 설정 실패:', result.error);
+                return result;
+            } catch (error) {
+                console.error('❌ 플랜 설정 실패:', error);
+                return { success: false, error: error.message };
+            }
+        },
+
+        // 유료 사용자인지 확인
+        async isPaidUser(userId) {
+            const result = await this.getPlan(userId);
+            const plan = result.success ? result.plan : 'free';
+            return plan !== 'free';
         },
 
         // 기능 사용 가능 여부 확인 (불나비 API 사용)
