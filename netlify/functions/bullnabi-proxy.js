@@ -281,8 +281,8 @@ async function handleGetUserData(token, userId) {
                     email: userData.email || '',
                     phone: userData.phone || '',
                     remainCount: userData.remainCount || 0,
-                    tokenBalance: userData.tokenBalance || 0,  // ⭐ 헤어게이터 토큰
-                    plan: userData.plan || 'free',             // ⭐ 헤어게이터 플랜
+                    tokenBalance: userData.tokenBalance,  // ⭐ undefined 유지해야 초기화 로직 작동
+                    plan: userData.plan || 'free',        // ⭐ 헤어게이터 플랜
                     _createTime: userData._createTime,
                     _updateTime: userData._updateTime
                 }]
