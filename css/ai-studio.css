@@ -2219,7 +2219,9 @@ body.light-theme .recipe-formatted .recipe-para.numbered {
 .recipe-formatted .recipe-para.numbered .sub-note,
 .recipe-formatted .numbered-item .sub-note {
   display: block;
+  flex-basis: 100%;
   margin-top: 8px;
+  margin-left: 36px;
   padding-top: 8px;
   border-top: 1px dashed rgba(255, 255, 255, 0.15);
   font-size: 0.9rem;
@@ -2268,6 +2270,7 @@ body.light-theme .recipe-formatted .numbered-item .sub-note {
 
 .recipe-formatted .numbered-item {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   margin: 8px 0;
   padding: 10px 12px;
