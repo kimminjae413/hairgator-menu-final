@@ -212,7 +212,7 @@
   |------|------|----------|
   | free | 200 | 챗봇, 스타일메뉴, 퍼스널분석 |
   | basic | 10,000 | 모든 기능 |
-  | standard | 18,000 | 모든 기능 |
+  | pro | 18,000 | 모든 기능 |
   | business | 25,000 | 모든 기능 |
 
   ### 토큰 표시 정책
@@ -309,7 +309,7 @@
   ### 포트원 V2 결제 연동 (테스트 모드)
   - **프론트엔드**: `js/payment.js` 생성
     - `HAIRGATOR_PAYMENT` 객체: requestPayment, purchasePlan, getUserId
-    - 요금제: basic(22,000원), standard(38,000원), business(50,000원), credits_5000(5,000원)
+    - 요금제: basic(22,000원), pro(38,000원), business(50,000원), credits_5000(5,000원)
     - windowType: `{ pc: 'POPUP', mobile: 'REDIRECTION' }`
   - **서버**: `netlify/functions/payment-verify.js` 생성
     - 포트원 API로 결제 검증 → 불나비 DB 크레딧 충전

@@ -499,7 +499,7 @@
                     return { success: false, error: 'userId required' };
                 }
 
-                const validPlans = ['free', 'basic', 'standard', 'business'];
+                const validPlans = ['free', 'basic', 'pro', 'business'];
                 if (!validPlans.includes(plan)) {
                     return { success: false, error: `유효하지 않은 플랜: ${plan}` };
                 }
@@ -718,13 +718,13 @@
                 const i18nKeys = {
                     'free': 'pricing.freePlan',
                     'basic': 'pricing.basicPlan',
-                    'standard': 'pricing.proPlan',
+                    'pro': 'pricing.proPlan',
                     'business': 'pricing.businessPlan'
                 };
                 return t(i18nKeys[planKey]) || planKey || 'Free';
             }
             // fallback (t 함수 없을 때)
-            const fallback = { 'free': '무료', 'basic': '베이직', 'standard': '프로', 'business': '비즈니스' };
+            const fallback = { 'free': '무료', 'basic': '베이직', 'pro': '프로', 'business': '비즈니스' };
             return fallback[planKey] || planKey || '무료';
         },
 
@@ -784,7 +784,7 @@
             const planStyles = {
                 'free': { icon: '🎁', gradient: 'linear-gradient(135deg, #78909c, #546e7a)', color: '#fff' },
                 'basic': { icon: '💎', gradient: 'linear-gradient(135deg, #4FC3F7, #0288D1)', color: '#fff' },
-                'standard': { icon: '🚀', gradient: 'linear-gradient(135deg, #BA68C8, #7B1FA2)', color: '#fff' },
+                'pro': { icon: '🚀', gradient: 'linear-gradient(135deg, #BA68C8, #7B1FA2)', color: '#fff' },
                 'business': { icon: '👑', gradient: 'linear-gradient(135deg, #FFD54F, #FF8F00)', color: '#333' }
             };
             const style = planStyles[plan] || planStyles['free'];

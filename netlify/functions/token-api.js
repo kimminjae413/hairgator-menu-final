@@ -37,7 +37,7 @@ const TOKEN_COSTS = {
 // 요금제별 토큰 (결제 시 사용)
 const PLANS = {
   basic: { price: 22000, tokens: 10000 },
-  standard: { price: 38000, tokens: 18000 },
+  pro: { price: 38000, tokens: 18000 },
   business: { price: 50000, tokens: 25000 },
   tokens_5000: { price: 5000, tokens: 5000 }
 };

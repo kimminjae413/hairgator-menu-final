@@ -15,12 +15,12 @@ const HAIRGATOR_PAYMENT = {
       tokens: 10000,
       productId: 'hairgator_basic'
     },
-    standard: {
-      name: '스탠다드',
-      nameEn: 'Standard',
+    pro: {
+      name: '프로',
+      nameEn: 'Pro',
       price: 38000,
       tokens: 18000,
-      productId: 'hairgator_standard'
+      productId: 'hairgator_pro'
     },
     business: {
       name: '비즈니스',
@@ -313,8 +313,7 @@ function selectPlan(planType) {
   // HTML에서 사용하는 이름 → payment.js 내부 키 매핑
   const planMapping = {
     'basic': 'basic',      // 베이직 22,000원
-    'pro': 'standard',     // 프로 → 스탠다드 38,000원
-    'standard': 'standard',
+    'pro': 'pro',          // 프로 38,000원
     'business': 'business' // 비즈니스 50,000원
   };
 

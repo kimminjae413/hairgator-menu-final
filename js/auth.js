@@ -227,7 +227,7 @@ async function loginWithBullnabi(userInfo) {
                     // 폴백: 직접 업데이트
                     const sessionStatus = document.getElementById('sessionStatusDisplay');
                     if (sessionStatus) {
-                        const planNames = { 'free': '무료', 'basic': '베이직', 'standard': '프로', 'business': '비즈니스' };
+                        const planNames = { 'free': '무료', 'basic': '베이직', 'pro': '프로', 'business': '비즈니스' };
                         sessionStatus.textContent = `현재 플랜: ${planNames[userPlan] || userPlan}`;
                     }
                 }

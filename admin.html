@@ -2154,7 +2154,7 @@
                             <div style="font-size: 14px; font-weight: 600;">베이직</div>
                             <div style="font-size: 11px; margin-top: 4px; opacity: 0.7;">10,000 토큰</div>
                         </button>
-                        <button type="button" class="plan-select-btn" data-plan="standard" onclick="selectPlanBtn('standard')"
+                        <button type="button" class="plan-select-btn" data-plan="pro" onclick="selectPlanBtn('pro')"
                                 style="padding: 14px 10px; background: #2a2a2a; border: 2px solid #444; border-radius: 10px; color: #888; cursor: pointer; transition: all 0.2s;">
                             <div style="font-size: 14px; font-weight: 600;">프로</div>
                             <div style="font-size: 11px; margin-top: 4px; opacity: 0.7;">18,000 토큰</div>
@@ -5821,7 +5821,7 @@
             const planTokens = {
                 'free': 200,
                 'basic': 10000,
-                'standard': 18000,
+                'pro': 18000,
                 'business': 25000
             };
 
@@ -5908,7 +5908,7 @@
                     ? `<span style="color: #43e97b;">+${difference.toLocaleString()}</span>`
                     : `<span style="color: #f5576c;">${difference.toLocaleString()}</span>`;
 
-                const planNames = { free: '무료', basic: '베이직', standard: '프로', business: '비즈니스' };
+                const planNames = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' };
 
                 resultDiv.innerHTML = `
                     <div style="color: #f39c12;">⚙️ 설정 완료!</div>

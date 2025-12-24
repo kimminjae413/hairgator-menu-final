@@ -25,7 +25,7 @@ const db = admin.firestore();
 // 요금제 정보 (credits → tokens로 변경)
 const PLANS = {
   basic: { price: 22000, tokens: 10000 },
-  standard: { price: 38000, tokens: 18000 },
+  pro: { price: 38000, tokens: 18000 },
   business: { price: 50000, tokens: 25000 },
   tokens_5000: { price: 5000, tokens: 5000 }
 };
@@ -276,8 +276,8 @@ async function chargeTokens(userId, tokens, planKey) {
     const newTokens = currentTokens + tokens;
 
     // 플랜 결정: 추가 토큰 구매(tokens_5000)가 아니면 해당 플랜으로 업그레이드
-    // 플랜 우선순위: business > standard > basic > free
-    const planPriority = { 'free': 0, 'basic': 1, 'standard': 2, 'business': 3, 'tokens_5000': -1 };
+    // 플랜 우선순위: business > pro > basic > free
+    const planPriority = { 'free': 0, 'basic': 1, 'pro': 2, 'business': 3, 'tokens_5000': -1 };
     let newPlan = currentPlan;
 
     if (planKey !== 'tokens_5000') {

@@ -381,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 gradient: 'linear-gradient(135deg, #4FC3F7, #0288D1)',
                 color: '#fff'
             },
-            'standard': {
+            'pro': {
                 name: t('payment.proPlan') || '프로',
                 icon: '🚀',
                 gradient: 'linear-gradient(135deg, #BA68C8, #7B1FA2)',

@@ -614,7 +614,7 @@ async function handleSetPlan(userId, plan) {
     try {
         console.log('⚙️ 플랜 설정:', { userId, plan });
 
-        const validPlans = ['free', 'basic', 'standard', 'business'];
+        const validPlans = ['free', 'basic', 'pro', 'business'];
         if (!validPlans.includes(plan)) {
             return { success: false, error: `유효하지 않은 플랜: ${plan}. 가능한 값: ${validPlans.join(', ')}` };
         }
