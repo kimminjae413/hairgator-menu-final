@@ -3427,16 +3427,24 @@ class AIStudio {
     formatted = formatted.replace(/[📐✂️➡️⭐🎯✨🌀]/g, '');
 
     // ⭐ "이때" 부연설명을 이전 라인과 합치기 (번호 목록 변환 전에 처리)
-    // "2. 이때..." 패턴을 찾아서 이전 "1. ..." 라인에 합침
+    // "2. 이때..." 패턴을 찾아서 이전 "1. ..." 라인의 내용 뒤에 합침
     const preLines = formatted.split('\n');
     const mergedLines = [];
     for (let i = 0; i < preLines.length; i++) {
       const line = preLines[i];
       const match = line.match(/^\d+\.\s*(이때[,\s].*)$/);
       if (match && mergedLines.length > 0) {
-        // 이전 라인에 합치기
+        // 이전 라인의 내용 뒤에 직접 합치기 (번호는 유지)
         const lastIdx = mergedLines.length - 1;
-        mergedLines[lastIdx] = mergedLines[lastIdx] + '\n<span class="sub-note">' + match[1] + '</span>';
+        const prevLine = mergedLines[lastIdx];
+        // 이전 라인이 "N. 내용" 형식이면 내용 뒤에 sub-note 추가
+        const prevMatch = prevLine.match(/^(\d+\.\s*)(.+)$/);
+        if (prevMatch) {
+          mergedLines[lastIdx] = prevMatch[1] + prevMatch[2] + ' <span class="sub-note">' + match[1] + '</span>';
+        } else {
+          // 형식이 다르면 그냥 뒤에 붙임
+          mergedLines[lastIdx] = prevLine + ' <span class="sub-note">' + match[1] + '</span>';
+        }
       } else {
         mergedLines.push(line);
       }
