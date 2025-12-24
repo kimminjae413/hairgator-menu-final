@@ -3426,6 +3426,23 @@ class AIStudio {
     // 서버 출력 이모지 제거 (📐, ✂️, ➡️, ⭐ 등) - 섹션 아이콘(🔵🟣🟢🟡)은 유지
     formatted = formatted.replace(/[📐✂️➡️⭐🎯✨🌀]/g, '');
 
+    // ⭐ "이때" 부연설명을 이전 라인과 합치기 (번호 목록 변환 전에 처리)
+    // "2. 이때..." 패턴을 찾아서 이전 "1. ..." 라인에 합침
+    const preLines = formatted.split('\n');
+    const mergedLines = [];
+    for (let i = 0; i < preLines.length; i++) {
+      const line = preLines[i];
+      const match = line.match(/^\d+\.\s*(이때[,\s].*)$/);
+      if (match && mergedLines.length > 0) {
+        // 이전 라인에 합치기
+        const lastIdx = mergedLines.length - 1;
+        mergedLines[lastIdx] = mergedLines[lastIdx] + '\n<span class="sub-note">' + match[1] + '</span>';
+      } else {
+        mergedLines.push(line);
+      }
+    }
+    formatted = mergedLines.join('\n');
+
     // 번호 리스트 (1. 2. 3.)
     formatted = formatted.replace(/^(\d+)\.\s+(.+)$/gm, '<li class="numbered-item"><span class="num">$1</span>$2</li>');
 

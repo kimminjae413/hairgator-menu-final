@@ -2216,7 +2216,8 @@ body.light-theme .recipe-formatted .recipe-para.numbered {
 }
 
 /* 📝 부연 설명 (이때...) 스타일 - 같은 박스 내 */
-.recipe-formatted .recipe-para.numbered .sub-note {
+.recipe-formatted .recipe-para.numbered .sub-note,
+.recipe-formatted .numbered-item .sub-note {
   display: block;
   margin-top: 8px;
   padding-top: 8px;
@@ -2225,7 +2226,8 @@ body.light-theme .recipe-formatted .recipe-para.numbered {
   color: var(--text-secondary);
 }
 
-body.light-theme .recipe-formatted .recipe-para.numbered .sub-note {
+body.light-theme .recipe-formatted .recipe-para.numbered .sub-note,
+body.light-theme .recipe-formatted .numbered-item .sub-note {
   border-top-color: rgba(0, 0, 0, 0.1);
 }
 
