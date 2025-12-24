@@ -1490,6 +1490,34 @@
 
         // ========== 요금제 모달 함수 ==========
 
+        // 다국어 번역 적용 함수
+        function applyTranslations() {
+            if (typeof t !== 'function') {
+                console.warn('⚠️ t() 함수가 정의되지 않음');
+                return;
+            }
+
+            // data-i18n 속성을 가진 모든 요소에 번역 적용
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const translated = t(key);
+                if (translated && translated !== key) {
+                    el.textContent = translated;
+                }
+            });
+
+            // data-i18n-html 속성 (HTML 포함)
+            document.querySelectorAll('[data-i18n-html]').forEach(el => {
+                const key = el.getAttribute('data-i18n-html');
+                const translated = t(key);
+                if (translated && translated !== key) {
+                    el.innerHTML = translated;
+                }
+            });
+
+            console.log('✅ 다국어 번역 적용 완료');
+        }
+
         function openPricingModal() {
             // 사이드바 닫기
             const sidebar = document.getElementById('sidebar');
