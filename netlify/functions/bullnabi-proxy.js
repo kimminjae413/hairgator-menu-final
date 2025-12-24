@@ -470,6 +470,7 @@ async function handleUseCredits(userId, uses, count) {
 
 /**
  * 토큰 잔액 조회 (tokenBalance)
+ * - 무료 플랜 사용자(tokenBalance 없거나 0)는 자동으로 200 토큰 초기화
  */
 async function handleGetTokenBalance(userId) {
     try {
@@ -490,9 +491,56 @@ async function handleGetTokenBalance(userId) {
         }
 
         const userData = result.data[0];
+        const currentBalance = userData.tokenBalance;
+        const currentPlan = userData.plan || 'free';
+
+        // 무료 플랜 사용자: tokenBalance가 없거나 undefined면 200으로 초기화
+        if (currentPlan === 'free' && (currentBalance === undefined || currentBalance === null)) {
+            console.log('🆕 무료 플랜 사용자 토큰 초기화:', userId);
+
+            // 200 토큰 + free 플랜 설정
+            const initData = {
+                "_id": { "$oid": userId },
+                "tokenBalance": 200,
+                "plan": "free"
+            };
+
+            const initParams = new URLSearchParams();
+            initParams.append('metaCode', '_users');
+            initParams.append('collectionName', '_users');
+            initParams.append('documentJson', JSON.stringify(initData));
+
+            const FormData = require('form-data');
+            const initFormData = new FormData();
+
+            await fetch(
+                `http://drylink.ohmyapp.io/bnb/update?${initParams.toString()}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Accept': 'application/json',
+                        ...initFormData.getHeaders()
+                    },
+                    body: initFormData
+                }
+            );
+
+            console.log('✅ 무료 플랜 200 토큰 초기화 완료:', userId);
+
+            return {
+                success: true,
+                tokenBalance: 200,
+                plan: 'free',
+                userId: userId,
+                initialized: true
+            };
+        }
+
         return {
             success: true,
-            tokenBalance: userData.tokenBalance || 0,
+            tokenBalance: currentBalance || 0,
+            plan: currentPlan,
             userId: userId
         };
 
