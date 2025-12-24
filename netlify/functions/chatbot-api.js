@@ -10588,9 +10588,9 @@ ${diagramsContext}
 
 // External/Internal 섹션 정리 함수
 function fixExternalInternalSections(text) {
-  // [External]과 [Internal] 섹션 분리
-  const externalMatch = text.match(/\[External\]([^]*?)(?=\[Internal\]|$)/i);
-  const internalMatch = text.match(/\[Internal\]([^]*?)$/i);
+  // [External]과 [Internal] 섹션 분리 ([\s\S]로 줄바꿈 포함 모든 문자 매칭)
+  const externalMatch = text.match(/\[External\]([\s\S]*?)(?=\[Internal\]|$)/i);
+  const internalMatch = text.match(/\[Internal\]([\s\S]*?)$/i);
 
   if (!externalMatch || !internalMatch) {
     return text; // 섹션 구분이 없으면 그대로 반환
