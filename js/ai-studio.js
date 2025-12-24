@@ -3434,7 +3434,7 @@ class AIStudio {
       const line = preLines[i];
       const match = line.match(/^\d+\.\s*(이때[,\s].*)$/);
       if (match && mergedLines.length > 0) {
-        // 이전 라인의 내용 뒤에 직접 합치기 (번호는 유지)
+        // 이전 라인의 내용 뒤에 직접 합치기
         const lastIdx = mergedLines.length - 1;
         const prevLine = mergedLines[lastIdx];
         // 이전 라인이 "N. 내용" 형식이면 내용 뒤에 sub-note 추가
@@ -3442,14 +3442,24 @@ class AIStudio {
         if (prevMatch) {
           mergedLines[lastIdx] = prevMatch[1] + prevMatch[2] + ' <span class="sub-note">' + match[1] + '</span>';
         } else {
-          // 형식이 다르면 그냥 뒤에 붙임
           mergedLines[lastIdx] = prevLine + ' <span class="sub-note">' + match[1] + '</span>';
         }
       } else {
         mergedLines.push(line);
       }
     }
-    formatted = mergedLines.join('\n');
+
+    // ⭐ 번호 라인들을 순차적으로 재번호 매기기 (1, 3, 4... → 1, 2, 3...)
+    let newNumber = 0;
+    const renumberedLines = mergedLines.map(line => {
+      const numMatch = line.match(/^(\d+)\.\s+(.+)$/);
+      if (numMatch) {
+        newNumber++;
+        return `${newNumber}. ${numMatch[2]}`;
+      }
+      return line;
+    });
+    formatted = renumberedLines.join('\n');
 
     // 번호 리스트 (1. 2. 3.)
     formatted = formatted.replace(/^(\d+)\.\s+(.+)$/gm, '<li class="numbered-item"><span class="num">$1</span>$2</li>');
