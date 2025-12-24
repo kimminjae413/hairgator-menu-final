@@ -938,7 +938,7 @@ exports.handler = async (event, context) => {
 
         // ========== 🎯 헤어게이터 토큰 (tokenBalance) ==========
 
-        console.log('🔍 DEBUG action check:', JSON.stringify(action), 'type:', typeof action);
+        console.log('🔍 DEBUG action check v2:', JSON.stringify(action), 'type:', typeof action);
 
         // 5. 토큰 잔액 조회
         if (action === 'getTokenBalance') {
