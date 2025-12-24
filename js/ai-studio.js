@@ -3479,8 +3479,13 @@ class AIStudio {
           if (trimmed.length > 0) {
             // ⭐ 섹션 내부이면 번호 추가
             if (inSection) {
-              sectionCounter++;
-              result.push(`<p class="recipe-para numbered"><span class="step-num">${sectionCounter}</span>${trimmed}</p>`);
+              // "이때"로 시작하는 부연 설명은 번호 없이 들여쓰기
+              if (trimmed.startsWith('이때')) {
+                result.push(`<p class="recipe-para sub-note">${trimmed}</p>`);
+              } else {
+                sectionCounter++;
+                result.push(`<p class="recipe-para numbered"><span class="step-num">${sectionCounter}</span>${trimmed}</p>`);
+              }
             } else {
               result.push(`<p class="recipe-para">${trimmed}</p>`);
             }

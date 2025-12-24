@@ -39,7 +39,8 @@
       "mcp__chrome-devtools__list_pages",
       "mcp__chrome-devtools__resize_page",
       "Bash(git push)",
-      "WebFetch(domain:developers.portone.io)"
+      "WebFetch(domain:developers.portone.io)",
+      "Bash(PYTHONUNBUFFERED=1 python:*)"
     ],
     "deny": [],
     "ask": []
