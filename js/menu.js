@@ -1135,6 +1135,15 @@ async function openStyleModal(style) {
                          class="modal-zoom-image"
                          style="width: 100%; height: auto; object-fit: cover; max-height: 70vh; cursor: zoom-in; transition: max-height 0.3s ease, transform 0.3s ease, opacity 0.2s ease; display: block; border-radius: 18px 18px 0 0;"
                          onerror="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.alt='이미지 로드 실패';">
+                    <div class="modal-ai-badge" style="
+                        position: absolute; bottom: 15px; right: 15px;
+                        padding: 5px 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+                        font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+                        color: #fff; background: rgba(0, 0, 0, 0.6);
+                        backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+                        border: 1px solid rgba(255, 255, 255, 0.15);
+                        border-radius: 6px; z-index: 10; pointer-events: none;
+                    ">AI</div>
                 </div>
             </div>
         `;

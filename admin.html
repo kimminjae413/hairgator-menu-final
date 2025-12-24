@@ -2505,14 +2505,14 @@
                     const badgeX = img.width - badgeWidth - padding;
                     const badgeY = img.height - badgeHeight - padding;
 
-                    // 글래스모피즘 배경
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                    // 어두운 반투명 배경 (흰색 이미지에서도 보이게)
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
                     ctx.beginPath();
                     ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 6);
                     ctx.fill();
 
                     // 테두리
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
                     ctx.lineWidth = 1;
                     ctx.stroke();
 
