@@ -3479,9 +3479,15 @@ class AIStudio {
           if (trimmed.length > 0) {
             // ⭐ 섹션 내부이면 번호 추가
             if (inSection) {
-              // "이때"로 시작하는 부연 설명은 번호 없이 들여쓰기
+              // "이때"로 시작하는 부연 설명은 이전 문장에 합치기
               if (trimmed.startsWith('이때')) {
-                result.push(`<p class="recipe-para sub-note">${trimmed}</p>`);
+                // 이전 번호 문장 찾아서 합치기
+                for (let j = result.length - 1; j >= 0; j--) {
+                  if (result[j].includes('recipe-para numbered')) {
+                    result[j] = result[j].replace('</p>', `<br><span class="sub-note">${trimmed}</span></p>`);
+                    break;
+                  }
+                }
               } else {
                 sectionCounter++;
                 result.push(`<p class="recipe-para numbered"><span class="step-num">${sectionCounter}</span>${trimmed}</p>`);

@@ -2215,20 +2215,18 @@ body.light-theme .recipe-formatted .recipe-para.numbered {
   background: rgba(0, 0, 0, 0.03);
 }
 
-/* 📝 부연 설명 (이때...) 스타일 */
-.recipe-formatted .recipe-para.sub-note {
-  margin: 4px 0 12px 38px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border-left: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 0 6px 6px 0;
+/* 📝 부연 설명 (이때...) 스타일 - 같은 박스 내 */
+.recipe-formatted .recipe-para.numbered .sub-note {
+  display: block;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.15);
   font-size: 0.9rem;
   color: var(--text-secondary);
 }
 
-body.light-theme .recipe-formatted .recipe-para.sub-note {
-  background: rgba(0, 0, 0, 0.02);
-  border-left-color: rgba(0, 0, 0, 0.1);
+body.light-theme .recipe-formatted .recipe-para.numbered .sub-note {
+  border-top-color: rgba(0, 0, 0, 0.1);
 }
 
 /* 💡 초보자 설명 스타일 */
