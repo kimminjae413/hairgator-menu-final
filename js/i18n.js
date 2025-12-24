@@ -962,7 +962,8 @@ const HAIRGATOR_I18N = {
       faceSwapPlan: 'AI 얼굴변환&영상변환',
       times: '회',
       addonNote: '이 상품은 상품 탭에서만 결제가 가능합니다.',
-      payAtProductTab: '상품 탭에서 결제해 주세요'
+      payAtProductTab: '상품 탭에서 결제해 주세요',
+      freePlanRestricted: '유료 플랜 구독 시 이용 가능합니다.'
     }
   },
 
@@ -1892,7 +1893,8 @@ const HAIRGATOR_I18N = {
       faceSwapPlan: 'AI Face & Video Swap',
       times: 'times',
       addonNote: 'This product can only be purchased from the Products tab.',
-      payAtProductTab: 'Please pay from the Products tab'
+      payAtProductTab: 'Please pay from the Products tab',
+      freePlanRestricted: 'Available with a paid plan subscription.'
     }
   },
 
@@ -2818,7 +2820,8 @@ const HAIRGATOR_I18N = {
       faceSwapPlan: 'AI顔変換＆動画変換',
       times: '回',
       addonNote: 'この商品は商品タブからのみ購入可能です。',
-      payAtProductTab: '商品タブでお支払いください'
+      payAtProductTab: '商品タブでお支払いください',
+      freePlanRestricted: '有料プランに加入するとご利用いただけます。'
     }
   },
 
@@ -3747,7 +3750,8 @@ const HAIRGATOR_I18N = {
       faceSwapPlan: 'AI换脸&视频换脸',
       times: '次',
       addonNote: '此产品只能在产品标签页购买。',
-      payAtProductTab: '请在产品标签页支付'
+      payAtProductTab: '请在产品标签页支付',
+      freePlanRestricted: '订阅付费套餐后可使用。'
     }
   },
 
@@ -4663,7 +4667,8 @@ const HAIRGATOR_I18N = {
       faceSwapPlan: 'AI đổi mặt & video',
       times: 'lần',
       addonNote: 'Sản phẩm này chỉ có thể mua từ tab Sản phẩm.',
-      payAtProductTab: 'Vui lòng thanh toán từ tab Sản phẩm'
+      payAtProductTab: 'Vui lòng thanh toán từ tab Sản phẩm',
+      freePlanRestricted: 'Có thể sử dụng khi đăng ký gói trả phí.'
     }
   },
 
@@ -5553,7 +5558,8 @@ const HAIRGATOR_I18N = {
       faceSwapPlan: 'AI Tukar Wajah & Video',
       times: 'kali',
       addonNote: 'Produk ini hanya dapat dibeli dari tab Produk.',
-      payAtProductTab: 'Silakan bayar dari tab Produk'
+      payAtProductTab: 'Silakan bayar dari tab Produk',
+      freePlanRestricted: 'Tersedia dengan berlangganan paket berbayar.'
     }
   },
 
@@ -6161,7 +6167,8 @@ const HAIRGATOR_I18N = {
       faceSwapPlan: 'IA Cambio de Rostro & Video',
       times: 'veces',
       addonNote: 'Este producto solo se puede comprar desde la pestaña Productos.',
-      payAtProductTab: 'Por favor pague desde la pestaña Productos'
+      payAtProductTab: 'Por favor pague desde la pestaña Productos',
+      freePlanRestricted: 'Disponible con suscripción de plan de pago.'
     }
   }
 };
