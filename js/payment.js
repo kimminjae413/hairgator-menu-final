@@ -40,7 +40,7 @@ const HAIRGATOR_PAYMENT = {
 
   /**
    * 결제 요청
-   * @param {string} planKey - 요금제 키 (basic, standard, business, tokens_5000)
+   * @param {string} planKey - 요금제 키 (basic, pro, business, tokens_5000)
    * @param {string} userId - 사용자 ID
    * @param {string} userEmail - 사용자 이메일 (선택)
    * @param {string} userName - 사용자 이름 (선택)
