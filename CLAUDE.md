@@ -192,7 +192,22 @@
 - `document.body.classList.contains('light-theme')`: 다크모드 체크
 
 ## 최근 작업 이력
-- 2025-12-24: 플랜(plan) 시스템 추가
+- 2025-12-24: 플랜(plan) 시스템 + 무료 플랜 자동 초기화 + 결제 모달 수정
+
+  ### 무료 플랜 자동 200 토큰 초기화
+  - **문제**: 신규/기존 유저 중 플랜 결제 안 한 사람은 자동으로 무료 플랜 200 토큰 필요
+  - **수정 위치**: `bullnabi-proxy.js` `handleGetTokenBalance()`
+  - **로직**: `tokenBalance`가 undefined/null이면 200으로 자동 초기화
+  - **주의**: `handleGetUserData()`에서 `tokenBalance || 0` → `tokenBalance` (undefined 유지해야 초기화 조건 작동)
+
+  ### 결제 모달 수정
+  - **selectPlan()**: 결제 대신 "상품 탭에서 결제해 주세요" 토스트 표시
+  - **i18n 키 수정**: HTML `pricing.*` → `payment.*` (33개 수정)
+  - **번역 추가**: `payAtProductTab`, `freePlanRestricted` 7개국어
+
+  ### Netlify 배포 URL 확인
+  - **정확한 URL**: `lovely-lebkuchen-4017ca.netlify.app`
+  - `hairgator.netlify.app`은 예전/다른 프로젝트
 
   ### 불나비 _users.plan 필드 추가
   - **bullnabi-proxy.js**:
