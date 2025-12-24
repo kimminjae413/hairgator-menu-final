@@ -616,8 +616,8 @@
               <div class="sidebar-menu-item sidebar-payment-btn" onclick="openPricingModal()">
                   <span class="sidebar-icon">💎</span>
                   <div class="sidebar-text">
-                      <div class="sidebar-title" data-i18n="pricing.upgrade">프리미엄 업그레이드</div>
-                      <div class="sidebar-subtitle" data-i18n="pricing.unlockAll">모든 기능 잠금 해제</div>
+                      <div class="sidebar-title" data-i18n="payment.upgrade">프리미엄 업그레이드</div>
+                      <div class="sidebar-subtitle" data-i18n="payment.unlockAll">모든 기능 잠금 해제</div>
                   </div>
                   <span class="sidebar-arrow sidebar-premium-arrow">✨</span>
               </div>
@@ -631,110 +631,110 @@
             <button class="pricing-modal-close" onclick="closePricingModal()">×</button>
 
             <div class="pricing-header">
-                <h2 class="pricing-title" data-i18n="pricing.choosePlan">요금제 선택</h2>
-                <p class="pricing-subtitle" data-i18n="pricing.unlockPremium">프리미엄 기능을 잠금 해제하세요</p>
+                <h2 class="pricing-title" data-i18n="payment.choosePlan">요금제 선택</h2>
+                <p class="pricing-subtitle" data-i18n="payment.unlockPremium">프리미엄 기능을 잠금 해제하세요</p>
             </div>
 
             <div class="pricing-cards">
                 <!-- 무료 플랜 -->
                 <div class="pricing-card pricing-card-free">
                     <div class="pricing-card-header">
-                        <span class="pricing-badge pricing-badge-free" data-i18n="pricing.currentPlan">현재</span>
-                        <h3 class="pricing-plan-name" data-i18n="pricing.freePlan">무료</h3>
+                        <span class="pricing-badge pricing-badge-free" data-i18n="payment.currentPlan">현재</span>
+                        <h3 class="pricing-plan-name" data-i18n="payment.freePlan">무료</h3>
                         <div class="pricing-price">
                             <span class="pricing-amount">₩0</span>
-                            <span class="pricing-period" data-i18n="pricing.perMonth">/월</span>
+                            <span class="pricing-period" data-i18n="payment.perMonth">/월</span>
                         </div>
-                        <div class="pricing-credits">200 <span data-i18n="pricing.credits">토큰</span></div>
-                        <div class="pricing-free-info" data-i18n="pricing.freeTokenInfo">무료 토큰은 챗봇에서만 사용 가능합니다</div>
+                        <div class="pricing-credits">200 <span data-i18n="payment.credits">토큰</span></div>
+                        <div class="pricing-free-info" data-i18n="payment.freeTokenInfo">무료 토큰은 챗봇에서만 사용 가능합니다</div>
                     </div>
                     <ul class="pricing-features">
-                        <li><span class="feature-icon">✓</span> <span data-i18n="pricing.feature.styleMenu">스타일 메뉴판</span></li>
-                        <li class="feature-limited"><span class="feature-icon">○</span> <span data-i18n="pricing.feature.chatbotLimited">챗봇 (토큰 사용)</span></li>
-                        <li class="feature-locked"><span class="feature-icon">✗</span> <span data-i18n="pricing.feature.personalColor">퍼스널컬러 분석</span></li>
-                        <li class="feature-locked"><span class="feature-icon">✗</span> <span data-i18n="pricing.feature.drapeMode">드레이프 모드</span></li>
-                        <li class="feature-locked"><span class="feature-icon">✗</span> <span data-i18n="pricing.feature.lookbook">룩북</span></li>
-                        <li class="feature-locked"><span class="feature-icon">✗</span> <span data-i18n="pricing.feature.hairTry">헤어체험</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.styleMenu">스타일 메뉴판</span></li>
+                        <li class="feature-limited"><span class="feature-icon">○</span> <span data-i18n="payment.feature.chatbotLimited">챗봇 (토큰 사용)</span></li>
+                        <li class="feature-locked"><span class="feature-icon">✗</span> <span data-i18n="payment.feature.personalColor">퍼스널컬러 분석</span></li>
+                        <li class="feature-locked"><span class="feature-icon">✗</span> <span data-i18n="payment.feature.drapeMode">드레이프 모드</span></li>
+                        <li class="feature-locked"><span class="feature-icon">✗</span> <span data-i18n="payment.feature.lookbook">룩북</span></li>
+                        <li class="feature-locked"><span class="feature-icon">✗</span> <span data-i18n="payment.feature.hairTry">헤어체험</span></li>
                     </ul>
-                    <button class="pricing-btn pricing-btn-current" disabled data-i18n="pricing.currentPlanBtn">현재 플랜</button>
+                    <button class="pricing-btn pricing-btn-current" disabled data-i18n="payment.currentPlanBtn">현재 플랜</button>
                 </div>
 
                 <!-- 베이직 플랜 -->
                 <div class="pricing-card pricing-card-basic">
                     <div class="pricing-card-header">
-                        <h3 class="pricing-plan-name" data-i18n="pricing.basicPlan">베이직</h3>
+                        <h3 class="pricing-plan-name" data-i18n="payment.basicPlan">베이직</h3>
                         <div class="pricing-price">
                             <span class="pricing-amount">₩22,000</span>
-                            <span class="pricing-period" data-i18n="pricing.perMonth">/월</span>
+                            <span class="pricing-period" data-i18n="payment.perMonth">/월</span>
                         </div>
-                        <div class="pricing-credits">10,000 <span data-i18n="pricing.credits">토큰</span></div>
+                        <div class="pricing-credits">10,000 <span data-i18n="payment.credits">토큰</span></div>
                     </div>
                     <ul class="pricing-features">
-                        <li><span class="feature-icon">✓</span> <span data-i18n="pricing.feature.styleMenu">스타일 메뉴판</span></li>
-                        <li><span class="feature-icon">✓</span> <span data-i18n="pricing.feature.chatbot">챗봇</span></li>
-                        <li><span class="feature-icon">✓</span> <span data-i18n="pricing.feature.personalColor">퍼스널컬러 분석</span></li>
-                        <li><span class="feature-icon">✓</span> <span data-i18n="pricing.feature.drapeMode">드레이프 모드</span></li>
-                        <li><span class="feature-icon">✓</span> <span data-i18n="pricing.feature.lookbook">룩북</span></li>
-                        <li><span class="feature-icon">✓</span> <span data-i18n="pricing.feature.hairTry">헤어체험</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.styleMenu">스타일 메뉴판</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.chatbot">챗봇</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.personalColor">퍼스널컬러 분석</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.drapeMode">드레이프 모드</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.lookbook">룩북</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.hairTry">헤어체험</span></li>
                     </ul>
-                    <button class="pricing-btn pricing-btn-basic" onclick="selectPlan('basic')" data-i18n="pricing.selectPlan">선택하기</button>
+                    <button class="pricing-btn pricing-btn-basic" onclick="selectPlan('basic')" data-i18n="payment.selectPlan">선택하기</button>
                 </div>
 
                 <!-- 프로 플랜 (추천) -->
                 <div class="pricing-card pricing-card-pro pricing-card-recommended">
-                    <div class="pricing-card-ribbon" data-i18n="pricing.recommended">추천</div>
+                    <div class="pricing-card-ribbon" data-i18n="payment.recommended">추천</div>
                     <div class="pricing-card-header">
-                        <h3 class="pricing-plan-name" data-i18n="pricing.proPlan">프로</h3>
+                        <h3 class="pricing-plan-name" data-i18n="payment.proPlan">프로</h3>
                         <div class="pricing-price">
                             <span class="pricing-amount">₩38,000</span>
-                            <span class="pricing-period" data-i18n="pricing.perMonth">/월</span>
+                            <span class="pricing-period" data-i18n="payment.perMonth">/월</span>
                         </div>
-                        <div class="pricing-credits">18,000 <span data-i18n="pricing.credits">토큰</span></div>
-                        <div class="pricing-save" data-i18n="pricing.savePercent">+700 보너스 토큰</div>
+                        <div class="pricing-credits">18,000 <span data-i18n="payment.credits">토큰</span></div>
+                        <div class="pricing-save" data-i18n="payment.savePercent">+700 보너스 토큰</div>
                     </div>
                     <ul class="pricing-features">
-                        <li><span class="feature-icon">✓</span> <span data-i18n="pricing.feature.allBasic">베이직 플랜 모든 기능</span></li>
-                        <li><span class="feature-icon">✓</span> <span data-i18n="pricing.feature.moreCredits">80% 더 많은 토큰</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.allBasic">베이직 플랜 모든 기능</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.moreCredits">80% 더 많은 토큰</span></li>
                     </ul>
-                    <button class="pricing-btn pricing-btn-pro" onclick="selectPlan('pro')" data-i18n="pricing.selectPlan">선택하기</button>
+                    <button class="pricing-btn pricing-btn-pro" onclick="selectPlan('pro')" data-i18n="payment.selectPlan">선택하기</button>
                 </div>
 
                 <!-- 비즈니스 플랜 -->
                 <div class="pricing-card pricing-card-business">
                     <div class="pricing-card-header">
-                        <h3 class="pricing-plan-name" data-i18n="pricing.businessPlan">비즈니스</h3>
+                        <h3 class="pricing-plan-name" data-i18n="payment.businessPlan">비즈니스</h3>
                         <div class="pricing-price">
                             <span class="pricing-amount">₩50,000</span>
-                            <span class="pricing-period" data-i18n="pricing.perMonth">/월</span>
+                            <span class="pricing-period" data-i18n="payment.perMonth">/월</span>
                         </div>
-                        <div class="pricing-credits">25,000 <span data-i18n="pricing.credits">토큰</span></div>
-                        <div class="pricing-save" data-i18n="pricing.savePercentBiz">+2,250 보너스 토큰</div>
+                        <div class="pricing-credits">25,000 <span data-i18n="payment.credits">토큰</span></div>
+                        <div class="pricing-save" data-i18n="payment.savePercentBiz">+2,250 보너스 토큰</div>
                     </div>
                     <ul class="pricing-features">
-                        <li><span class="feature-icon">✓</span> <span data-i18n="pricing.feature.allBasic">베이직 플랜 모든 기능</span></li>
-                        <li><span class="feature-icon">✓</span> <span data-i18n="pricing.feature.maxCredits">150% 더 많은 토큰</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.allBasic">베이직 플랜 모든 기능</span></li>
+                        <li><span class="feature-icon">✓</span> <span data-i18n="payment.feature.maxCredits">150% 더 많은 토큰</span></li>
                     </ul>
-                    <button class="pricing-btn pricing-btn-business" onclick="selectPlan('business')" data-i18n="pricing.selectPlan">선택하기</button>
+                    <button class="pricing-btn pricing-btn-business" onclick="selectPlan('business')" data-i18n="payment.selectPlan">선택하기</button>
                 </div>
 
                 <!-- AI 얼굴변환&영상변환 (별도 상품) -->
                 <div class="pricing-card pricing-card-addon">
                     <div class="pricing-card-header">
-                        <h3 class="pricing-plan-name" data-i18n="pricing.faceSwapPlan">AI 얼굴변환&영상변환</h3>
+                        <h3 class="pricing-plan-name" data-i18n="payment.faceSwapPlan">AI 얼굴변환&영상변환</h3>
                         <div class="pricing-price">
                             <span class="pricing-amount">₩15,000</span>
                         </div>
-                        <div class="pricing-credits">12<span data-i18n="pricing.times">회</span></div>
+                        <div class="pricing-credits">12<span data-i18n="payment.times">회</span></div>
                     </div>
                     <ul class="pricing-features">
-                        <li><span class="feature-icon">🎭</span> <span data-i18n="pricing.feature.faceSwap">AI 얼굴 변환</span></li>
-                        <li><span class="feature-icon">🎬</span> <span data-i18n="pricing.feature.videoSwap">AI 영상 변환</span></li>
+                        <li><span class="feature-icon">🎭</span> <span data-i18n="payment.feature.faceSwap">AI 얼굴 변환</span></li>
+                        <li><span class="feature-icon">🎬</span> <span data-i18n="payment.feature.videoSwap">AI 영상 변환</span></li>
                     </ul>
-                    <p class="pricing-addon-note" data-i18n="pricing.addonNote">이 상품은 상품 탭에서만 결제가 가능합니다.</p>
+                    <p class="pricing-addon-note" data-i18n="payment.addonNote">이 상품은 상품 탭에서만 결제가 가능합니다.</p>
                 </div>
             </div>
 
-            <p class="pricing-note" data-i18n="pricing.note">* 토큰은 매월 초기화되며, 미사용 토큰은 이월되지 않습니다.</p>
+            <p class="pricing-note" data-i18n="payment.note">* 토큰은 매월 초기화되며, 미사용 토큰은 이월되지 않습니다.</p>
         </div>
     </div>
 
@@ -1521,6 +1521,11 @@
             if (modal) {
                 modal.classList.add('active');
                 document.body.style.overflow = 'hidden';
+
+                // 다국어 적용
+                if (typeof applyTranslations === 'function') {
+                    applyTranslations();
+                }
             }
         }
 

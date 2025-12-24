@@ -308,19 +308,25 @@ function closePricingModal() {
 /**
  * 요금제 선택 (모달에서 호출)
  * HTML 버튼: onclick="selectPlan('basic')" 등
+ *
+ * 2025-12-24: 결제는 불나비 앱 상품 탭에서만 가능하도록 변경
+ * 선택 시 토스트 메시지 표시 후 모달 닫기
  */
 function selectPlan(planType) {
-  // HTML에서 사용하는 이름 → payment.js 내부 키 매핑
-  const planMapping = {
-    'basic': 'basic',      // 베이직 22,000원
-    'pro': 'pro',          // 프로 38,000원
-    'business': 'business' // 비즈니스 50,000원
-  };
+  console.log('💳 플랜 선택:', planType, '→ 상품 탭 결제 안내');
 
-  const planKey = planMapping[planType] || planType;
-  console.log('💳 플랜 선택:', planType, '→', planKey);
+  // 모달 닫기
+  closePricingModal();
 
-  HAIRGATOR_PAYMENT.purchasePlan(planKey);
+  // 다국어 토스트 메시지 표시
+  const message = t('payment.payAtProductTab') || '상품 탭에서 결제해 주세요';
+
+  // showToast 함수가 있으면 사용, 없으면 alert
+  if (typeof showToast === 'function') {
+    showToast(message, 'info');
+  } else {
+    alert(message);
+  }
 }
 
 // 전역 함수로 노출
