@@ -854,6 +854,9 @@ exports.handler = async (event, context) => {
     }
 
     try {
+        // ========== 버전 마커 (배포 확인용) ==========
+        console.log('🚀 BULLNABI-PROXY VERSION: 2024-12-24-v5');
+
         console.log('🔍 RAW event.body:', event.body);
         const requestBody = JSON.parse(event.body);
         console.log('🔍 PARSED requestBody:', JSON.stringify(requestBody));
@@ -1076,10 +1079,12 @@ exports.handler = async (event, context) => {
             return {
                 statusCode: 500,
                 headers: corsHeaders,
-                body: JSON.stringify({ 
-                    success: false, 
+                body: JSON.stringify({
+                    success: false,
                     error: '토큰이 없습니다. 로그인이 필요합니다.',
-                    tokenSource: 'none'
+                    tokenSource: 'none',
+                    version: 'v5',
+                    receivedAction: action
                 })
             };
         }
