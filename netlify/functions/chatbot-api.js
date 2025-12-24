@@ -10588,16 +10588,27 @@ ${diagramsContext}
 
 // External/Internal 섹션 정리 함수
 function fixExternalInternalSections(text) {
-  // [External]과 [Internal] 섹션 분리 ([\s\S]로 줄바꿈 포함 모든 문자 매칭)
-  const externalMatch = text.match(/\[External\]([\s\S]*?)(?=\[Internal\]|$)/i);
-  const internalMatch = text.match(/\[Internal\]([\s\S]*?)$/i);
+  console.log('📝 fixExternalInternalSections 호출됨');
+
+  // [External] 또는 External 패턴 매칭 (대괄호 유무 모두 지원)
+  const externalPattern = /(\[?External\]?[^\n]*)([\s\S]*?)(?=\[?Internal\]?|$)/i;
+  const internalPattern = /(\[?Internal\]?[^\n]*)([\s\S]*?)$/i;
+
+  const externalMatch = text.match(externalPattern);
+  const internalMatch = text.match(internalPattern);
 
   if (!externalMatch || !internalMatch) {
-    return text; // 섹션 구분이 없으면 그대로 반환
+    console.log('⚠️ External/Internal 섹션을 찾을 수 없음');
+    return text;
   }
 
-  let externalContent = externalMatch[1];
-  let internalContent = internalMatch[1];
+  const externalHeader = externalMatch[1];
+  let externalContent = externalMatch[2];
+  const internalHeader = internalMatch[1];
+  let internalContent = internalMatch[2];
+
+  console.log('📌 External 헤더:', externalHeader);
+  console.log('📌 Internal 헤더:', internalHeader);
 
   // External 섹션에서 "인터널" 또는 "Internal 부분" 관련 문장 찾기
   const lines = externalContent.split('\n');
@@ -10606,7 +10617,9 @@ function fixExternalInternalSections(text) {
 
   for (const line of lines) {
     // "인터널" 또는 "Internal 부분"을 언급하는 라인은 Internal로 이동
-    if (/인터널|Internal\s*(부분|section|zone)/i.test(line) && line.trim().length > 10) {
+    // 단, Internal 헤더 라인 자체는 제외
+    if (/인터널.*부분|Internal.*부분/i.test(line) && line.trim().length > 10) {
+      console.log('🔄 이동할 라인 발견:', line.substring(0, 50) + '...');
       linesToMove.push(line);
     } else {
       linesToKeep.push(line);
@@ -10614,15 +10627,17 @@ function fixExternalInternalSections(text) {
   }
 
   if (linesToMove.length > 0) {
-    console.log(`📝 ${linesToMove.length}개 라인을 External → Internal로 이동`);
+    console.log(`✅ ${linesToMove.length}개 라인을 External → Internal로 이동`);
     externalContent = linesToKeep.join('\n');
-    // Internal 섹션 시작 부분에 이동된 라인 추가
+    // Internal 헤더 바로 뒤에 이동된 라인 추가
     internalContent = '\n' + linesToMove.join('\n') + internalContent;
   }
 
-  // 재조합
-  const beforeExternal = text.substring(0, text.indexOf('[External]'));
-  return beforeExternal + '[External]' + externalContent + '[Internal]' + internalContent;
+  // 재조합 - External 이전 내용 찾기
+  const externalIndex = text.search(/\[?External\]?/i);
+  const beforeExternal = externalIndex > 0 ? text.substring(0, externalIndex) : '';
+
+  return beforeExternal + externalHeader + externalContent + internalHeader + internalContent;
 }
 
 // 남자 도해도 선별
