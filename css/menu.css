@@ -312,6 +312,28 @@ body.gender-female .style-card:hover {
     border-radius: 20px;
 }
 
+/* AI Generated 라벨 - 글래스모피즘 스타일 */
+.style-image-wrapper::before {
+    content: "AI";
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    padding: 4px 10px;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.9);
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    z-index: 15;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    pointer-events: none;
+}
+
 /* 글래스 반짝임 효과 - 제거됨 */
 
 /* 다크모드 이미지 경계 Inner Shadow */
