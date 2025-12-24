@@ -227,6 +227,7 @@ async function handleGetUserData(token, userId) {
                     "email": 1,
                     "remainCount": 1,
                     "tokenBalance": 1,  // ⭐ 헤어게이터 토큰
+                    "plan": 1,          // ⭐ 헤어게이터 플랜
                     "name": 1,
                     "phone": 1,
                     "_createTime": 1,
@@ -281,6 +282,7 @@ async function handleGetUserData(token, userId) {
                     phone: userData.phone || '',
                     remainCount: userData.remainCount || 0,
                     tokenBalance: userData.tokenBalance || 0,  // ⭐ 헤어게이터 토큰
+                    plan: userData.plan || 'free',             // ⭐ 헤어게이터 플랜
                     _createTime: userData._createTime,
                     _updateTime: userData._updateTime
                 }]
