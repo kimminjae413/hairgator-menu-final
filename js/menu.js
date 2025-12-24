@@ -1272,12 +1272,6 @@ async function openStyleModal(style) {
         btnLookbook.onclick = async function (e) {
             e.stopPropagation();
 
-            // 허용된 사용자 체크 (베타 테스트)
-            if (typeof window.isAllowedUser === 'function' && !window.isAllowedUser()) {
-                window.showNotOpenYetMessage();
-                return;
-            }
-
             // 무료 플랜 사용자 제한
             if (window.BullnabiBridge) {
                 const planCheck = await window.BullnabiBridge.getTokenBalance();
@@ -1419,12 +1413,6 @@ async function openStyleModal(style) {
         btnHairTry.onclick = async function (e) {
             e.stopPropagation();
 
-            // 허용된 사용자 체크 (베타 테스트)
-            if (typeof window.isAllowedUser === 'function' && !window.isAllowedUser()) {
-                window.showNotOpenYetMessage();
-                return;
-            }
-
             // 무료 플랜 사용자 제한
             if (window.BullnabiBridge) {
                 const planCheck = await window.BullnabiBridge.getTokenBalance();
@@ -1490,12 +1478,6 @@ async function openStyleModal(style) {
         btnViewRecipe.onclick = async function(e) {
             e.preventDefault();
             e.stopPropagation();
-
-            // 허용된 사용자 체크 (베타 테스트)
-            if (typeof window.isAllowedUser === 'function' && !window.isAllowedUser()) {
-                window.showNotOpenYetMessage();
-                return;
-            }
 
             console.log('📋 레시피 버튼 클릭:', style.name, style.gender);
 

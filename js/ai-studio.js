@@ -640,12 +640,6 @@ class AIStudio {
   // ==================== Message Handling ====================
 
   async sendMessage(directText = null) {
-    // 허용된 사용자 체크 (베타 테스트)
-    if (typeof window.isAllowedUser === 'function' && !window.isAllowedUser()) {
-      window.showNotOpenYetMessage();
-      return;
-    }
-
     const text = directText || this.chatInput.value.trim();
     if (!text) return;
 
@@ -4204,12 +4198,6 @@ ${data.customRecipe ? `\n생성된 레시피:\n${data.customRecipe}` : ''}`;
 
 async function sendMessage() {
   console.log('🔍 sendMessage 호출됨, pendingImageData:', pendingImageData, 'selectedImageAction:', selectedImageAction);
-
-  // 허용된 사용자 체크 (베타 테스트)
-  if (typeof window.isAllowedUser === 'function' && !window.isAllowedUser()) {
-    window.showNotOpenYetMessage();
-    return;
-  }
 
   // 이미지가 있고 레시피 모드가 선택된 경우
   if (pendingImageData && pendingImageData.file && selectedImageAction === 'recipe') {

@@ -1,67 +1,5 @@
 // HAIRGATOR Main Application - 최종 버전 (goBack display:none 추가)
 
-// ========== 허용된 사용자 ID 관리 (베타 테스트용) ==========
-const ALLOWED_USER_IDS = [
-    '691ceee09d868b5736d22007',
-    '6536474789a3ad49553b46d7'
-];
-
-// 현재 사용자가 허용된 사용자인지 체크
-window.isAllowedUser = function() {
-    console.log('🔐 isAllowedUser() 체크 시작...');
-    console.log('   허용된 ID 목록:', ALLOWED_USER_IDS);
-
-    // URL에서 userId 확인
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlUserId = urlParams.get('userId');
-    console.log('   URL userId:', urlUserId);
-    if (urlUserId && ALLOWED_USER_IDS.includes(urlUserId)) {
-        console.log('   ✅ URL userId로 허용됨');
-        return true;
-    }
-
-    // bullnabi 사용자 확인
-    try {
-        const bullnabiUser = JSON.parse(localStorage.getItem('bullnabi_user') || '{}');
-        console.log('   bullnabi_user:', { userId: bullnabiUser.userId, _id: bullnabiUser._id });
-        if (bullnabiUser.userId && ALLOWED_USER_IDS.includes(bullnabiUser.userId)) {
-            console.log('   ✅ bullnabi userId로 허용됨');
-            return true;
-        }
-        // _id 필드도 확인 (MongoDB ObjectId)
-        if (bullnabiUser._id && ALLOWED_USER_IDS.includes(bullnabiUser._id)) {
-            console.log('   ✅ bullnabi _id로 허용됨');
-            return true;
-        }
-    } catch (e) {
-        console.log('   bullnabi_user 파싱 오류:', e);
-    }
-
-    // userInfo 확인
-    try {
-        const userInfo = JSON.parse(localStorage.getItem('hairgator_user_info') || '{}');
-        console.log('   hairgator_user_info:', { docId: userInfo.docId });
-        if (userInfo.docId && ALLOWED_USER_IDS.includes(userInfo.docId)) {
-            console.log('   ✅ userInfo docId로 허용됨');
-            return true;
-        }
-    } catch (e) {
-        console.log('   hairgator_user_info 파싱 오류:', e);
-    }
-
-    console.log('   ❌ 허용되지 않은 사용자');
-    return false;
-};
-
-// 허용되지 않은 사용자에게 메시지 표시
-window.showNotOpenYetMessage = function() {
-    if (typeof showToast === 'function') {
-        showToast('아직 오픈 전입니다.', 'info');
-    } else {
-        alert('아직 오픈 전입니다.');
-    }
-};
-
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🦎 HAIRGATOR 메인 앱 시작...');
 
@@ -290,12 +228,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (personalColorBtn) {
             personalColorBtn.addEventListener('click', async function() {
                 console.log('🎨 퍼스널 이미지 분석 클릭');
-
-                // 허용된 사용자 체크 (베타 테스트 기간)
-                if (!window.isAllowedUser()) {
-                    window.showNotOpenYetMessage();
-                    return;
-                }
 
                 // 무료 플랜 사용자는 이용 불가
                 if (window.BullnabiBridge) {
