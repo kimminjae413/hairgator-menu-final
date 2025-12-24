@@ -1211,30 +1211,20 @@ exports.handler = async (event, context) => {
             }
         }
 
-        // 실패 시 fallback
-        console.log('❌ API 실패, fallback 사용');
-        
-        const fallbackUserInfo = {
-            name: '김민재',
-            phone: '708eric@hanmail.net',
-            remainCount: 360,
-            lastLoginDate: new Date().toISOString(),
-            source: 'fallback_api_failed'
-        };
+        // 실패 시 에러 반환 (fallback 제거)
+        console.log('❌ API 실패');
 
         return {
-            statusCode: 200,
+            statusCode: 500,
             headers: corsHeaders,
             body: JSON.stringify({
-                success: true,
-                userInfo: fallbackUserInfo,
+                success: false,
+                error: '사용자 정보 조회 실패',
                 debug: {
                     apiError: 'API 호출 실패 또는 응답 파싱 실패',
                     responseLength: responseText?.length || 0,
-                    method: 'fallback',
                     tokenSource: tokenSource,
-                    rawResponse: responseText?.substring(0, 200) + '...',
-                    usedDynamicToken: tokenSource === 'dynamic_user_token'
+                    rawResponse: responseText?.substring(0, 200) + '...'
                 }
             })
         };
