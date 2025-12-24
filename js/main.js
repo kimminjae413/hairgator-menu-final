@@ -266,25 +266,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('⬆️ 플랜 업그레이드 클릭');
                 closeSidebar();
 
-                // 허용된 사용자만 요금제 모달 표시
-                const PAYMENT_ALLOWED_USER_ID = '691ceee09d868b5736d22007';
-                const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
-                const currentUserId = bullnabiUser?.userId || bullnabiUser?.id;
-
-                if (currentUserId === PAYMENT_ALLOWED_USER_ID) {
-                    // openPricingModal 함수 호출 (index.html에 정의됨)
-                    if (typeof openPricingModal === 'function') {
-                        openPricingModal();
-                    } else {
-                        console.warn('openPricingModal 함수를 찾을 수 없음');
-                    }
-                } else {
-                    // 다른 사용자는 오픈 전 메시지 표시
-                    if (typeof showToast === 'function') {
-                        showToast('결제 기능은 곧 오픈 예정입니다.', 'info');
-                    } else {
-                        alert('결제 기능은 곧 오픈 예정입니다.');
-                    }
+                // 요금제 모달 열기
+                if (typeof openPricingModal === 'function') {
+                    openPricingModal();
                 }
             });
         }

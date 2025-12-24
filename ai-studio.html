@@ -28,44 +28,6 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/ai-studio.css?v=20251219-clean">
-
-    <!-- 베타 접근 제어 (직접 URL 접근 차단) -->
-    <script>
-    (function() {
-        const ALLOWED_USER_IDS = [
-            '691ceee09d868b5736d22007',
-            '6536474789a3ad49553b46d7'
-        ];
-
-        function isAllowedUser() {
-            // URL에서 userId 확인
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlUserId = urlParams.get('userId');
-            if (urlUserId && ALLOWED_USER_IDS.includes(urlUserId)) return true;
-
-            // bullnabi 사용자 확인
-            try {
-                const bullnabiUser = JSON.parse(localStorage.getItem('bullnabi_user') || '{}');
-                if (bullnabiUser.userId && ALLOWED_USER_IDS.includes(bullnabiUser.userId)) return true;
-                if (bullnabiUser._id && ALLOWED_USER_IDS.includes(bullnabiUser._id)) return true;
-            } catch (e) {}
-
-            // userInfo 확인
-            try {
-                const userInfo = JSON.parse(localStorage.getItem('hairgator_user_info') || '{}');
-                if (userInfo.docId && ALLOWED_USER_IDS.includes(userInfo.docId)) return true;
-            } catch (e) {}
-
-            return false;
-        }
-
-        if (!isAllowedUser()) {
-            console.log('❌ AI Studio 접근 차단됨');
-            alert('아직 오픈 전입니다.');
-            window.location.href = 'index.html';
-        }
-    })();
-    </script>
 </head>
 <body class="ai-studio-page">
     <div class="ai-studio-container">
