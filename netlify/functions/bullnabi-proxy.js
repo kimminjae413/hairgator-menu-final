@@ -854,11 +854,13 @@ exports.handler = async (event, context) => {
     }
 
     try {
+        console.log('🔍 RAW event.body:', event.body);
         const requestBody = JSON.parse(event.body);
+        console.log('🔍 PARSED requestBody:', JSON.stringify(requestBody));
         const { action, userId, userToken, token, data } = requestBody;
-        
+
         console.log('📝 요청 정보:');
-        console.log('- action:', action);
+        console.log('- action:', action, 'type:', typeof action);
         console.log('- userId:', userId);
         console.log('- userToken 있음:', !!userToken);
         console.log('- token 있음:', !!token);
