@@ -10578,7 +10578,51 @@ ${diagramsContext}
 
   const data = await completion.json();
   const parts = data.candidates?.[0]?.content?.parts || [];
-  return parts.map(p => p.text || '').join('');
+  let recipeText = parts.map(p => p.text || '').join('');
+
+  // ⭐ 후처리: External 섹션에 있는 "인터널" 관련 내용을 Internal 섹션으로 이동
+  recipeText = fixExternalInternalSections(recipeText);
+
+  return recipeText;
+}
+
+// External/Internal 섹션 정리 함수
+function fixExternalInternalSections(text) {
+  // [External]과 [Internal] 섹션 분리
+  const externalMatch = text.match(/\[External\]([^]*?)(?=\[Internal\]|$)/i);
+  const internalMatch = text.match(/\[Internal\]([^]*?)$/i);
+
+  if (!externalMatch || !internalMatch) {
+    return text; // 섹션 구분이 없으면 그대로 반환
+  }
+
+  let externalContent = externalMatch[1];
+  let internalContent = internalMatch[1];
+
+  // External 섹션에서 "인터널" 또는 "Internal 부분" 관련 문장 찾기
+  const lines = externalContent.split('\n');
+  const linesToMove = [];
+  const linesToKeep = [];
+
+  for (const line of lines) {
+    // "인터널" 또는 "Internal 부분"을 언급하는 라인은 Internal로 이동
+    if (/인터널|Internal\s*(부분|section|zone)/i.test(line) && line.trim().length > 10) {
+      linesToMove.push(line);
+    } else {
+      linesToKeep.push(line);
+    }
+  }
+
+  if (linesToMove.length > 0) {
+    console.log(`📝 ${linesToMove.length}개 라인을 External → Internal로 이동`);
+    externalContent = linesToKeep.join('\n');
+    // Internal 섹션 시작 부분에 이동된 라인 추가
+    internalContent = '\n' + linesToMove.join('\n') + internalContent;
+  }
+
+  // 재조합
+  const beforeExternal = text.substring(0, text.indexOf('[External]'));
+  return beforeExternal + '[External]' + externalContent + '[Internal]' + internalContent;
 }
 
 // 남자 도해도 선별
