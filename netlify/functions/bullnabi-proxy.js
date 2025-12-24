@@ -854,19 +854,10 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        // ========== 버전 마커 (배포 확인용) ==========
-        console.log('🚀 BULLNABI-PROXY VERSION: 2024-12-24-v5');
-
-        console.log('🔍 RAW event.body:', event.body);
         const requestBody = JSON.parse(event.body);
-        console.log('🔍 PARSED requestBody:', JSON.stringify(requestBody));
         const { action, userId, userToken, token, data } = requestBody;
 
-        console.log('📝 요청 정보:');
-        console.log('- action:', action, 'type:', typeof action);
-        console.log('- userId:', userId);
-        console.log('- userToken 있음:', !!userToken);
-        console.log('- token 있음:', !!token);
+        console.log('📝 요청:', action, userId ? `(userId: ${userId})` : '');
 
         // ========== Action별 분기 처리 ==========
 
@@ -942,8 +933,6 @@ exports.handler = async (event, context) => {
         }
 
         // ========== 🎯 헤어게이터 토큰 (tokenBalance) ==========
-
-        console.log('🔍 DEBUG action check v2:', JSON.stringify(action), 'type:', typeof action);
 
         // 5. 토큰 잔액 조회
         if (action === 'getTokenBalance') {
@@ -1081,10 +1070,7 @@ exports.handler = async (event, context) => {
                 headers: corsHeaders,
                 body: JSON.stringify({
                     success: false,
-                    error: '토큰이 없습니다. 로그인이 필요합니다.',
-                    tokenSource: 'none',
-                    version: 'v5',
-                    receivedAction: action
+                    error: '토큰이 없습니다. 로그인이 필요합니다.'
                 })
             };
         }
