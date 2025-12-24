@@ -3479,14 +3479,22 @@ class AIStudio {
           if (trimmed.length > 0) {
             // ⭐ 섹션 내부이면 번호 추가
             if (inSection) {
-              // "이때"로 시작하는 부연 설명은 이전 문장에 합치기
-              if (trimmed.startsWith('이때')) {
+              // "이때"로 시작하는 부연 설명은 이전 문장에 합치기 (공백/보이지않는문자 허용)
+              const cleanText = trimmed.replace(/^[\s\u200B\uFEFF\u00A0]+/, '');
+              if (cleanText.startsWith('이때') || /^이때[,\s]/.test(cleanText)) {
                 // 이전 번호 문장 찾아서 합치기
+                let merged = false;
                 for (let j = result.length - 1; j >= 0; j--) {
                   if (result[j].includes('recipe-para numbered')) {
-                    result[j] = result[j].replace('</p>', `<br><span class="sub-note">${trimmed}</span></p>`);
+                    result[j] = result[j].replace('</p>', `<br><span class="sub-note">${cleanText}</span></p>`);
+                    merged = true;
                     break;
                   }
+                }
+                // 합칠 대상이 없으면 그냥 번호 붙여서 추가
+                if (!merged) {
+                  sectionCounter++;
+                  result.push(`<p class="recipe-para numbered"><span class="step-num">${sectionCounter}</span>${cleanText}</p>`);
                 }
               } else {
                 sectionCounter++;
