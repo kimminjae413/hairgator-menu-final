@@ -925,10 +925,10 @@ const HAIRGATOR_I18N = {
 
     // ========== 결제/요금제 ==========
     payment: {
-      upgrade: '플랜 업그레이드',
+      upgrade: '요금제 안내',
       unlockAll: '모든 기능 잠금 해제',
-      choosePlan: '요금제 선택',
-      unlockPremium: '프리미엄 기능을 잠금 해제하세요',
+      choosePlan: '요금제 안내',
+      unlockPremium: '결제는 상품탭에서 가능합니다.',
       currentPlan: '현재',
       freePlan: '무료',
       freeTokenInfo: '무료 토큰은 챗봇에서만 사용 가능합니다',
@@ -1856,10 +1856,10 @@ const HAIRGATOR_I18N = {
 
     // ========== Payment/Plans ==========
     payment: {
-      upgrade: 'Upgrade Plan',
+      upgrade: 'Pricing Guide',
       unlockAll: 'Unlock all features',
-      choosePlan: 'Choose Your Plan',
-      unlockPremium: 'Unlock premium features',
+      choosePlan: 'Pricing Guide',
+      unlockPremium: 'Payment available in the Products tab.',
       currentPlan: 'Current',
       freePlan: 'Free',
       freeTokenInfo: 'Free tokens can only be used for chatbot',
@@ -2783,10 +2783,10 @@ const HAIRGATOR_I18N = {
 
     // ========== 料金プラン ==========
     payment: {
-      upgrade: 'プランをアップグレード',
+      upgrade: '料金案内',
       unlockAll: 'すべての機能をアンロック',
-      choosePlan: 'プランを選択',
-      unlockPremium: 'プレミアム機能をアンロック',
+      choosePlan: '料金案内',
+      unlockPremium: 'お支払いは商品タブから可能です。',
       currentPlan: '現在',
       freePlan: '無料',
       freeTokenInfo: '無料トークンはチャットボットでのみ使用可能です',
@@ -3713,10 +3713,10 @@ const HAIRGATOR_I18N = {
 
     // ========== 付款/套餐 ==========
     payment: {
-      upgrade: '升级套餐',
+      upgrade: '价格指南',
       unlockAll: '解锁所有功能',
-      choosePlan: '选择套餐',
-      unlockPremium: '解锁高级功能',
+      choosePlan: '价格指南',
+      unlockPremium: '付款可在商品标签中完成。',
       currentPlan: '当前',
       freePlan: '免费',
       freeTokenInfo: '免费代币只能用于聊天机器人',
@@ -4630,10 +4630,10 @@ const HAIRGATOR_I18N = {
 
     // ========== Thanh toán/Gói dịch vụ ==========
     payment: {
-      upgrade: 'Nâng cấp gói',
+      upgrade: 'Hướng dẫn giá',
       unlockAll: 'Mở khóa tất cả tính năng',
-      choosePlan: 'Chọn gói dịch vụ',
-      unlockPremium: 'Mở khóa tính năng cao cấp',
+      choosePlan: 'Hướng dẫn giá',
+      unlockPremium: 'Thanh toán có thể thực hiện trong tab Sản phẩm.',
       currentPlan: 'Hiện tại',
       freePlan: 'Miễn phí',
       freeTokenInfo: 'Token miễn phí chỉ được sử dụng cho chatbot',
@@ -5521,10 +5521,10 @@ const HAIRGATOR_I18N = {
 
     // ========== Pembayaran/Paket ==========
     payment: {
-      upgrade: 'Upgrade Paket',
+      upgrade: 'Panduan Harga',
       unlockAll: 'Buka semua fitur',
-      choosePlan: 'Pilih Paket',
-      unlockPremium: 'Buka fitur premium',
+      choosePlan: 'Panduan Harga',
+      unlockPremium: 'Pembayaran tersedia di tab Produk.',
       currentPlan: 'Saat ini',
       freePlan: 'Gratis',
       freeTokenInfo: 'Token gratis hanya dapat digunakan untuk chatbot',
@@ -6130,10 +6130,10 @@ const HAIRGATOR_I18N = {
 
     // ========== Pago/Planes ==========
     payment: {
-      upgrade: 'Actualizar Plan',
+      upgrade: 'Guía de precios',
       unlockAll: 'Desbloquear todas las funciones',
-      choosePlan: 'Elige tu Plan',
-      unlockPremium: 'Desbloquear funciones premium',
+      choosePlan: 'Guía de precios',
+      unlockPremium: 'El pago está disponible en la pestaña Productos.',
       currentPlan: 'Actual',
       freePlan: 'Gratis',
       freeTokenInfo: 'Los tokens gratuitos solo se pueden usar para el chatbot',
