@@ -1311,21 +1311,142 @@ class AIStudio {
     `;
   }
 
-  // ==================== 가이드 이미지 전체화면 ====================
+  // ==================== 가이드 이미지 전체화면 (핀치 줌 지원) ====================
   showFullImage(imageUrl, title) {
     // 오버레이 생성
     const overlay = document.createElement('div');
     overlay.className = 'full-image-overlay';
     overlay.innerHTML = `
       <div class="full-image-container">
-        <button class="full-image-close" onclick="this.parentElement.parentElement.remove()">✕</button>
-        <img src="${imageUrl}" alt="${title}">
+        <button class="full-image-close">✕</button>
+        <div class="pinch-zoom-wrapper">
+          <img src="${imageUrl}" alt="${title}" class="pinch-zoom-image">
+        </div>
         <div class="full-image-title">${title}</div>
       </div>
     `;
+
+    const closeBtn = overlay.querySelector('.full-image-close');
+    const wrapper = overlay.querySelector('.pinch-zoom-wrapper');
+    const img = overlay.querySelector('.pinch-zoom-image');
+
+    // 닫기 버튼
+    closeBtn.addEventListener('click', () => overlay.remove());
+
+    // 배경 클릭 시 닫기
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) overlay.remove();
     });
+
+    // ===== 핀치 줌 & 드래그 구현 =====
+    let scale = 1;
+    let posX = 0;
+    let posY = 0;
+    let lastTouchDistance = 0;
+    let lastTouchX = 0;
+    let lastTouchY = 0;
+    let isDragging = false;
+
+    // 두 터치 포인트 간 거리 계산
+    const getTouchDistance = (touches) => {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    // 두 터치 포인트 중심점
+    const getTouchCenter = (touches) => {
+      return {
+        x: (touches[0].clientX + touches[1].clientX) / 2,
+        y: (touches[0].clientY + touches[1].clientY) / 2
+      };
+    };
+
+    // 변환 적용
+    const applyTransform = () => {
+      img.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+    };
+
+    // 터치 시작
+    wrapper.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        // 핀치 줌 시작
+        e.preventDefault();
+        lastTouchDistance = getTouchDistance(e.touches);
+      } else if (e.touches.length === 1 && scale > 1) {
+        // 드래그 시작 (확대 상태에서만)
+        isDragging = true;
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+      }
+    }, { passive: false });
+
+    // 터치 이동
+    wrapper.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2) {
+        // 핀치 줌
+        e.preventDefault();
+        const newDistance = getTouchDistance(e.touches);
+        const delta = newDistance / lastTouchDistance;
+
+        scale = Math.min(Math.max(scale * delta, 1), 5); // 1x ~ 5x
+        lastTouchDistance = newDistance;
+
+        // 1x로 돌아오면 위치 리셋
+        if (scale === 1) {
+          posX = 0;
+          posY = 0;
+        }
+
+        applyTransform();
+      } else if (e.touches.length === 1 && isDragging && scale > 1) {
+        // 드래그 (확대 상태에서만)
+        e.preventDefault();
+        const deltaX = e.touches[0].clientX - lastTouchX;
+        const deltaY = e.touches[0].clientY - lastTouchY;
+
+        posX += deltaX;
+        posY += deltaY;
+
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+
+        applyTransform();
+      }
+    }, { passive: false });
+
+    // 터치 종료
+    wrapper.addEventListener('touchend', (e) => {
+      isDragging = false;
+      if (e.touches.length < 2) {
+        lastTouchDistance = 0;
+      }
+    });
+
+    // 더블 탭으로 확대/축소 토글
+    let lastTap = 0;
+    wrapper.addEventListener('touchend', (e) => {
+      if (e.touches.length === 0) {
+        const now = Date.now();
+        if (now - lastTap < 300) {
+          // 더블 탭
+          if (scale > 1) {
+            scale = 1;
+            posX = 0;
+            posY = 0;
+          } else {
+            scale = 2.5;
+          }
+          applyTransform();
+        }
+        lastTap = now;
+      }
+    });
+
+    // 스타일 추가
+    wrapper.style.cssText = 'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; touch-action: none;';
+    img.style.cssText = 'max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.1s ease-out; transform-origin: center center;';
+
     document.body.appendChild(overlay);
   }
 
