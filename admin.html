@@ -472,6 +472,10 @@
         .action-btn.delete:hover {
             background: #dc3545;
         }
+
+        .action-btn.download:hover {
+            background: #17a2b8;
+        }
         
         /* 디자이너 테이블 개선 */
         .designers-table {
@@ -3857,6 +3861,7 @@
 
             card.innerHTML = `
                 <div class="style-actions">
+                    <button class="action-btn download" onclick="downloadStyleImages('${docId}')" title="다운로드">⬇️</button>
                     <button class="action-btn" onclick="editStyle('${docId}')" title="수정">✏️</button>
                     <button class="action-btn delete" onclick="deleteStyle('${docId}', '${data.name}')" title="삭제">🗑️</button>
                 </div>
@@ -3919,6 +3924,75 @@
             } catch (error) {
                 console.error('스타일 삭제 오류:', error);
                 showToast('삭제 실패: ' + error.message);
+            }
+        }
+
+        // 스타일 이미지 다운로드
+        async function downloadStyleImages(styleId) {
+            try {
+                showToast('이미지 다운로드 준비 중...');
+
+                const doc = await db.collection('hairstyles').doc(styleId).get();
+                if (!doc.exists) {
+                    showToast('스타일을 찾을 수 없습니다');
+                    return;
+                }
+
+                const data = doc.data();
+                const styleName = data.name || styleId;
+                const imageUrls = [];
+
+                // 다중 미디어 이미지 수집
+                if (data.media && data.media.images && data.media.images.length > 0) {
+                    imageUrls.push(...data.media.images);
+                }
+
+                // 기존 단일 이미지 (다중에 포함되지 않은 경우)
+                if (data.imageUrl && !imageUrls.includes(data.imageUrl)) {
+                    imageUrls.push(data.imageUrl);
+                }
+
+                if (imageUrls.length === 0) {
+                    showToast('다운로드할 이미지가 없습니다');
+                    return;
+                }
+
+                // 각 이미지 다운로드
+                for (let i = 0; i < imageUrls.length; i++) {
+                    const url = imageUrls[i];
+                    const fileName = imageUrls.length === 1
+                        ? `${styleName}.jpg`
+                        : `${styleName}_${i + 1}.jpg`;
+
+                    try {
+                        // Firebase Storage URL을 fetch로 가져와서 blob 변환
+                        const response = await fetch(url);
+                        const blob = await response.blob();
+
+                        // 다운로드 링크 생성
+                        const downloadUrl = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = downloadUrl;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(downloadUrl);
+
+                        // 여러 이미지일 경우 간격 두기
+                        if (imageUrls.length > 1 && i < imageUrls.length - 1) {
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        }
+                    } catch (imgError) {
+                        console.warn(`이미지 ${i + 1} 다운로드 실패:`, imgError);
+                    }
+                }
+
+                showToast(`${imageUrls.length}개 이미지 다운로드 완료`);
+
+            } catch (error) {
+                console.error('이미지 다운로드 오류:', error);
+                showToast('다운로드 실패: ' + error.message);
             }
         }
 
