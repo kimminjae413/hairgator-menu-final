@@ -35,16 +35,17 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ HAIRGATOR 초기화 완료');
     }
 
-    // URL 파라미터 확인 후 스타일 모달 열기
+    // URL 파라미터 확인 후 스타일 모달/기능 열기
     async function checkUrlForStyleModal() {
         const params = new URLSearchParams(window.location.search);
-        const styleId = params.get('openStyle');
+        const styleId = params.get('openStyle') || params.get('styleId');
         const gender = params.get('gender');
         const category = params.get('category');
+        const action = params.get('action'); // lookbook, hairtry, recipe
 
         if (!styleId) return;
 
-        console.log('📂 URL에서 스타일 모달 열기 요청:', styleId, gender, category);
+        console.log('📂 URL에서 스타일 요청:', styleId, gender, action || 'modal');
 
         // URL 파라미터 제거 (히스토리 정리)
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -60,30 +61,62 @@ document.addEventListener('DOMContentLoaded', function() {
             // 메뉴 로드 완료 대기
             await new Promise(resolve => setTimeout(resolve, 1500));
 
-            // Firestore에서 스타일 정보 가져와서 모달 열기
+            // Firestore에서 스타일 정보 가져오기
             try {
                 if (window.db) {
-                    // styles 컬렉션에서 styleId로 쿼리 (style-match와 동일한 컬렉션)
-                    let snapshot = await window.db.collection('styles')
-                        .where('styleId', '==', styleId)
-                        .limit(1)
-                        .get();
+                    let style = null;
 
-                    // styles에서 못 찾으면 hairstyles에서도 시도
-                    if (snapshot.empty) {
-                        console.log('📂 styles에서 못 찾음, hairstyles 시도...');
-                        snapshot = await window.db.collection('hairstyles')
+                    // 1. document ID로 직접 조회 시도 (style-match에서 오는 ID)
+                    try {
+                        const doc = await window.db.collection('hairstyles').doc(styleId).get();
+                        if (doc.exists) {
+                            style = { ...doc.data(), id: doc.id };
+                            console.log('✅ document ID로 스타일 로드:', style.name);
+                        }
+                    } catch (e) {
+                        console.log('📂 document ID 조회 실패, 필드 검색 시도...');
+                    }
+
+                    // 2. styleId 필드로 쿼리
+                    if (!style) {
+                        let snapshot = await window.db.collection('styles')
                             .where('styleId', '==', styleId)
                             .limit(1)
                             .get();
+
+                        if (snapshot.empty) {
+                            snapshot = await window.db.collection('hairstyles')
+                                .where('styleId', '==', styleId)
+                                .limit(1)
+                                .get();
+                        }
+
+                        if (!snapshot.empty) {
+                            const doc = snapshot.docs[0];
+                            style = { ...doc.data(), id: doc.id };
+                            console.log('✅ styleId 필드로 스타일 로드:', style.name);
+                        }
                     }
 
-                    if (!snapshot.empty) {
-                        const doc = snapshot.docs[0];
-                        const style = { ...doc.data(), id: doc.id };
-                        console.log('✅ 스타일 로드 완료:', style.name || style.styleId);
-                        if (window.openStyleModal) {
-                            window.openStyleModal(style);
+                    if (style) {
+                        // action에 따라 기능 실행
+                        if (action === 'lookbook' || action === 'hairtry') {
+                            // 룩북/헤어체험 - AI 사진 모달 열기
+                            if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.openAIPhotoModal) {
+                                console.log(`🎨 ${action} 실행:`, style.name);
+                                window.HAIRGATOR_MENU.openAIPhotoModal(style.id, style.name, style.imageUrl || style.thumbnail);
+                            }
+                        } else if (action === 'recipe') {
+                            // 레시피 - AI Studio로 이동
+                            if (window.navigateToRecipe) {
+                                console.log('📋 레시피 실행:', style.name);
+                                window.navigateToRecipe(style, 'cut');
+                            }
+                        } else {
+                            // 기본: 모달 열기
+                            if (window.openStyleModal) {
+                                window.openStyleModal(style);
+                            }
                         }
                     } else {
                         console.warn('⚠️ 스타일 문서 없음:', styleId);
