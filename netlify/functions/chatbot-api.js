@@ -10134,53 +10134,75 @@ async function getStylesForMatching(payload) {
   console.log(`✨ 스타일 매칭용 목록 조회: ${gender || 'all'}`);
 
   try {
-    // Firestore에서 스타일 목록 조회 (페이지네이션 포함)
     let allStyles = [];
-    let nextPageToken = null;
 
-    do {
-      let url = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles?pageSize=300`;
-      if (nextPageToken) {
-        url += `&pageToken=${nextPageToken}`;
-      }
+    // 1. 여자 스타일: styles 컬렉션
+    if (!gender || gender === 'female') {
+      let nextPageToken = null;
+      do {
+        let url = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles?pageSize=300`;
+        if (nextPageToken) url += `&pageToken=${nextPageToken}`;
 
-      const response = await fetch(url);
-      const data = await response.json();
+        const response = await fetch(url);
+        const data = await response.json();
 
-      if (data.documents) {
-        const styles = data.documents.map(doc => {
+        if (data.documents) {
+          const styles = data.documents.map(doc => {
+            const fields = doc.fields;
+            const styleId = fields.styleId?.stringValue || doc.name.split('/').pop();
+            const type = fields.type?.stringValue || 'cut';
+
+            if (type === 'perm') return null;
+
+            const seriesInfo = getSeriesInfo(styleId);
+            if (seriesInfo.gender !== 'female') return null;
+
+            return {
+              styleId,
+              name: fields.seriesName?.stringValue || '',
+              gender: 'female',
+              mainCategory: seriesInfo.mainCategory,
+              subCategory: '',
+              type: type,
+              series: fields.series?.stringValue || '',
+              resultImage: fields.resultImage?.stringValue || '',
+              textRecipe: fields.textRecipe?.stringValue || ''
+            };
+          }).filter(s => s !== null);
+
+          allStyles = allStyles.concat(styles);
+        }
+        nextPageToken = data.nextPageToken;
+      } while (nextPageToken);
+    }
+
+    // 2. 남자 스타일: men_styles 컬렉션
+    if (!gender || gender === 'male') {
+      const menUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/men_styles?pageSize=300`;
+      const menResponse = await fetch(menUrl);
+      const menData = await menResponse.json();
+
+      if (menData.documents) {
+        const menStyles = menData.documents.map(doc => {
           const fields = doc.fields;
-          const styleId = fields.styleId?.stringValue || doc.name.split('/').pop();
-          const type = fields.type?.stringValue || 'cut';
-
-          // 펌 스타일 제외 (커트만)
-          if (type === 'perm') return null;
-
-          // 시리즈에서 성별/카테고리 파생
+          const styleId = doc.name.split('/').pop();
           const seriesInfo = getSeriesInfo(styleId);
 
           return {
-            styleId: styleId,
+            styleId,
             name: fields.seriesName?.stringValue || '',
-            gender: seriesInfo.gender,
+            gender: 'male',
             mainCategory: seriesInfo.mainCategory,
-            subCategory: '', // 나중에 추가 가능
-            type: type,
+            subCategory: '',
+            type: 'cut',
             series: fields.series?.stringValue || '',
             resultImage: fields.resultImage?.stringValue || '',
             textRecipe: fields.textRecipe?.stringValue || ''
           };
-        }).filter(s => s !== null);
+        });
 
-        allStyles = allStyles.concat(styles);
+        allStyles = allStyles.concat(menStyles);
       }
-
-      nextPageToken = data.nextPageToken;
-    } while (nextPageToken);
-
-    // 성별 필터링
-    if (gender) {
-      allStyles = allStyles.filter(s => s.gender === gender);
     }
 
     console.log(`✅ 스타일 목록 ${allStyles.length}개 반환 (gender=${gender})`);
