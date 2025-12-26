@@ -5,7 +5,7 @@
 ### RAG 시스템
 - **Gemini File Search API** 사용
 - Store ID: `fileSearchStores/hairgator-theory-final-2025-kkb6n1ftfbf2`
-- **51개 문서**, 524MB (영구 저장됨)
+- **53개 문서**, 524MB (영구 저장됨)
 - 업로드된 자료:
   - 이론 PDF 38개
   - 펌 레시피 자막 4개
@@ -16,6 +16,12 @@
   - **펌 인덱스 텍스트(perm_index_ko.txt)**: 46개 펌 인덱스 이미지에서 Gemini Vision으로 추출 (2025-12-22 추가)
     - 다이어그램/표/화살표 의미까지 해석한 상세 텍스트
     - 복구펌, 연화법, 환원/산화 시스템, 로드/와인딩 기법 등 펌 이론 전반
+  - **헤어스타일 카테고리 가이드(hairstyle-category-guide.md)**: 대분류/중분류 체계 정리 (2025-12-26 추가)
+    - 여자: A~H Length (신체 부위 기준), 남자: SF/SP/FU/PB/BZ/CR/MH (스타일 기준)
+    - 중분류: N/FH/EB/E/CB (앞머리 길이)
+  - **얼굴형 분석 알고리즘(facial_landmark_algorithm.txt)**: MediaPipe/Dlib 기반 헤어 추천 v1.0 (2025-12-26 추가)
+    - 수직/가로 비율 계산, 얼굴형별 추천/회피 카테고리 매칭 테이블
+    - 스코어링 시스템 (+50/-50 가감 로직)
 
 ### Firestore
 - 컬렉션: `theory_indexes` - 키워드 매칭 + 이미지 URL 저장 (커트 164개 + 펌 46개 = 210개)
