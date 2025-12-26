@@ -1093,9 +1093,10 @@ function render360Viewer(container, style, navIndicatorHTML = '') {
         <div class="viewer-360" style="
             width: 100%;
             position: relative;
-            touch-action: pan-y;
+            touch-action: none;
             user-select: none;
             -webkit-user-select: none;
+            cursor: grab;
         ">
             <div class="viewer-360-images" style="
                 position: relative;
@@ -1435,7 +1436,12 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
     // 초기 커서 설정
     viewer.style.cursor = 'grab';
 
-    console.log('✅ 360° 뷰어 로직 초기화 완료');
+    // 디버그: 클릭 이벤트 테스트
+    viewer.addEventListener('click', function(e) {
+        console.log('🔍 360° viewer click:', e.target.className, 'clientX:', e.clientX);
+    });
+
+    console.log('✅ 360° 뷰어 로직 초기화 완료, viewer:', viewer);
 }
 
 // 스타일 상세 모달 열기 (헤어체험 버튼 추가)
