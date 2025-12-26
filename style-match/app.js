@@ -186,6 +186,9 @@ async function startCamera() {
         video.srcObject = cameraStream;
         await video.play();
 
+        // 카메라 모드 활성화 (detectFacesLoop 조건)
+        isCameraMode = true;
+
         console.log('📷 카메라 스트림 시작');
 
         // 실시간 얼굴 감지용 FaceMesh 설정
