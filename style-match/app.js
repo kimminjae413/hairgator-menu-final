@@ -1081,6 +1081,33 @@ function analyzeEyebrowTexture(landmarks, imageData, canvas) {
 function analyzeEyebrows(landmarks, imageData, canvas) {
     // 라인 분석
     const lineData = analyzeEyebrowLine(landmarks);
+
+    // lineData가 null이면 기본값 사용
+    if (!lineData) {
+        console.warn('눈썹 라인 분석 실패 - 기본값 사용');
+        return {
+            line: {
+                archRatio: 0.1,
+                tailAngle: 15,
+                browEyeRatio: 1.0,
+                lineType: 'natural',
+                lineTypeKo: '내추럴형',
+                imageType: 'neutral'
+            },
+            texture: {
+                density: 100,
+                thicknessRatio: 0.20,
+                textureType: 'medium',
+                textureTypeKo: '미디엄'
+            },
+            combined: {
+                imageType: 'neutral',
+                imageTypeKo: '뉴트럴',
+                textureType: 'medium'
+            }
+        };
+    }
+
     const lineClassification = classifyEyebrowLine(lineData);
 
     // 텍스쳐 분석
