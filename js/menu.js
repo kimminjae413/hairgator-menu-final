@@ -1058,6 +1058,374 @@ function createStyleCard(style, index = 0) {
 
 // ========== 스타일 상세 모달 (헤어체험 버튼 포함) ==========
 
+// ========== 360° 뷰어 렌더링 ==========
+
+/**
+ * 360° 뷰어 렌더링 함수
+ * @param {HTMLElement} container - 렌더링할 컨테이너
+ * @param {Object} style - 스타일 데이터 (views360 필드 포함 가능)
+ * @param {string} navIndicatorHTML - 스타일 네비게이션 인디케이터 HTML (예: "1 / 5")
+ * @returns {boolean} - 360° 뷰어 렌더링 성공 여부
+ */
+function render360Viewer(container, style, navIndicatorHTML = '') {
+    // views360 데이터 확인 (front, left, back, right 이미지 URL)
+    const views360 = style.views360;
+
+    if (!views360 || !views360.front) {
+        console.log('⚠️ 360° 뷰 데이터 없음, 기본 이미지 표시');
+        return false; // fallback to single image
+    }
+
+    console.log('🔄 360° 뷰어 렌더링 시작');
+
+    // 이미지 URL 배열 (0°, 90°, 180°, 270°)
+    const viewImages = [
+        views360.front,   // 0° - 앞
+        views360.right,   // 90° - 오른쪽
+        views360.back,    // 180° - 뒤
+        views360.left     // 270° - 왼쪽
+    ];
+
+    const viewLabels = ['앞', '오른쪽', '뒤', '왼쪽'];
+
+    // 360° 뷰어 HTML
+    container.innerHTML = `
+        <div class="viewer-360" style="
+            width: 100%;
+            position: relative;
+            touch-action: pan-y;
+            user-select: none;
+            -webkit-user-select: none;
+        ">
+            <div class="viewer-360-images" style="
+                position: relative;
+                width: 100%;
+                aspect-ratio: 1/1;
+                max-height: 65vh;
+                overflow: hidden;
+                border-radius: 18px 18px 0 0;
+                background: #0a0a0a;
+            ">
+                ${viewImages.map((url, i) => `
+                    <img src="${url}"
+                         alt="${viewLabels[i]}"
+                         class="viewer-360-img"
+                         data-index="${i}"
+                         style="
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                            opacity: 0;
+                            transition: none;
+                            pointer-events: none;
+                         "
+                         onerror="this.style.background='#333';">
+                `).join('')}
+            </div>
+
+            <!-- 각도 인디케이터 -->
+            <div class="viewer-360-indicator" style="
+                position: absolute;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                background: rgba(0,0,0,0.7);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                padding: 10px 20px;
+                border-radius: 25px;
+                z-index: 10;
+            ">
+                <span class="viewer-360-angle" style="
+                    font-size: 15px;
+                    font-weight: 600;
+                    color: #fff;
+                    min-width: 35px;
+                    text-align: center;
+                ">0°</span>
+                <div style="
+                    display: flex;
+                    gap: 6px;
+                ">
+                    ${viewLabels.map((label, i) => `
+                        <span class="viewer-360-dot" data-index="${i}" style="
+                            width: 8px;
+                            height: 8px;
+                            border-radius: 50%;
+                            background: ${i === 0 ? '#fff' : 'rgba(255,255,255,0.3)'};
+                            transition: all 0.15s ease;
+                        "></span>
+                    `).join('')}
+                </div>
+                <span class="viewer-360-label" style="
+                    font-size: 12px;
+                    color: rgba(255,255,255,0.7);
+                    min-width: 45px;
+                ">앞</span>
+            </div>
+
+            <!-- 360° 배지 -->
+            <div style="
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                padding: 6px 12px;
+                background: rgba(0,0,0,0.6);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(255,255,255,0.15);
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: 600;
+                color: #fff;
+                letter-spacing: 0.5px;
+                z-index: 10;
+                pointer-events: none;
+            ">360°</div>
+
+            <!-- 스타일 네비게이션 인디케이터 (스타일 간 이동용) -->
+            ${navIndicatorHTML ? `
+            <div class="style-nav-indicator" style="
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                background: rgba(0,0,0,0.6);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                color: white;
+                padding: 6px 14px;
+                border-radius: 15px;
+                font-size: 13px;
+                z-index: 10;
+                pointer-events: none;
+            ">${navIndicatorHTML.replace(/<[^>]*>/g, '').match(/\d+ \/ \d+/) || ''}</div>
+            ` : ''}
+
+            <!-- 드래그 힌트 (처음에만 표시) -->
+            <div class="viewer-360-hint" style="
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: rgba(0,0,0,0.8);
+                padding: 12px 20px;
+                border-radius: 30px;
+                color: #fff;
+                font-size: 13px;
+                z-index: 20;
+                opacity: 1;
+                transition: opacity 0.5s ease;
+                pointer-events: none;
+            ">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                ← 드래그하여 회전 →
+            </div>
+        </div>
+    `;
+
+    // 360° 뷰어 로직 초기화
+    init360ViewerLogic(container, viewImages, viewLabels);
+
+    return true;
+}
+
+/**
+ * 360° 뷰어 터치/드래그 로직 초기화
+ */
+function init360ViewerLogic(container, viewImages, viewLabels) {
+    const viewer = container.querySelector('.viewer-360');
+    const images = container.querySelectorAll('.viewer-360-img');
+    const angleDisplay = container.querySelector('.viewer-360-angle');
+    const labelDisplay = container.querySelector('.viewer-360-label');
+    const dots = container.querySelectorAll('.viewer-360-dot');
+    const hint = container.querySelector('.viewer-360-hint');
+
+    let currentAngle = 0; // 0-360
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let isVerticalSwipe = false;
+    let hintHidden = false;
+
+    // 각도에 따라 이미지 블렌딩
+    function updateView(angle) {
+        // 0-360 범위로 정규화
+        angle = ((angle % 360) + 360) % 360;
+        currentAngle = angle;
+
+        // 모든 이미지 투명도 초기화
+        images.forEach(img => img.style.opacity = 0);
+
+        // 현재 각도가 어느 구간에 있는지 찾기
+        let idx1, idx2, blend;
+
+        if (angle >= 0 && angle < 90) {
+            idx1 = 0; idx2 = 1;
+            blend = angle / 90;
+        } else if (angle >= 90 && angle < 180) {
+            idx1 = 1; idx2 = 2;
+            blend = (angle - 90) / 90;
+        } else if (angle >= 180 && angle < 270) {
+            idx1 = 2; idx2 = 3;
+            blend = (angle - 180) / 90;
+        } else {
+            idx1 = 3; idx2 = 0;
+            blend = (angle - 270) / 90;
+        }
+
+        // 코사인 보간으로 자연스러운 블렌딩
+        const smoothBlend = (1 - Math.cos(blend * Math.PI)) / 2;
+
+        images[idx1].style.opacity = 1 - smoothBlend;
+        images[idx2].style.opacity = smoothBlend;
+
+        // UI 업데이트
+        const displayAngle = Math.round(angle);
+        angleDisplay.textContent = displayAngle + '°';
+
+        // 가장 가까운 뷰 라벨 표시
+        const closestView = Math.round(angle / 90) % 4;
+        labelDisplay.textContent = viewLabels[closestView];
+
+        // 도트 업데이트
+        dots.forEach((dot, i) => {
+            dot.style.background = i === closestView ? '#fff' : 'rgba(255,255,255,0.3)';
+            dot.style.transform = i === closestView ? 'scale(1.3)' : 'scale(1)';
+        });
+    }
+
+    // 힌트 숨기기
+    function hideHint() {
+        if (!hintHidden && hint) {
+            hint.style.opacity = '0';
+            setTimeout(() => {
+                if (hint) hint.style.display = 'none';
+            }, 500);
+            hintHidden = true;
+        }
+    }
+
+    // 초기 뷰 설정
+    updateView(0);
+
+    // 3초 후 힌트 자동 숨김
+    setTimeout(hideHint, 3000);
+
+    // 터치 이벤트 (태블릿)
+    viewer.addEventListener('touchstart', function(e) {
+        isDragging = true;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        isVerticalSwipe = false;
+        hideHint();
+
+        // 햅틱 피드백
+        if (navigator.vibrate) {
+            navigator.vibrate(10);
+        }
+    }, { passive: true });
+
+    viewer.addEventListener('touchmove', function(e) {
+        if (!isDragging) return;
+
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const deltaX = currentX - startX;
+        const deltaY = currentY - startY;
+
+        // 첫 번째 움직임에서 수직/수평 결정
+        if (!isVerticalSwipe && Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 30) {
+            // 수직 스와이프 감지됨 - 회전 중지
+            isVerticalSwipe = true;
+        }
+
+        // 수직 스와이프 중이면 회전 안 함
+        if (isVerticalSwipe) return;
+
+        // 수평 드래그: 360° 회전
+        const viewerWidth = viewer.offsetWidth || 400;
+        const sensitivity = 360 / viewerWidth; // 전체 너비 = 360도
+
+        const newAngle = currentAngle - deltaX * sensitivity;
+        updateView(newAngle);
+        startX = currentX;
+
+        // 스크롤 방지 (수평 드래그 시에만)
+        e.preventDefault();
+    }, { passive: false });
+
+    viewer.addEventListener('touchend', function(e) {
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
+        const deltaX = endX - startX;
+        const deltaY = endY - startY;
+
+        // 수직 스와이프로 스타일 간 이동 (상하 50px 이상)
+        if (isVerticalSwipe && Math.abs(deltaY) > 50) {
+            if (deltaY < 0) {
+                // 위로 스와이프 → 다음 스타일
+                if (window.navigateModalStyle) {
+                    window.navigateModalStyle(1);
+                    console.log('🔄 360° 뷰어: 위로 스와이프 → 다음 스타일');
+                }
+            } else {
+                // 아래로 스와이프 → 이전 스타일
+                if (window.navigateModalStyle) {
+                    window.navigateModalStyle(-1);
+                    console.log('🔄 360° 뷰어: 아래로 스와이프 → 이전 스타일');
+                }
+            }
+        }
+
+        isDragging = false;
+        isVerticalSwipe = false;
+    }, { passive: true });
+
+    // 마우스 이벤트 (데스크톱 테스트용)
+    viewer.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        startX = e.clientX;
+        viewer.style.cursor = 'grabbing';
+        hideHint();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+
+        const deltaX = e.clientX - startX;
+        const viewerWidth = viewer.offsetWidth || 400;
+        const sensitivity = 360 / viewerWidth;
+
+        const newAngle = currentAngle - deltaX * sensitivity;
+        updateView(newAngle);
+        startX = e.clientX;
+    });
+
+    document.addEventListener('mouseup', function() {
+        if (isDragging) {
+            isDragging = false;
+            if (viewer) viewer.style.cursor = 'grab';
+        }
+    });
+
+    // 초기 커서 설정
+    viewer.style.cursor = 'grab';
+
+    console.log('✅ 360° 뷰어 로직 초기화 완료');
+}
+
 // 스타일 상세 모달 열기 (헤어체험 버튼 추가)
 async function openStyleModal(style) {
     console.log('🔍 openStyleModal 호출됨:', style);
@@ -1079,7 +1447,7 @@ async function openStyleModal(style) {
         // 현재 스타일의 카테고리 정보로 같은 카테고리 스타일들 로드
         if (style.gender && style.mainCategory && style.subCategory && window.db) {
             try {
-                const snapshot = await window.db.collection('styles')
+                const snapshot = await window.db.collection('hairstyles')
                     .where('gender', '==', style.gender)
                     .where('mainCategory', '==', style.mainCategory)
                     .where('subCategory', '==', style.subCategory)
@@ -1126,85 +1494,93 @@ async function openStyleModal(style) {
             ">${currentStyleIndex + 1} / ${currentCategoryStyles.length}</div>
         ` : '';
 
-        container.innerHTML = `
-            <div class="media-viewer" style="width: 100%; background: transparent;">
-                <div class="main-display" style="position: relative; width: 100%; display: flex; align-items: center; justify-content: center; line-height: 0;">
-                    ${navIndicatorHTML}
-                    <img src="${style.imageUrl || ''}"
-                         alt="${style.name || 'Style'}"
-                         class="modal-zoom-image"
-                         style="width: 100%; height: auto; object-fit: cover; max-height: 70vh; cursor: zoom-in; transition: max-height 0.3s ease, transform 0.3s ease, opacity 0.2s ease; display: block; border-radius: 18px 18px 0 0;"
-                         onerror="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.alt='이미지 로드 실패';">
-                    <div class="modal-ai-badge" style="
-                        position: absolute; bottom: 15px; right: 15px;
-                        padding: 5px 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-                        font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
-                        color: #fff; background: rgba(0, 0, 0, 0.6);
-                        backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-                        border: 1px solid rgba(255, 255, 255, 0.15);
-                        border-radius: 6px; z-index: 10; pointer-events: none;
-                    ">AI</div>
+        // ⭐ 360° 뷰어 렌더링 시도 (views360 데이터가 있는 경우)
+        const has360Viewer = render360Viewer(container, style, navIndicatorHTML);
+
+        if (!has360Viewer) {
+            // 360° 데이터가 없으면 기존 단일 이미지 렌더링
+            container.innerHTML = `
+                <div class="media-viewer" style="width: 100%; background: transparent;">
+                    <div class="main-display" style="position: relative; width: 100%; display: flex; align-items: center; justify-content: center; line-height: 0;">
+                        ${navIndicatorHTML}
+                        <img src="${style.imageUrl || ''}"
+                             alt="${style.name || 'Style'}"
+                             class="modal-zoom-image"
+                             style="width: 100%; height: auto; object-fit: cover; max-height: 70vh; cursor: zoom-in; transition: max-height 0.3s ease, transform 0.3s ease, opacity 0.2s ease; display: block; border-radius: 18px 18px 0 0;"
+                             onerror="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.alt='이미지 로드 실패';">
+                        <div class="modal-ai-badge" style="
+                            position: absolute; bottom: 15px; right: 15px;
+                            padding: 5px 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+                            font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+                            color: #fff; background: rgba(0, 0, 0, 0.6);
+                            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+                            border: 1px solid rgba(255, 255, 255, 0.15);
+                            border-radius: 6px; z-index: 10; pointer-events: none;
+                        ">AI</div>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
 
-        // 이미지 클릭 시 확대/축소
-        const img = container.querySelector('.modal-zoom-image');
-        if (img) {
-            img.addEventListener('click', function (e) {
-                e.stopPropagation();
-                isZoomed = !isZoomed;
+            // 이미지 클릭 시 확대/축소
+            const img = container.querySelector('.modal-zoom-image');
+            if (img) {
+                img.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    isZoomed = !isZoomed;
 
-                if (isZoomed) {
-                    this.style.maxHeight = '90vh';
-                    this.style.cursor = 'zoom-out';
-                    this.style.transform = 'scale(1.05)';
-                } else {
-                    this.style.maxHeight = '70vh';
-                    this.style.cursor = 'zoom-in';
-                    this.style.transform = 'scale(1)';
-                }
-
-                // 햅틱 피드백
-                if (navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
-            });
-
-            // ⭐⭐⭐ 이미지에 직접 스와이프 이벤트 등록 (매번 새로 등록)
-            let imgTouchStartX = 0;
-            let imgTouchStartY = 0;
-
-            img.addEventListener('touchstart', function(e) {
-                imgTouchStartX = e.touches[0].clientX;
-                imgTouchStartY = e.touches[0].clientY;
-                console.log(`👆 이미지 터치 시작: X=${imgTouchStartX}`);
-            }, { passive: true });
-
-            img.addEventListener('touchend', function(e) {
-                const touchEndX = e.changedTouches[0].clientX;
-                const touchEndY = e.changedTouches[0].clientY;
-                const diffX = imgTouchStartX - touchEndX;
-                const diffY = imgTouchStartY - touchEndY;
-
-                console.log(`👆 이미지 터치 끝: diffX=${diffX}, diffY=${diffY}`);
-                console.log(`📊 스타일 수: ${currentCategoryStyles.length}, 인덱스: ${currentStyleIndex}`);
-
-                // 수평 스와이프가 수직보다 크고 threshold 초과시
-                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
-                    console.log(`✅ 스와이프 인식! 방향: ${diffX > 0 ? '다음(→)' : '이전(←)'}`);
-                    if (diffX > 0) {
-                        window.navigateModalStyle(1);  // 다음
+                    if (isZoomed) {
+                        this.style.maxHeight = '90vh';
+                        this.style.cursor = 'zoom-out';
+                        this.style.transform = 'scale(1.05)';
                     } else {
-                        window.navigateModalStyle(-1); // 이전
+                        this.style.maxHeight = '70vh';
+                        this.style.cursor = 'zoom-in';
+                        this.style.transform = 'scale(1)';
                     }
-                }
-            }, { passive: true });
 
-            console.log('✅ 이미지 스와이프 이벤트 등록됨');
+                    // 햅틱 피드백
+                    if (navigator.vibrate) {
+                        navigator.vibrate(50);
+                    }
+                });
+
+                // ⭐⭐⭐ 이미지에 직접 스와이프 이벤트 등록 (매번 새로 등록)
+                let imgTouchStartX = 0;
+                let imgTouchStartY = 0;
+
+                img.addEventListener('touchstart', function(e) {
+                    imgTouchStartX = e.touches[0].clientX;
+                    imgTouchStartY = e.touches[0].clientY;
+                    console.log(`👆 이미지 터치 시작: X=${imgTouchStartX}`);
+                }, { passive: true });
+
+                img.addEventListener('touchend', function(e) {
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const touchEndY = e.changedTouches[0].clientY;
+                    const diffX = imgTouchStartX - touchEndX;
+                    const diffY = imgTouchStartY - touchEndY;
+
+                    console.log(`👆 이미지 터치 끝: diffX=${diffX}, diffY=${diffY}`);
+                    console.log(`📊 스타일 수: ${currentCategoryStyles.length}, 인덱스: ${currentStyleIndex}`);
+
+                    // 수평 스와이프가 수직보다 크고 threshold 초과시
+                    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                        console.log(`✅ 스와이프 인식! 방향: ${diffX > 0 ? '다음(→)' : '이전(←)'}`);
+                        if (diffX > 0) {
+                            window.navigateModalStyle(1);  // 다음
+                        } else {
+                            window.navigateModalStyle(-1); // 이전
+                        }
+                    }
+                }, { passive: true });
+
+                console.log('✅ 이미지 스와이프 이벤트 등록됨');
+            }
+
+            console.log('✅ 단일 이미지 렌더링 완료');
+        } else {
+            console.log('✅ 360° 뷰어 렌더링 완료');
         }
-
-        console.log('✅ 이미지 렌더링 완료');
     } else {
         console.error('❌ mediaViewerContainer를 찾을 수 없습니다');
     }

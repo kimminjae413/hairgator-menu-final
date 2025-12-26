@@ -1771,6 +1771,7 @@
                 </div>
                 
                 <button class="btn" onclick="openAddStyleModal()">새 스타일 추가</button>
+                <button class="btn" style="background: #667eea; margin-left: 10px;" onclick="generateAll360Views()">🔄 360° 일괄 생성</button>
             </div>
             
             <!-- 스타일 목록 -->
@@ -3630,8 +3631,17 @@
             // 썸네일 URL 결정 (저장된 썸네일 우선, 없으면 원본)
             const thumbnailUrl = getThumbnailUrl(data) || imageUrl;
 
+            // 360° 뷰 존재 여부 확인
+            const has360View = data.views360 && data.views360.front;
+
             card.innerHTML = `
                 <div class="style-actions">
+                    <button class="action-btn ${has360View ? 'done' : 'generate360'}"
+                            onclick="generate360Views('${docId}')"
+                            title="${has360View ? '360° 뷰 재생성' : '360° 뷰 생성'}"
+                            style="${has360View ? 'background: #28a745;' : 'background: #667eea;'}">
+                        ${has360View ? '✅' : '🔄'}
+                    </button>
                     <button class="action-btn download" onclick="downloadStyleImages('${docId}')" title="다운로드">⬇️</button>
                     <button class="action-btn" onclick="editStyle('${docId}')" title="수정">✏️</button>
                     <button class="action-btn delete" onclick="deleteStyle('${docId}', '${data.name}')" title="삭제">🗑️</button>
@@ -5672,6 +5682,168 @@
                 console.error('추가 로그 로딩 오류:', error);
                 showToast('추가 로딩 실패');
             }
+        }
+
+        // ========== 360° 뷰 생성 ==========
+
+        /**
+         * 360° 뷰 이미지 생성 (Gemini API)
+         * @param {string} styleId - Firestore 문서 ID
+         */
+        async function generate360Views(styleId) {
+            if (!confirm('360° 뷰 이미지를 생성하시겠습니까?\n\n• 4개 이미지(앞, 오른쪽, 뒤, 왼쪽) 생성\n• 예상 비용: ~$0.16\n• 소요 시간: 약 30초')) {
+                return;
+            }
+
+            showToast('360° 뷰 생성 중... 잠시만 기다려주세요.');
+
+            try {
+                // 1. 스타일 문서 조회
+                const doc = await db.collection('hairstyles').doc(styleId).get();
+                if (!doc.exists) {
+                    showToast('스타일을 찾을 수 없습니다');
+                    return;
+                }
+
+                const data = doc.data();
+                let sourceImageUrl = data.imageUrl;
+
+                // 다중 미디어 형식인 경우 메인 이미지 사용
+                if (data.media && data.media.images && data.media.images.length > 0) {
+                    const mainIndex = data.media.mainImageIndex || 0;
+                    sourceImageUrl = data.media.images[mainIndex];
+                }
+
+                if (!sourceImageUrl) {
+                    showToast('이미지가 없는 스타일입니다');
+                    return;
+                }
+
+                console.log('🔄 360° 생성 시작:', styleId, sourceImageUrl);
+
+                // 2. Netlify 함수 호출하여 4개 뷰 이미지 생성
+                const response = await fetch('/.netlify/functions/generate-360-views', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        styleId: styleId,
+                        imageUrl: sourceImageUrl
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '360° 생성 실패');
+                }
+
+                const result = await response.json();
+                console.log('✅ 360° 생성 완료:', result);
+
+                // 3. Firestore 업데이트
+                await db.collection('hairstyles').doc(styleId).update({
+                    views360: result.views360,
+                    views360UpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // 4. 스타일 목록 새로고침
+                loadStyles();
+
+                showToast(`✅ 360° 뷰 생성 완료!\n${result.views360.front ? '4개 이미지 저장됨' : ''}`);
+
+            } catch (error) {
+                console.error('360° 생성 오류:', error);
+                showToast('❌ 360° 생성 실패: ' + error.message);
+            }
+        }
+
+        /**
+         * 모든 스타일에 360° 뷰 일괄 생성 (주의: 비용 발생)
+         */
+        async function generateAll360Views() {
+            const gender = document.getElementById('genderSelect').value;
+            const category = document.getElementById('categorySelect').value;
+            const subcategory = document.getElementById('subcategorySelect').value;
+
+            if (!gender || !category || !subcategory) {
+                showToast('카테고리를 모두 선택하세요');
+                return;
+            }
+
+            try {
+                // 선택된 카테고리의 스타일 조회
+                const snapshot = await db.collection('hairstyles')
+                    .where('gender', '==', gender)
+                    .where('mainCategory', '==', category)
+                    .where('subCategory', '==', subcategory)
+                    .get();
+
+                const stylesWithout360 = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (!data.views360 || !data.views360.front) {
+                        stylesWithout360.push({ id: doc.id, data });
+                    }
+                });
+
+                if (stylesWithout360.length === 0) {
+                    showToast('모든 스타일에 360° 뷰가 이미 있습니다');
+                    return;
+                }
+
+                const estimatedCost = (stylesWithout360.length * 0.16).toFixed(2);
+                if (!confirm(`${stylesWithout360.length}개 스타일에 360° 뷰를 생성하시겠습니까?\n\n• 예상 비용: $${estimatedCost}\n• 예상 시간: ${stylesWithout360.length * 30}초`)) {
+                    return;
+                }
+
+                showToast(`0/${stylesWithout360.length} 진행 중...`);
+
+                for (let i = 0; i < stylesWithout360.length; i++) {
+                    const style = stylesWithout360[i];
+                    showToast(`${i + 1}/${stylesWithout360.length} 진행 중: ${style.data.name || style.id}`);
+
+                    try {
+                        await generate360ViewsSilent(style.id, style.data);
+                    } catch (e) {
+                        console.warn(`스타일 ${style.id} 360° 생성 실패:`, e);
+                    }
+
+                    // API 레이트 리밋 방지를 위한 딜레이
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+
+                loadStyles();
+                showToast(`✅ ${stylesWithout360.length}개 스타일 360° 뷰 생성 완료!`);
+
+            } catch (error) {
+                console.error('일괄 360° 생성 오류:', error);
+                showToast('일괄 생성 실패: ' + error.message);
+            }
+        }
+
+        /**
+         * 360° 뷰 생성 (확인 없이 - 일괄 처리용)
+         */
+        async function generate360ViewsSilent(styleId, data) {
+            let sourceImageUrl = data.imageUrl;
+            if (data.media && data.media.images && data.media.images.length > 0) {
+                sourceImageUrl = data.media.images[data.media.mainImageIndex || 0];
+            }
+            if (!sourceImageUrl) throw new Error('이미지 없음');
+
+            const response = await fetch('/.netlify/functions/generate-360-views', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ styleId, imageUrl: sourceImageUrl })
+            });
+
+            if (!response.ok) throw new Error('API 호출 실패');
+
+            const result = await response.json();
+
+            await db.collection('hairstyles').doc(styleId).update({
+                views360: result.views360,
+                views360UpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
         }
         </script>
     </body>
