@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>360° 헤어스타일 뷰어 (블렌딩)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+
+        .viewer-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #2a2a2a;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .viewer-container:active {
+            cursor: grabbing;
+        }
+
+        .viewer-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: none;
+        }
+
+        .rotation-indicator {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .angle-bar {
+            width: 400px;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .angle-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+            transition: width 0.05s;
+        }
+
+        .labels {
+            display: flex;
+            justify-content: space-between;
+            width: 400px;
+            margin-top: 10px;
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .hint {
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .info {
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: #888;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>360° 헤어스타일 뷰어</h1>
+
+    <div class="viewer-container" id="viewer">
+        <img src="output/view_front.png" id="img0">
+        <img src="output/view_right.png" id="img1">
+        <img src="output/view_back.png" id="img2">
+        <img src="output/view_left.png" id="img3">
+        <div class="rotation-indicator" id="rotationIndicator">0°</div>
+    </div>
+
+    <div class="angle-bar">
+        <div class="angle-progress" id="angleProgress"></div>
+    </div>
+
+    <div class="labels">
+        <span>0° 앞</span>
+        <span>90° 오른쪽</span>
+        <span>180° 뒤</span>
+        <span>270° 왼쪽</span>
+        <span>360°</span>
+    </div>
+
+    <p class="hint">← 좌우로 드래그하여 회전 →</p>
+    <p class="info">4장 이미지를 블렌딩하여 부드러운 회전 효과</p>
+
+    <script>
+        const viewer = document.getElementById('viewer');
+        const images = [
+            document.getElementById('img0'), // 0° front
+            document.getElementById('img1'), // 90° right
+            document.getElementById('img2'), // 180° back
+            document.getElementById('img3')  // 270° left
+        ];
+        const rotationIndicator = document.getElementById('rotationIndicator');
+        const angleProgress = document.getElementById('angleProgress');
+
+        let currentAngle = 0;  // 0-360
+        let startX = 0;
+        let isDragging = false;
+
+        // 각도에 따라 이미지 블렌딩
+        function updateBlend(angle) {
+            // 0-360 범위로 정규화
+            angle = ((angle % 360) + 360) % 360;
+            currentAngle = angle;
+
+            // 각 이미지의 기준 각도
+            const imageAngles = [0, 90, 180, 270];
+
+            // 모든 이미지 투명도 초기화
+            images.forEach(img => img.style.opacity = 0);
+
+            // 현재 각도가 어느 구간에 있는지 찾기
+            let idx1, idx2, blend;
+
+            if (angle >= 0 && angle < 90) {
+                idx1 = 0; idx2 = 1;
+                blend = angle / 90;
+            } else if (angle >= 90 && angle < 180) {
+                idx1 = 1; idx2 = 2;
+                blend = (angle - 90) / 90;
+            } else if (angle >= 180 && angle < 270) {
+                idx1 = 2; idx2 = 3;
+                blend = (angle - 180) / 90;
+            } else {
+                idx1 = 3; idx2 = 0;
+                blend = (angle - 270) / 90;
+            }
+
+            // 블렌딩 적용 (코사인 보간으로 더 자연스럽게)
+            const smoothBlend = (1 - Math.cos(blend * Math.PI)) / 2;
+
+            images[idx1].style.opacity = 1 - smoothBlend;
+            images[idx2].style.opacity = smoothBlend;
+
+            // UI 업데이트
+            rotationIndicator.textContent = Math.round(angle) + '°';
+            angleProgress.style.width = (angle / 360 * 100) + '%';
+        }
+
+        // 초기 상태
+        updateBlend(0);
+
+        // 마우스 이벤트
+        viewer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            viewer.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const deltaX = e.clientX - startX;
+            // 드래그 거리를 각도로 변환 (400px = 360도)
+            const newAngle = currentAngle - deltaX * 0.9;
+            updateBlend(newAngle);
+            startX = e.clientX;
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            viewer.style.cursor = 'grab';
+        });
+
+        // 터치 이벤트
+        viewer.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+        });
+
+        viewer.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+
+            const deltaX = e.touches[0].clientX - startX;
+            const newAngle = currentAngle - deltaX * 0.9;
+            updateBlend(newAngle);
+            startX = e.touches[0].clientX;
+        });
+
+        viewer.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // 키보드 (미세 조정)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                updateBlend(currentAngle - 15);
+            } else if (e.key === 'ArrowRight') {
+                updateBlend(currentAngle + 15);
+            }
+        });
+    </script>
+</body>
+</html>

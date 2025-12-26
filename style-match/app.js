@@ -1154,16 +1154,30 @@ function generateStyleReason(style, analysis, ratios) {
     // 슬릭/타이트 스타일 (볼륨 없음)
     const isSlickStyle = styleName.includes('슬릭') || styleName.includes('slick');
 
+    // 드롭컷: 앞머리를 내려뜨리는 스타일 (실제로는 탑볼륨 아님)
+    const isDropStyle = styleName.includes('드롭') || styleName.includes('drop');
+
     // ===== 조건부 멘트 생성 =====
 
-    // 1. 탑 볼륨 + 얼굴 길이 조합
-    if (isTopVolumeStyle) {
+    // 1. 탑 볼륨 + 얼굴 길이 조합 (드롭컷은 탑볼륨 카테고리여도 실제론 내려뜨리는 스타일)
+    if (isTopVolumeStyle && !isDropStyle) {
         if (isLongFace) {
             reasons.push(`⚠️ 하안부 ${ratios.lowerRatio}% (긴 편) → 탑 볼륨이 얼굴을 더 길어 보이게 할 수 있음`);
         } else if (isShortFace) {
             reasons.push(`✓ 하안부 ${ratios.lowerRatio}% (짧은 편) → 탑 볼륨이 시선을 위로 끌어올려 얼굴이 갸름해 보임`);
         } else {
             reasons.push(`탑 볼륨으로 세련된 인상 연출`);
+        }
+    }
+
+    // 1-2. 드롭컷: 앞머리를 자연스럽게 내려뜨리는 스타일 (탑볼륨 카테고리지만 다르게 처리)
+    if (isDropStyle) {
+        if (isLongFace) {
+            reasons.push(`✓ 드롭 스타일: 앞머리가 자연스럽게 내려와 세로 길이 분산`);
+        } else if (isWideForehead) {
+            reasons.push(`✓ 드롭 스타일: 내려뜨린 앞머리로 넓은 이마 자연스럽게 커버`);
+        } else {
+            reasons.push(`드롭 스타일: 자연스러운 흐름으로 부드러운 인상`);
         }
     }
 
@@ -1209,11 +1223,16 @@ function generateStyleReason(style, analysis, ratios) {
         }
     }
 
-    // 5. 사각턱 + 기장 조합
-    if (isSquareJaw && !isShortStyle) {
+    // 5. 사각턱 + 기장 조합 (슬릭 스타일 제외)
+    if (isSquareJaw && !isShortStyle && !isSlickStyle) {
         if (mainCat.includes('LENGTH') || isSideVolumeStyle) {
             reasons.push(`광대/턱 비율 ${ratios.cheekJawRatio} → 기장감/볼륨으로 각진 턱선 소프닝`);
         }
+    }
+
+    // 슬릭 스타일 + 사각턱: 볼륨 대신 다른 설명
+    if (isSlickStyle && isSquareJaw) {
+        reasons.push(`슬릭한 라인으로 시크한 분위기 연출`);
     }
 
     // 6. 계란형은 대부분 OK

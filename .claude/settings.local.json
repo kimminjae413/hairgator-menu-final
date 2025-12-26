@@ -48,7 +48,8 @@
       "Bash(copy:*)",
       "Bash(sharp predict:*)",
       "mcp__chrome-devtools__upload_file",
-      "mcp__chrome-devtools__wait_for"
+      "mcp__chrome-devtools__wait_for",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
