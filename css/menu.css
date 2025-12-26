@@ -114,13 +114,13 @@ html, body {
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
 
-    /* 안드로이드 터치 스크롤 - 모멘텀 스크롤 최적화 */
+    /* 안드로이드 터치 스크롤 - 최대 민감도 */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
-    /* scroll-behavior: smooth 제거 - 터치에 딜레이 발생시킴 */
-    /* scroll-snap 제거 - "꾹 눌러야" 느낌 유발 */
-    touch-action: manipulation;  /* pan-x보다 더 자연스러움 */
-    will-change: scroll-position;
+    touch-action: pan-x pan-y;  /* 가장 민감한 설정 */
+    will-change: scroll-position, transform;
+    transform: translateZ(0);  /* GPU 가속 강제 */
+    -webkit-tap-highlight-color: transparent;  /* 탭 딜레이 제거 */
 }
 
 .main-tabs::-webkit-scrollbar,
@@ -143,7 +143,11 @@ html, body {
     font-size: 14px;
     font-weight: 600;
     flex-shrink: 0;
-    /* scroll-snap-align 제거 - 안드로이드에서 "꾹 눌러야" 느낌 유발 */
+    /* 터치 최적화 */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 /* 모바일/데스크탑 탭 이름 전환 */
