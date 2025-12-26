@@ -629,7 +629,39 @@
             font-size: 12px;
             margin-top: 10px;
         }
-        
+
+        /* 360° 뷰 업로드 */
+        .view360-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 2px dashed rgba(102, 126, 234, 0.4);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 80px;
+            text-align: center;
+        }
+        .view360-label:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+        .view360-label.has-image {
+            border-style: solid;
+            border-color: #4CAF50;
+            background-size: cover;
+            background-position: center;
+        }
+        .view360-label.has-image span {
+            background: rgba(0,0,0,0.7);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
         .image-preview-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -1771,7 +1803,6 @@
                 </div>
                 
                 <button class="btn" onclick="openAddStyleModal()">새 스타일 추가</button>
-                <button class="btn" style="background: #667eea; margin-left: 10px;" onclick="generateAll360Views()">🔄 360° 일괄 생성</button>
             </div>
             
             <!-- 스타일 목록 -->
@@ -2142,7 +2173,44 @@
                     </div>
                 </div>
             </div>
-            
+
+            <!-- 360° 뷰 이미지 업로드 (선택사항) -->
+            <div class="form-group">
+                <label class="label-optional" style="display: flex; align-items: center; gap: 8px;">
+                    360° 뷰 이미지 (선택)
+                    <span style="font-size: 11px; color: #888; font-weight: normal;">앞/오른쪽/뒤/왼쪽 4장</span>
+                </label>
+                <div class="views360-upload-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px;">
+                    <div class="view360-item">
+                        <label for="view360Front" class="view360-label" id="view360FrontLabel">
+                            <span>📷 앞 (0°)</span>
+                        </label>
+                        <input type="file" id="view360Front" accept="image/*" onchange="handleView360Select(event, 'front')" style="display: none;">
+                    </div>
+                    <div class="view360-item">
+                        <label for="view360Right" class="view360-label" id="view360RightLabel">
+                            <span>📷 오른쪽 (90°)</span>
+                        </label>
+                        <input type="file" id="view360Right" accept="image/*" onchange="handleView360Select(event, 'right')" style="display: none;">
+                    </div>
+                    <div class="view360-item">
+                        <label for="view360Back" class="view360-label" id="view360BackLabel">
+                            <span>📷 뒤 (180°)</span>
+                        </label>
+                        <input type="file" id="view360Back" accept="image/*" onchange="handleView360Select(event, 'back')" style="display: none;">
+                    </div>
+                    <div class="view360-item">
+                        <label for="view360Left" class="view360-label" id="view360LeftLabel">
+                            <span>📷 왼쪽 (270°)</span>
+                        </label>
+                        <input type="file" id="view360Left" accept="image/*" onchange="handleView360Select(event, 'left')" style="display: none;">
+                    </div>
+                </div>
+                <div style="font-size: 11px; color: #666; margin-top: 8px;">
+                    💡 4장 모두 업로드해야 360° 뷰어가 활성화됩니다
+                </div>
+            </div>
+
             <button class="btn" onclick="saveStyle()" id="saveBtn">저장</button>
         </div>
     </div>
@@ -2372,6 +2440,7 @@
         let mainImageIndex = 0; // 대표 이미지 인덱스
         let videoUrl = ''; // YouTube/Vimeo URL
         let videoData = null; // 파싱된 동영상 정보
+        let views360Images = { front: null, right: null, back: null, left: null }; // 360° 뷰 이미지 File 객체들
         
         // Firebase 컬렉션 이름
         const COLLECTIONS = {
@@ -2682,15 +2751,134 @@
             });
             
             uploadArea.addEventListener('drop', handleDrop, false);
-            
+
             function handleDrop(e) {
                 const files = Array.from(e.dataTransfer.files);
                 const imageFiles = files.filter(file => file.type.startsWith('image/'));
-                
+
                 if (imageFiles.length > 0) {
                     addImagesToSelection(imageFiles);
                 }
             }
+        }
+
+        // ========== 360° 뷰 이미지 업로드 함수들 ==========
+
+        // 360° 뷰 이미지 선택 처리
+        function handleView360Select(event, viewKey) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const maxFileSize = 5 * 1024 * 1024; // 5MB
+            const supportedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+            // 파일 형식 체크
+            if (!supportedTypes.includes(file.type)) {
+                showToast('지원하지 않는 이미지 형식입니다 (JPG, PNG, WebP만 가능)');
+                event.target.value = '';
+                return;
+            }
+
+            // 파일 크기 체크
+            if (file.size > maxFileSize) {
+                showToast('파일 크기가 5MB를 초과합니다');
+                event.target.value = '';
+                return;
+            }
+
+            views360Images[viewKey] = file;
+            updateView360Label(viewKey, file);
+
+            const viewNames = { front: '앞', right: '오른쪽', back: '뒤', left: '왼쪽' };
+            showToast(`${viewNames[viewKey]} 뷰 이미지가 선택되었습니다`);
+        }
+
+        // 360° 뷰 라벨 업데이트 (미리보기 포함)
+        function updateView360Label(viewKey, file) {
+            const labelId = `view360${viewKey.charAt(0).toUpperCase() + viewKey.slice(1)}Label`;
+            const label = document.getElementById(labelId);
+            if (!label) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                label.innerHTML = `
+                    <img src="${e.target.result}" style="width: 100%; height: 60px; object-fit: cover; border-radius: 4px;">
+                    <span style="font-size: 10px; margin-top: 4px;">✓ ${viewKey === 'front' ? '앞' : viewKey === 'right' ? '오른쪽' : viewKey === 'back' ? '뒤' : '왼쪽'}</span>
+                    <button type="button" onclick="event.stopPropagation(); clearView360Image('${viewKey}')" style="position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.7); color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; cursor: pointer; line-height: 1;">×</button>
+                `;
+                label.style.position = 'relative';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 360° 뷰 이미지 삭제
+        function clearView360Image(viewKey) {
+            views360Images[viewKey] = null;
+            const inputId = `view360${viewKey.charAt(0).toUpperCase() + viewKey.slice(1)}`;
+            const labelId = `${inputId}Label`;
+
+            document.getElementById(inputId).value = '';
+
+            const label = document.getElementById(labelId);
+            const viewNames = { front: '📷 앞 (0°)', right: '📷 오른쪽 (90°)', back: '📷 뒤 (180°)', left: '📷 왼쪽 (270°)' };
+            label.innerHTML = `<span>${viewNames[viewKey]}</span>`;
+            label.style.position = '';
+
+            showToast('360° 뷰 이미지가 삭제되었습니다');
+        }
+
+        // 360° 뷰 이미지 초기화
+        function clear360ViewImages() {
+            views360Images = { front: null, right: null, back: null, left: null };
+            ['front', 'right', 'back', 'left'].forEach(viewKey => {
+                const inputId = `view360${viewKey.charAt(0).toUpperCase() + viewKey.slice(1)}`;
+                const labelId = `${inputId}Label`;
+
+                const input = document.getElementById(inputId);
+                if (input) input.value = '';
+
+                const label = document.getElementById(labelId);
+                const viewNames = { front: '📷 앞 (0°)', right: '📷 오른쪽 (90°)', back: '📷 뒤 (180°)', left: '📷 왼쪽 (270°)' };
+                if (label) {
+                    label.innerHTML = `<span>${viewNames[viewKey]}</span>`;
+                    label.style.position = '';
+                }
+            });
+        }
+
+        // 360° 뷰 이미지 Firebase Storage 업로드
+        async function upload360ViewImages(styleId) {
+            const uploadedViews = {};
+            const viewKeys = ['front', 'right', 'back', 'left'];
+
+            for (const viewKey of viewKeys) {
+                const file = views360Images[viewKey];
+                if (!file) continue;
+
+                const timestamp = Date.now();
+                const filename = `${styleId}_360_${viewKey}_${timestamp}.png`;
+                const storageRef = storage.ref().child(`styles/${styleId}/360/${filename}`);
+
+                // AI 워터마크 추가 (선택사항)
+                let imageToUpload = file;
+                try {
+                    const watermarkedBlob = await addAIWatermark(file);
+                    imageToUpload = watermarkedBlob;
+                } catch (e) {
+                    console.warn('360° 이미지 워터마크 실패, 원본 사용:', e);
+                }
+
+                const uploadTask = await storageRef.put(imageToUpload);
+                const downloadUrl = await uploadTask.ref.getDownloadURL();
+                uploadedViews[viewKey] = downloadUrl;
+            }
+
+            // 하나라도 업로드되었으면 타임스탬프 추가
+            if (Object.keys(uploadedViews).length > 0) {
+                uploadedViews.generatedAt = new Date().toISOString();
+            }
+
+            return uploadedViews;
         }
 
         // ========== 스타일 추가 관련 함수들 ==========
@@ -2716,13 +2904,10 @@
     document.getElementById('videoUrlInput').value = '';
     document.getElementById('videoPreview').style.display = 'none';
     document.getElementById('multiImageInput').value = '';
-    
-    // ❌ 아래 4줄 삭제
-    // const timestamp = Date.now().toString(36).toUpperCase();
-    // const random = Math.random().toString(36).substring(2, 5).toUpperCase();
-    // const code = `${currentGender.substring(0, 1).toUpperCase()}${timestamp}${random}`;
-    // document.getElementById('styleCode').value = code;
-    
+
+    // 360° 뷰 데이터 초기화
+    clear360ViewImages();
+
     document.getElementById('addStyleModal').classList.add('active');
             
             // 드래그 앤 드롭 이벤트 설정
@@ -2856,7 +3041,16 @@
                     // 새 추가 모드에서 동영상이 없으면 null로 설정
                     mediaData.video = null;
                 }
-                
+
+                // ⭐ 360° 뷰 이미지 업로드 (선택사항)
+                let views360Data = null;
+                const has360Images = Object.values(views360Images).some(img => img !== null);
+                if (has360Images) {
+                    showToast('360° 뷰 이미지 업로드 중...');
+                    views360Data = await upload360ViewImages(finalCode);
+                    console.log('✅ 360° 뷰 이미지 업로드 완료:', views360Data);
+                }
+
                 // Firebase 저장 데이터 구성
                 const styleData = {
     code: finalCode,  // ← code에서 finalCode로 변경
@@ -2877,7 +3071,12 @@
                         styleData.thumbnailUrl = mediaData.thumbnails[mediaData.mainImageIndex];
                     }
                 }
-                
+
+                // ⭐ 360° 뷰 이미지 저장 (업로드된 경우에만)
+                if (views360Data && Object.keys(views360Data).length > 0) {
+                    styleData.views360 = views360Data;
+                }
+
                 if (currentEditingStyleId) {
                     // 수정 모드
                     await db.collection('hairstyles').doc(currentEditingStyleId).update(styleData);
@@ -2906,6 +3105,8 @@
                 videoData = null;
                 currentEditingStyleId = null;
                 window.existingImageUrls = null;
+                // 360° 뷰 데이터 초기화
+                clear360ViewImages();
             }
         }
 
@@ -2913,23 +3114,26 @@
         function closeModal() {
             document.getElementById('addStyleModal').classList.remove('active');
             document.querySelector('.modal-title').textContent = '새 스타일 추가';
-            
+
             // 다중 미디어 데이터 초기화
             selectedImages = [];
             mainImageIndex = 0;
             videoUrl = '';
             videoData = null;
             currentEditingStyleId = null;
-            
+
             // UI 초기화
             document.getElementById('imagePreviewGrid').style.display = 'none';
             document.getElementById('imagePreviewGrid').innerHTML = '';
             document.getElementById('videoUrlInput').value = '';
             document.getElementById('videoPreview').style.display = 'none';
             document.getElementById('multiImageInput').value = '';
-            
+
             // 기존 이미지 데이터 초기화
             window.existingImageUrls = null;
+
+            // 360° 뷰 데이터 초기화
+            clear360ViewImages();
         }
 
         // 스타일 수정 (다중 미디어 지원)
@@ -3636,12 +3840,7 @@
 
             card.innerHTML = `
                 <div class="style-actions">
-                    <button class="action-btn ${has360View ? 'done' : 'generate360'}"
-                            onclick="generate360Views('${docId}')"
-                            title="${has360View ? '360° 뷰 재생성' : '360° 뷰 생성'}"
-                            style="${has360View ? 'background: #28a745;' : 'background: #667eea;'}">
-                        ${has360View ? '✅' : '🔄'}
-                    </button>
+                    ${has360View ? `<span class="action-btn done" style="background: #28a745; cursor: default;" title="360° 뷰 있음">🔄</span>` : ''}
                     <button class="action-btn download" onclick="downloadStyleImages('${docId}')" title="다운로드">⬇️</button>
                     <button class="action-btn" onclick="editStyle('${docId}')" title="수정">✏️</button>
                     <button class="action-btn delete" onclick="deleteStyle('${docId}', '${data.name}')" title="삭제">🗑️</button>
@@ -5684,9 +5883,10 @@
             }
         }
 
-        // ========== 360° 뷰 생성 ==========
+        // ========== 360° 뷰 생성 (DEPRECATED - AI 생성 대신 수동 업로드 사용) ==========
 
         /**
+         * @DEPRECATED - 2025-12-26 AI 생성 제거, 수동 업로드로 대체
          * 360° 뷰 이미지 생성 (Gemini API)
          * @param {string} styleId - Firestore 문서 ID
          */
@@ -5799,6 +5999,7 @@
         }
 
         /**
+         * @DEPRECATED - 2025-12-26 AI 생성 제거, 수동 업로드로 대체
          * 모든 스타일에 360° 뷰 일괄 생성 (주의: 비용 발생)
          */
         async function generateAll360Views() {
@@ -5863,6 +6064,7 @@
         }
 
         /**
+         * @DEPRECATED - 2025-12-26 AI 생성 제거, 수동 업로드로 대체
          * 360° 뷰 생성 (확인 없이 - 일괄 처리용, 병렬 실행)
          */
         async function generate360ViewsSilent(styleId, data) {

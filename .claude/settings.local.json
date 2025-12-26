@@ -40,7 +40,15 @@
       "mcp__chrome-devtools__resize_page",
       "Bash(git push)",
       "WebFetch(domain:developers.portone.io)",
-      "Bash(PYTHONUNBUFFERED=1 python:*)"
+      "Bash(PYTHONUNBUFFERED=1 python:*)",
+      "WebFetch(domain:docs.ohmyapp.io)",
+      "mcp__chrome-devtools__press_key",
+      "mcp__chrome-devtools__fill",
+      "Bash(powershell:*)",
+      "Bash(copy:*)",
+      "Bash(sharp predict:*)",
+      "mcp__chrome-devtools__upload_file",
+      "mcp__chrome-devtools__wait_for"
     ],
     "deny": [],
     "ask": []
