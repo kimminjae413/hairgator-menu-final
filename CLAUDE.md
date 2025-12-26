@@ -249,7 +249,7 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 동작: `_users.tokenBalance += tokenCount`
 
 ## 최근 작업 이력
-- 2025-12-26: AI 스타일 매칭 기능 추가
+- 2025-12-26: AI 스타일 매칭 기능 추가 + 디자이너 처방 + 버그 수정
 
   ### AI 스타일 매칭 (얼굴 랜드마크 기반 헤어스타일 추천)
   - **위치**: 사이드바 "퍼스널컬러" 위에 "AI 스타일 매칭" 메뉴 추가
@@ -274,6 +274,35 @@ Then: [동작] (예: 기존 데이터를 수정)
     - `handleStyleMatchAccess()`: 사이드바 메뉴 클릭 핸들러
     - `showStyleMatchView()` / `hideStyleMatchView()`: 뷰 표시/숨기기
   - **i18n 키**: `styleMatch.*` (menuTitle, uploadTitle, faceMetrics, faceType, insight, issue, solution, reason 등)
+
+  ### 디자이너 처방 기능 (옆머리 Side 처방)
+  - **3가지 처방 옵션**:
+    - `down` (누르기): 다운펌, 투블럭, 슬릭 - subCategory: None, Fore Head 부스트
+    - `volume` (살리기): 뿌리펌, 옆볼륨, C컬 - subCategory: Cheekbone, Eye 부스트
+    - `cover` (가리기): 사이드뱅, 레이어드 - subCategory: Eye Brow, Eye, Cheekbone 부스트
+  - **주의사항**: subCategory는 전체 이름 사용 ('EB' 아닌 'Eye Brow')
+  - **처방 수정자**: `prescriptionModifiers` 객체에서 처방별 점수 가감 정의
+
+  ### 스타일 모달 연동 (추천 스타일 클릭 시)
+  - **문제**: style-match는 별도 페이지라 `parent.openStyleModal` 없음
+  - **해결**: URL 파라미터로 메인 페이지 리다이렉트
+    - `openStyleDetail()`: styleId, gender, category를 URL 파라미터로 전달
+    - `checkUrlForStyleModal()`: main.js에서 URL 읽고 모달 열기
+  - **Firestore 컬렉션 차이**:
+    - style-match: `styles` 컬렉션 (Netlify 함수 통해 로드)
+    - menu.js: `hairstyles` 컬렉션
+    - 해결: `styles`에서 먼저 검색, 없으면 `hairstyles` 폴백
+
+  ### 버그 수정
+  - **얼굴 감지 안됨**: `isCameraMode = true` 누락 → `startCamera()`에 추가
+  - **카메라 정지 안됨**: video element ID 오타 수정 (`cameraPreview` → `cameraVideo`)
+  - **성별 선택 오버레이 애니메이션**: CSS transition → JS inline style로 변경
+  - **카테고리 대소문자 불일치**: 코드 'A LENGTH' vs 데이터 'A Length' → `toLowerCase()` 비교
+
+  ### UX 개선
+  - **STEP 1/STEP 2 분리**: 성별 선택(STEP 1) → 카메라/업로드(STEP 2)
+  - **성별 미선택 오버레이**: "👆 먼저 성별을 선택하세요" 메시지
+  - **촬영 버튼 위치**: 카메라 안 → 카메라 밖으로 이동 (텍스트 가림 방지)
 
 - 2025-12-24: OhMyApp 플랜 상품 로직 설정 + 플랜 시스템 + 무료 플랜 자동 초기화 + 결제 모달 수정
 
