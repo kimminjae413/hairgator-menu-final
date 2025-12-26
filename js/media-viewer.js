@@ -431,18 +431,27 @@ class MediaViewer {
 // 기존 openStyleModal 함수 확장
 function enhanceStyleModal() {
     const originalOpenStyleModal = window.openStyleModal;
-    
+
     if (originalOpenStyleModal) {
         window.openStyleModal = function(style) {
             // 기존 모달 열기 로직 실행
             originalOpenStyleModal(style);
-            
-            // MediaViewer에 데이터 로드
-            if (window.mediaViewer && style) {
-                setTimeout(() => {
+
+            // ⭐ 360° 뷰어가 렌더링된 경우 MediaViewer 로드 스킵
+            setTimeout(() => {
+                const container = document.getElementById('mediaViewerContainer');
+                const has360Viewer = container && container.querySelector('.viewer-360');
+
+                if (has360Viewer) {
+                    console.log('⏭️ 360° 뷰어 감지 → MediaViewer 로드 스킵');
+                    return;
+                }
+
+                // MediaViewer에 데이터 로드 (360° 뷰어가 없을 때만)
+                if (window.mediaViewer && style) {
                     window.mediaViewer.loadMedia(style);
-                }, 100); // DOM 업데이트 대기
-            }
+                }
+            }, 100); // DOM 업데이트 대기
         };
     }
 }
