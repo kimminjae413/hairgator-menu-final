@@ -74,15 +74,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 번역 적용
     applyTranslations();
 
-    // 업로드 모드로 시작 (카메라 자동 시작 안함)
+    // 카메라 모드로 시작
     const uploadTab = document.querySelector('.mode-tab[data-mode="upload"]');
     const cameraTab = document.querySelector('.mode-tab[data-mode="camera"]');
-    if (uploadTab) uploadTab.classList.add('active');
-    if (cameraTab) cameraTab.classList.remove('active');
+    if (cameraTab) cameraTab.classList.add('active');
+    if (uploadTab) uploadTab.classList.remove('active');
 
     const cameraArea = document.getElementById('cameraArea');
-    if (cameraArea) cameraArea.style.display = 'none';
-    if (uploadArea) uploadArea.style.display = 'block';
+    if (cameraArea) cameraArea.style.display = 'block';
+    if (uploadArea) uploadArea.style.display = 'none';
+
+    // 카메라 자동 시작
+    startCamera();
 });
 
 // 테마 상속
