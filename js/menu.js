@@ -1092,11 +1092,13 @@ function render360Viewer(container, style, navIndicatorHTML = '') {
     container.innerHTML = `
         <div class="viewer-360" style="
             width: 100%;
+            height: 100%;
             position: relative;
             touch-action: none;
             user-select: none;
             -webkit-user-select: none;
             cursor: grab;
+            pointer-events: auto !important;
         ">
             <div class="viewer-360-images" style="
                 position: relative;
