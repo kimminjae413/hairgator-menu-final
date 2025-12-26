@@ -754,9 +754,9 @@ body::after {
    Recommendations Section
    ========================================== */
 .recommendations-container {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xl);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
 }
 
 /* Category Card */
@@ -1022,8 +1022,74 @@ body::after {
 }
 
 /* ==========================================
-   Responsive
+   Responsive - Tablet First
    ========================================== */
+
+/* 태블릿 가로 (1024px 이상) - 2열 그리드 */
+@media (min-width: 768px) {
+    .recommendations-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-lg);
+    }
+
+    .category-card {
+        height: fit-content;
+    }
+
+    .style-cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-sm);
+    }
+
+    .style-card-reason {
+        font-size: 0.7rem;
+        min-height: 40px;
+    }
+
+    .analysis-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-xl);
+    }
+
+    .analysis-grid {
+        grid-column: span 2;
+    }
+}
+
+/* 큰 태블릿/데스크톱 (1200px 이상) - 3열 그리드 */
+@media (min-width: 1200px) {
+    .recommendations-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* 모바일 세로 (767px 이하) - 1열 */
+@media (max-width: 767px) {
+    .recommendations-container {
+        grid-template-columns: 1fr;
+        gap: var(--space-md);
+    }
+
+    .style-cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-xs);
+        padding: var(--space-sm);
+    }
+
+    .style-card-reason {
+        font-size: 0.65rem;
+        min-height: 35px;
+        padding: var(--space-xs) var(--space-sm);
+    }
+
+    .category-reason {
+        font-size: 0.8rem;
+        padding: var(--space-sm) var(--space-md);
+    }
+}
+
+/* 작은 모바일 (480px 이하) */
 @media (max-width: 480px) {
     .main-content {
         padding: var(--space-md);
@@ -1048,13 +1114,40 @@ body::after {
     }
 
     .style-cards {
-        gap: var(--space-xs);
-        padding: var(--space-sm);
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+        padding: var(--space-xs);
+    }
+
+    .style-card-rank {
+        width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
+    }
+
+    .style-card-name {
+        font-size: 0.6rem;
+        padding: 2px 4px;
+    }
+
+    .style-card-info {
+        padding: 4px;
+    }
+
+    .style-score {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+    }
+
+    .style-card-reason {
+        font-size: 0.55rem;
+        min-height: 30px;
+        padding: 4px 6px;
     }
 
     .category-reason {
         padding: var(--space-sm) var(--space-md);
-        font-size: 0.85rem;
+        font-size: 0.75rem;
     }
 }
 
