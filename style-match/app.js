@@ -1572,27 +1572,25 @@ function createCategoryCard(category, reason, styles, ratios) {
 
 // 스타일 상세 보기
 window.openStyleDetail = function(styleId) {
-    try {
-        // 부모 창의 모달 열기
-        if (parent && parent.openStyleModal) {
-            const style = allStyles.find(s => s.styleId === styleId);
-            if (style) {
-                // openStyleModal은 id 필드를 사용하므로 매핑
-                const styleWithId = {
-                    ...style,
-                    id: style.styleId || styleId
-                };
-                console.log('📂 스타일 모달 열기:', styleWithId.name, styleWithId.id);
-                parent.openStyleModal(styleWithId);
-            } else {
-                console.warn('⚠️ 스타일을 찾을 수 없음:', styleId);
-            }
-        } else {
-            console.warn('⚠️ parent.openStyleModal 없음');
-        }
-    } catch (e) {
-        console.error('스타일 상세 열기 실패:', e);
+    const style = allStyles.find(s => s.styleId === styleId);
+    if (!style) {
+        console.warn('⚠️ 스타일을 찾을 수 없음:', styleId);
+        return;
     }
+
+    console.log('📂 스타일 상세 보기:', style.name, styleId);
+
+    // 메인 페이지로 이동하면서 스타일 정보 전달
+    const params = new URLSearchParams({
+        openStyle: styleId,
+        gender: style.gender || selectedGender,
+        category: style.mainCategory || '',
+        subCategory: style.subCategory || ''
+    });
+
+    // 카메라 정리 후 메인 페이지로 이동
+    stopCamera();
+    window.location.href = `/?${params.toString()}`;
 };
 
 // ========== 유틸리티 ==========

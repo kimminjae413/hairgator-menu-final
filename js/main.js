@@ -24,12 +24,60 @@ document.addEventListener('DOMContentLoaded', function() {
         loadTheme();
         checkAuthStatus();
         setupSidebar();
-        
+
         if (backBtn) {
             backBtn.style.display = 'none';
         }
-        
+
+        // URL 파라미터로 스타일 모달 열기 (style-match에서 이동 시)
+        checkUrlForStyleModal();
+
         console.log('✅ HAIRGATOR 초기화 완료');
+    }
+
+    // URL 파라미터 확인 후 스타일 모달 열기
+    async function checkUrlForStyleModal() {
+        const params = new URLSearchParams(window.location.search);
+        const styleId = params.get('openStyle');
+        const gender = params.get('gender');
+        const category = params.get('category');
+
+        if (!styleId) return;
+
+        console.log('📂 URL에서 스타일 모달 열기 요청:', styleId, gender, category);
+
+        // URL 파라미터 제거 (히스토리 정리)
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        // 성별 선택 및 메뉴 로드 대기
+        if (gender) {
+            // 성별 선택
+            const genderBtn = document.querySelector(`.gender-btn[data-gender="${gender}"]`);
+            if (genderBtn) {
+                genderBtn.click();
+            }
+
+            // 메뉴 로드 완료 대기
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Firestore에서 스타일 정보 가져와서 모달 열기
+            try {
+                if (window.db) {
+                    const doc = await window.db.collection('hairstyles').doc(styleId).get();
+                    if (doc.exists) {
+                        const style = { ...doc.data(), id: doc.id };
+                        console.log('✅ 스타일 로드 완료:', style.name);
+                        if (window.openStyleModal) {
+                            window.openStyleModal(style);
+                        }
+                    } else {
+                        console.warn('⚠️ 스타일 문서 없음:', styleId);
+                    }
+                }
+            } catch (e) {
+                console.error('스타일 로드 실패:', e);
+            }
+        }
     }
 
     // 사이드바 메뉴 구조 복원
