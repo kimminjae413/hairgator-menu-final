@@ -1106,6 +1106,7 @@ function render360Viewer(container, style, navIndicatorHTML = '') {
                 overflow: hidden;
                 border-radius: 18px 18px 0 0;
                 background: #0a0a0a;
+                pointer-events: none;
             ">
                 ${viewImages.map((url, i) => `
                     <img src="${url}"
