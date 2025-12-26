@@ -191,8 +191,77 @@
 - `isGenderSelectionVisible()`: 성별 선택 화면에서만 표시
 - `document.body.classList.contains('light-theme')`: 다크모드 체크
 
+## OhMyApp (불나비 앱 관리자) 사용법
+
+### 접속 정보
+- **URL**: https://drylink.ohmyapp.io/
+- **주요 메뉴**: 운영 모드, 메뉴 설정, 앱 설정, 로직 설정, 옵션 설정, 환경 설정
+
+### 로직 설정 (eventflowSettings)
+결제 완료 후 DB 업데이트 등 자동화 로직을 설정하는 곳
+
+**로직 구조:**
+```
+If When: [이벤트명] (예: ticketCount - 결제 완료 이벤트)
+Where: [데이터 소스] (예: ticketCount)
+Condition: [조건] (예: productCategory == "plan")
+Then: [동작] (예: 기존 데이터를 수정)
+  - 컬렉션 명: _users
+  - 검색 조건: _id = userDoc._id
+  - 수정하려는 양: tokenBalance += tokenCount
+```
+
+**MUI Autocomplete 입력 팁:**
+- 커스텀 값 입력 시 텍스트박스에 직접 타이핑 후 Enter
+- "choose" 또는 "Entry" 옵션이 나타나면 클릭하여 선택
+- 값이 안 들어가면 한 글자씩 타이핑 후 50ms 대기
+
+### 옵션 설정 (codeSettings)
+드롭다운 선택지 등 코드 옵션을 관리하는 곳
+
+**상품 분류 (productCategory) 옵션:**
+- `content`: 컨텐츠 생성권 (AI횟수권) → remainCount 증가
+- `plan`: 플랜 (헤어게이터 토큰) → tokenBalance 증가
+
+### 제품 내역 (AI, 상권 탭)
+앱 내 판매 상품을 등록/관리하는 곳
+
+**상품 등록 시 필수 필드:**
+- 상품 분류: content 또는 plan 선택
+- 횟수: 토큰 수량 (예: 10000, 18000, 25000)
+- 상품 가격: 원화 금액
+- 상품 안내: 상품 설명
+
+### 현재 설정된 로직
+
+**[주문] 결제 후 횟수권 증가** (기존)
+- 조건: `productCategory == "content"`
+- 동작: `_users.remainCount += contentCount`
+
+**[주문] 결제 후 토큰 충전 (플랜)** (2025-12-24 추가)
+- 조건: `productCategory == "plan"`
+- 동작: `_users.tokenBalance += tokenCount`
+
 ## 최근 작업 이력
-- 2025-12-24: 플랜(plan) 시스템 + 무료 플랜 자동 초기화 + 결제 모달 수정
+- 2025-12-24: OhMyApp 플랜 상품 로직 설정 + 플랜 시스템 + 무료 플랜 자동 초기화 + 결제 모달 수정
+
+  ### OhMyApp 플랜 상품 로직 설정
+  - **옵션 설정 > 상품 분류**:
+    - "보고서" 옵션 삭제
+    - "플랜" (`plan`) 옵션 추가
+  - **기존 로직 수정 - "[주문] 결제 후 횟수권 증가"**:
+    - 조건 추가: `productCategory == "content"`
+    - AI횟수권만 `remainCount` 증가하도록 제한
+  - **새 로직 생성 - "[주문] 결제 후 토큰 충전 (플랜)"**:
+    - If When: `ticketCount`
+    - Where: `ticketCount`
+    - Condition: `productCategory == "plan"`
+    - Then: `_users.tokenBalance += tokenCount`
+  - **상품 등록 완료**:
+    - 베이직 (10,000 토큰) - 22,000원
+    - 프로 (18,000 토큰) - 38,000원
+    - 비즈니스 (25,000 토큰) - 50,000원
+  - **테스트 결과**: 결제 플로우 정상 작동 (본인 카드 필요)
 
   ### 무료 플랜 자동 200 토큰 초기화
   - **문제**: 신규/기존 유저 중 플랜 결제 안 한 사람은 자동으로 무료 플랜 200 토큰 필요
@@ -233,6 +302,16 @@
   ### 토큰 표시 정책
   - **관리자**: 플랜 + 토큰 잔액 표시
   - **일반 유저**: 플랜만 표시 (토큰 숨김)
+
+  ### 토큰 충전 이벤트 플로우 버그 수정 (저녁)
+  - **문제**: 플랜 상품 결제 시 tokenBalance가 충전되지 않음
+  - **원인**: 이벤트 플로우 조건이 `productCategory == "plan"` (영문)으로 설정되어 있었으나, 실제 상품 분류는 `"플랜"` (한글)
+  - **해결**: OhMyApp 로직 설정에서 조건을 `"plan"` → `"플랜"`으로 수정
+  - **위치**: 로직 설정 > "[주문] 결제 후 토큰 충전 (플랜)"
+  - **참고**: 기존 결제 건은 수동 충전 필요, 새 결제부터 자동 적용
+
+  ### 요금제 안내 UI 수정
+  - **index.html**: "AI얼굴변환&영상변환" 상품의 "이 상품은 상품 탭에서만 결제가 가능합니다" 메시지 제거
 
 - 2025-12-23: 토큰 시스템 불나비 API로 전환
 
