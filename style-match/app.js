@@ -996,9 +996,10 @@ function renderRecommendationsWithPrescription(prescription) {
     const categoryResults = [];
 
     categories.forEach(category => {
+        const categoryLower = category.toLowerCase();
         const categoryStyles = allStyles.filter(s =>
             s.gender && s.gender.toLowerCase() === selectedGender.toLowerCase() &&
-            s.mainCategory === category &&
+            s.mainCategory && s.mainCategory.toLowerCase() === categoryLower &&
             (s.type === 'cut' || !s.type)
         );
 
@@ -1243,9 +1244,10 @@ function generateRecommendations(analysis) {
 
     categories.forEach(category => {
         // 해당 카테고리 스타일 필터링 (대소문자 무시, type 조건 완화)
+        const categoryLower = category.toLowerCase();
         const categoryStyles = allStyles.filter(s =>
             s.gender && s.gender.toLowerCase() === selectedGender.toLowerCase() &&
-            s.mainCategory === category &&
+            s.mainCategory && s.mainCategory.toLowerCase() === categoryLower &&
             (s.type === 'cut' || !s.type)
         );
 
