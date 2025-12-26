@@ -79,6 +79,12 @@ body {
     min-height: 100dvh;
     line-height: 1.6;
     overflow-x: hidden;
+
+    /* 안드로이드 터치 스크롤 최적화 */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y pinch-zoom;
 }
 
 /* Background Pattern - Light Theme */
@@ -185,6 +191,10 @@ body::after {
     display: flex;
     flex-direction: column;
     gap: var(--space-xl);
+
+    /* 안드로이드 터치 스크롤 최적화 */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 
 /* Section Header */
@@ -1030,6 +1040,11 @@ body::after {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-lg);
+
+    /* 안드로이드 터치 스크롤 최적화 */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
 }
 
 /* Category Card - Light Theme */
