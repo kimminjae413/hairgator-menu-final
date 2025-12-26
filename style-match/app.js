@@ -260,7 +260,7 @@ function stopCamera() {
     }
 
     // 2. 비디오 요소 정리
-    const video = document.getElementById('cameraPreview');
+    const video = document.getElementById('cameraVideo');
     if (video) {
         video.srcObject = null;
         video.pause();
