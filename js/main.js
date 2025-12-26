@@ -113,6 +113,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
 
+                        <!-- AI 스타일 매칭 -->
+                        <div class="menu-item" id="styleMatchBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 20px;">✨</span>
+                                <div style="flex: 1;">
+                                    <span class="sidebar-menu-text" style="font-size: 14px;">${t('styleMatch.menuTitle') || 'AI 스타일 매칭'}</span>
+                                    <div style="font-size: 11px; color: var(--text-secondary, #888); margin-top: 2px;">${t('styleMatch.menuSubtitle') || '얼굴형 분석 기반 추천'}</div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- 퍼스널 이미지 분석 -->
                         <div class="menu-item" id="personalColorBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
@@ -217,12 +228,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // ⭐ 사이드바 메뉴 이벤트 리스너 설정 (재사용 가능)
     function setupSidebarMenuListeners() {
         const themeToggleMenu = document.getElementById('themeToggleMenu');
+        const styleMatchBtn = document.getElementById('styleMatchBtn');
         const personalColorBtn = document.getElementById('personalColorBtn');
         const brandSettingBtn = document.getElementById('brandSettingBtn');
         const logoutBtn = document.getElementById('logoutBtn');
 
         if (themeToggleMenu) {
             themeToggleMenu.addEventListener('click', toggleTheme);
+        }
+
+        // AI 스타일 매칭
+        if (styleMatchBtn) {
+            styleMatchBtn.addEventListener('click', function() {
+                console.log('✨ AI 스타일 매칭 클릭');
+                closeSidebar();
+                window.location.href = '/style-match/';
+            });
         }
 
         if (personalColorBtn) {
