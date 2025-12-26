@@ -194,6 +194,20 @@
                     </div>
                 </div>
 
+                <!-- Image Type (이미지 타입: 원계/뉴트럴/쿨계) -->
+                <div class="image-type-card">
+                    <div class="image-type-header">
+                        <h4 data-i18n="styleMatch.imageType">이미지 타입</h4>
+                        <span class="image-type-badge neutral" id="imageTypeBadge">⚖️ 뉴트럴계 · 밸런스</span>
+                    </div>
+                    <div class="image-type-detail">
+                        <div class="detail-row">
+                            <span class="detail-label" data-i18n="styleMatch.eyeDistance">눈 사이 거리 비율</span>
+                            <span class="detail-value" id="eyeDistanceRatio">--</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Analysis Summary -->
                 <div class="summary-card">
                     <div class="summary-icon">💡</div>
@@ -204,58 +218,11 @@
                 </div>
             </section>
 
-            <!-- Step 2.5: Designer Prescription -->
-            <section class="prescription-section" id="prescriptionSection" style="display: none;">
-                <div class="section-header">
-                    <span class="step-indicator">✂️</span>
-                    <h2 class="section-title">디자이너 처방</h2>
-                </div>
-
-                <div class="prescription-card">
-                    <p class="prescription-question">옆머리(Side) 처방을 선택해주세요</p>
-                    <p class="prescription-hint" id="prescriptionHint">AI 추천: 분석 중...</p>
-
-                    <div class="prescription-buttons">
-                        <button class="prescription-btn" data-treatment="down" onclick="selectPrescription('down')">
-                            <span class="prescription-icon">⬇️</span>
-                            <span class="prescription-label">누르기</span>
-                            <span class="prescription-desc">다운펌, 투블럭, 슬릭</span>
-                        </button>
-                        <button class="prescription-btn" data-treatment="volume" onclick="selectPrescription('volume')">
-                            <span class="prescription-icon">⬆️</span>
-                            <span class="prescription-label">살리기</span>
-                            <span class="prescription-desc">뿌리펌, 옆볼륨, C컬</span>
-                        </button>
-                        <button class="prescription-btn" data-treatment="cover" onclick="selectPrescription('cover')">
-                            <span class="prescription-icon">🙈</span>
-                            <span class="prescription-label">가리기</span>
-                            <span class="prescription-desc">사이드뱅, 레이어드</span>
-                        </button>
-                    </div>
-
-                    <button class="confirm-prescription-btn" id="confirmPrescriptionBtn" onclick="confirmPrescription()">
-                        <span>처방 확인 → 스타일 추천 보기</span>
-                    </button>
-                </div>
-            </section>
-
             <!-- Step 3: Recommendations -->
             <section class="recommendations-section" id="recommendationsSection" style="display: none;">
                 <div class="section-header">
                     <span class="step-indicator">03</span>
                     <h2 class="section-title" data-i18n="styleMatch.recommendations">맞춤 스타일 추천</h2>
-                </div>
-
-                <!-- 현재 처방 표시 -->
-                <div class="current-prescription" id="currentPrescription" style="display: none;">
-                    <span class="prescription-tag" id="prescriptionTag">처방: ⬆️ 살리기</span>
-                    <button class="change-prescription-btn" onclick="changePrescription()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                        처방 변경
-                    </button>
                 </div>
 
                 <div class="recommendations-container" id="recommendationsContainer">

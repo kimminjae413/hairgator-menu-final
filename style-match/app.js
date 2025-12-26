@@ -653,6 +653,12 @@ function calculateFaceRatios(landmarks) {
     const leftGonion = landmarks[LANDMARKS.left_gonion];
     const rightGonion = landmarks[LANDMARKS.right_gonion];
 
+    // 눈 관련 랜드마크 (이미지 타입 분석용)
+    const leftEyeInner = landmarks[133];   // 좌안 내측 (내안각)
+    const rightEyeInner = landmarks[362];  // 우안 내측 (내안각)
+    const leftEyeOuter = landmarks[33];    // 좌안 외측 (외안각)
+    const rightEyeOuter = landmarks[263];  // 우안 외측 (외안각)
+
     // 수직 거리
     const upperFace = distance(hairline, glabella);  // 상안부
     const middleFace = distance(glabella, noseTip);  // 중안부
@@ -663,11 +669,23 @@ function calculateFaceRatios(landmarks) {
     const faceWidth = distance(leftZygoma, rightZygoma);  // 광대 너비
     const jawWidth = distance(leftGonion, rightGonion);   // 턱 너비
 
+    // 눈 관련 거리 (이미지 타입 분석용)
+    const eyeDistance = distance(leftEyeInner, rightEyeInner);  // 눈 사이 거리
+    const leftEyeWidth = distance(leftEyeOuter, leftEyeInner);  // 좌안 너비
+    const rightEyeWidth = distance(rightEyeOuter, rightEyeInner); // 우안 너비
+    const avgEyeWidth = (leftEyeWidth + rightEyeWidth) / 2;     // 평균 눈 너비
+
     // 비율 계산
     const upperRatio = upperFace / totalHeight;
     const middleRatio = middleFace / totalHeight;
     const lowerRatio = lowerFace / totalHeight;
     const cheekJawRatio = faceWidth / jawWidth;
+
+    // 눈 사이 거리 비율 (이미지 타입 결정용)
+    // 이상적인 비율: 눈 사이 거리 = 눈 너비 (1:1)
+    const eyeDistanceRatio = eyeDistance / avgEyeWidth;
+    // 얼굴 너비 대비 눈 사이 거리 비율
+    const eyeToFaceRatio = eyeDistance / faceWidth;
 
     return {
         upperRatio: Math.round(upperRatio * 100),
@@ -676,8 +694,11 @@ function calculateFaceRatios(landmarks) {
         faceWidth: Math.round(faceWidth * 1000) / 10,
         jawWidth: Math.round(jawWidth * 1000) / 10,
         cheekJawRatio: Math.round(cheekJawRatio * 100) / 100,
+        // 눈 관련 비율 (이미지 타입용)
+        eyeDistanceRatio: Math.round(eyeDistanceRatio * 100) / 100,
+        eyeToFaceRatio: Math.round(eyeToFaceRatio * 100) / 100,
         // 원본 비율 (계산용)
-        raw: { upperRatio, middleRatio, lowerRatio, cheekJawRatio }
+        raw: { upperRatio, middleRatio, lowerRatio, cheekJawRatio, eyeDistanceRatio, eyeToFaceRatio }
     };
 }
 
@@ -859,8 +880,12 @@ function interpretAnalysis(ratios) {
     // 5. 얼굴형 타입 결정
     let faceType = determineFaceType(ratios);
 
+    // 6. 이미지 타입 결정 (원계/뉴트럴/쿨계)
+    let imageType = determineImageType(ratios);
+
     return {
         faceType,
+        imageType,
         insights,
         recommendations,
         avoidances
@@ -877,6 +902,117 @@ function determineFaceType(ratios) {
     if (raw.lowerRatio > raw.middleRatio * 1.1) return { name: t('styleMatch.faceType.long') || '긴 얼굴', code: 'long' };
     if (raw.lowerRatio < raw.middleRatio * 0.9) return { name: t('styleMatch.faceType.round') || '둥근형', code: 'round' };
     return { name: t('styleMatch.faceType.balanced') || '균형형', code: 'balanced' };
+}
+
+// ========== 이미지 타입 결정 (원계/뉴트럴/쿨계) ==========
+// 눈 사이 거리 비율 + 얼굴형을 기반으로 이미지 무드 결정
+function determineImageType(ratios) {
+    const { raw, cheekJawRatio } = ratios;
+    const { eyeDistanceRatio, eyeToFaceRatio } = raw;
+
+    // 이미지 타입 결정 로직
+    // eyeDistanceRatio: 눈 사이 거리 / 눈 너비 (이상적 = 1.0)
+    // - 1.1 이상: 눈이 멀리 떨어짐 → 원계 (또렷함, 시원함)
+    // - 0.9 이하: 눈이 가까움 → 쿨계 (부드러움, 집중감)
+    // - 0.9 ~ 1.1: 균형 → 뉴트럴
+
+    let type = 'neutral';
+    let subType = 'balanced'; // hard or soft
+
+    // 1차: 눈 사이 거리로 기본 타입 결정
+    if (eyeDistanceRatio >= 1.1) {
+        type = 'warm';  // 원계: 눈이 멀리 → 또렷하고 시원한 인상
+    } else if (eyeDistanceRatio <= 0.9) {
+        type = 'cool';  // 쿨계: 눈이 가까움 → 집중된 부드러운 인상
+    } else {
+        type = 'neutral';
+    }
+
+    // 2차: 얼굴형으로 하드/소프트 결정
+    // 사각형 턱(cheekJawRatio < 1.15) → 하드
+    // 부드러운 턱(cheekJawRatio > 1.25) → 소프트
+    if (cheekJawRatio < 1.15) {
+        subType = 'hard';
+    } else if (cheekJawRatio > 1.25) {
+        subType = 'soft';
+    } else {
+        subType = 'balanced';
+    }
+
+    // 이미지 타입 이름 및 설명
+    const typeNames = {
+        'warm': {
+            ko: '원계 (Warm)',
+            desc: '또렷하고 시원한 인상, 직선적 라인이 어울림',
+            icon: '🔆'
+        },
+        'neutral': {
+            ko: '뉴트럴계 (Neutral)',
+            desc: '균형 잡힌 인상, 다양한 스타일 소화 가능',
+            icon: '⚖️'
+        },
+        'cool': {
+            ko: '쿨계 (Cool)',
+            desc: '부드럽고 집중된 인상, 곡선 라인이 어울림',
+            icon: '❄️'
+        }
+    };
+
+    const subTypeNames = {
+        'hard': { ko: '하드', desc: '선명한 대비, 직선적 스타일 추천' },
+        'soft': { ko: '소프트', desc: '부드러운 그라데이션, 웨이브 추천' },
+        'balanced': { ko: '밸런스', desc: '다양한 질감 소화 가능' }
+    };
+
+    return {
+        type,           // 'warm', 'neutral', 'cool'
+        subType,        // 'hard', 'soft', 'balanced'
+        code: `${type}-${subType}`,
+        name: typeNames[type].ko,
+        subTypeName: subTypeNames[subType].ko,
+        icon: typeNames[type].icon,
+        description: typeNames[type].desc,
+        subDescription: subTypeNames[subType].desc,
+        // 스타일 매칭용 키워드
+        styleKeywords: getImageTypeStyleKeywords(type, subType),
+        // 원본 비율 (디버그용)
+        eyeDistanceRatio: ratios.eyeDistanceRatio,
+        eyeToFaceRatio: ratios.eyeToFaceRatio
+    };
+}
+
+// 이미지 타입별 추천 스타일 키워드
+function getImageTypeStyleKeywords(type, subType) {
+    const keywords = {
+        boost: [],    // 가점 키워드
+        penalty: []   // 감점 키워드
+    };
+
+    // 타입별 스타일 무드
+    if (type === 'warm') {
+        // 원계: 또렷함, 직선적
+        keywords.boost = ['슬릭', 'slick', '시크', 'chic', '레이저', '투블럭', '언더컷', '샤기', '직선'];
+        keywords.penalty = ['소프트', 'soft', '몽환', '흐릿'];
+    } else if (type === 'cool') {
+        // 쿨계: 부드러움, 곡선적
+        keywords.boost = ['웨이브', 'wave', '컬', 'curl', '소프트', 'soft', 'C컬', 'S컬', '레이어', '볼륨'];
+        keywords.penalty = ['샤프', 'sharp', '레이저', '직선'];
+    } else {
+        // 뉴트럴: 균형
+        keywords.boost = ['내추럴', 'natural', '클래식', 'classic'];
+        keywords.penalty = [];
+    }
+
+    // 하드/소프트 서브타입
+    if (subType === 'hard') {
+        keywords.boost.push('선명', '대비', '컨트라스트', '앞머리', '또렷');
+        keywords.penalty.push('몽환', '흐릿', '그라데이션');
+    } else if (subType === 'soft') {
+        keywords.boost.push('그라데이션', '흐름', '자연스러운', '부드러운');
+        keywords.penalty.push('선명', '각진');
+    }
+
+    return keywords;
 }
 
 // ========== 디자이너 처방 ==========
@@ -1121,21 +1257,10 @@ function displayAnalysisResults(ratios, analysis) {
     // 카메라 종료 (결과 화면에서는 카메라 불필요)
     stopCamera();
 
-    // 섹션 표시 (추천은 처방 확인 후 표시)
+    // 섹션 표시 (처방 단계 제거 - 바로 추천 표시)
     document.getElementById('uploadSection').style.display = 'none';
     document.getElementById('analysisSection').style.display = 'block';
-    document.getElementById('prescriptionSection').style.display = 'block';
-    document.getElementById('recommendationsSection').style.display = 'none';
-
-    // AI 추천 처방 계산 및 프리셀렉트
-    const aiPrescription = getAIPrescription(ratios);
-    selectedPrescription = aiPrescription.treatment;
-    document.getElementById('prescriptionHint').textContent = `AI 추천: ${aiPrescription.reason}`;
-
-    // 추천 버튼 프리셀렉트
-    document.querySelectorAll('.prescription-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.treatment === aiPrescription.treatment);
-    });
+    document.getElementById('recommendationsSection').style.display = 'block';
 
     // 비율 표시
     document.getElementById('upperRatio').textContent = `${ratios.upperRatio}%`;
@@ -1156,6 +1281,21 @@ function displayAnalysisResults(ratios, analysis) {
 
     // 얼굴형 배지
     document.getElementById('faceTypeBadge').textContent = analysis.faceType.name;
+
+    // 이미지 타입 배지 (원계/뉴트럴/쿨계)
+    const imageTypeBadge = document.getElementById('imageTypeBadge');
+    if (imageTypeBadge && analysis.imageType) {
+        imageTypeBadge.innerHTML = `${analysis.imageType.icon} ${analysis.imageType.name} · ${analysis.imageType.subTypeName}`;
+        imageTypeBadge.title = `${analysis.imageType.description}\n${analysis.imageType.subDescription}`;
+        // 타입별 색상 적용
+        imageTypeBadge.className = 'image-type-badge ' + analysis.imageType.type;
+    }
+
+    // 눈 사이 거리 비율 표시
+    const eyeDistanceEl = document.getElementById('eyeDistanceRatio');
+    if (eyeDistanceEl) {
+        eyeDistanceEl.textContent = ratios.eyeDistanceRatio;
+    }
 
     // 분석 요약 생성
     generateSummaryText(analysis);
@@ -1283,6 +1423,37 @@ function generateRecommendations(analysis) {
                     reasons.push({ type: 'negative', text: avoid.reason, score: avoid.score });
                 }
             });
+
+            // 이미지 타입 기반 스타일 무드 매칭
+            if (analysis.imageType && analysis.imageType.styleKeywords) {
+                const styleName = (style.name || style.styleName || '').toLowerCase();
+                const textRecipe = (style.textRecipe || '').toLowerCase();
+                const searchText = `${styleName} ${textRecipe}`;
+
+                const { boost, penalty } = analysis.imageType.styleKeywords;
+
+                // 부스트 키워드 매칭
+                const hasBoostKeyword = boost.some(kw => searchText.includes(kw.toLowerCase()));
+                if (hasBoostKeyword) {
+                    score += 15;
+                    reasons.push({
+                        type: 'positive',
+                        text: `${analysis.imageType.name} 스타일 무드와 일치`,
+                        score: 15
+                    });
+                }
+
+                // 페널티 키워드 매칭
+                const hasPenaltyKeyword = penalty.some(kw => searchText.includes(kw.toLowerCase()));
+                if (hasPenaltyKeyword) {
+                    score -= 10;
+                    reasons.push({
+                        type: 'negative',
+                        text: `${analysis.imageType.name} 무드와 다소 불일치`,
+                        score: -10
+                    });
+                }
+            }
 
             return { ...style, score: Math.max(0, Math.min(100, score)), reasons };
         });
