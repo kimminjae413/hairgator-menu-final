@@ -531,11 +531,24 @@ window.selectGender = function(gender) {
         btn.classList.toggle('active', btn.dataset.gender === gender);
     });
 
-    // 성별 선택 시 오버레이 숨김
+    // 성별 선택 시 오버레이 fade-out 애니메이션
     const overlay1 = document.getElementById('genderRequiredOverlay');
     const overlay2 = document.getElementById('genderRequiredOverlayUpload');
-    if (overlay1) overlay1.classList.add('hidden');
-    if (overlay2) overlay2.classList.add('hidden');
+
+    if (overlay1) {
+        overlay1.style.transition = 'opacity 0.5s ease';
+        overlay1.style.opacity = '0';
+        setTimeout(() => {
+            overlay1.style.display = 'none';
+        }, 500);
+    }
+    if (overlay2) {
+        overlay2.style.transition = 'opacity 0.5s ease';
+        overlay2.style.opacity = '0';
+        setTimeout(() => {
+            overlay2.style.display = 'none';
+        }, 500);
+    }
 
     checkReadyState();
 
