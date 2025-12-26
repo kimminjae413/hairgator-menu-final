@@ -31,7 +31,57 @@ const LANDMARKS = {
     right_eye_outer: 263, // 우 눈 외측
     nose_root: 6,       // 콧대 시작점
     upper_lip: 0,       // 윗입술 중심
-    forehead_top: 10    // 이마 상단
+    forehead_top: 10,   // 이마 상단
+    // 눈썹 분석용 랜드마크
+    left_eye_top: 159,  // 좌 눈 상단 (눈썹-눈 거리 계산용)
+    right_eye_top: 386  // 우 눈 상단
+};
+
+// ========== 눈썹 랜드마크 (5점 시스템) ==========
+const EYEBROW_LANDMARKS = {
+    left: {
+        start: 70,      // 눈썹 시작점 (안쪽)
+        prePeak: 63,    // 산 전
+        peak: 105,      // 눈썹 산 (Peak) - 가장 높은 점
+        postPeak: 66,   // 산 후
+        end: 46         // 눈썹 꼬리 (바깥쪽)
+    },
+    right: {
+        start: 300,     // 눈썹 시작점 (안쪽)
+        prePeak: 293,   // 산 전
+        peak: 334,      // 눈썹 산 (Peak)
+        postPeak: 296,  // 산 후
+        end: 276        // 눈썹 꼬리 (바깥쪽)
+    }
+};
+
+// ========== 눈썹 분류 임계값 ==========
+const EYEBROW_THRESHOLDS = {
+    // 라인 분류 (Arch_Ratio)
+    arch: {
+        high: 0.15,     // 아치형 (Arched) - 원계
+        low: 0.08       // 스트레이트형 (Straight) - 쿨계
+        // 그 사이: 내추럴형 (Natural) - 뉴트럴계
+    },
+    // 꼬리 각도 (Tail_Angle)
+    tailAngle: {
+        steep: 25,      // 급격한 하강 (아치형)
+        flat: 10        // 거의 수평 (스트레이트형)
+    },
+    // 텍스쳐 분류 (Density)
+    density: {
+        hard: 80,       // 진한 눈썹 (Hard)
+        soft: 120       // 연한 눈썹 (Soft)
+    },
+    // 두께 비율 (Thickness_Ratio)
+    thickness: {
+        thick: 0.25,    // 두꺼운 눈썹
+        thin: 0.15      // 얇은 눈썹
+    },
+    // 눈썹-눈 거리 보정 (Low Straight 예외 처리)
+    browEyeDistance: {
+        low: 0.8        // 이 비율 미만이면 쿨계 → 뉴트럴계로 보정
+    }
 };
 
 // 대분류 카테고리
@@ -697,15 +747,31 @@ function onFaceMeshResults(results) {
     const ratios = calculateFaceRatios(landmarks);
     console.log('📊 비율 계산:', ratios);
 
-    // 분석 해석
-    const analysis = interpretAnalysis(ratios);
+    // 눈썹 분석 (라인 + 텍스쳐)
+    let eyebrowAnalysis = null;
+    try {
+        // 이미지 데이터 획득 (카메라/업로드된 이미지에서)
+        const canvas = document.getElementById('cameraCanvas') || document.getElementById('faceCanvas');
+        let imageData = null;
+        if (canvas && canvas.width > 0 && canvas.height > 0) {
+            const ctx = canvas.getContext('2d');
+            imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        }
+        eyebrowAnalysis = analyzeEyebrows(landmarks, imageData, canvas);
+        console.log('👁️ 눈썹 분석:', eyebrowAnalysis);
+    } catch (e) {
+        console.warn('눈썹 분석 실패:', e);
+    }
+
+    // 분석 해석 (눈썹 데이터 포함)
+    const analysis = interpretAnalysis(ratios, eyebrowAnalysis);
     console.log('💡 분석 결과:', analysis);
 
     // 결과 저장
-    analysisResults = { ratios, analysis };
+    analysisResults = { ratios, analysis, eyebrowAnalysis };
 
     // UI 업데이트
-    displayAnalysisResults(ratios, analysis);
+    displayAnalysisResults(ratios, analysis, eyebrowAnalysis);
 
     // 스타일 추천
     generateRecommendations(analysis);
@@ -779,8 +845,366 @@ function calculateFaceRatios(landmarks) {
     };
 }
 
+// ========== 눈썹 라인 분석 ==========
+function analyzeEyebrowLine(landmarks) {
+    const distance = (p1, p2) => {
+        const dx = (p1.x - p2.x);
+        const dy = (p1.y - p2.y);
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    // 왼쪽/오른쪽 눈썹 분석 후 평균
+    const analyzeOneSide = (side) => {
+        const brow = EYEBROW_LANDMARKS[side];
+        const start = landmarks[brow.start];
+        const peak = landmarks[brow.peak];
+        const end = landmarks[brow.end];
+
+        if (!start || !peak || !end) return null;
+
+        // 1. Arch_Ratio (아치 높이 비율)
+        // 시작점-꼬리 직선에서 산까지의 거리 / 눈썹 너비
+        const browWidth = distance(start, end);
+
+        // 시작점-꼬리 직선의 중간점 y좌표
+        const baseLineY = (start.y + end.y) / 2;
+        // 산이 직선보다 위에 있으면 음수 (y는 위가 작으므로)
+        const archHeight = baseLineY - peak.y;
+        const archRatio = archHeight / browWidth;
+
+        // 2. Tail_Angle (꼬리 각도)
+        // 산에서 꼬리로 가는 각도 (수평 기준)
+        const dx = end.x - peak.x;
+        const dy = end.y - peak.y;
+        const tailAngle = Math.atan2(dy, Math.abs(dx)) * (180 / Math.PI);
+
+        // 3. 눈썹-눈 거리 (Low Straight 예외 처리용)
+        const eyeTop = side === 'left' ? landmarks[LANDMARKS.left_eye_top] : landmarks[LANDMARKS.right_eye_top];
+        const browToEyeDistance = eyeTop ? distance(peak, eyeTop) : null;
+
+        return { archRatio, tailAngle, browWidth, browToEyeDistance };
+    };
+
+    const leftResult = analyzeOneSide('left');
+    const rightResult = analyzeOneSide('right');
+
+    if (!leftResult || !rightResult) {
+        return null;
+    }
+
+    // 좌우 평균
+    const avgArchRatio = (leftResult.archRatio + rightResult.archRatio) / 2;
+    const avgTailAngle = (leftResult.tailAngle + rightResult.tailAngle) / 2;
+    const avgBrowToEyeDistance = (leftResult.browToEyeDistance + rightResult.browToEyeDistance) / 2;
+    const avgBrowWidth = (leftResult.browWidth + rightResult.browWidth) / 2;
+
+    // 눈썹-눈 거리 비율 (눈썹 너비 대비)
+    const browEyeRatio = avgBrowToEyeDistance / avgBrowWidth;
+
+    return {
+        archRatio: Math.round(avgArchRatio * 1000) / 1000,
+        tailAngle: Math.round(avgTailAngle * 10) / 10,
+        browEyeRatio: Math.round(browEyeRatio * 100) / 100,
+        raw: { avgArchRatio, avgTailAngle, browEyeRatio }
+    };
+}
+
+// ========== 눈썹 라인 분류 ==========
+function classifyEyebrowLine(eyebrowData) {
+    if (!eyebrowData) {
+        return { lineType: 'unknown', lineTypeKo: '알 수 없음', imageType: 'neutral' };
+    }
+
+    const { raw } = eyebrowData;
+    const { avgArchRatio, avgTailAngle, browEyeRatio } = raw;
+    const thresholds = EYEBROW_THRESHOLDS;
+
+    let lineType = 'natural';
+    let lineTypeKo = '내추럴형';
+    let imageType = 'neutral';  // 뉴트럴계
+
+    // 아치형 (Arched) - 원계
+    if (avgArchRatio > thresholds.arch.high && avgTailAngle > thresholds.tailAngle.steep) {
+        lineType = 'arched';
+        lineTypeKo = '아치형';
+        imageType = 'warm';
+    }
+    // 스트레이트형 (Straight) - 쿨계
+    else if (avgArchRatio < thresholds.arch.low && avgTailAngle < thresholds.tailAngle.flat) {
+        lineType = 'straight';
+        lineTypeKo = '스트레이트형';
+        imageType = 'cool';
+
+        // 예외 처리: Low Straight (눈썹-눈 거리가 좁으면 뉴트럴로 보정)
+        if (browEyeRatio < thresholds.browEyeDistance.low) {
+            imageType = 'neutral';
+            lineTypeKo = '스트레이트형 (로우)';
+        }
+    }
+    // 내추럴형 (Natural) - 뉴트럴계
+    else {
+        lineType = 'natural';
+        lineTypeKo = '내추럴형';
+        imageType = 'neutral';
+    }
+
+    return { lineType, lineTypeKo, imageType };
+}
+
+// ========== 눈썹 텍스쳐 분석 (Density, Thickness) ==========
+function analyzeEyebrowTexture(landmarks, imageData, canvas) {
+    // 이미지 데이터가 없으면 기본값 반환
+    if (!imageData || !canvas) {
+        return {
+            density: 100,
+            thicknessRatio: 0.20,
+            textureType: 'medium',
+            textureTypeKo: '미디엄'
+        };
+    }
+
+    const distance = (p1, p2) => {
+        const dx = (p1.x - p2.x);
+        const dy = (p1.y - p2.y);
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    try {
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // 눈썹 영역의 픽셀 분석
+        const analyzeRegion = (side) => {
+            const brow = EYEBROW_LANDMARKS[side];
+            const start = landmarks[brow.start];
+            const peak = landmarks[brow.peak];
+            const end = landmarks[brow.end];
+            const prePeak = landmarks[brow.prePeak];
+            const postPeak = landmarks[brow.postPeak];
+
+            if (!start || !peak || !end) return null;
+
+            // 눈썹 영역 경계 (픽셀 좌표로 변환)
+            const points = [start, prePeak, peak, postPeak, end].filter(p => p);
+            const minX = Math.max(0, Math.floor(Math.min(...points.map(p => p.x * width)) - 5));
+            const maxX = Math.min(width, Math.ceil(Math.max(...points.map(p => p.x * width)) + 5));
+            const minY = Math.max(0, Math.floor(Math.min(...points.map(p => p.y * height)) - 10));
+            const maxY = Math.min(height, Math.ceil(Math.max(...points.map(p => p.y * height)) + 10));
+
+            // 해당 영역의 이미지 데이터 가져오기
+            const regionWidth = maxX - minX;
+            const regionHeight = maxY - minY;
+
+            if (regionWidth <= 0 || regionHeight <= 0) return null;
+
+            const regionData = ctx.getImageData(minX, minY, regionWidth, regionHeight);
+            const data = regionData.data;
+
+            // 평균 명도 계산 (Grayscale)
+            let totalBrightness = 0;
+            let pixelCount = 0;
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                const brightness = (r + g + b) / 3;
+                totalBrightness += brightness;
+                pixelCount++;
+            }
+
+            const avgDensity = pixelCount > 0 ? totalBrightness / pixelCount : 128;
+
+            // 눈썹 두께 추정 (산 지점에서의 세로 범위)
+            const thickness = regionHeight;
+
+            // 눈 세로 길이 (두께 비율 계산용)
+            const eyeTop = side === 'left' ? landmarks[159] : landmarks[386];
+            const eyeBottom = side === 'left' ? landmarks[145] : landmarks[374];
+            const eyeHeight = eyeTop && eyeBottom ? distance(eyeTop, eyeBottom) * height : thickness * 4;
+
+            const thicknessRatio = thickness / eyeHeight;
+
+            return { density: avgDensity, thicknessRatio };
+        };
+
+        const leftResult = analyzeRegion('left');
+        const rightResult = analyzeRegion('right');
+
+        if (!leftResult || !rightResult) {
+            return {
+                density: 100,
+                thicknessRatio: 0.20,
+                textureType: 'medium',
+                textureTypeKo: '미디엄'
+            };
+        }
+
+        const avgDensity = (leftResult.density + rightResult.density) / 2;
+        const avgThicknessRatio = (leftResult.thicknessRatio + rightResult.thicknessRatio) / 2;
+
+        // 텍스쳐 분류
+        const thresholds = EYEBROW_THRESHOLDS;
+        let textureType = 'medium';
+        let textureTypeKo = '미디엄';
+
+        // 낮은 명도(진한 색) + 두꺼움 = Hard
+        if (avgDensity < thresholds.density.hard && avgThicknessRatio > thresholds.thickness.thick) {
+            textureType = 'hard';
+            textureTypeKo = '하드';
+        }
+        // 높은 명도(연한 색) + 얇음 = Soft
+        else if (avgDensity > thresholds.density.soft && avgThicknessRatio < thresholds.thickness.thin) {
+            textureType = 'soft';
+            textureTypeKo = '소프트';
+        }
+
+        return {
+            density: Math.round(avgDensity),
+            thicknessRatio: Math.round(avgThicknessRatio * 100) / 100,
+            textureType,
+            textureTypeKo
+        };
+    } catch (e) {
+        console.warn('눈썹 텍스쳐 분석 오류:', e);
+        return {
+            density: 100,
+            thicknessRatio: 0.20,
+            textureType: 'medium',
+            textureTypeKo: '미디엄'
+        };
+    }
+}
+
+// ========== 눈썹 종합 분석 ==========
+function analyzeEyebrows(landmarks, imageData, canvas) {
+    // 라인 분석
+    const lineData = analyzeEyebrowLine(landmarks);
+    const lineClassification = classifyEyebrowLine(lineData);
+
+    // 텍스쳐 분석
+    const textureData = analyzeEyebrowTexture(landmarks, imageData, canvas);
+
+    // 종합 이미지 타입 결정
+    // 라인 타입 + 텍스쳐 타입 조합
+    let combinedImageType = lineClassification.imageType;
+    let combinedImageTypeKo = '';
+
+    // 예: 아치형 + 소프트 = 웜/소프트
+    // 예: 스트레이트 + 하드 = 쿨/하드
+    if (lineClassification.imageType === 'warm') {
+        combinedImageTypeKo = textureData.textureType === 'soft' ? '웜계 · 소프트' :
+                              textureData.textureType === 'hard' ? '웜계 · 하드' : '웜계';
+    } else if (lineClassification.imageType === 'cool') {
+        combinedImageTypeKo = textureData.textureType === 'soft' ? '쿨계 · 소프트' :
+                              textureData.textureType === 'hard' ? '쿨계 · 하드' : '쿨계';
+    } else {
+        combinedImageTypeKo = textureData.textureType === 'soft' ? '뉴트럴 · 소프트' :
+                              textureData.textureType === 'hard' ? '뉴트럴 · 하드' : '뉴트럴';
+    }
+
+    return {
+        line: {
+            ...lineData,
+            ...lineClassification
+        },
+        texture: textureData,
+        combined: {
+            imageType: combinedImageType,
+            imageTypeKo: combinedImageTypeKo,
+            textureType: textureData.textureType
+        }
+    };
+}
+
+// ========== 눈썹 기반 헤어 추천 전략 ==========
+function getEyebrowRecommendations(eyebrowAnalysis, gender) {
+    const recommendations = [];
+    const avoidances = [];
+
+    if (!eyebrowAnalysis || !eyebrowAnalysis.line) {
+        return { recommendations, avoidances };
+    }
+
+    const { line, texture, combined } = eyebrowAnalysis;
+    const isMale = gender === 'male';
+
+    // 1. 라인 타입별 추천
+    if (line.lineType === 'arched') {
+        // 아치형 (원계) - 강한 산을 부드럽게 가리는 스타일
+        if (isMale) {
+            recommendations.push({
+                categories: ['SIDE FRINGE'],
+                subCategories: ['EB', 'E'],
+                score: 25,
+                reason: '아치형 눈썹의 곡선미를 살리면서 자연스럽게 보완'
+            });
+        } else {
+            recommendations.push({
+                subCategories: ['EB', 'E'],
+                score: 20,
+                reason: '눈썹 산을 살짝 가려 인상을 부드럽게'
+            });
+        }
+    } else if (line.lineType === 'straight') {
+        // 스트레이트형 (쿨계) - 이마 노출로 직선미 강조
+        if (isMale) {
+            recommendations.push({
+                categories: ['FRINGE UP', 'PUSHED BACK'],
+                subCategories: ['N', 'FH'],
+                score: 30,
+                reason: '직선형 눈썹을 드러내 쿨하고 남성적인 인상 강조'
+            });
+            avoidances.push({
+                categories: ['SIDE FRINGE'],
+                subCategories: ['E', 'CB'],
+                score: -15,
+                reason: '눈썹을 가리면 직선미가 사라짐'
+            });
+        } else {
+            recommendations.push({
+                subCategories: ['N', 'FH'],
+                score: 20,
+                reason: '직선 눈썹을 살려 시크한 무드 연출'
+            });
+        }
+    }
+    // 내추럴형은 특별한 제약 없음
+
+    // 2. 텍스쳐 타입별 추천
+    if (texture.textureType === 'hard') {
+        // 하드 (진하고 두꺼움) - 드러내서 카리스마 강조
+        if (isMale) {
+            recommendations.push({
+                categories: ['PUSHED BACK', 'FRINGE UP'],
+                score: 20,
+                reason: '진한 눈썹을 드러내 카리스마 있는 인상'
+            });
+        }
+    } else if (texture.textureType === 'soft') {
+        // 소프트 (연하고 얇음) - 자연스럽게 보완
+        if (isMale) {
+            recommendations.push({
+                categories: ['SIDE FRINGE', 'SIDE PART'],
+                subCategories: ['EB', 'FH'],
+                score: 15,
+                reason: '연한 눈썹을 보완하는 자연스러운 스타일'
+            });
+        } else {
+            recommendations.push({
+                subCategories: ['EB', 'FH'],
+                score: 15,
+                reason: '앞머리로 부드러운 인상 연출'
+            });
+        }
+    }
+
+    return { recommendations, avoidances };
+}
+
 // ========== 분석 해석 ==========
-function interpretAnalysis(ratios) {
+function interpretAnalysis(ratios, eyebrowAnalysis = null) {
     const insights = [];
     const recommendations = [];
     const avoidances = [];
@@ -960,9 +1384,81 @@ function interpretAnalysis(ratios) {
     // 6. 이미지 타입 결정 (웜계/뉴트럴/쿨계)
     let imageType = determineImageType(ratios);
 
+    // 7. 눈썹 분석 통합
+    let eyebrowType = null;
+    if (eyebrowAnalysis && eyebrowAnalysis.line) {
+        // 눈썹 인사이트 추가
+        const { line, texture, combined } = eyebrowAnalysis;
+
+        // 눈썹 라인 타입별 인사이트
+        if (line.lineType === 'arched') {
+            insights.push({
+                type: 'eyebrow_arched',
+                value: `아치비: ${(line.archRatio * 100).toFixed(1)}%`,
+                description: t('styleMatch.insight.eyebrowArched') || `아치형 눈썹 (곡선미 강조, 원계)`,
+                issue: t('styleMatch.issue.eyebrowArched') || '강한 눈썹 산',
+                solution: t('styleMatch.solution.eyebrowArched') || '앞머리로 눈썹 산을 살짝 가려 부드럽게'
+            });
+        } else if (line.lineType === 'straight') {
+            insights.push({
+                type: 'eyebrow_straight',
+                value: `테일각: ${line.tailAngle.toFixed(1)}°`,
+                description: t('styleMatch.insight.eyebrowStraight') || `직선형 눈썹 (시크하고 쿨한 인상)`,
+                issue: null,
+                solution: t('styleMatch.solution.eyebrowStraight') || '이마를 드러내 직선미 강조'
+            });
+        }
+
+        // 눈썹 텍스쳐별 인사이트
+        if (texture.textureType === 'hard') {
+            insights.push({
+                type: 'eyebrow_hard',
+                value: `밀도: ${texture.density.toFixed(0)}`,
+                description: t('styleMatch.insight.eyebrowHard') || `진한 눈썹 (카리스마 있는 인상)`,
+                issue: null,
+                solution: t('styleMatch.solution.eyebrowHard') || '눈썹을 드러내 강렬한 인상 연출'
+            });
+        } else if (texture.textureType === 'soft') {
+            insights.push({
+                type: 'eyebrow_soft',
+                value: `밀도: ${texture.density.toFixed(0)}`,
+                description: t('styleMatch.insight.eyebrowSoft') || `연한 눈썹 (부드러운 인상)`,
+                issue: t('styleMatch.issue.eyebrowSoft') || '옅은 눈썹',
+                solution: t('styleMatch.solution.eyebrowSoft') || '앞머리로 자연스럽게 보완'
+            });
+        }
+
+        // 눈썹 기반 추천 가져오기
+        const eyebrowRecs = getEyebrowRecommendations(eyebrowAnalysis, selectedGender);
+
+        // 추천에 추가
+        eyebrowRecs.recommendations.forEach(rec => {
+            recommendations.push(rec);
+        });
+
+        // 회피에 추가
+        eyebrowRecs.avoidances.forEach(avoid => {
+            avoidances.push(avoid);
+        });
+
+        // 눈썹 타입 저장
+        eyebrowType = {
+            lineType: line.lineType,
+            lineTypeKo: line.lineTypeKo,
+            textureType: texture.textureType,
+            textureTypeKo: texture.textureTypeKo,
+            combined: combined,
+            archRatio: line.archRatio,
+            tailAngle: line.tailAngle,
+            density: texture.density,
+            thicknessRatio: texture.thicknessRatio
+        };
+    }
+
     return {
         faceType,
         imageType,
+        eyebrowType,
         insights,
         recommendations,
         avoidances
@@ -1330,7 +1826,7 @@ function generateCategoryReasonWithPrescription(category, analysis, topStyles, p
 }
 
 // ========== 결과 표시 ==========
-function displayAnalysisResults(ratios, analysis) {
+function displayAnalysisResults(ratios, analysis, eyebrowAnalysis = null) {
     // 카메라 종료 (결과 화면에서는 카메라 불필요)
     stopCamera();
 
@@ -1374,8 +1870,63 @@ function displayAnalysisResults(ratios, analysis) {
         eyeDistanceEl.textContent = ratios.eyeDistanceRatio;
     }
 
+    // 눈썹 분석 결과 표시
+    displayEyebrowAnalysis(analysis.eyebrowType);
+
     // 분석 요약 생성
     generateSummaryText(analysis);
+}
+
+// 눈썹 분석 결과 UI 표시
+function displayEyebrowAnalysis(eyebrowType) {
+    const eyebrowCard = document.getElementById('eyebrowTypeCard');
+    if (!eyebrowCard) return;
+
+    if (!eyebrowType) {
+        eyebrowCard.style.display = 'none';
+        return;
+    }
+
+    eyebrowCard.style.display = 'block';
+
+    // 눈썹 타입 배지
+    const eyebrowBadge = document.getElementById('eyebrowTypeBadge');
+    if (eyebrowBadge) {
+        // 라인 타입에 따른 아이콘
+        const lineIcons = {
+            'arched': '⌢',   // 아치형
+            'natural': '―',  // 내추럴
+            'straight': '―'  // 스트레이트
+        };
+        const icon = lineIcons[eyebrowType.lineType] || '―';
+        eyebrowBadge.innerHTML = `${icon} ${eyebrowType.combined.imageTypeKo}`;
+        // 타입별 색상
+        eyebrowBadge.className = 'eyebrow-type-badge ' + eyebrowType.combined.imageType;
+    }
+
+    // 아치 비율
+    const archRatioEl = document.getElementById('eyebrowArchRatio');
+    if (archRatioEl) {
+        archRatioEl.textContent = `${(eyebrowType.archRatio * 100).toFixed(1)}% (${eyebrowType.lineTypeKo})`;
+    }
+
+    // 테일 각도
+    const tailAngleEl = document.getElementById('eyebrowTailAngle');
+    if (tailAngleEl) {
+        tailAngleEl.textContent = `${eyebrowType.tailAngle.toFixed(1)}°`;
+    }
+
+    // 밀도
+    const densityEl = document.getElementById('eyebrowDensity');
+    if (densityEl) {
+        densityEl.textContent = `${eyebrowType.density.toFixed(0)} (${eyebrowType.textureTypeKo})`;
+    }
+
+    // 두께 비율
+    const thicknessEl = document.getElementById('eyebrowThickness');
+    if (thicknessEl) {
+        thicknessEl.textContent = `${(eyebrowType.thicknessRatio * 100).toFixed(1)}%`;
+    }
 }
 
 // 분석 요약 텍스트 생성
@@ -1969,8 +2520,9 @@ function createCategoryCard(category, reason, styles, ratios) {
         <div class="style-cards">
             ${styles.map((style, idx) => {
                 const styleReason = generateStyleReason(style, analysisResults?.analysis, analysisResults?.ratios, style.score);
+                const escapedReason = styleReason.replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/<[^>]*>/g, '');
                 return `
-                <div class="style-card" onclick="openStyleDetail('${style.styleId}')">
+                <div class="style-card" onclick="openStyleDetail('${style.styleId}', '${escapedReason}')">
                     <div class="style-card-rank">${idx + 1}</div>
                     <div class="style-card-name">${style.name || 'ChrisKiLAB'}</div>
                     <img src="${style.resultImage}" alt="${style.name}" loading="lazy"
@@ -1987,28 +2539,108 @@ function createCategoryCard(category, reason, styles, ratios) {
     return card;
 }
 
-// 스타일 상세 보기
-window.openStyleDetail = function(styleId) {
+// 현재 선택된 스타일 (모달에서 사용)
+let currentModalStyle = null;
+
+// 스타일 상세 보기 (모달로 표시)
+window.openStyleDetail = function(styleId, reason = '') {
     const style = allStyles.find(s => s.styleId === styleId);
     if (!style) {
         console.warn('⚠️ 스타일을 찾을 수 없음:', styleId);
         return;
     }
 
-    console.log('📂 스타일 상세 보기:', style.name, styleId);
+    console.log('📂 스타일 상세 모달:', style.name, styleId);
+    currentModalStyle = style;
 
-    // 메인 페이지로 이동하면서 스타일 정보 전달
-    const params = new URLSearchParams({
-        openStyle: styleId,
-        gender: style.gender || selectedGender,
-        category: style.mainCategory || '',
-        subCategory: style.subCategory || ''
-    });
+    // 모달 내용 설정
+    const modal = document.getElementById('styleDetailModal');
+    const imgEl = document.getElementById('styleModalImage');
+    const titleEl = document.getElementById('styleModalTitle');
+    const categoryEl = document.getElementById('styleModalCategory');
+    const reasonEl = document.getElementById('styleModalReason');
 
-    // 카메라 정리 후 메인 페이지로 이동
+    // 이미지 설정
+    imgEl.src = style.resultImage || style.thumbnail || '';
+    imgEl.onerror = function() {
+        this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23333" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%23666" font-size="12">No Image</text></svg>';
+    };
+
+    // 텍스트 설정
+    titleEl.textContent = style.name || styleId;
+    categoryEl.textContent = `${style.mainCategory || ''} ${style.subCategory ? '· ' + style.subCategory : ''}`;
+    reasonEl.textContent = reason || style.description || '';
+
+    // 모달 표시
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+};
+
+// 모달 닫기
+window.closeStyleModal = function() {
+    const modal = document.getElementById('styleDetailModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+    currentModalStyle = null;
+};
+
+// 룩북으로 이동
+window.goToLookbook = function() {
+    if (!currentModalStyle) return;
+
+    closeStyleModal();
     stopCamera();
+
+    // 메인 페이지 룩북으로 이동
+    const params = new URLSearchParams({
+        action: 'lookbook',
+        styleId: currentModalStyle.styleId,
+        gender: currentModalStyle.gender || selectedGender
+    });
     window.location.href = `/?${params.toString()}`;
 };
+
+// 헤어 체험으로 이동
+window.goToHairTry = function() {
+    if (!currentModalStyle) return;
+
+    closeStyleModal();
+    stopCamera();
+
+    // 메인 페이지 헤어 체험으로 이동
+    const params = new URLSearchParams({
+        action: 'hairtry',
+        styleId: currentModalStyle.styleId,
+        gender: currentModalStyle.gender || selectedGender
+    });
+    window.location.href = `/?${params.toString()}`;
+};
+
+// 레시피 보기
+window.goToRecipe = function() {
+    if (!currentModalStyle) return;
+
+    closeStyleModal();
+    stopCamera();
+
+    // 메인 페이지 레시피로 이동
+    const params = new URLSearchParams({
+        action: 'recipe',
+        styleId: currentModalStyle.styleId,
+        gender: currentModalStyle.gender || selectedGender
+    });
+    window.location.href = `/?${params.toString()}`;
+};
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('styleDetailModal');
+        if (modal && modal.style.display === 'flex') {
+            closeStyleModal();
+        }
+    }
+});
 
 // ========== 유틸리티 ==========
 function showLoading(show) {
