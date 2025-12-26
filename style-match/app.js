@@ -921,7 +921,9 @@ function generateRecommendations(analysis) {
     );
     console.log('👥 성별 필터링된 스타일:', genderStyles.length);
 
-    // 카테고리별 스타일 필터링 및 점수 계산
+    // 카테고리별 데이터 수집 (점수순 정렬을 위해)
+    const categoryResults = [];
+
     categories.forEach(category => {
         // 해당 카테고리 스타일 필터링 (대소문자 무시, type 조건 완화)
         const categoryStyles = allStyles.filter(s =>
@@ -966,52 +968,116 @@ function generateRecommendations(analysis) {
             return { ...style, score: Math.max(0, Math.min(100, score)), reasons };
         });
 
-        // TOP 3 선정
+        // TOP 3 선정 (점수순)
         const top3 = scoredStyles
             .sort((a, b) => b.score - a.score)
             .slice(0, 3);
 
-        // 카테고리별 추천 이유 생성
-        const categoryReason = generateCategoryReason(category, analysis, top3);
+        // 카테고리 평균 점수 계산
+        const avgScore = top3.length > 0
+            ? Math.round(top3.reduce((sum, s) => sum + s.score, 0) / top3.length)
+            : 0;
 
-        // 카드 생성
+        categoryResults.push({
+            category,
+            avgScore,
+            top3
+        });
+    });
+
+    // ⭐ 카테고리를 평균 점수순으로 정렬 (높은 점수 먼저)
+    categoryResults.sort((a, b) => b.avgScore - a.avgScore);
+
+    console.log('📊 점수순 카테고리:', categoryResults.map(c => `${c.category}: ${c.avgScore}점`));
+
+    // 정렬된 순서로 카드 생성
+    categoryResults.forEach(({ category, top3 }) => {
+        const categoryReason = generateCategoryReason(category, analysis, top3);
         const categoryCard = createCategoryCard(category, categoryReason, top3);
         container.appendChild(categoryCard);
     });
 }
 
-// 카테고리별 추천 이유 생성
+// 카테고리별 추천 이유 생성 (전문가 스타일)
 function generateCategoryReason(category, analysis, topStyles) {
-    const reasons = [];
+    const reasonParts = [];
 
-    // 메인 카테고리 기반 이유
-    analysis.recommendations.forEach(rec => {
-        if (rec.mainCategory?.includes(category)) {
-            reasons.push(`<strong>${rec.reason}</strong> (+${rec.score}점)`);
+    // 1. 얼굴 분석 기반 전문가 의견 생성
+    const { insights, recommendations, avoidances, faceType } = analysis;
+
+    // 이 카테고리가 추천되는 이유 찾기
+    const matchedRecs = recommendations.filter(rec => rec.mainCategory?.includes(category));
+    const matchedAvoids = avoidances.filter(avoid => avoid.mainCategory?.includes(category));
+
+    // 추천 점수 계산
+    const recScore = matchedRecs.reduce((sum, r) => sum + r.score, 0);
+    const avoidScore = matchedAvoids.reduce((sum, a) => sum + a.score, 0);
+    const totalScore = recScore + avoidScore;
+
+    // 2. 얼굴형 기반 전문가 코멘트
+    if (insights.length > 0) {
+        const relevantInsights = insights.filter(ins => {
+            // 이 카테고리와 관련된 인사이트 찾기
+            return matchedRecs.some(rec => {
+                if (ins.type === 'wide_forehead' && rec.subCategory) return true;
+                if (ins.type === 'long_face' && rec.mainCategory) return true;
+                if (ins.type === 'short_face' && rec.mainCategory) return true;
+                if (ins.type === 'square_jaw' && rec.mainCategory) return true;
+                if (ins.type === 'heart_face' && rec.mainCategory) return true;
+                if (ins.type === 'oval_face') return true;
+                return false;
+            });
+        });
+
+        if (relevantInsights.length > 0) {
+            const insight = relevantInsights[0];
+            if (insight.issue) {
+                reasonParts.push(`<strong>${insight.issue}</strong> 보완`);
+            }
         }
-    });
+    }
 
-    analysis.avoidances.forEach(avoid => {
-        if (avoid.mainCategory?.includes(category)) {
-            reasons.push(`<strong style="color: var(--accent-coral)">${avoid.reason}</strong> (${avoid.score}점)`);
-        }
-    });
+    // 3. 추천/비추천 이유 추가
+    if (totalScore > 20) {
+        matchedRecs.forEach(rec => {
+            reasonParts.push(`${rec.reason} (+${rec.score}점)`);
+        });
+    } else if (totalScore < -10) {
+        matchedAvoids.forEach(avoid => {
+            reasonParts.push(`<span style="color: var(--accent-coral)">${avoid.reason}</span>`);
+        });
+    }
 
-    // 서브 카테고리 기반 이유 (TOP 1 스타일)
-    if (topStyles.length > 0) {
-        const topStyle = topStyles[0];
-        analysis.recommendations.forEach(rec => {
-            if (rec.subCategory?.includes(topStyle.subCategory)) {
-                reasons.push(`${topStyle.subCategory} ${t('styleMatch.bangsStyle') || '앞머리'}: ${rec.reason}`);
+    // 4. 서브카테고리(앞머리) 기반 추가 설명
+    if (topStyles.length > 0 && topStyles[0].subCategory) {
+        const subCat = topStyles[0].subCategory;
+        const subRecs = recommendations.filter(rec => rec.subCategory?.includes(subCat));
+        subRecs.forEach(rec => {
+            if (!reasonParts.includes(rec.reason)) {
+                reasonParts.push(`${subCat} 앞머리: ${rec.reason}`);
             }
         });
     }
 
-    if (reasons.length === 0) {
-        reasons.push(t('styleMatch.generalRecommendation') || '기본 추천 스타일입니다');
+    // 5. 기본 설명 (아무 매칭이 없을 때)
+    if (reasonParts.length === 0) {
+        // 얼굴형에 따른 기본 전문가 코멘트
+        if (faceType === 'oval') {
+            reasonParts.push('균형 잡힌 얼굴형으로 다양한 스타일 소화 가능');
+        } else if (faceType === 'long') {
+            reasonParts.push('가로 볼륨으로 세로 비율 보정 권장');
+        } else if (faceType === 'round') {
+            reasonParts.push('세로 라인 강조로 얼굴 길이감 연출');
+        } else if (faceType === 'square') {
+            reasonParts.push('부드러운 라인으로 각진 인상 완화');
+        } else if (faceType === 'heart') {
+            reasonParts.push('하단 볼륨으로 좁은 턱선 보완');
+        } else {
+            reasonParts.push('얼굴형 분석 기반 추천');
+        }
     }
 
-    return reasons.join(' · ');
+    return reasonParts.join(' · ');
 }
 
 // 카테고리 카드 생성
