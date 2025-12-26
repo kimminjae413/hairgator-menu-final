@@ -168,9 +168,16 @@ let currentStyleIndex = 0;       // 현재 표시 중인 스타일 인덱스
         });
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    console.log('✅ 안드로이드 모멘텀 스크롤 활성화');
+    // document.body가 준비된 후 observe 시작
+    if (document.body) {
+        observer.observe(document.body, { childList: true, subtree: true });
+        console.log('✅ 안드로이드 모멘텀 스크롤 활성화');
+    } else {
+        document.addEventListener('DOMContentLoaded', function() {
+            observer.observe(document.body, { childList: true, subtree: true });
+            console.log('✅ 안드로이드 모멘텀 스크롤 활성화 (DOMContentLoaded)');
+        });
+    }
 })();
 
 // ⭐ 스태거 애니메이션 keyframes 동적 추가
