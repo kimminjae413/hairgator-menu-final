@@ -937,11 +937,12 @@ function renderRecommendationsWithPrescription(prescription) {
     console.log('🎯 처방 기반 추천 생성:', prescription);
 
     // 처방별 점수 수정자 정의
+    // subCategory 전체 이름 사용: 'None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'
     const prescriptionModifiers = {
         'down': {
             // 누르기: 슬릭/다운 스타일 부스트, 볼륨 스타일 감점
-            subCategoryBoost: ['N', 'FH'],  // 노앞머리, 이마 앞머리는 슬릭에 적합
-            subCategoryPenalty: ['CB'],      // 광대뼈 앞머리는 볼륨감 있어서 감점
+            subCategoryBoost: ['None', 'Fore Head'],  // 노앞머리, 이마 앞머리는 슬릭에 적합
+            subCategoryPenalty: ['Cheekbone'],         // 광대뼈 앞머리는 볼륨감 있어서 감점
             styleKeywords: ['슬릭', 'slick', '다운', 'down', '투블럭', '밀착', '눌러', '납작'],
             avoidKeywords: ['볼륨', 'volume', '뿌리', 'C컬', '웨이브', '부피'],
             boostScore: 25,
@@ -949,8 +950,8 @@ function renderRecommendationsWithPrescription(prescription) {
         },
         'volume': {
             // 살리기: 볼륨/웨이브 스타일 부스트, 슬릭 스타일 감점
-            subCategoryBoost: ['CB', 'E'],   // 광대뼈, 눈앞머리는 볼륨감에 적합
-            subCategoryPenalty: ['N'],        // 노앞머리는 볼륨 없어서 감점
+            subCategoryBoost: ['Cheekbone', 'Eye'],   // 광대뼈, 눈앞머리는 볼륨감에 적합
+            subCategoryPenalty: ['None'],              // 노앞머리는 볼륨 없어서 감점
             styleKeywords: ['볼륨', 'volume', '뿌리', 'C컬', '웨이브', 'wave', '레이어', '텍스처'],
             avoidKeywords: ['슬릭', 'slick', '다운', 'down', '밀착', '납작'],
             boostScore: 25,
@@ -958,8 +959,8 @@ function renderRecommendationsWithPrescription(prescription) {
         },
         'cover': {
             // 가리기: 사이드뱅/레이어드 부스트, 노앞머리 큰 감점
-            subCategoryBoost: ['EB', 'E', 'CB'],  // 눈썹, 눈, 광대 앞머리로 커버
-            subCategoryPenalty: ['N'],             // 노앞머리는 가리기에 부적합
+            subCategoryBoost: ['Eye Brow', 'Eye', 'Cheekbone'],  // 눈썹, 눈, 광대 앞머리로 커버
+            subCategoryPenalty: ['None'],                         // 노앞머리는 가리기에 부적합
             styleKeywords: ['사이드뱅', 'side', '레이어', 'layer', '앞머리', '커버', '가리'],
             avoidKeywords: [],
             boostScore: 30,
