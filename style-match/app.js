@@ -1716,7 +1716,8 @@ function findCombinationReason(faceCondition, styleFeature, imageType) {
 }
 
 // 스타일별 개별 추천 이유 생성 (얼굴분석 + 스타일 고유 특징 결합)
-function generateStyleReason(style, analysis, ratios) {
+// ⭐ score 파라미터 추가: 점수에 따라 톤 분리
+function generateStyleReason(style, analysis, ratios, score = 50) {
     const parts = [];
 
     if (!ratios || !ratios.raw) {
@@ -1736,26 +1737,106 @@ function generateStyleReason(style, analysis, ratios) {
     const mainCat = style.mainCategory || '';
     const subCat = style.subCategory || '';
 
-    // 1. 스타일 고유 특징 찾기
+    // 스타일 고유 특징 찾기
     const styleFeature = findStyleFeature(styleName);
     const imageType = analysis?.imageType;
 
-    // 2. 얼굴 조건 판별
+    // 스타일 분류
+    const isTopVolumeStyle = ['FRINGE UP', 'PUSHED BACK', 'MOHICAN'].includes(mainCat);
+    const isSideVolumeStyle = ['SIDE PART', 'SIDE FRINGE'].includes(mainCat);
+    const isShortStyle = ['BUZZ', 'CROP'].includes(mainCat);
+
+    // ============================================
+    // ⚠️ 저점수 (40점 이하): 경고/비추천 모드
+    // ============================================
+    if (score <= 40) {
+        // 1순위: 얼굴형 단점 부각 경고
+        if (isLongFace && isTopVolumeStyle) {
+            parts.push(`⚠️ 탑 볼륨이 긴 하안부(${ratios.lowerRatio}%)를 더 길어 보이게 합니다`);
+        }
+        if (isSquareJaw && isShortStyle) {
+            parts.push(`⚠️ 짧은 기장이 각진 턱선(${ratios.cheekJawRatio})을 그대로 노출시켜 인상이 강해 보일 수 있습니다`);
+        }
+        if (isSquareJaw && isTopVolumeStyle) {
+            parts.push(`⚠️ 볼륨이 위로 올라가면서 각진 라인이 더 강조될 수 있습니다`);
+        }
+        if (isWideForehead && (['N', 'None'].includes(subCat) || !subCat)) {
+            if (isTopVolumeStyle || mainCat === 'PUSHED BACK') {
+                parts.push(`⚠️ 넓은 이마(${ratios.upperRatio}%)가 완전 노출되어 밸런스가 무너질 수 있습니다`);
+            }
+        }
+        if (isShortFace && isSideVolumeStyle) {
+            parts.push(`⚠️ 사이드 볼륨이 짧은 얼굴(${ratios.lowerRatio}%)을 더 짧아 보이게 합니다`);
+        }
+
+        // 2순위: 스타일 리스크 언급
+        if (parts.length < 2) {
+            if (isShortStyle) {
+                parts.push(`주의: 짧은 기장은 얼굴 단점이 그대로 드러날 수 있음`);
+            } else if (isTopVolumeStyle) {
+                parts.push(`주의: 탑 볼륨은 밸런스 고려 필요`);
+            } else {
+                parts.push(`다른 스타일과 비교해보세요`);
+            }
+        }
+
+        return parts.slice(0, 2).join(' / ');
+    }
+
+    // ============================================
+    // ✓ 고점수 (80점 이상): 강력 추천 모드
+    // ============================================
+    if (score >= 80) {
+        // Part A: 스타일 고유 장점
+        if (styleFeature) {
+            parts.push(`✨ ${styleFeature.benefit}`);
+        }
+
+        // Part B: 얼굴 분석 기반 강력 추천 이유
+        if (isLongFace && isSideVolumeStyle) {
+            parts.push(`✓ 사이드 볼륨이 긴 하안부(${ratios.lowerRatio}%)를 완벽히 커버`);
+        } else if (isSquareJaw && styleFeature && ['soft', 'dynamic', 'volume'].includes(styleFeature.mood)) {
+            parts.push(`✓ 부드러운 질감이 각진 턱선(${ratios.cheekJawRatio})을 자연스럽게 소프닝`);
+        } else if (isWideEyes && isSideVolumeStyle) {
+            parts.push(`✓ 가르마 라인이 넓은 미간(${ratios.eyeDistanceRatio})을 중앙으로 모아줌`);
+        } else if (isShortFace && isTopVolumeStyle) {
+            parts.push(`✓ 탑 볼륨이 짧은 얼굴(${ratios.lowerRatio}%)을 갸름하게 연출`);
+        }
+
+        // 이미지 타입 매칭
+        if (imageType && styleFeature && parts.length < 2) {
+            const type = imageType.type;
+            if (type === 'warm' && ['chic', 'contrast', 'minimal', 'bold'].includes(styleFeature.mood)) {
+                parts.push(`💡 ${imageType.name}의 또렷함이 시크한 무드와 완벽 시너지`);
+            } else if (type === 'cool' && ['soft', 'volume', 'elegant'].includes(styleFeature.mood)) {
+                parts.push(`💡 ${imageType.name}의 부드러움이 로맨틱 무드를 배가`);
+            }
+        }
+
+        if (parts.length === 0) {
+            parts.push(`✓ 얼굴형과 이미지 타입에 가장 잘 어울리는 스타일`);
+        }
+
+        return parts.slice(0, 2).join(' / ');
+    }
+
+    // ============================================
+    // 중간 점수 (41~79점): 일반 추천 모드
+    // ============================================
+
+    // 얼굴 조건 판별
     let faceCondition = null;
     if (isLongFace) faceCondition = 'long';
     else if (isShortFace) faceCondition = 'short';
     else if (isSquareJaw) faceCondition = 'square';
     else if (isOvalFace) faceCondition = 'oval';
 
-    // ===== Part A: 스타일 고유 장점 (50%) =====
+    // Part A: 스타일 고유 장점 (50%)
     if (styleFeature) {
-        // 스타일 특유의 benefit 추가
         parts.push(`✨ ${styleFeature.benefit}`);
     }
 
-    // ===== Part B: 얼굴 분석 기반 조언 (50%) =====
-
-    // 얼굴+스타일 조합 멘트 우선
+    // Part B: 얼굴 분석 기반 조언 (50%)
     const combinationReason = findCombinationReason(faceCondition, styleFeature, imageType);
     if (combinationReason && parts.length < 2) {
         parts.push(`✓ ${combinationReason}`);
@@ -1778,14 +1859,11 @@ function generateStyleReason(style, analysis, ratios) {
     }
 
     // 눈 사이 거리 (가르마/사이드 스타일에 특히 관련)
-    if (isWideEyes && ['SIDE PART', 'SIDE FRINGE'].includes(mainCat) && parts.length < 2) {
+    if (isWideEyes && isSideVolumeStyle && parts.length < 2) {
         parts.push(`✓ 넓은 미간(${ratios.eyeDistanceRatio})을 가르마 라인이 중앙으로 모아줌`);
     }
 
     // 얼굴 길이 관련
-    const isTopVolumeStyle = ['FRINGE UP', 'PUSHED BACK', 'MOHICAN'].includes(mainCat);
-    const isSideVolumeStyle = ['SIDE PART', 'SIDE FRINGE'].includes(mainCat);
-
     if (parts.length < 2) {
         if (isLongFace && isSideVolumeStyle) {
             parts.push(`✓ 하안부 ${ratios.lowerRatio}% → 사이드 볼륨으로 세로 비율 분산`);
@@ -1851,7 +1929,7 @@ function createCategoryCard(category, reason, styles, ratios) {
         <div class="category-reason">${reason}</div>
         <div class="style-cards">
             ${styles.map((style, idx) => {
-                const styleReason = generateStyleReason(style, analysisResults?.analysis, analysisResults?.ratios);
+                const styleReason = generateStyleReason(style, analysisResults?.analysis, analysisResults?.ratios, style.score);
                 return `
                 <div class="style-card" onclick="openStyleDetail('${style.styleId}')">
                     <div class="style-card-rank">${idx + 1}</div>
