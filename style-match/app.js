@@ -352,7 +352,9 @@ function updateMeasurementDisplay(landmarks, w, h) {
     if (!display) {
         display = document.createElement('div');
         display.className = 'measurement-display';
-        document.getElementById('cameraArea').appendChild(display);
+        // 카메라 영역 다음에 삽입 (카메라 밖에 표시)
+        const cameraArea = document.getElementById('cameraArea');
+        cameraArea.parentNode.insertBefore(display, cameraArea.nextSibling);
     }
 
     // 비율 계산
@@ -906,20 +908,26 @@ function generateRecommendations(analysis) {
     console.log('🎨 추천 생성 시작:', selectedGender, '스타일 수:', allStyles.length);
     console.log('📂 카테고리:', categories);
 
-    // 스타일 데이터 확인
-    const genderStyles = allStyles.filter(s => s.gender === selectedGender);
-    console.log('👥 성별 필터링된 스타일:', genderStyles.length);
-    if (genderStyles.length > 0) {
-        console.log('📋 샘플 스타일:', genderStyles[0]);
+    // 디버그: 스타일 샘플 출력
+    if (allStyles.length > 0) {
+        console.log('📋 샘플 스타일:', allStyles[0]);
+        console.log('📋 gender 값들:', [...new Set(allStyles.map(s => s.gender))]);
+        console.log('📋 mainCategory 값들:', [...new Set(allStyles.map(s => s.mainCategory))]);
     }
+
+    // 스타일 데이터 확인 (대소문자 무시)
+    const genderStyles = allStyles.filter(s =>
+        s.gender && s.gender.toLowerCase() === selectedGender.toLowerCase()
+    );
+    console.log('👥 성별 필터링된 스타일:', genderStyles.length);
 
     // 카테고리별 스타일 필터링 및 점수 계산
     categories.forEach(category => {
-        // 해당 카테고리 스타일 필터링 (type과 resultImage 조건 완화)
+        // 해당 카테고리 스타일 필터링 (대소문자 무시, type 조건 완화)
         const categoryStyles = allStyles.filter(s =>
-            s.gender === selectedGender &&
+            s.gender && s.gender.toLowerCase() === selectedGender.toLowerCase() &&
             s.mainCategory === category &&
-            (s.type === 'cut' || !s.type) // type이 'cut'이거나 없는 경우
+            (s.type === 'cut' || !s.type)
         );
 
         console.log(`📁 ${category}: ${categoryStyles.length}개 스타일`);
