@@ -1256,6 +1256,9 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
     const dots = container.querySelectorAll('.viewer-360-dot');
     const hint = container.querySelector('.viewer-360-hint');
 
+    // ⭐ 이벤트 타겟: container 자체에 등록 (모달 스크롤 우회)
+    const eventTarget = container;
+
     let currentAngle = 0; // 0-360
     let isDragging = false;
     let startX = 0;
@@ -1327,13 +1330,14 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
     // 3초 후 힌트 자동 숨김
     setTimeout(hideHint, 3000);
 
-    // 터치 이벤트 (태블릿)
-    viewer.addEventListener('touchstart', function(e) {
+    // ⭐ 터치 이벤트 (태블릿) - eventTarget(container)에 등록
+    eventTarget.addEventListener('touchstart', function(e) {
         isDragging = true;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
         isVerticalSwipe = false;
         hideHint();
+        console.log('👆 360° touchstart:', startX);
 
         // 햅틱 피드백
         if (navigator.vibrate) {
@@ -1341,7 +1345,7 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
         }
     }, { passive: true });
 
-    viewer.addEventListener('touchmove', function(e) {
+    eventTarget.addEventListener('touchmove', function(e) {
         if (!isDragging) return;
 
         const currentX = e.touches[0].clientX;
@@ -1367,10 +1371,10 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
         startX = currentX;
 
         // 스크롤 방지 (수평 드래그 시에만)
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
     }, { passive: false });
 
-    viewer.addEventListener('touchend', function(e) {
+    eventTarget.addEventListener('touchend', function(e) {
         const endX = e.changedTouches[0].clientX;
         const endY = e.changedTouches[0].clientY;
         const deltaX = endX - startX;
@@ -1397,19 +1401,19 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
         isVerticalSwipe = false;
     }, { passive: true });
 
-    // 마우스 이벤트 (데스크톱 테스트용) - Pointer Events 사용
-    viewer.addEventListener('pointerdown', function(e) {
+    // ⭐ 마우스/포인터 이벤트 - eventTarget(container)에 등록
+    eventTarget.addEventListener('pointerdown', function(e) {
         if (e.pointerType === 'touch') return; // 터치는 별도 처리
 
         isDragging = true;
         startX = e.clientX;
-        viewer.style.cursor = 'grabbing';
-        viewer.setPointerCapture(e.pointerId); // 포인터 캡처로 document 이벤트 불필요
+        eventTarget.style.cursor = 'grabbing';
+        eventTarget.setPointerCapture(e.pointerId);
         hideHint();
         console.log('🖱️ 360° pointerdown:', e.clientX);
     });
 
-    viewer.addEventListener('pointermove', function(e) {
+    eventTarget.addEventListener('pointermove', function(e) {
         if (!isDragging || e.pointerType === 'touch') return;
 
         const deltaX = e.clientX - startX;
@@ -1421,30 +1425,30 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
         startX = e.clientX;
     });
 
-    viewer.addEventListener('pointerup', function(e) {
+    eventTarget.addEventListener('pointerup', function(e) {
         if (e.pointerType === 'touch') return;
 
         if (isDragging) {
             isDragging = false;
-            viewer.style.cursor = 'grab';
+            eventTarget.style.cursor = 'grab';
             console.log('🖱️ 360° pointerup');
         }
     });
 
-    viewer.addEventListener('pointercancel', function(e) {
+    eventTarget.addEventListener('pointercancel', function(e) {
         isDragging = false;
-        viewer.style.cursor = 'grab';
+        eventTarget.style.cursor = 'grab';
     });
 
     // 초기 커서 설정
-    viewer.style.cursor = 'grab';
+    eventTarget.style.cursor = 'grab';
 
     // 디버그: 클릭 이벤트 테스트
-    viewer.addEventListener('click', function(e) {
-        console.log('🔍 360° viewer click:', e.target.className, 'clientX:', e.clientX);
+    eventTarget.addEventListener('click', function(e) {
+        console.log('🔍 360° container click:', e.target.className, 'clientX:', e.clientX);
     });
 
-    console.log('✅ 360° 뷰어 로직 초기화 완료, viewer:', viewer);
+    console.log('✅ 360° 뷰어 로직 초기화 완료, eventTarget:', eventTarget);
 }
 
 // 스타일 상세 모달 열기 (헤어체험 버튼 추가)
