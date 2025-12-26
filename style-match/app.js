@@ -880,7 +880,7 @@ function interpretAnalysis(ratios) {
     // 5. 얼굴형 타입 결정
     let faceType = determineFaceType(ratios);
 
-    // 6. 이미지 타입 결정 (원계/뉴트럴/쿨계)
+    // 6. 이미지 타입 결정 (웜계/뉴트럴/쿨계)
     let imageType = determineImageType(ratios);
 
     return {
@@ -904,7 +904,7 @@ function determineFaceType(ratios) {
     return { name: t('styleMatch.faceType.balanced') || '균형형', code: 'balanced' };
 }
 
-// ========== 이미지 타입 결정 (원계/뉴트럴/쿨계) ==========
+// ========== 이미지 타입 결정 (웜계/뉴트럴/쿨계) ==========
 // 눈 사이 거리 비율 + 얼굴형을 기반으로 이미지 무드 결정
 function determineImageType(ratios) {
     const { raw, cheekJawRatio } = ratios;
@@ -912,7 +912,7 @@ function determineImageType(ratios) {
 
     // 이미지 타입 결정 로직
     // eyeDistanceRatio: 눈 사이 거리 / 눈 너비 (이상적 = 1.0)
-    // - 1.1 이상: 눈이 멀리 떨어짐 → 원계 (또렷함, 시원함)
+    // - 1.1 이상: 눈이 멀리 떨어짐 → 웜계 (또렷함, 시원함)
     // - 0.9 이하: 눈이 가까움 → 쿨계 (부드러움, 집중감)
     // - 0.9 ~ 1.1: 균형 → 뉴트럴
 
@@ -921,7 +921,7 @@ function determineImageType(ratios) {
 
     // 1차: 눈 사이 거리로 기본 타입 결정
     if (eyeDistanceRatio >= 1.1) {
-        type = 'warm';  // 원계: 눈이 멀리 → 또렷하고 시원한 인상
+        type = 'warm';  // 웜계: 눈이 멀리 → 또렷하고 시원한 인상
     } else if (eyeDistanceRatio <= 0.9) {
         type = 'cool';  // 쿨계: 눈이 가까움 → 집중된 부드러운 인상
     } else {
@@ -942,7 +942,7 @@ function determineImageType(ratios) {
     // 이미지 타입 이름 및 설명
     const typeNames = {
         'warm': {
-            ko: '원계 (Warm)',
+            ko: '웜계 (Warm)',
             desc: '또렷하고 시원한 인상, 직선적 라인이 어울림',
             icon: '🔆'
         },
@@ -990,7 +990,7 @@ function getImageTypeStyleKeywords(type, subType) {
 
     // 타입별 스타일 무드
     if (type === 'warm') {
-        // 원계: 또렷함, 직선적
+        // 웜계: 또렷함, 직선적
         keywords.boost = ['슬릭', 'slick', '시크', 'chic', '레이저', '투블럭', '언더컷', '샤기', '직선'];
         keywords.penalty = ['소프트', 'soft', '몽환', '흐릿'];
     } else if (type === 'cool') {
@@ -1282,7 +1282,7 @@ function displayAnalysisResults(ratios, analysis) {
     // 얼굴형 배지
     document.getElementById('faceTypeBadge').textContent = analysis.faceType.name;
 
-    // 이미지 타입 배지 (원계/뉴트럴/쿨계)
+    // 이미지 타입 배지 (웜계/뉴트럴/쿨계)
     const imageTypeBadge = document.getElementById('imageTypeBadge');
     if (imageTypeBadge && analysis.imageType) {
         imageTypeBadge.innerHTML = `${analysis.imageType.icon} ${analysis.imageType.name} · ${analysis.imageType.subTypeName}`;

@@ -273,16 +273,16 @@ Then: [동작] (예: 기존 데이터를 수정)
   - **5개국어 지원**: ko, en, ja, zh, vi
   - **i18n 키**: `styleMatch.*` (menuTitle, uploadTitle, faceMetrics, faceType, imageType, eyeDistance 등)
 
-  ### 이미지 타입 분석 시스템 (원계/뉴트럴/쿨계)
+  ### 이미지 타입 분석 시스템 (웜계/뉴트럴/쿨계)
   - **눈 사이 거리 비율 기반** 자동 분류:
-    - `eyeDistanceRatio >= 1.1` → **원계(Warm)**: 또렷하고 시원한 인상, 직선적 라인
+    - `eyeDistanceRatio >= 1.1` → **웜계(Warm)**: 또렷하고 시원한 인상, 직선적 라인
     - `eyeDistanceRatio <= 0.9` → **쿨계(Cool)**: 부드럽고 집중된 인상, 곡선 라인
     - 그 외 → **뉴트럴계(Neutral)**: 균형 잡힌 인상
   - **서브타입 (하드/소프트)**: 광대/턱 비율로 결정
     - `cheekJawRatio < 1.15` → Hard (선명한 대비)
     - `cheekJawRatio > 1.25` → Soft (부드러운 그라데이션)
   - **스타일 무드 매칭**:
-    - 원계: 슬릭, 시크, 투블럭, 언더컷, 샤기 등 부스트
+    - 웜계: 슬릭, 시크, 투블럭, 언더컷, 샤기 등 부스트
     - 쿨계: 웨이브, 컬, C컬, S컬, 레이어 등 부스트
     - 뉴트럴: 내추럴, 클래식 등 부스트
   - **함수**:

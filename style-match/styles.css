@@ -1516,7 +1516,7 @@ body.light-theme .category-card {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-/* ========== 이미지 타입 카드 (원계/뉴트럴/쿨계) ========== */
+/* ========== 이미지 타입 카드 (웜계/뉴트럴/쿨계) ========== */
 .image-type-card {
     background: var(--bg-card);
     border-radius: var(--radius-lg);
