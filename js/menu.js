@@ -1475,6 +1475,10 @@ async function openStyleModal(style) {
     if (currentStyleIndex === -1) currentStyleIndex = 0;
     console.log(`📍 현재 인덱스: ${currentStyleIndex + 1}/${currentCategoryStyles.length}`);
 
+    // ⭐⭐⭐ Firestore에서 로드된 전체 데이터 사용 (views360 포함)
+    const fullStyleData = currentCategoryStyles[currentStyleIndex] || style;
+    console.log('📋 사용할 스타일 데이터:', fullStyleData.id, 'views360:', !!fullStyleData.views360);
+
     // 이미지 컨테이너에 직접 렌더링 (MediaViewer 의존성 제거)
     const container = document.getElementById('mediaViewerContainer');
     if (container) {
@@ -1495,7 +1499,7 @@ async function openStyleModal(style) {
         ` : '';
 
         // ⭐ 360° 뷰어 렌더링 시도 (views360 데이터가 있는 경우)
-        const has360Viewer = render360Viewer(container, style, navIndicatorHTML);
+        const has360Viewer = render360Viewer(container, fullStyleData, navIndicatorHTML);
 
         if (!has360Viewer) {
             // 360° 데이터가 없으면 기존 단일 이미지 렌더링
@@ -1503,8 +1507,8 @@ async function openStyleModal(style) {
                 <div class="media-viewer" style="width: 100%; background: transparent;">
                     <div class="main-display" style="position: relative; width: 100%; display: flex; align-items: center; justify-content: center; line-height: 0;">
                         ${navIndicatorHTML}
-                        <img src="${style.imageUrl || ''}"
-                             alt="${style.name || 'Style'}"
+                        <img src="${fullStyleData.imageUrl || ''}"
+                             alt="${fullStyleData.name || 'Style'}"
                              class="modal-zoom-image"
                              style="width: 100%; height: auto; object-fit: cover; max-height: 70vh; cursor: zoom-in; transition: max-height 0.3s ease, transform 0.3s ease, opacity 0.2s ease; display: block; border-radius: 18px 18px 0 0;"
                              onerror="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.alt='이미지 로드 실패';">
