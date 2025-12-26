@@ -75,7 +75,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     applyTranslations();
 
     // 업로드 모드로 시작 (카메라 자동 시작 안함)
-    switchMode('upload');
+    // DOM이 준비된 후 모드 탭 UI 초기화
+    const uploadTab = document.querySelector('.mode-tab[data-mode="upload"]');
+    const cameraTab = document.querySelector('.mode-tab[data-mode="camera"]');
+    if (uploadTab) uploadTab.classList.add('active');
+    if (cameraTab) cameraTab.classList.remove('active');
+
+    const cameraArea = document.getElementById('cameraArea');
+    const uploadArea = document.getElementById('uploadArea');
+    if (cameraArea) cameraArea.style.display = 'none';
+    if (uploadArea) uploadArea.style.display = 'block';
 });
 
 // 테마 상속
