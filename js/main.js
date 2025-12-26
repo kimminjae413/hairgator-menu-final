@@ -63,11 +63,20 @@ document.addEventListener('DOMContentLoaded', function() {
             // Firestore에서 스타일 정보 가져와서 모달 열기
             try {
                 if (window.db) {
-                    // styleId 필드로 쿼리 (문서 ID와 styleId가 다름)
-                    const snapshot = await window.db.collection('hairstyles')
+                    // styles 컬렉션에서 styleId로 쿼리 (style-match와 동일한 컬렉션)
+                    let snapshot = await window.db.collection('styles')
                         .where('styleId', '==', styleId)
                         .limit(1)
                         .get();
+
+                    // styles에서 못 찾으면 hairstyles에서도 시도
+                    if (snapshot.empty) {
+                        console.log('📂 styles에서 못 찾음, hairstyles 시도...');
+                        snapshot = await window.db.collection('hairstyles')
+                            .where('styleId', '==', styleId)
+                            .limit(1)
+                            .get();
+                    }
 
                     if (!snapshot.empty) {
                         const doc = snapshot.docs[0];
