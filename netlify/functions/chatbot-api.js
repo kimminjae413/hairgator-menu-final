@@ -10098,6 +10098,37 @@ async function getCutRecipeByStyle(payload) {
 }
 
 // ==================== 스타일 매칭용 스타일 목록 조회 ====================
+// 시리즈 코드 → 성별/카테고리 매핑
+const SERIES_TO_CATEGORY = {
+  // 여자 (F*L 시리즈)
+  'FAL': { gender: 'female', mainCategory: 'A LENGTH' },
+  'FBL': { gender: 'female', mainCategory: 'B LENGTH' },
+  'FCL': { gender: 'female', mainCategory: 'C LENGTH' },
+  'FDL': { gender: 'female', mainCategory: 'D LENGTH' },
+  'FEL': { gender: 'female', mainCategory: 'E LENGTH' },
+  'FFL': { gender: 'female', mainCategory: 'F LENGTH' },
+  'FGL': { gender: 'female', mainCategory: 'G LENGTH' },
+  'FHL': { gender: 'female', mainCategory: 'H LENGTH' },
+  // 남자
+  'SF': { gender: 'male', mainCategory: 'SIDE FRINGE' },
+  'SP': { gender: 'male', mainCategory: 'SIDE PART' },
+  'FU': { gender: 'male', mainCategory: 'FRINGE UP' },
+  'PB': { gender: 'male', mainCategory: 'PUSHED BACK' },
+  'BZ': { gender: 'male', mainCategory: 'BUZZ' },
+  'CR': { gender: 'male', mainCategory: 'CROP' },
+  'MH': { gender: 'male', mainCategory: 'MOHICAN' }
+};
+
+function getSeriesInfo(styleId) {
+  // styleId에서 시리즈 코드 추출 (예: FAL0001 → FAL, SF1001 → SF)
+  for (const series of Object.keys(SERIES_TO_CATEGORY)) {
+    if (styleId.startsWith(series)) {
+      return SERIES_TO_CATEGORY[series];
+    }
+  }
+  return { gender: '', mainCategory: '' };
+}
+
 async function getStylesForMatching(payload) {
   const { gender } = payload;
   console.log(`✨ 스타일 매칭용 목록 조회: ${gender || 'all'}`);
@@ -10119,18 +10150,28 @@ async function getStylesForMatching(payload) {
       if (data.documents) {
         const styles = data.documents.map(doc => {
           const fields = doc.fields;
+          const styleId = fields.styleId?.stringValue || doc.name.split('/').pop();
+          const type = fields.type?.stringValue || 'cut';
+
+          // 펌 스타일 제외 (커트만)
+          if (type === 'perm') return null;
+
+          // 시리즈에서 성별/카테고리 파생
+          const seriesInfo = getSeriesInfo(styleId);
+
           return {
-            styleId: fields.styleId?.stringValue || doc.name.split('/').pop(),
-            name: fields.name?.stringValue || '',
-            gender: fields.gender?.stringValue || '',
-            mainCategory: fields.mainCategory?.stringValue || '',
-            subCategory: fields.subCategory?.stringValue || '',
-            type: fields.type?.stringValue || 'cut',
+            styleId: styleId,
+            name: fields.seriesName?.stringValue || '',
+            gender: seriesInfo.gender,
+            mainCategory: seriesInfo.mainCategory,
+            subCategory: '', // 나중에 추가 가능
+            type: type,
             series: fields.series?.stringValue || '',
             resultImage: fields.resultImage?.stringValue || '',
             textRecipe: fields.textRecipe?.stringValue || ''
           };
-        });
+        }).filter(s => s !== null);
+
         allStyles = allStyles.concat(styles);
       }
 
@@ -10142,10 +10183,7 @@ async function getStylesForMatching(payload) {
       allStyles = allStyles.filter(s => s.gender === gender);
     }
 
-    // 커트만 (펌 제외)
-    allStyles = allStyles.filter(s => s.type === 'cut' || !s.type);
-
-    console.log(`✅ 스타일 목록 ${allStyles.length}개 반환`);
+    console.log(`✅ 스타일 목록 ${allStyles.length}개 반환 (gender=${gender})`);
 
     return {
       statusCode: 200,
