@@ -4,24 +4,30 @@
    ========================================== */
 
 :root {
-    /* Colors - Clinical Palette */
-    --bg-primary: #0a0a0f;
-    --bg-secondary: #12121a;
-    --bg-card: #1a1a24;
-    --bg-elevated: #22222e;
+    /* Colors - HAIRGATOR Brand Identity */
+    --bg-primary: #000000;
+    --bg-secondary: #0a0a0a;
+    --bg-card: #1a1a1a;
+    --bg-elevated: #2a2a2a;
 
-    --text-primary: #f5f5f7;
+    --text-primary: #ffffff;
     --text-secondary: #a1a1aa;
     --text-muted: #71717a;
 
-    --accent-gold: #e8c4a0;
-    --accent-gold-dim: rgba(232, 196, 160, 0.15);
-    --accent-mint: #4ecdc4;
-    --accent-mint-dim: rgba(78, 205, 196, 0.15);
-    --accent-coral: #ff6b6b;
-    --accent-coral-dim: rgba(255, 107, 107, 0.15);
-    --accent-purple: #a78bfa;
-    --accent-purple-dim: rgba(167, 139, 250, 0.15);
+    /* Brand Colors */
+    --female-color: #E91E63;
+    --female-color-dim: rgba(233, 30, 99, 0.15);
+    --male-color: #4A90E2;
+    --male-color-dim: rgba(74, 144, 226, 0.15);
+
+    --accent-primary: #E91E63;
+    --accent-primary-dim: rgba(233, 30, 99, 0.15);
+    --accent-secondary: #4A90E2;
+    --accent-secondary-dim: rgba(74, 144, 226, 0.15);
+    --accent-success: #4ade80;
+    --accent-success-dim: rgba(74, 222, 128, 0.15);
+    --accent-warning: #fbbf24;
+    --accent-warning-dim: rgba(251, 191, 36, 0.15);
 
     --border-subtle: rgba(255, 255, 255, 0.08);
     --border-medium: rgba(255, 255, 255, 0.12);
@@ -81,8 +87,8 @@ body::before {
     position: fixed;
     inset: 0;
     background:
-        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232, 196, 160, 0.08), transparent),
-        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(78, 205, 196, 0.05), transparent);
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(233, 30, 99, 0.06), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(74, 144, 226, 0.04), transparent);
     pointer-events: none;
     z-index: -1;
 }
@@ -141,7 +147,7 @@ body::after {
 
 .back-btn:hover {
     background: var(--bg-card);
-    border-color: var(--accent-gold);
+    border-color: var(--accent-primary);
     transform: translateX(-2px);
 }
 
@@ -154,7 +160,7 @@ body::after {
 }
 
 .title-accent {
-    color: var(--accent-gold);
+    color: var(--accent-primary);
     font-weight: 600;
 }
 
@@ -163,8 +169,8 @@ body::after {
     font-size: 0.65rem;
     font-weight: 500;
     padding: 4px 10px;
-    background: var(--accent-mint-dim);
-    color: var(--accent-mint);
+    background: var(--accent-secondary-dim);
+    color: var(--accent-secondary);
     border-radius: var(--radius-full);
     letter-spacing: 0.1em;
 }
@@ -192,9 +198,9 @@ body::after {
     font-family: var(--font-mono);
     font-size: 0.75rem;
     font-weight: 500;
-    color: var(--accent-gold);
+    color: var(--accent-primary);
     padding: 6px 12px;
-    background: var(--accent-gold-dim);
+    background: var(--accent-primary-dim);
     border-radius: var(--radius-full);
     letter-spacing: 0.05em;
 }
@@ -224,13 +230,13 @@ body::after {
 }
 
 .upload-area:hover {
-    border-color: var(--accent-gold);
+    border-color: var(--accent-primary);
     background: var(--bg-elevated);
 }
 
 .upload-area.has-image {
     border-style: solid;
-    border-color: var(--accent-mint);
+    border-color: var(--accent-secondary);
 }
 
 .upload-placeholder {
@@ -256,8 +262,8 @@ body::after {
 }
 
 .upload-area:hover .upload-icon {
-    background: var(--accent-gold-dim);
-    color: var(--accent-gold);
+    background: var(--accent-primary-dim);
+    color: var(--accent-primary);
 }
 
 .upload-text {
@@ -342,13 +348,13 @@ body::after {
     justify-content: center;
     gap: var(--space-sm);
     padding: var(--space-md) var(--space-xl);
-    background: linear-gradient(135deg, var(--accent-gold), #d4a574);
+    background: linear-gradient(135deg, var(--accent-primary), #c2185b);
     border: none;
     border-radius: var(--radius-lg);
     font-family: var(--font-body);
     font-size: 1rem;
     font-weight: 600;
-    color: var(--bg-primary);
+    color: #ffffff;
     cursor: pointer;
     transition: all var(--transition-normal);
 }
@@ -361,7 +367,7 @@ body::after {
 
 .analyze-btn:not(:disabled):hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(232, 196, 160, 0.3);
+    box-shadow: 0 8px 24px rgba(233, 30, 99, 0.3);
 }
 
 .analyze-btn.loading .btn-text {
@@ -413,8 +419,8 @@ body::after {
     font-family: var(--font-mono);
     font-size: 0.75rem;
     padding: 6px 14px;
-    background: var(--accent-mint-dim);
-    color: var(--accent-mint);
+    background: var(--accent-secondary-dim);
+    color: var(--accent-secondary);
     border-radius: var(--radius-full);
 }
 
@@ -440,7 +446,7 @@ body::after {
     font-family: var(--font-mono);
     font-size: 1rem;
     font-weight: 500;
-    color: var(--accent-gold);
+    color: var(--accent-primary);
     text-align: right;
 }
 
@@ -453,7 +459,7 @@ body::after {
 
 .metric-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--accent-mint), var(--accent-gold));
+    background: linear-gradient(90deg, var(--accent-secondary), var(--accent-primary));
     border-radius: var(--radius-full);
     transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -485,7 +491,7 @@ body::after {
 /* Summary Card */
 .summary-card {
     background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
-    border: 1px solid var(--accent-gold-dim);
+    border: 1px solid var(--accent-primary-dim);
     border-radius: var(--radius-xl);
     padding: var(--space-lg);
     text-align: center;
@@ -500,7 +506,7 @@ body::after {
     font-family: var(--font-display);
     font-size: 1rem;
     font-weight: 500;
-    color: var(--accent-gold);
+    color: var(--accent-primary);
     margin-bottom: var(--space-md);
 }
 
@@ -561,7 +567,7 @@ body::after {
 }
 
 .category-reason strong {
-    color: var(--accent-gold);
+    color: var(--accent-primary);
 }
 
 /* Style Cards Grid */
@@ -608,7 +614,7 @@ body::after {
     left: var(--space-sm);
     width: 24px;
     height: 24px;
-    background: var(--accent-gold);
+    background: var(--accent-primary);
     color: var(--bg-primary);
     border-radius: var(--radius-full);
     font-family: var(--font-mono);
@@ -622,7 +628,7 @@ body::after {
 .style-score {
     font-family: var(--font-mono);
     font-size: 0.75rem;
-    color: var(--accent-mint);
+    color: var(--accent-secondary);
     margin-bottom: 2px;
 }
 
@@ -653,7 +659,7 @@ body::after {
 
 .reason-tag.positive {
     background: rgba(78, 205, 196, 0.1);
-    color: var(--accent-mint);
+    color: var(--accent-secondary);
 }
 
 .reason-tag.negative {
@@ -685,7 +691,7 @@ body::after {
     height: 200px;
     margin: 0 auto var(--space-xl);
     position: relative;
-    border: 2px solid var(--accent-gold-dim);
+    border: 2px solid var(--accent-secondary-dim);
     border-radius: var(--radius-xl);
     overflow: hidden;
 }
@@ -694,7 +700,7 @@ body::after {
     content: '';
     position: absolute;
     inset: 20px;
-    border: 1px solid var(--accent-gold);
+    border: 1px solid var(--accent-secondary);
     border-radius: var(--radius-lg);
     opacity: 0.3;
 }
@@ -704,7 +710,7 @@ body::after {
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+    background: linear-gradient(90deg, transparent, var(--accent-secondary), transparent);
     animation: scan 2s ease-in-out infinite;
 }
 
@@ -725,7 +731,7 @@ body::after {
 .loading-subtext {
     font-family: var(--font-mono);
     font-size: 0.8rem;
-    color: var(--accent-mint);
+    color: var(--accent-secondary);
 }
 
 /* ==========================================
@@ -781,14 +787,16 @@ body.light-theme {
     --border-subtle: rgba(0, 0, 0, 0.06);
     --border-medium: rgba(0, 0, 0, 0.1);
 
-    --accent-gold: #b8860b;
-    --accent-gold-dim: rgba(184, 134, 11, 0.1);
+    --accent-primary: #c2185b;
+    --accent-primary-dim: rgba(194, 24, 91, 0.1);
+    --accent-secondary: #1976d2;
+    --accent-secondary-dim: rgba(25, 118, 210, 0.1);
 }
 
 body.light-theme::before {
     background:
-        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(184, 134, 11, 0.06), transparent),
-        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(78, 205, 196, 0.04), transparent);
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(233, 30, 99, 0.04), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(74, 144, 226, 0.03), transparent);
 }
 
 body.light-theme .metrics-card,
