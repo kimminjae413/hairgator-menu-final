@@ -1,20 +1,8 @@
 /**
  * 360° 뷰 이미지 생성 Netlify Function
- * Gemini 3 Pro Image로 4개 뷰(앞, 오른쪽, 뒤, 왼쪽) 이미지 생성
+ * Gemini로 4개 뷰(앞, 오른쪽, 뒤, 왼쪽) 이미지 생성 후 base64 반환
+ * Firebase Storage 업로드는 클라이언트에서 처리
  */
-
-const admin = require('firebase-admin');
-
-// Firebase Admin 초기화
-if (!admin.apps.length) {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        storageBucket: 'hairgator-70a28.firebasestorage.app'
-    });
-}
-
-const bucket = admin.storage().bucket();
 
 // 뷰 방향 정의
 const VIEW_DIRECTIONS = [
@@ -28,7 +16,8 @@ const VIEW_DIRECTIONS = [
  * Gemini API로 단일 뷰 이미지 생성
  */
 async function generateSingleView(apiKey, sourceImageBase64, viewDirection, mimeType) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`;
+    // Gemini 2.0 Flash Experimental (이미지 생성 지원)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
 
     const prompt = `You are an expert AI that generates different angle views of a person's hairstyle.
 
@@ -87,34 +76,6 @@ Generate ONLY the rotated view image. The hairstyle must be IDENTICAL to the ref
     }
 
     throw new Error(`No image generated for ${viewDirection.key}`);
-}
-
-/**
- * Firebase Storage에 이미지 업로드
- */
-async function uploadToStorage(styleId, viewKey, imageData, mimeType) {
-    const extension = mimeType.includes('jpeg') ? 'jpg' : 'png';
-    const filePath = `styles/${styleId}/360/${viewKey}.${extension}`;
-
-    const buffer = Buffer.from(imageData, 'base64');
-    const file = bucket.file(filePath);
-
-    await file.save(buffer, {
-        metadata: {
-            contentType: mimeType,
-            metadata: {
-                generatedBy: 'gemini-360-view',
-                generatedAt: new Date().toISOString()
-            }
-        }
-    });
-
-    // 공개 URL 생성
-    await file.makePublic();
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
-
-    console.log(`✅ Uploaded ${viewKey}: ${publicUrl}`);
-    return publicUrl;
 }
 
 /**
@@ -181,34 +142,31 @@ exports.handler = async (event) => {
         const { base64: sourceBase64, mimeType: sourceMimeType } = await downloadImageAsBase64(imageUrl);
         console.log(`✅ Source image downloaded (${sourceMimeType})`);
 
-        // 2. 4개 뷰 이미지 생성
-        const views360 = {};
+        // 2. 4개 뷰 이미지 생성 (base64로 반환)
+        const generatedImages = {};
 
         for (const viewDir of VIEW_DIRECTIONS) {
             console.log(`🎨 Generating ${viewDir.key} view...`);
 
             try {
-                // Gemini로 이미지 생성
                 const generated = await generateSingleView(apiKey, sourceBase64, viewDir, sourceMimeType);
-
-                // Firebase Storage에 업로드
-                const publicUrl = await uploadToStorage(styleId, viewDir.key, generated.data, generated.mimeType);
-
-                views360[viewDir.key] = publicUrl;
+                generatedImages[viewDir.key] = {
+                    data: generated.data,
+                    mimeType: generated.mimeType
+                };
                 console.log(`✅ ${viewDir.key} view complete`);
 
                 // API 레이트 리밋 방지
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 300));
 
             } catch (viewError) {
                 console.error(`❌ Failed to generate ${viewDir.key}:`, viewError.message);
-                // 실패해도 계속 진행 (null로 표시)
-                views360[viewDir.key] = null;
+                generatedImages[viewDir.key] = null;
             }
         }
 
         // 최소 front 이미지는 있어야 함
-        if (!views360.front) {
+        if (!generatedImages.front) {
             return {
                 statusCode: 500,
                 headers,
@@ -224,7 +182,7 @@ exports.handler = async (event) => {
             body: JSON.stringify({
                 success: true,
                 styleId,
-                views360
+                images: generatedImages  // base64 이미지들 반환
             })
         };
 

@@ -5737,18 +5737,48 @@
                 }
 
                 const result = await response.json();
-                console.log('✅ 360° 생성 완료:', result);
+                console.log('✅ Gemini 이미지 생성 완료, Firebase 업로드 시작...');
 
-                // 3. Firestore 업데이트
+                // 3. base64 이미지들을 Firebase Storage에 업로드
+                showToast('Firebase Storage에 업로드 중...');
+                const views360 = {};
+                const viewKeys = ['front', 'right', 'back', 'left'];
+
+                for (const key of viewKeys) {
+                    if (result.images && result.images[key] && result.images[key].data) {
+                        const imageData = result.images[key];
+                        const extension = imageData.mimeType.includes('jpeg') ? 'jpg' : 'png';
+                        const filePath = `hairstyles/${styleId}/360/${key}.${extension}`;
+
+                        // base64를 Blob으로 변환
+                        const byteCharacters = atob(imageData.data);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], { type: imageData.mimeType });
+
+                        // Firebase Storage 업로드
+                        const storageRef = storage.ref(filePath);
+                        await storageRef.put(blob);
+                        const downloadUrl = await storageRef.getDownloadURL();
+
+                        views360[key] = downloadUrl;
+                        console.log(`✅ ${key} 업로드 완료:`, downloadUrl);
+                    }
+                }
+
+                // 4. Firestore 업데이트
                 await db.collection('hairstyles').doc(styleId).update({
-                    views360: result.views360,
+                    views360: views360,
                     views360UpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                // 4. 스타일 목록 새로고침
+                // 5. 스타일 목록 새로고침
                 loadStyles();
 
-                showToast(`✅ 360° 뷰 생성 완료!\n${result.views360.front ? '4개 이미지 저장됨' : ''}`);
+                showToast(`✅ 360° 뷰 생성 완료! ${Object.keys(views360).length}개 이미지 저장됨`);
 
             } catch (error) {
                 console.error('360° 생성 오류:', error);
@@ -5840,8 +5870,32 @@
 
             const result = await response.json();
 
+            // base64 이미지들을 Firebase Storage에 업로드
+            const views360 = {};
+            const viewKeys = ['front', 'right', 'back', 'left'];
+
+            for (const key of viewKeys) {
+                if (result.images && result.images[key] && result.images[key].data) {
+                    const imageData = result.images[key];
+                    const extension = imageData.mimeType.includes('jpeg') ? 'jpg' : 'png';
+                    const filePath = `hairstyles/${styleId}/360/${key}.${extension}`;
+
+                    const byteCharacters = atob(imageData.data);
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    const blob = new Blob([byteArray], { type: imageData.mimeType });
+
+                    const storageRef = storage.ref(filePath);
+                    await storageRef.put(blob);
+                    views360[key] = await storageRef.getDownloadURL();
+                }
+            }
+
             await db.collection('hairstyles').doc(styleId).update({
-                views360: result.views360,
+                views360: views360,
                 views360UpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
         }
