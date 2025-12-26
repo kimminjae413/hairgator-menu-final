@@ -599,6 +599,19 @@
     <span id="themeIcon">🌙</span>
     <span id="themeText">다크 모드</span>
 </div>
+
+          <!-- AI 스타일 매칭 섹션 -->
+          <div class="sidebar-section" id="styleMatchSection">
+              <div class="sidebar-menu-item" onclick="handleStyleMatchAccess(event)">
+                  <span class="sidebar-icon">✨</span>
+                  <div class="sidebar-text">
+                      <div class="sidebar-title" data-i18n="styleMatch.menuTitle">AI 스타일 매칭</div>
+                      <div class="sidebar-subtitle" data-i18n="styleMatch.menuSubtitle">얼굴형 분석 기반 추천</div>
+                  </div>
+                  <span class="sidebar-arrow">→</span>
+              </div>
+          </div>
+
           <div class="sidebar-section" id="personalColorSection">
     <div class="sidebar-menu-item" onclick="handlePersonalColorAccess(event)">
         <span class="sidebar-icon">🌈</span>
@@ -818,6 +831,11 @@
         </div>
         -->
         <!-- ========== 로그인 화면 종료 ========== -->
+
+        <!-- ========== AI 스타일 매칭 섹션 ========== -->
+        <div id="styleMatchView" class="style-match-view" style="display: none;">
+            <iframe id="styleMatchFrame" src="style-match/index.html" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
 
         <!-- ========== 퍼스널컬러 진단 섹션 (메인 앱 통합) ========== -->
         <div id="personalColorView" class="personal-color-view" style="display: none;">
@@ -1870,6 +1888,46 @@
             }
         }
 
+        // ========== AI 스타일 매칭 기능 ==========
+        function showStyleMatchView() {
+            console.log('✨ 스타일 매칭 뷰 활성화');
+
+            // 다른 뷰 숨기기
+            const genderSelection = document.getElementById('genderSelection');
+            if (genderSelection) genderSelection.style.display = 'none';
+
+            const menuContainer = document.getElementById('menuContainer');
+            if (menuContainer) menuContainer.classList.remove('active');
+
+            // 스타일 매칭 뷰 표시
+            const styleMatchView = document.getElementById('styleMatchView');
+            if (styleMatchView) {
+                styleMatchView.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+
+                // iframe 새로고침
+                const iframe = document.getElementById('styleMatchFrame');
+                if (iframe) {
+                    iframe.src = iframe.src;
+                }
+            }
+        }
+
+        function hideStyleMatchView() {
+            console.log('✨ 스타일 매칭 뷰 숨기기');
+
+            const styleMatchView = document.getElementById('styleMatchView');
+            if (styleMatchView) {
+                styleMatchView.style.display = 'none';
+            }
+
+            document.body.style.overflow = '';
+
+            // 성별 선택 화면 표시
+            const genderSelection = document.getElementById('genderSelection');
+            if (genderSelection) genderSelection.style.display = 'flex';
+        }
+
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🦎 HAIRGATOR 시작 - 셀프 패스워드 확인 통합 버전');
@@ -2513,6 +2571,27 @@ function isMobileDevice() {
     return isMobileUA || (isSmallScreen && isTouchDevice);
 }
 
+// AI 스타일 매칭 접근 처리
+function handleStyleMatchAccess(event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    console.log('✨ 스타일 매칭 버튼 클릭됨');
+
+    // 사이드바 먼저 닫기
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('active')) {
+        sidebar.classList.remove('active');
+    }
+
+    // 300ms 대기 후 뷰 열기
+    setTimeout(() => {
+        showStyleMatchView();
+    }, 300);
+}
+
 // 퍼스널컬러 접근 처리
 function handlePersonalColorAccess(event) {
     // 이벤트 전파 중단
@@ -2520,15 +2599,15 @@ function handlePersonalColorAccess(event) {
         event.stopPropagation();
         event.preventDefault();
     }
-    
+
     console.log('퍼스널컬러 버튼 클릭됨 - 태블릿 터치 최적화');
-    
+
     // 사이드바 먼저 닫기
     const sidebar = document.getElementById('sidebar');
     if (sidebar && sidebar.classList.contains('active')) {
         sidebar.classList.remove('active');
     }
-    
+
     // 300ms 대기 후 모달 열기
     setTimeout(() => {
         if (isMobileDevice()) {

@@ -340,6 +340,90 @@ const HAIRGATOR_I18N = {
       loading: '레시피를 불러오는 중...'
     },
 
+    // ========== AI 스타일 매칭 ==========
+    styleMatch: {
+      menuTitle: 'AI 스타일 매칭',
+      menuSubtitle: '얼굴형 분석 기반 추천',
+      uploadTitle: '얼굴 사진 분석',
+      uploadText: '사진을 업로드하세요',
+      uploadHint: '정면 사진이 가장 정확합니다',
+      selectGender: '성별 선택',
+      female: '여성',
+      male: '남성',
+      startAnalysis: '분석 시작',
+      analyzing: '얼굴을 분석하고 있습니다...',
+      analysisTitle: '얼굴 분석 결과',
+      faceMetrics: '얼굴 비율 분석',
+      upperFace: '상안부',
+      middleFace: '중안부',
+      lowerFace: '하안부',
+      faceWidth: '얼굴 너비',
+      jawWidth: '턱 너비',
+      cheekJawRatio: '광대/턱 비율',
+      analysisSummary: '분석 요약',
+      recommendations: '맞춤 스타일 추천',
+      noFaceDetected: '얼굴을 감지할 수 없습니다. 정면 사진을 사용해주세요.',
+      bangsStyle: '앞머리',
+      generalRecommendation: '기본 추천 스타일입니다',
+      summaryDefault: '균형 잡힌 얼굴형으로 다양한 스타일이 어울립니다.',
+      // 얼굴형 타입
+      faceType: {
+        oval: '계란형',
+        square: '사각형',
+        heart: '하트형',
+        long: '긴 얼굴',
+        round: '둥근형',
+        balanced: '균형형'
+      },
+      // 분석 인사이트
+      insight: {
+        wideForehead: '상안부가 평균(33%)보다 넓습니다',
+        narrowForehead: '상안부가 평균보다 좁습니다',
+        longFace: '하안부가 중안부보다 15% 이상 깁니다',
+        shortFace: '하안부가 중안부보다 짧습니다',
+        squareJaw: '광대와 턱 너비가 비슷합니다',
+        ovalFace: '이상적인 계란형 얼굴입니다',
+        heartFace: '하트형/역삼각형 얼굴입니다'
+      },
+      // 문제점
+      issue: {
+        wideForehead: '넓은 이마',
+        narrowForehead: '좁은 이마',
+        longFace: '긴 얼굴형',
+        shortFace: '짧은 얼굴형',
+        squareJaw: '사각 턱선',
+        heartFace: '좁은 턱선'
+      },
+      // 해결책
+      solution: {
+        wideForehead: '이마를 자연스럽게 가리는 앞머리가 어울립니다',
+        narrowForehead: '이마를 드러내거나 볼륨있는 앞머리가 어울립니다',
+        longFace: '가로 볼륨으로 세로 길이를 상쇄하는 스타일이 어울립니다',
+        shortFace: '세로 길이를 연장하는 긴 기장이 어울립니다',
+        squareJaw: '부드러운 웨이브로 각진 인상을 완화합니다',
+        ovalFace: '대부분의 스타일이 잘 어울립니다',
+        heartFace: '턱 주변에 볼륨을 주는 스타일이 어울립니다'
+      },
+      // 추천 이유
+      reason: {
+        bangsCover: '앞머리로 이마 커버',
+        foreheadExposed: '이마가 완전히 노출되어 더 넓어 보임',
+        foreheadOpen: '이마 노출로 균형감',
+        horizontalVolume: '가로 볼륨으로 균형',
+        verticalLonger: '세로로 더 길어 보임',
+        sideVolume: '사이드 볼륨으로 균형',
+        verticalExtend: '세로 라인 연장',
+        topVolume: '탑 볼륨으로 세로 연장',
+        softWave: '부드러운 웨이브로 턱선 보완',
+        jawExposed: '턱선이 강조됨',
+        sideSoftening: '사이드 볼륨으로 턱선 완화',
+        angularEmphasized: '각진 인상 강조',
+        idealShape: '이상적인 얼굴형',
+        chinVolume: '턱 주변 볼륨으로 균형',
+        foreheadBalance: '이마 볼륨 조절로 균형'
+      }
+    },
+
     // ========== 퍼스널컬러 ==========
     personalColor: {
       title: 'HAIRGATOR Personal Color',
@@ -1298,6 +1382,85 @@ const HAIRGATOR_I18N = {
       loading: 'Loading recipe...'
     },
 
+    // ========== AI Style Match ==========
+    styleMatch: {
+      menuTitle: 'AI Style Match',
+      menuSubtitle: 'Face shape analysis',
+      uploadTitle: 'Face Photo Analysis',
+      uploadText: 'Upload your photo',
+      uploadHint: 'Front-facing photos work best',
+      selectGender: 'Select Gender',
+      female: 'Female',
+      male: 'Male',
+      startAnalysis: 'Start Analysis',
+      analyzing: 'Analyzing your face...',
+      analysisTitle: 'Face Analysis Results',
+      faceMetrics: 'Face Ratio Analysis',
+      upperFace: 'Upper Face',
+      middleFace: 'Mid Face',
+      lowerFace: 'Lower Face',
+      faceWidth: 'Face Width',
+      jawWidth: 'Jaw Width',
+      cheekJawRatio: 'Cheek/Jaw Ratio',
+      analysisSummary: 'Analysis Summary',
+      recommendations: 'Recommended Styles',
+      noFaceDetected: 'Could not detect a face. Please use a front-facing photo.',
+      bangsStyle: 'bangs',
+      generalRecommendation: 'Basic recommended style',
+      summaryDefault: 'You have a balanced face shape that suits many styles.',
+      faceType: {
+        oval: 'Oval',
+        square: 'Square',
+        heart: 'Heart',
+        long: 'Long',
+        round: 'Round',
+        balanced: 'Balanced'
+      },
+      insight: {
+        wideForehead: 'Upper face is wider than average (33%)',
+        narrowForehead: 'Upper face is narrower than average',
+        longFace: 'Lower face is more than 15% longer than mid face',
+        shortFace: 'Lower face is shorter than mid face',
+        squareJaw: 'Cheekbone and jaw width are similar',
+        ovalFace: 'You have an ideal oval face shape',
+        heartFace: 'You have a heart/inverted triangle face shape'
+      },
+      issue: {
+        wideForehead: 'Wide forehead',
+        narrowForehead: 'Narrow forehead',
+        longFace: 'Long face',
+        shortFace: 'Short face',
+        squareJaw: 'Square jawline',
+        heartFace: 'Narrow chin'
+      },
+      solution: {
+        wideForehead: 'Bangs that naturally cover the forehead suit you',
+        narrowForehead: 'Exposing the forehead or volumizing bangs suit you',
+        longFace: 'Styles with horizontal volume to balance length suit you',
+        shortFace: 'Longer styles that extend vertical length suit you',
+        squareJaw: 'Soft waves can soften angular features',
+        ovalFace: 'Most styles will suit you well',
+        heartFace: 'Styles with volume around the chin suit you'
+      },
+      reason: {
+        bangsCover: 'Bangs cover forehead',
+        foreheadExposed: 'Forehead fully exposed appears wider',
+        foreheadOpen: 'Open forehead creates balance',
+        horizontalVolume: 'Horizontal volume for balance',
+        verticalLonger: 'Appears vertically longer',
+        sideVolume: 'Side volume for balance',
+        verticalExtend: 'Extends vertical line',
+        topVolume: 'Top volume extends height',
+        softWave: 'Soft waves complement jawline',
+        jawExposed: 'Jawline is emphasized',
+        sideSoftening: 'Side volume softens jawline',
+        angularEmphasized: 'Angular features emphasized',
+        idealShape: 'Ideal face shape',
+        chinVolume: 'Volume around chin for balance',
+        foreheadBalance: 'Forehead volume adjustment for balance'
+      }
+    },
+
     // ========== Personal Color ==========
     personalColor: {
       title: 'HAIRGATOR Personal Color',
@@ -2229,6 +2392,85 @@ const HAIRGATOR_I18N = {
       loading: 'レシピを読み込み中...'
     },
 
+    // ========== AIスタイルマッチ ==========
+    styleMatch: {
+      menuTitle: 'AIスタイルマッチ',
+      menuSubtitle: '顔型分析ベースの推薦',
+      uploadTitle: '顔写真分析',
+      uploadText: '写真をアップロード',
+      uploadHint: '正面写真が最も正確です',
+      selectGender: '性別選択',
+      female: '女性',
+      male: '男性',
+      startAnalysis: '分析開始',
+      analyzing: '顔を分析中...',
+      analysisTitle: '顔分析結果',
+      faceMetrics: '顔比率分析',
+      upperFace: '上顔部',
+      middleFace: '中顔部',
+      lowerFace: '下顔部',
+      faceWidth: '顔幅',
+      jawWidth: '顎幅',
+      cheekJawRatio: '頬/顎比率',
+      analysisSummary: '分析サマリー',
+      recommendations: 'おすすめスタイル',
+      noFaceDetected: '顔を検出できませんでした。正面写真をご使用ください。',
+      bangsStyle: '前髪',
+      generalRecommendation: '基本おすすめスタイル',
+      summaryDefault: 'バランスの良い顔型で、様々なスタイルが似合います。',
+      faceType: {
+        oval: '卵型',
+        square: '四角型',
+        heart: 'ハート型',
+        long: '面長',
+        round: '丸型',
+        balanced: 'バランス型'
+      },
+      insight: {
+        wideForehead: '上顔部が平均(33%)より広いです',
+        narrowForehead: '上顔部が平均より狭いです',
+        longFace: '下顔部が中顔部より15%以上長いです',
+        shortFace: '下顔部が中顔部より短いです',
+        squareJaw: '頬骨と顎幅が似ています',
+        ovalFace: '理想的な卵型顔です',
+        heartFace: 'ハート型/逆三角形の顔です'
+      },
+      issue: {
+        wideForehead: '広いおでこ',
+        narrowForehead: '狭いおでこ',
+        longFace: '面長',
+        shortFace: '短い顔',
+        squareJaw: '四角い顎ライン',
+        heartFace: '狭い顎'
+      },
+      solution: {
+        wideForehead: 'おでこを自然にカバーする前髪が似合います',
+        narrowForehead: 'おでこを見せるかボリュームのある前髪が似合います',
+        longFace: '横ボリュームで縦の長さをバランスするスタイルが似合います',
+        shortFace: '縦を伸ばす長めのスタイルが似合います',
+        squareJaw: '柔らかいウェーブで角ばった印象を和らげます',
+        ovalFace: 'ほとんどのスタイルが似合います',
+        heartFace: '顎周りにボリュームのあるスタイルが似合います'
+      },
+      reason: {
+        bangsCover: '前髪でおでこカバー',
+        foreheadExposed: 'おでこ全開で広く見える',
+        foreheadOpen: 'おでこを見せてバランス',
+        horizontalVolume: '横ボリュームでバランス',
+        verticalLonger: '縦に長く見える',
+        sideVolume: 'サイドボリュームでバランス',
+        verticalExtend: '縦ラインを伸ばす',
+        topVolume: 'トップボリュームで高さを出す',
+        softWave: '柔らかいウェーブで顎ラインを補完',
+        jawExposed: '顎ラインが強調される',
+        sideSoftening: 'サイドボリュームで顎ラインを和らげる',
+        angularEmphasized: '角ばった印象が強調',
+        idealShape: '理想的な顔型',
+        chinVolume: '顎周りのボリュームでバランス',
+        foreheadBalance: 'おでこのボリューム調整でバランス'
+      }
+    },
+
     // ========== パーソナルカラー ==========
     personalColor: {
       title: 'HAIRGATOR Personal Color',
@@ -3154,6 +3396,85 @@ const HAIRGATOR_I18N = {
       cutRecipe: '剪发配方',
       permRecipe: '烫发配方',
       loading: '正在加载配方...'
+    },
+
+    // ========== AI风格匹配 ==========
+    styleMatch: {
+      menuTitle: 'AI风格匹配',
+      menuSubtitle: '基于脸型分析推荐',
+      uploadTitle: '面部照片分析',
+      uploadText: '请上传照片',
+      uploadHint: '正面照片效果最佳',
+      selectGender: '选择性别',
+      female: '女性',
+      male: '男性',
+      startAnalysis: '开始分析',
+      analyzing: '正在分析您的面部...',
+      analysisTitle: '面部分析结果',
+      faceMetrics: '面部比例分析',
+      upperFace: '上庭',
+      middleFace: '中庭',
+      lowerFace: '下庭',
+      faceWidth: '面部宽度',
+      jawWidth: '下颌宽度',
+      cheekJawRatio: '颧骨/下颌比例',
+      analysisSummary: '分析总结',
+      recommendations: '推荐发型',
+      noFaceDetected: '无法检测到面部，请使用正面照片。',
+      bangsStyle: '刘海',
+      generalRecommendation: '基础推荐发型',
+      summaryDefault: '您的脸型均衡，适合多种发型。',
+      faceType: {
+        oval: '椭圆形',
+        square: '方形',
+        heart: '心形',
+        long: '长形',
+        round: '圆形',
+        balanced: '均衡型'
+      },
+      insight: {
+        wideForehead: '上庭比平均值(33%)宽',
+        narrowForehead: '上庭比平均值窄',
+        longFace: '下庭比中庭长15%以上',
+        shortFace: '下庭比中庭短',
+        squareJaw: '颧骨和下颌宽度相似',
+        ovalFace: '您拥有理想的椭圆形脸',
+        heartFace: '您是心形/倒三角形脸'
+      },
+      issue: {
+        wideForehead: '额头宽',
+        narrowForehead: '额头窄',
+        longFace: '长脸',
+        shortFace: '短脸',
+        squareJaw: '方形下颌',
+        heartFace: '下巴窄'
+      },
+      solution: {
+        wideForehead: '自然遮盖额头的刘海适合您',
+        narrowForehead: '露出额头或蓬松刘海适合您',
+        longFace: '横向蓬松的发型可以平衡长度',
+        shortFace: '较长的发型可以延长纵向线条',
+        squareJaw: '柔和的波浪可以软化棱角',
+        ovalFace: '大多数发型都适合您',
+        heartFace: '下巴周围有蓬松感的发型适合您'
+      },
+      reason: {
+        bangsCover: '刘海遮盖额头',
+        foreheadExposed: '额头完全暴露显得更宽',
+        foreheadOpen: '露出额头创造平衡感',
+        horizontalVolume: '横向蓬松带来平衡',
+        verticalLonger: '纵向看起来更长',
+        sideVolume: '侧面蓬松带来平衡',
+        verticalExtend: '延长纵向线条',
+        topVolume: '顶部蓬松增加高度',
+        softWave: '柔和波浪补充下颌线',
+        jawExposed: '下颌线被强调',
+        sideSoftening: '侧面蓬松软化下颌线',
+        angularEmphasized: '棱角被强调',
+        idealShape: '理想脸型',
+        chinVolume: '下巴周围蓬松带来平衡',
+        foreheadBalance: '额头蓬松调整带来平衡'
+      }
     },
 
     // ========== 个人色彩 ==========
@@ -4084,6 +4405,85 @@ const HAIRGATOR_I18N = {
       cutRecipe: 'Công thức cắt',
       permRecipe: 'Công thức uốn',
       loading: 'Đang tải công thức...'
+    },
+
+    // ========== AI Style Match ==========
+    styleMatch: {
+      menuTitle: 'AI Style Match',
+      menuSubtitle: 'Đề xuất dựa trên phân tích khuôn mặt',
+      uploadTitle: 'Phân tích ảnh khuôn mặt',
+      uploadText: 'Tải ảnh lên',
+      uploadHint: 'Ảnh chụp thẳng mặt cho kết quả tốt nhất',
+      selectGender: 'Chọn giới tính',
+      female: 'Nữ',
+      male: 'Nam',
+      startAnalysis: 'Bắt đầu phân tích',
+      analyzing: 'Đang phân tích khuôn mặt...',
+      analysisTitle: 'Kết quả phân tích khuôn mặt',
+      faceMetrics: 'Phân tích tỷ lệ khuôn mặt',
+      upperFace: 'Phần trên',
+      middleFace: 'Phần giữa',
+      lowerFace: 'Phần dưới',
+      faceWidth: 'Chiều rộng mặt',
+      jawWidth: 'Chiều rộng hàm',
+      cheekJawRatio: 'Tỷ lệ gò má/hàm',
+      analysisSummary: 'Tóm tắt phân tích',
+      recommendations: 'Kiểu tóc đề xuất',
+      noFaceDetected: 'Không thể nhận diện khuôn mặt. Vui lòng sử dụng ảnh chụp thẳng.',
+      bangsStyle: 'mái',
+      generalRecommendation: 'Kiểu tóc cơ bản được đề xuất',
+      summaryDefault: 'Bạn có khuôn mặt cân đối, phù hợp với nhiều kiểu tóc.',
+      faceType: {
+        oval: 'Hình trái xoan',
+        square: 'Hình vuông',
+        heart: 'Hình trái tim',
+        long: 'Mặt dài',
+        round: 'Hình tròn',
+        balanced: 'Cân đối'
+      },
+      insight: {
+        wideForehead: 'Phần trên rộng hơn trung bình (33%)',
+        narrowForehead: 'Phần trên hẹp hơn trung bình',
+        longFace: 'Phần dưới dài hơn phần giữa 15%',
+        shortFace: 'Phần dưới ngắn hơn phần giữa',
+        squareJaw: 'Chiều rộng gò má và hàm tương tự',
+        ovalFace: 'Bạn có khuôn mặt trái xoan lý tưởng',
+        heartFace: 'Bạn có khuôn mặt hình trái tim'
+      },
+      issue: {
+        wideForehead: 'Trán rộng',
+        narrowForehead: 'Trán hẹp',
+        longFace: 'Mặt dài',
+        shortFace: 'Mặt ngắn',
+        squareJaw: 'Hàm vuông',
+        heartFace: 'Cằm hẹp'
+      },
+      solution: {
+        wideForehead: 'Mái che trán tự nhiên phù hợp với bạn',
+        narrowForehead: 'Để lộ trán hoặc mái bồng phù hợp với bạn',
+        longFace: 'Kiểu tóc có độ phồng ngang để cân bằng chiều dài',
+        shortFace: 'Kiểu tóc dài để kéo dài theo chiều dọc',
+        squareJaw: 'Sóng mềm mại có thể làm mềm góc cạnh',
+        ovalFace: 'Hầu hết các kiểu tóc đều phù hợp với bạn',
+        heartFace: 'Kiểu tóc có độ phồng quanh cằm phù hợp với bạn'
+      },
+      reason: {
+        bangsCover: 'Mái che trán',
+        foreheadExposed: 'Trán lộ hoàn toàn trông rộng hơn',
+        foreheadOpen: 'Lộ trán tạo sự cân bằng',
+        horizontalVolume: 'Độ phồng ngang tạo cân bằng',
+        verticalLonger: 'Trông dài hơn theo chiều dọc',
+        sideVolume: 'Độ phồng bên tạo cân bằng',
+        verticalExtend: 'Kéo dài đường dọc',
+        topVolume: 'Độ phồng trên tăng chiều cao',
+        softWave: 'Sóng mềm bổ sung đường hàm',
+        jawExposed: 'Đường hàm được nhấn mạnh',
+        sideSoftening: 'Độ phồng bên làm mềm đường hàm',
+        angularEmphasized: 'Góc cạnh được nhấn mạnh',
+        idealShape: 'Khuôn mặt lý tưởng',
+        chinVolume: 'Độ phồng quanh cằm tạo cân bằng',
+        foreheadBalance: 'Điều chỉnh độ phồng trán để cân bằng'
+      }
     },
 
     // ========== Màu cá nhân ==========

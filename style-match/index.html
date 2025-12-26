@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Style Match - HAIRGATOR</title>
+
+    <!-- 캐시 방지 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+
+    <!-- Fonts - Clinical Beauty Style -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- MediaPipe Face Mesh -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <button class="back-btn" onclick="goBack()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <div class="header-title">
+                <span class="title-accent">AI</span> STYLE MATCH
+            </div>
+            <div class="header-badge">BETA</div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Step 1: Upload & Gender Selection -->
+            <section class="upload-section" id="uploadSection">
+                <div class="section-header">
+                    <span class="step-indicator">01</span>
+                    <h2 class="section-title" data-i18n="styleMatch.uploadTitle">얼굴 사진 분석</h2>
+                </div>
+
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-placeholder" id="uploadPlaceholder">
+                        <div class="upload-icon">
+                            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                <circle cx="24" cy="18" r="8" stroke="currentColor" stroke-width="2"/>
+                                <path d="M8 42c0-8.837 7.163-16 16-16s16 7.163 16 16" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <p class="upload-text" data-i18n="styleMatch.uploadText">사진을 업로드하세요</p>
+                        <p class="upload-hint" data-i18n="styleMatch.uploadHint">정면 사진이 가장 정확합니다</p>
+                    </div>
+                    <img id="previewImage" class="preview-image" style="display: none;">
+                    <canvas id="faceCanvas" class="face-canvas" style="display: none;"></canvas>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                </div>
+
+                <!-- Gender Selection -->
+                <div class="gender-selection">
+                    <p class="gender-label" data-i18n="styleMatch.selectGender">성별 선택</p>
+                    <div class="gender-buttons">
+                        <button class="gender-btn" data-gender="female" onclick="selectGender('female')">
+                            <span class="gender-icon">♀</span>
+                            <span data-i18n="styleMatch.female">여성</span>
+                        </button>
+                        <button class="gender-btn" data-gender="male" onclick="selectGender('male')">
+                            <span class="gender-icon">♂</span>
+                            <span data-i18n="styleMatch.male">남성</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button class="analyze-btn" id="analyzeBtn" onclick="startAnalysis()" disabled>
+                    <span class="btn-text" data-i18n="styleMatch.startAnalysis">분석 시작</span>
+                    <span class="btn-loader"></span>
+                </button>
+            </section>
+
+            <!-- Step 2: Analysis Result -->
+            <section class="analysis-section" id="analysisSection" style="display: none;">
+                <div class="section-header">
+                    <span class="step-indicator">02</span>
+                    <h2 class="section-title" data-i18n="styleMatch.analysisTitle">얼굴 분석 결과</h2>
+                </div>
+
+                <!-- Face Metrics -->
+                <div class="metrics-card">
+                    <div class="metrics-header">
+                        <h3 data-i18n="styleMatch.faceMetrics">얼굴 비율 분석</h3>
+                        <span class="metrics-badge" id="faceTypeBadge">계란형</span>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-item">
+                            <div class="metric-label" data-i18n="styleMatch.upperFace">상안부</div>
+                            <div class="metric-value" id="upperRatio">--</div>
+                            <div class="metric-bar">
+                                <div class="metric-fill" id="upperBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label" data-i18n="styleMatch.middleFace">중안부</div>
+                            <div class="metric-value" id="middleRatio">--</div>
+                            <div class="metric-bar">
+                                <div class="metric-fill" id="middleBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label" data-i18n="styleMatch.lowerFace">하안부</div>
+                            <div class="metric-value" id="lowerRatio">--</div>
+                            <div class="metric-bar">
+                                <div class="metric-fill" id="lowerBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metrics-detail">
+                        <div class="detail-row">
+                            <span class="detail-label" data-i18n="styleMatch.faceWidth">얼굴 너비</span>
+                            <span class="detail-value" id="faceWidthValue">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label" data-i18n="styleMatch.jawWidth">턱 너비</span>
+                            <span class="detail-value" id="jawWidthValue">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label" data-i18n="styleMatch.cheekJawRatio">광대/턱 비율</span>
+                            <span class="detail-value" id="cheekJawRatio">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Summary -->
+                <div class="summary-card">
+                    <div class="summary-icon">💡</div>
+                    <h4 data-i18n="styleMatch.analysisSummary">분석 요약</h4>
+                    <p class="summary-text" id="summaryText">
+                        분석 결과를 불러오는 중...
+                    </p>
+                </div>
+            </section>
+
+            <!-- Step 3: Recommendations -->
+            <section class="recommendations-section" id="recommendationsSection" style="display: none;">
+                <div class="section-header">
+                    <span class="step-indicator">03</span>
+                    <h2 class="section-title" data-i18n="styleMatch.recommendations">맞춤 스타일 추천</h2>
+                </div>
+
+                <div class="recommendations-container" id="recommendationsContainer">
+                    <!-- 대분류별 추천 카드가 동적으로 생성됨 -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+            <div class="loading-content">
+                <div class="loading-scanner">
+                    <div class="scanner-line"></div>
+                </div>
+                <p class="loading-text" data-i18n="styleMatch.analyzing">얼굴을 분석하고 있습니다...</p>
+                <p class="loading-subtext" id="loadingSubtext">MediaPipe Face Mesh 468 포인트 분석</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- i18n -->
+    <script src="../js/i18n.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

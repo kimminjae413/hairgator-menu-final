@@ -2169,6 +2169,24 @@ body.light-theme .modal-action-btn.secondary:hover {
     }
 }
 
+/* ========== AI 스타일 매칭 뷰 ========== */
+.style-match-view {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #0a0a0f;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.style-match-view iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
 /* ========== 퍼스널컬러 진단 섹션 스타일 (메인 앱 통합) ========== */
 .personal-color-view {
     position: fixed;
