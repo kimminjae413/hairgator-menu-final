@@ -2757,3 +2757,4 @@ window.resetAnalysis = function() {
     document.getElementById('analysisSection').style.display = 'none';
     document.getElementById('recommendationsSection').style.display = 'none';
 };
+// Force rebuild 2025년 12월 27일 토 오전 12:51:39
