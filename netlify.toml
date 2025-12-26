@@ -39,6 +39,14 @@
   node_bundler = "esbuild"
   timeout = 26
 
+# ⭐ 360° 뷰 이미지 생성 (Gemini API)
+# - Gemini로 4개 뷰 이미지 생성: ~20-30초
+# - Firebase Storage 업로드: ~5초
+# 총 예상 시간: 25-35초 → 26초로 설정 (무료 플랜 최대)
+[functions."generate-360-views"]
+  node_bundler = "esbuild"
+  timeout = 26
+
 # ⭐ 이미지 정리 스케줄 함수 (매일 실행)
 # - 7일 지난 temp_uploads/ 이미지 자동 삭제
 # - Firebase Storage에서 만료된 파일 정리

@@ -165,12 +165,12 @@ exports.handler = async (event) => {
             };
         }
 
-        const apiKey = process.env.GEMINI_API_KEY_ADMIN;
+        const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
             return {
                 statusCode: 500,
                 headers,
-                body: JSON.stringify({ error: 'GEMINI_API_KEY_ADMIN not configured' })
+                body: JSON.stringify({ error: 'GEMINI_API_KEY not configured' })
             };
         }
 
