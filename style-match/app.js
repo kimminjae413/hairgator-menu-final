@@ -238,13 +238,37 @@ async function detectFacesLoop(video) {
 }
 
 function stopCamera() {
+    console.log('🛑 stopCamera 호출됨');
+
+    // 1. 카메라 스트림 종료
     if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream.getTracks().forEach(track => {
+            track.stop();
+            console.log('🛑 트랙 종료:', track.kind);
+        });
         cameraStream = null;
     }
+
+    // 2. 비디오 요소 정리
+    const video = document.getElementById('cameraPreview');
+    if (video) {
+        video.srcObject = null;
+        video.pause();
+    }
+
+    // 3. FaceMesh 정리
+    if (cameraFaceMesh) {
+        cameraFaceMesh.close();
+        cameraFaceMesh = null;
+    }
+
+    // 4. 상태 초기화
+    isCameraMode = false;
     isFaceDetected = false;
     lastFaceResults = null;
     clearLandmarkCanvas();
+
+    console.log('🛑 카메라 완전 종료됨');
 }
 
 // ========== 랜드마크 시각화 ==========
@@ -1280,29 +1304,60 @@ window.goBack = function() {
     }
 };
 
-// 페이지 종료 시 카메라 정리
-window.addEventListener('beforeunload', function() {
+// ========== 카메라 종료 이벤트 (강화) ==========
+
+// 페이지 종료 시
+window.addEventListener('beforeunload', function(e) {
+    console.log('📤 beforeunload 이벤트');
     stopCamera();
 });
 
-window.addEventListener('pagehide', function() {
+// bfcache 대응 - 페이지 숨김 시
+window.addEventListener('pagehide', function(e) {
+    console.log('📤 pagehide 이벤트, persisted:', e.persisted);
     stopCamera();
 });
 
+// 페이지 완전 언로드
 window.addEventListener('unload', function() {
+    console.log('📤 unload 이벤트');
     stopCamera();
 });
 
-// 페이지 숨김 시 카메라 정리 (iOS Safari 등)
+// bfcache에서 복원될 때 - 카메라 상태 확인
+window.addEventListener('pageshow', function(e) {
+    console.log('📥 pageshow 이벤트, persisted:', e.persisted);
+    if (e.persisted) {
+        // bfcache에서 복원됨 - 카메라 종료 확인
+        stopCamera();
+    }
+});
+
+// 탭 전환/백그라운드 시 (iOS Safari 등)
 document.addEventListener('visibilitychange', function() {
+    console.log('👁 visibilitychange:', document.hidden ? 'hidden' : 'visible');
     if (document.hidden) {
         stopCamera();
     }
 });
 
-// popstate (뒤로가기) 시 카메라 정리
+// 히스토리 변경 시 (뒤로가기 제스처)
 window.addEventListener('popstate', function() {
+    console.log('⬅️ popstate 이벤트');
     stopCamera();
+});
+
+// 페이지 로드 후 즉시 실행 - 이전 세션 카메라 정리
+document.addEventListener('DOMContentLoaded', function() {
+    // 모든 미디어 스트림 강제 종료 시도
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                // 즉시 종료
+                stream.getTracks().forEach(track => track.stop());
+            })
+            .catch(() => {});
+    }
 });
 
 // 새로 분석
