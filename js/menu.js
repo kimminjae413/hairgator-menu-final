@@ -4164,6 +4164,9 @@ window.HAIRGATOR_MENU = {
 // ⭐ 전역 함수로도 노출 (스와이프 이벤트에서 직접 호출용)
 window.navigateModalStyle = navigateModalStyle;
 
+// ⭐ style-match iframe에서 호출용
+window.openStyleModal = openStyleModal;
+
 // HTML에서 직접 호출되는 전역 함수 추가
 window.selectGender = function (gender) {
     console.log(`성별 선택: ${gender}`);
