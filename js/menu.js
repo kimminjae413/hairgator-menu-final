@@ -1304,6 +1304,11 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
         images[idx1].style.opacity = 1 - smoothBlend;
         images[idx2].style.opacity = smoothBlend;
 
+        // 디버그: 90도 이상 변할 때만 로그 (많이 드래그했을 때)
+        if (Math.abs(angle - 45) < 5 || Math.abs(angle - 135) < 5) {
+            console.log(`🖼️ opacity 적용: img[${idx1}]=${(1-smoothBlend).toFixed(2)}, img[${idx2}]=${smoothBlend.toFixed(2)}, angle=${angle.toFixed(0)}°`);
+        }
+
         // UI 업데이트
         const displayAngle = Math.round(angle);
         angleDisplay.textContent = displayAngle + '°';
@@ -1332,6 +1337,12 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
 
     // 초기 뷰 설정
     updateView(0);
+
+    // 디버그: 이미지 상태 확인
+    console.log('🖼️ 이미지 개수:', images.length);
+    images.forEach((img, i) => {
+        console.log(`  img[${i}]: loaded=${img.complete}, naturalWidth=${img.naturalWidth}, opacity=${img.style.opacity}, src=${img.src.substring(0, 50)}...`);
+    });
 
     // 3초 후 힌트 자동 숨김
     setTimeout(hideHint, 3000);
