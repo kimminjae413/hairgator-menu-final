@@ -1731,8 +1731,8 @@ body.light-theme .category-card {
     border-radius: var(--radius-xl);
     max-width: 400px;
     width: 100%;
-    max-height: 90vh;
-    overflow: hidden;
+    max-height: 85vh;
+    overflow-y: auto;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     animation: modalSlideUp 0.3s ease;
 }
@@ -1773,7 +1773,8 @@ body.light-theme .category-card {
 
 .style-modal-image-wrapper {
     width: 100%;
-    aspect-ratio: 3/4;
+    aspect-ratio: 4/5;
+    max-height: 50vh;
     overflow: hidden;
     background: var(--bg-secondary);
 }
@@ -1818,6 +1819,7 @@ body.light-theme .category-card {
     padding: 0 var(--space-lg) var(--space-lg);
 }
 
+/* 고객용 버튼 (룩북, 헤어체험) - 메인 서비스 스타일 통일 */
 .style-action-btn {
     flex: 1;
     display: flex;
@@ -1826,9 +1828,6 @@ body.light-theme .category-card {
     gap: 6px;
     padding: 14px 10px;
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-subtle);
-    background: var(--bg-secondary);
-    color: var(--text-primary);
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
@@ -1841,24 +1840,43 @@ body.light-theme .category-card {
 
 .style-action-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.style-action-btn.lookbook:hover {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-color: transparent;
+/* 룩북, 헤어체험 버튼 - 핑크 그라데이션 (메인 서비스 동일) */
+.style-action-btn.lookbook,
+.style-action-btn.hairtry {
+    background: linear-gradient(135deg, rgba(233,30,99,0.15) 0%, rgba(194,24,91,0.1) 100%);
+    border: 1px solid rgba(233,30,99,0.4);
+    color: var(--text-primary);
 }
 
+.style-action-btn.lookbook:hover,
 .style-action-btn.hairtry:hover {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
-    border-color: transparent;
+    background: linear-gradient(135deg, rgba(233,30,99,0.25) 0%, rgba(194,24,91,0.2) 100%);
+    border-color: rgba(233,30,99,0.6);
+    box-shadow: 0 4px 12px rgba(233,30,99,0.2);
+}
+
+.style-action-btn.lookbook:active,
+.style-action-btn.hairtry:active {
+    transform: translateY(0);
+    background: linear-gradient(135deg, rgba(233,30,99,0.3) 0%, rgba(194,24,91,0.25) 100%);
+}
+
+/* 레시피 버튼 - 미니멀 회색 (메인 서비스 동일) */
+.style-action-btn.recipe {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text-secondary);
 }
 
 .style-action-btn.recipe:hover {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: white;
-    border-color: transparent;
+    border-color: rgba(255,255,255,0.3);
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.05);
+}
+
+.style-action-btn.recipe:active {
+    background: rgba(255,255,255,0.08);
 }
 
