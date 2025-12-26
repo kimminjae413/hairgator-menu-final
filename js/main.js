@@ -237,10 +237,27 @@ document.addEventListener('DOMContentLoaded', function() {
             themeToggleMenu.addEventListener('click', toggleTheme);
         }
 
-        // AI 스타일 매칭
+        // AI 스타일 매칭 (관리자만 접근 가능)
         if (styleMatchBtn) {
             styleMatchBtn.addEventListener('click', function() {
                 console.log('✨ AI 스타일 매칭 클릭');
+
+                // 관리자 체크
+                const ADMIN_IDS = ['691ceee09d868b5736d22007'];
+                const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
+                const userId = bullnabiUser?.userId || bullnabiUser?.id || bullnabiUser?._id || '';
+                const isAdmin = ADMIN_IDS.includes(userId);
+
+                if (!isAdmin) {
+                    if (typeof showToast === 'function') {
+                        showToast('개발중입니다.', 'info');
+                    } else {
+                        alert('개발중입니다.');
+                    }
+                    closeSidebar();
+                    return;
+                }
+
                 closeSidebar();
                 window.location.href = '/style-match/';
             });
