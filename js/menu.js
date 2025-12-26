@@ -54,6 +54,119 @@ let currentStyleIndex = 0;       // 현재 표시 중인 스타일 인덱스
     }, { passive: false });
 })();
 
+// ⭐ 안드로이드용 모멘텀 스크롤 (iOS처럼 부드럽게)
+(function() {
+    // 모멘텀 스크롤 설정
+    const FRICTION = 0.95;      // 마찰 계수 (1에 가까울수록 오래 미끄러짐)
+    const MIN_VELOCITY = 0.5;   // 최소 속도 (이하면 정지)
+    const VELOCITY_SCALE = 0.8; // 속도 배율
+
+    let activeScrollers = new WeakMap();
+
+    function initMomentumScroll(container) {
+        if (activeScrollers.has(container)) return;
+
+        let state = {
+            isTracking: false,
+            startX: 0,
+            startScrollLeft: 0,
+            lastX: 0,
+            lastTime: 0,
+            velocity: 0,
+            animationId: null
+        };
+
+        activeScrollers.set(container, state);
+
+        container.addEventListener('touchstart', function(e) {
+            if (state.animationId) {
+                cancelAnimationFrame(state.animationId);
+                state.animationId = null;
+            }
+
+            state.isTracking = true;
+            state.startX = e.touches[0].clientX;
+            state.startScrollLeft = container.scrollLeft;
+            state.lastX = state.startX;
+            state.lastTime = Date.now();
+            state.velocity = 0;
+        }, { passive: true });
+
+        container.addEventListener('touchmove', function(e) {
+            if (!state.isTracking) return;
+
+            const currentX = e.touches[0].clientX;
+            const currentTime = Date.now();
+            const deltaTime = currentTime - state.lastTime;
+
+            if (deltaTime > 0) {
+                // 속도 계산 (픽셀/ms)
+                state.velocity = (state.lastX - currentX) / deltaTime * VELOCITY_SCALE;
+            }
+
+            state.lastX = currentX;
+            state.lastTime = currentTime;
+        }, { passive: true });
+
+        container.addEventListener('touchend', function(e) {
+            if (!state.isTracking) return;
+            state.isTracking = false;
+
+            // 속도가 충분하면 모멘텀 애니메이션 시작
+            if (Math.abs(state.velocity) > MIN_VELOCITY) {
+                animateMomentum(container, state);
+            }
+        }, { passive: true });
+    }
+
+    function animateMomentum(container, state) {
+        state.velocity *= FRICTION;
+
+        if (Math.abs(state.velocity) < MIN_VELOCITY) {
+            state.animationId = null;
+            return;
+        }
+
+        container.scrollLeft += state.velocity * 16; // 약 60fps 기준
+
+        state.animationId = requestAnimationFrame(function() {
+            animateMomentum(container, state);
+        });
+    }
+
+    // 페이지 로드 후 탭 컨테이너에 적용
+    function applyToContainers() {
+        document.querySelectorAll('.main-tabs, .category-tabs').forEach(function(container) {
+            initMomentumScroll(container);
+        });
+    }
+
+    // DOM 준비되면 적용
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyToContainers);
+    } else {
+        applyToContainers();
+    }
+
+    // 동적으로 생성되는 탭도 처리
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) {
+                    if (node.classList && (node.classList.contains('main-tabs') || node.classList.contains('category-tabs'))) {
+                        initMomentumScroll(node);
+                    }
+                    node.querySelectorAll && node.querySelectorAll('.main-tabs, .category-tabs').forEach(initMomentumScroll);
+                }
+            });
+        });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    console.log('✅ 안드로이드 모멘텀 스크롤 활성화');
+})();
+
 // ⭐ 스태거 애니메이션 keyframes 동적 추가
 (function() {
     if (!document.getElementById('hairgator-card-animations')) {
