@@ -37,7 +37,14 @@
             const currentY = e.touches[0].clientY;
             const deltaY = currentY - lastY;
 
-            // 스크롤 가능한 컨테이너 찾기
+            // 가로 스크롤 컨테이너 (대분류 탭 등) - 터치 허용
+            const horizontalScrollable = e.target.closest('.main-tabs, .category-tabs, .sub-tabs');
+            if (horizontalScrollable) {
+                lastY = currentY;
+                return;  // 가로 스크롤은 항상 허용
+            }
+
+            // 세로 스크롤 가능한 컨테이너 찾기
             const scrollableElement = e.target.closest('.styles-container, .menu-items-container, .style-modal-content');
 
             // 스크롤 컨테이너가 있는 경우, 그 컨테이너의 스크롤 위치 확인

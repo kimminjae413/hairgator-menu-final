@@ -28,14 +28,20 @@ let currentStyleIndex = 0;       // 현재 표시 중인 스타일 인덱스
     document.addEventListener('touchmove', function(e) {
         const currentY = e.touches[0].clientY;
 
-        // 스크롤 가능한 컨테이너 내부인지 확인
+        // 스크롤 가능한 컨테이너 내부인지 확인 (세로 + 가로 모두)
         let el = e.target;
         while (el && el !== document.body) {
             const style = window.getComputedStyle(el);
             const overflowY = style.overflowY;
+            const overflowX = style.overflowX;
+
+            // 세로 스크롤 가능한 영역
             if ((overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight) {
-                // 스크롤 가능한 영역 내부면 기본 동작 허용
-                return;
+                return;  // 기본 동작 허용
+            }
+            // 가로 스크롤 가능한 영역 (대분류 탭 등)
+            if ((overflowX === 'auto' || overflowX === 'scroll') && el.scrollWidth > el.clientWidth) {
+                return;  // 기본 동작 허용
             }
             el = el.parentElement;
         }
