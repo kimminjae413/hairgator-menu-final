@@ -752,6 +752,146 @@ body::after {
 }
 
 /* ==========================================
+   Designer Prescription Section
+   ========================================== */
+.prescription-section {
+    margin-bottom: var(--space-xl);
+}
+
+.prescription-card {
+    background: var(--bg-card);
+    border: 2px solid var(--accent-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(194,24,91,0.1);
+}
+
+.prescription-question {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+}
+
+.prescription-hint {
+    font-size: 0.9rem;
+    color: var(--accent-primary);
+    margin-bottom: var(--space-xl);
+    font-weight: 500;
+}
+
+.prescription-buttons {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+    margin-bottom: var(--space-xl);
+    flex-wrap: wrap;
+}
+
+.prescription-btn {
+    flex: 1;
+    min-width: 120px;
+    max-width: 160px;
+    padding: var(--space-lg) var(--space-md);
+    background: var(--bg-elevated);
+    border: 2px solid var(--border-medium);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.prescription-btn:hover {
+    border-color: var(--accent-primary);
+    background: var(--accent-primary-dim);
+    transform: translateY(-2px);
+}
+
+.prescription-btn.active {
+    border-color: var(--accent-primary);
+    background: var(--accent-primary);
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(194,24,91,0.3);
+}
+
+.prescription-btn.active .prescription-desc {
+    color: rgba(255,255,255,0.8);
+}
+
+.prescription-icon {
+    font-size: 2rem;
+}
+
+.prescription-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.prescription-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.3;
+}
+
+.confirm-prescription-btn {
+    width: 100%;
+    max-width: 320px;
+    padding: var(--space-md) var(--space-xl);
+    background: linear-gradient(135deg, var(--accent-primary), #a01550);
+    border: none;
+    border-radius: var(--radius-lg);
+    color: #ffffff;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.confirm-prescription-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(194,24,91,0.3);
+}
+
+/* Current Prescription Tag */
+.current-prescription {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-md);
+    background: var(--accent-primary-dim);
+    border-radius: var(--radius-lg);
+}
+
+.prescription-tag {
+    font-weight: 600;
+    color: var(--accent-primary);
+}
+
+.change-prescription-btn {
+    padding: var(--space-xs) var(--space-md);
+    background: transparent;
+    border: 1px solid var(--accent-primary);
+    border-radius: var(--radius-full);
+    color: var(--accent-primary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.change-prescription-btn:hover {
+    background: var(--accent-primary);
+    color: #ffffff;
+}
+
+/* ==========================================
    Recommendations Section
    ========================================== */
 .recommendations-container {

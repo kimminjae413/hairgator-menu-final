@@ -854,15 +854,261 @@ function determineFaceType(ratios) {
     return { name: t('styleMatch.faceType.balanced') || '균형형', code: 'balanced' };
 }
 
+// ========== 디자이너 처방 ==========
+let selectedPrescription = null;
+
+// 처방 선택
+window.selectPrescription = function(treatment) {
+    selectedPrescription = treatment;
+
+    // 버튼 활성화 상태 업데이트
+    document.querySelectorAll('.prescription-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.treatment === treatment);
+    });
+};
+
+// AI 추천 처방 계산
+function getAIPrescription(ratios) {
+    const { lowerRatio, cheekJawRatio, upperRatio } = ratios.raw;
+
+    // 긴 얼굴 → 살리기 (볼륨)
+    if (lowerRatio > 0.40) {
+        return { treatment: 'volume', reason: '긴 얼굴 → 옆볼륨으로 길이 분산' };
+    }
+    // 둥근/짧은 얼굴 → 누르기 (슬림)
+    if (lowerRatio < 0.30 || cheekJawRatio > 1.4) {
+        return { treatment: 'down', reason: '둥근 얼굴 → 옆 눌러서 길어 보이게' };
+    }
+    // 사각턱/광대 → 가리기
+    if (cheekJawRatio < 1.15) {
+        return { treatment: 'cover', reason: '사각 턱선 → 옆머리로 자연스럽게 커버' };
+    }
+    // 기본값
+    return { treatment: 'volume', reason: '균형잡힌 얼굴형' };
+}
+
+// 처방 확인 → 스타일 추천
+window.confirmPrescription = function() {
+    if (!selectedPrescription) {
+        alert('처방을 선택해주세요');
+        return;
+    }
+
+    // 처방 섹션 숨기고 추천 섹션 표시
+    document.getElementById('prescriptionSection').style.display = 'none';
+    document.getElementById('recommendationsSection').style.display = 'block';
+
+    // 현재 처방 태그 표시
+    const prescriptionNames = {
+        'down': '⬇️ 누르기 (Slim)',
+        'volume': '⬆️ 살리기 (Volume)',
+        'cover': '🙈 가리기 (Cover)'
+    };
+    document.getElementById('currentPrescription').style.display = 'flex';
+    document.getElementById('prescriptionTag').textContent = `처방: ${prescriptionNames[selectedPrescription]}`;
+
+    // 처방 기반 스타일 추천 재정렬
+    renderRecommendationsWithPrescription(selectedPrescription);
+};
+
+// 처방 변경
+window.changePrescription = function() {
+    document.getElementById('recommendationsSection').style.display = 'none';
+    document.getElementById('currentPrescription').style.display = 'none';
+    document.getElementById('prescriptionSection').style.display = 'block';
+};
+
+// ========== 처방 기반 추천 재정렬 ==========
+function renderRecommendationsWithPrescription(prescription) {
+    if (!analysisResults) {
+        console.error('분석 결과가 없습니다');
+        return;
+    }
+
+    const { analysis } = analysisResults;
+    const container = document.getElementById('recommendationsContainer');
+    container.innerHTML = '';
+
+    const categories = selectedGender === 'female' ? FEMALE_CATEGORIES : MALE_CATEGORIES;
+
+    console.log('🎯 처방 기반 추천 생성:', prescription);
+
+    // 처방별 점수 수정자 정의
+    const prescriptionModifiers = {
+        'down': {
+            // 누르기: 슬릭/다운 스타일 부스트, 볼륨 스타일 감점
+            subCategoryBoost: ['N', 'FH'],  // 노앞머리, 이마 앞머리는 슬릭에 적합
+            subCategoryPenalty: ['CB'],      // 광대뼈 앞머리는 볼륨감 있어서 감점
+            styleKeywords: ['슬릭', 'slick', '다운', 'down', '투블럭', '밀착', '눌러', '납작'],
+            avoidKeywords: ['볼륨', 'volume', '뿌리', 'C컬', '웨이브', '부피'],
+            boostScore: 25,
+            penaltyScore: -15
+        },
+        'volume': {
+            // 살리기: 볼륨/웨이브 스타일 부스트, 슬릭 스타일 감점
+            subCategoryBoost: ['CB', 'E'],   // 광대뼈, 눈앞머리는 볼륨감에 적합
+            subCategoryPenalty: ['N'],        // 노앞머리는 볼륨 없어서 감점
+            styleKeywords: ['볼륨', 'volume', '뿌리', 'C컬', '웨이브', 'wave', '레이어', '텍스처'],
+            avoidKeywords: ['슬릭', 'slick', '다운', 'down', '밀착', '납작'],
+            boostScore: 25,
+            penaltyScore: -15
+        },
+        'cover': {
+            // 가리기: 사이드뱅/레이어드 부스트, 노앞머리 큰 감점
+            subCategoryBoost: ['EB', 'E', 'CB'],  // 눈썹, 눈, 광대 앞머리로 커버
+            subCategoryPenalty: ['N'],             // 노앞머리는 가리기에 부적합
+            styleKeywords: ['사이드뱅', 'side', '레이어', 'layer', '앞머리', '커버', '가리'],
+            avoidKeywords: [],
+            boostScore: 30,
+            penaltyScore: -25
+        }
+    };
+
+    const modifier = prescriptionModifiers[prescription] || prescriptionModifiers['volume'];
+
+    // 카테고리별 데이터 수집
+    const categoryResults = [];
+
+    categories.forEach(category => {
+        const categoryStyles = allStyles.filter(s =>
+            s.gender && s.gender.toLowerCase() === selectedGender.toLowerCase() &&
+            s.mainCategory === category &&
+            (s.type === 'cut' || !s.type)
+        );
+
+        if (categoryStyles.length === 0) return;
+
+        // 각 스타일에 점수 부여 (기존 분석 + 처방 수정자)
+        const scoredStyles = categoryStyles.map(style => {
+            let score = 50; // 기본 점수
+            let reasons = [];
+
+            // 1. 기존 분석 기반 점수 (recommendations, avoidances)
+            analysis.recommendations.forEach(rec => {
+                if (rec.mainCategory?.includes(style.mainCategory)) {
+                    score += rec.score;
+                    reasons.push({ type: 'positive', text: rec.reason, score: rec.score });
+                }
+                if (rec.subCategory?.includes(style.subCategory)) {
+                    score += rec.score;
+                    reasons.push({ type: 'positive', text: rec.reason, score: rec.score });
+                }
+            });
+
+            analysis.avoidances.forEach(avoid => {
+                if (avoid.mainCategory?.includes(style.mainCategory)) {
+                    score += avoid.score;
+                    reasons.push({ type: 'negative', text: avoid.reason, score: avoid.score });
+                }
+                if (avoid.subCategory?.includes(style.subCategory)) {
+                    score += avoid.score;
+                    reasons.push({ type: 'negative', text: avoid.reason, score: avoid.score });
+                }
+            });
+
+            // 2. 처방 기반 점수 수정
+            const styleName = (style.styleName || '').toLowerCase();
+            const textRecipe = (style.textRecipe || '').toLowerCase();
+            const searchText = `${styleName} ${textRecipe}`;
+
+            // subCategory 부스트/감점
+            if (modifier.subCategoryBoost.includes(style.subCategory)) {
+                score += modifier.boostScore;
+                reasons.push({
+                    type: 'positive',
+                    text: `${prescription === 'down' ? '누르기' : prescription === 'volume' ? '살리기' : '가리기'} 처방에 적합`,
+                    score: modifier.boostScore
+                });
+            }
+            if (modifier.subCategoryPenalty.includes(style.subCategory)) {
+                score += modifier.penaltyScore;
+                reasons.push({
+                    type: 'negative',
+                    text: `${prescription === 'down' ? '누르기' : prescription === 'volume' ? '살리기' : '가리기'} 처방에 부적합`,
+                    score: modifier.penaltyScore
+                });
+            }
+
+            // 키워드 기반 부스트/감점
+            const hasBoostKeyword = modifier.styleKeywords.some(kw => searchText.includes(kw.toLowerCase()));
+            const hasPenaltyKeyword = modifier.avoidKeywords.some(kw => searchText.includes(kw.toLowerCase()));
+
+            if (hasBoostKeyword) {
+                score += 15;
+                reasons.push({ type: 'positive', text: '처방 키워드 매칭', score: 15 });
+            }
+            if (hasPenaltyKeyword) {
+                score -= 10;
+                reasons.push({ type: 'negative', text: '처방 회피 키워드', score: -10 });
+            }
+
+            return { ...style, score: Math.max(0, Math.min(100, score)), reasons };
+        });
+
+        // TOP 3 선정 (점수순)
+        const top3 = scoredStyles
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 3);
+
+        // 카테고리 평균 점수 계산
+        const avgScore = top3.length > 0
+            ? Math.round(top3.reduce((sum, s) => sum + s.score, 0) / top3.length)
+            : 0;
+
+        categoryResults.push({
+            category,
+            avgScore,
+            top3
+        });
+    });
+
+    // 카테고리를 평균 점수순으로 정렬 (높은 점수 먼저)
+    categoryResults.sort((a, b) => b.avgScore - a.avgScore);
+
+    console.log('📊 처방 적용 후 점수순:', categoryResults.map(c => `${c.category}: ${c.avgScore}점`));
+
+    // 정렬된 순서로 카드 생성
+    categoryResults.forEach(({ category, top3 }) => {
+        const categoryReason = generateCategoryReasonWithPrescription(category, analysis, top3, prescription);
+        const categoryCard = createCategoryCard(category, categoryReason, top3);
+        container.appendChild(categoryCard);
+    });
+}
+
+// 처방 기반 카테고리 추천 이유 생성
+function generateCategoryReasonWithPrescription(category, analysis, topStyles, prescription) {
+    const prescriptionDesc = {
+        'down': '옆 볼륨을 눌러 슬림하게',
+        'volume': '옆 볼륨을 살려 얼굴 비율 보정',
+        'cover': '옆머리로 자연스럽게 커버'
+    };
+
+    const baseReason = generateCategoryReason(category, analysis, topStyles);
+    const prescriptionNote = prescriptionDesc[prescription] || '';
+
+    return `<strong>✂️ ${prescriptionNote}</strong><br>${baseReason}`;
+}
+
 // ========== 결과 표시 ==========
 function displayAnalysisResults(ratios, analysis) {
     // 카메라 종료 (결과 화면에서는 카메라 불필요)
     stopCamera();
 
-    // 섹션 표시
+    // 섹션 표시 (추천은 처방 확인 후 표시)
     document.getElementById('uploadSection').style.display = 'none';
     document.getElementById('analysisSection').style.display = 'block';
-    document.getElementById('recommendationsSection').style.display = 'block';
+    document.getElementById('prescriptionSection').style.display = 'block';
+    document.getElementById('recommendationsSection').style.display = 'none';
+
+    // AI 추천 처방 계산 및 프리셀렉트
+    const aiPrescription = getAIPrescription(ratios);
+    selectedPrescription = aiPrescription.treatment;
+    document.getElementById('prescriptionHint').textContent = `AI 추천: ${aiPrescription.reason}`;
+
+    // 추천 버튼 프리셀렉트
+    document.querySelectorAll('.prescription-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.treatment === aiPrescription.treatment);
+    });
 
     // 비율 표시
     document.getElementById('upperRatio').textContent = `${ratios.upperRatio}%`;
