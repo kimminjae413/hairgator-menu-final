@@ -63,10 +63,16 @@ document.addEventListener('DOMContentLoaded', function() {
             // Firestore에서 스타일 정보 가져와서 모달 열기
             try {
                 if (window.db) {
-                    const doc = await window.db.collection('hairstyles').doc(styleId).get();
-                    if (doc.exists) {
+                    // styleId 필드로 쿼리 (문서 ID와 styleId가 다름)
+                    const snapshot = await window.db.collection('hairstyles')
+                        .where('styleId', '==', styleId)
+                        .limit(1)
+                        .get();
+
+                    if (!snapshot.empty) {
+                        const doc = snapshot.docs[0];
                         const style = { ...doc.data(), id: doc.id };
-                        console.log('✅ 스타일 로드 완료:', style.name);
+                        console.log('✅ 스타일 로드 완료:', style.name || style.styleId);
                         if (window.openStyleModal) {
                             window.openStyleModal(style);
                         }
