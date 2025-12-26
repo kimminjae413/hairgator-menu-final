@@ -47,6 +47,83 @@ const SUB_CATEGORIES = {
     'CB': 'Cheekbone'
 };
 
+// ========== 스타일별 고유 특징 (추천 사유 다변화용) ==========
+const STYLE_FEATURES = {
+    // 남자 스타일
+    '댄디': { keywords: ['부드러운 곡선', '자연스러움', '호불호 없음'], mood: 'classic', benefit: '대부분의 얼굴형과 조화를 이룸' },
+    '시스루': { keywords: ['가벼움', '시원함', '답답함 해소'], mood: 'light', benefit: '앞머리 숱을 비워 이마를 부분 노출' },
+    '슬릭': { keywords: ['세련됨', '직선미', '도시적'], mood: 'chic', benefit: '깔끔하게 정돈된 라인으로 시크한 무드' },
+    '투블럭': { keywords: ['시원함', '관리 편함', '깔끔함'], mood: 'clean', benefit: '옆라인을 짧게 정리해 청량감 연출' },
+    '리젠트': { keywords: ['클래식', '댄디', '고급스러움'], mood: 'classic', benefit: '정통 신사 스타일로 격식있는 자리에 적합' },
+    '애즈': { keywords: ['트렌디', '캐주얼', '자연스러움'], mood: 'casual', benefit: '힘 빠진 듯 자연스러운 흐름이 트렌디함' },
+    '포마드': { keywords: ['광택', '정돈됨', '세련됨'], mood: 'chic', benefit: '광택 있는 스타일링으로 고급스러운 인상' },
+    '쉐도우': { keywords: ['그라데이션', '부드러움', '자연스러움'], mood: 'natural', benefit: '경계선 없이 자연스럽게 연결' },
+    '드롭': { keywords: ['자연스러움', '볼륨', '내추럴'], mood: 'natural', benefit: '앞머리가 자연스럽게 흘러내려 편안한 무드' },
+    '스왈로': { keywords: ['볼륨', '세련됨', '에어리'], mood: 'volume', benefit: '정수리 볼륨으로 세련된 실루엣' },
+    '크롭': { keywords: ['짧음', '깔끔', '시원함'], mood: 'minimal', benefit: '짧은 기장으로 관리 편하고 시원함' },
+    '버즈': { keywords: ['미니멀', '남성적', '시원함'], mood: 'minimal', benefit: '극단적으로 짧아 청량하고 관리 제로' },
+    '모히칸': { keywords: ['개성', '볼륨', '임팩트'], mood: 'bold', benefit: '중심 볼륨으로 강렬한 개성 표현' },
+    '텍스쳐': { keywords: ['질감', '움직임', '역동적'], mood: 'dynamic', benefit: '레이어드 커팅으로 움직임이 살아있음' },
+    '레이어': { keywords: ['가벼움', '볼륨', '움직임'], mood: 'dynamic', benefit: '층이 있어 자연스러운 볼륨과 움직임' },
+    '웨이브': { keywords: ['부드러움', '볼륨', '로맨틱'], mood: 'soft', benefit: '곡선적인 흐름으로 부드러운 인상' },
+    '컬': { keywords: ['볼륨', '볼륨감', '로맨틱'], mood: 'soft', benefit: '펌으로 만든 컬이 풍성한 볼륨 연출' },
+    '언더컷': { keywords: ['대비', '시원함', '트렌디'], mood: 'contrast', benefit: '상하 기장 대비로 모던한 느낌' },
+    '사이드': { keywords: ['가르마', '균형', '클래식'], mood: 'classic', benefit: '가르마 라인으로 얼굴 비율 보정' },
+    '올백': { keywords: ['시원함', '자신감', '세련됨'], mood: 'bold', benefit: '이마를 전부 노출해 시원하고 자신감 있는 인상' },
+    '가르마': { keywords: ['균형', '정돈됨', '클래식'], mood: 'classic', benefit: '가르마로 시선을 분산시켜 균형잡힌 비율' },
+
+    // 여자 스타일 (기장 기반)
+    '숏컷': { keywords: ['경쾌함', '시원함', '개성'], mood: 'dynamic', benefit: '짧은 기장으로 개성 있고 관리 편함' },
+    '단발': { keywords: ['깔끔함', '세련됨', '모던'], mood: 'clean', benefit: '턱선 기장으로 세련되고 깔끔한 인상' },
+    '미디엄': { keywords: ['균형', '다양성', '자연스러움'], mood: 'balanced', benefit: '다양한 스타일링이 가능한 만능 기장' },
+    '롱헤어': { keywords: ['여성스러움', '우아함', '클래식'], mood: 'elegant', benefit: '길이감으로 우아하고 여성스러운 분위기' },
+    '레이어드': { keywords: ['볼륨', '움직임', '가벼움'], mood: 'dynamic', benefit: '층으로 자연스러운 볼륨과 움직임' },
+    '허쉬': { keywords: ['볼륨', '풍성함', '화려함'], mood: 'volume', benefit: '풍성한 볼륨으로 화려한 실루엣' },
+    '샤기': { keywords: ['텍스쳐', '자유로움', '트렌디'], mood: 'casual', benefit: '거친 듯 자연스러운 질감이 트렌디' },
+    '히메': { keywords: ['청순', '여성스러움', '러블리'], mood: 'cute', benefit: '동양적인 청순함과 귀여움 연출' },
+    '뱅': { keywords: ['이마 커버', '동안', '귀여움'], mood: 'cute', benefit: '앞머리로 이마를 덮어 동안 효과' },
+    '시스루뱅': { keywords: ['투명함', '가벼움', '시원함'], mood: 'light', benefit: '비침있는 앞머리로 답답함 없이 이마 커버' },
+    '풀뱅': { keywords: ['볼륨', '이마 커버', '또렷함'], mood: 'bold', benefit: '두꺼운 앞머리로 이마를 완전히 덮어 눈이 강조됨' },
+    'C컬': { keywords: ['볼륨', '자연스러움', '여성스러움'], mood: 'soft', benefit: 'C자 컬로 끝단에 자연스러운 볼륨' },
+    'S컬': { keywords: ['볼륨', '웨이브', '풍성함'], mood: 'volume', benefit: 'S자 웨이브로 풍성하고 화려한 분위기' },
+    '보브': { keywords: ['단정함', '세련됨', '클래식'], mood: 'classic', benefit: '단정하게 떨어지는 라인으로 깔끔한 인상' },
+    '울프': { keywords: ['개성', '레이어', '트렌디'], mood: 'dynamic', benefit: '아래로 갈수록 길어지는 레이어가 개성적' },
+    '태슬': { keywords: ['끝단 질감', '움직임', '에어리'], mood: 'dynamic', benefit: '끝단 커팅으로 가볍고 에어리한 느낌' }
+};
+
+// 얼굴 분석 결과별 연결 멘트 (스타일과 얼굴의 조합 설명)
+const FACE_STYLE_COMBINATIONS = {
+    // 긴 얼굴 + 스타일 조합
+    'long_side_volume': '사이드 볼륨이 시선을 가로로 분산시켜 세로 비율 완화',
+    'long_wave': '웨이브가 좌우로 시선을 분산시켜 얼굴 길이 착시 완화',
+    'long_layer': '층이 있는 레이어가 가로 볼륨을 만들어 비율 보정',
+    'long_curl': '컬의 볼륨이 얼굴 옆을 채워 길이감 분산',
+
+    // 짧은 얼굴 + 스타일 조합
+    'short_top_volume': '탑 볼륨으로 시선을 위로 끌어올려 갸름한 인상',
+    'short_up': '올림머리로 세로 라인 강조, 얼굴이 길어 보이는 효과',
+
+    // 사각턱 + 스타일 조합
+    'square_soft': '부드러운 곡선이 각진 턱선을 감싸듯 커버',
+    'square_layer': '레이어드 기장이 턱선을 자연스럽게 소프닝',
+    'square_wave': '웨이브가 직선적인 턱라인에 곡선미를 더해줌',
+
+    // 넓은 이마 + 스타일 조합
+    'wide_forehead_bang': '앞머리가 넓은 이마를 자연스럽게 가려줌',
+    'wide_forehead_seethrough': '비침있는 앞머리로 답답함 없이 이마 커버',
+
+    // 좁은 이마 + 스타일 조합
+    'narrow_forehead_no_bang': '이마 노출로 좁은 이마가 오히려 비율 좋게 보임',
+    'narrow_forehead_volume': '이마 위 볼륨으로 상단부 시각적 확장',
+
+    // 이미지 타입 + 스타일 조합
+    'warm_slick': '또렷한 인상(웜계)에 슬릭한 라인이 시크함을 극대화',
+    'warm_undercut': '웜계 특유의 시원함이 언더컷의 대비와 시너지',
+    'cool_wave': '부드러운 인상(쿨계)에 웨이브가 로맨틱 무드 배가',
+    'cool_curl': '쿨계의 집중된 인상에 컬이 포인트를 더해줌',
+    'neutral_classic': '균형잡힌 인상(뉴트럴)에 클래식 스타일이 안정감'
+};
+
 // ========== 초기화 ==========
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🎯 AI Style Match 초기화');
@@ -1570,141 +1647,191 @@ function generateCategoryReason(category, analysis, topStyles) {
     return reasonParts.join(' · ');
 }
 
-// 스타일별 개별 추천 이유 생성 (조건부 로직)
+// ========== 스타일 고유 특징 찾기 ==========
+function findStyleFeature(styleName) {
+    const name = (styleName || '').toLowerCase();
+
+    // STYLE_FEATURES 키워드 매칭
+    for (const [keyword, feature] of Object.entries(STYLE_FEATURES)) {
+        if (name.includes(keyword.toLowerCase())) {
+            return { keyword, ...feature };
+        }
+    }
+
+    // 영어 키워드 추가 매칭
+    const englishMap = {
+        'dandy': '댄디', 'see-through': '시스루', 'seethrough': '시스루',
+        'slick': '슬릭', 'two-block': '투블럭', 'twoblock': '투블럭',
+        'regent': '리젠트', 'ash': '애즈', 'pomade': '포마드',
+        'shadow': '쉐도우', 'drop': '드롭', 'swallow': '스왈로',
+        'crop': '크롭', 'buzz': '버즈', 'mohican': '모히칸',
+        'texture': '텍스쳐', 'layer': '레이어', 'wave': '웨이브',
+        'curl': '컬', 'undercut': '언더컷', 'side': '사이드',
+        'all-back': '올백', 'allback': '올백', 'comma': '가르마',
+        'short': '숏컷', 'bob': '보브', 'medium': '미디엄',
+        'long': '롱헤어', 'hush': '허쉬', 'shaggy': '샤기',
+        'hime': '히메', 'bang': '뱅', 'wolf': '울프', 'tassel': '태슬'
+    };
+
+    for (const [eng, kor] of Object.entries(englishMap)) {
+        if (name.includes(eng) && STYLE_FEATURES[kor]) {
+            return { keyword: kor, ...STYLE_FEATURES[kor] };
+        }
+    }
+
+    return null;
+}
+
+// ========== 얼굴+스타일 조합 멘트 찾기 ==========
+function findCombinationReason(faceCondition, styleFeature, imageType) {
+    const styleMood = styleFeature?.mood || '';
+    const styleName = styleFeature?.keyword || '';
+
+    // 이미지 타입 + 스타일 무드 조합
+    if (imageType) {
+        const type = imageType.type;
+        if (type === 'warm' && ['chic', 'contrast', 'minimal', 'bold'].includes(styleMood)) {
+            return FACE_STYLE_COMBINATIONS['warm_slick'] || `웜계의 또렷함이 ${styleName} 스타일과 시너지`;
+        }
+        if (type === 'cool' && ['soft', 'volume', 'elegant'].includes(styleMood)) {
+            return FACE_STYLE_COMBINATIONS['cool_wave'] || `쿨계의 부드러움이 ${styleName} 스타일과 조화`;
+        }
+        if (type === 'neutral' && ['classic', 'balanced'].includes(styleMood)) {
+            return FACE_STYLE_COMBINATIONS['neutral_classic'] || `뉴트럴한 인상에 클래식 스타일이 안정감`;
+        }
+    }
+
+    // 얼굴형 + 스타일 조합
+    if (faceCondition === 'long' && ['soft', 'volume', 'dynamic'].includes(styleMood)) {
+        return FACE_STYLE_COMBINATIONS['long_wave'];
+    }
+    if (faceCondition === 'short' && ['bold', 'volume'].includes(styleMood)) {
+        return FACE_STYLE_COMBINATIONS['short_top_volume'];
+    }
+    if (faceCondition === 'square' && ['soft', 'dynamic', 'elegant'].includes(styleMood)) {
+        return FACE_STYLE_COMBINATIONS['square_soft'];
+    }
+
+    return null;
+}
+
+// 스타일별 개별 추천 이유 생성 (얼굴분석 + 스타일 고유 특징 결합)
 function generateStyleReason(style, analysis, ratios) {
-    const reasons = [];
+    const parts = [];
 
     if (!ratios || !ratios.raw) {
         return '얼굴형 분석 기반 추천';
     }
 
-    const { upperRatio, lowerRatio, cheekJawRatio } = ratios.raw;
+    const { upperRatio, lowerRatio, cheekJawRatio, eyeDistanceRatio } = ratios.raw;
     const isLongFace = lowerRatio > 0.40;
     const isShortFace = lowerRatio < 0.28;
     const isSquareJaw = cheekJawRatio < 1.15;
     const isOvalFace = cheekJawRatio > 1.35;
     const isWideForehead = upperRatio > 0.36;
     const isNarrowForehead = upperRatio < 0.25;
+    const isWideEyes = eyeDistanceRatio > 1.1;
 
-    const styleName = (style.name || '').toLowerCase();
+    const styleName = style.name || '';
     const mainCat = style.mainCategory || '';
     const subCat = style.subCategory || '';
 
-    // 탑 볼륨 스타일 (FRINGE UP, PUSHED BACK, MOHICAN)
-    const isTopVolumeStyle = ['FRINGE UP', 'PUSHED BACK', 'MOHICAN'].includes(mainCat);
+    // 1. 스타일 고유 특징 찾기
+    const styleFeature = findStyleFeature(styleName);
+    const imageType = analysis?.imageType;
 
-    // 사이드 볼륨 스타일
+    // 2. 얼굴 조건 판별
+    let faceCondition = null;
+    if (isLongFace) faceCondition = 'long';
+    else if (isShortFace) faceCondition = 'short';
+    else if (isSquareJaw) faceCondition = 'square';
+    else if (isOvalFace) faceCondition = 'oval';
+
+    // ===== Part A: 스타일 고유 장점 (50%) =====
+    if (styleFeature) {
+        // 스타일 특유의 benefit 추가
+        parts.push(`✨ ${styleFeature.benefit}`);
+    }
+
+    // ===== Part B: 얼굴 분석 기반 조언 (50%) =====
+
+    // 얼굴+스타일 조합 멘트 우선
+    const combinationReason = findCombinationReason(faceCondition, styleFeature, imageType);
+    if (combinationReason && parts.length < 2) {
+        parts.push(`✓ ${combinationReason}`);
+    }
+
+    // 이미지 타입 매칭 보너스
+    if (imageType && styleFeature && parts.length < 2) {
+        const type = imageType.type;
+        const subType = imageType.subType;
+
+        if (type === 'warm' && styleFeature.mood === 'chic') {
+            parts.push(`💡 ${imageType.name}의 또렷함이 시크한 무드와 시너지`);
+        } else if (type === 'cool' && styleFeature.mood === 'soft') {
+            parts.push(`💡 ${imageType.name}의 부드러움이 로맨틱 무드 배가`);
+        } else if (subType === 'hard' && ['minimal', 'contrast', 'bold'].includes(styleFeature.mood)) {
+            parts.push(`💡 하드한 인상에 선명한 라인이 잘 어울림`);
+        } else if (subType === 'soft' && ['soft', 'elegant', 'volume'].includes(styleFeature.mood)) {
+            parts.push(`💡 소프트한 인상에 부드러운 질감이 조화`);
+        }
+    }
+
+    // 눈 사이 거리 (가르마/사이드 스타일에 특히 관련)
+    if (isWideEyes && ['SIDE PART', 'SIDE FRINGE'].includes(mainCat) && parts.length < 2) {
+        parts.push(`✓ 넓은 미간(${ratios.eyeDistanceRatio})을 가르마 라인이 중앙으로 모아줌`);
+    }
+
+    // 얼굴 길이 관련
+    const isTopVolumeStyle = ['FRINGE UP', 'PUSHED BACK', 'MOHICAN'].includes(mainCat);
     const isSideVolumeStyle = ['SIDE PART', 'SIDE FRINGE'].includes(mainCat);
 
-    // 짧은 머리 스타일 (턱선 노출)
-    const isShortStyle = ['BUZZ', 'CROP'].includes(mainCat);
-
-    // 슬릭/타이트 스타일 (볼륨 없음)
-    const isSlickStyle = styleName.includes('슬릭') || styleName.includes('slick');
-
-    // 드롭컷: 앞머리를 내려뜨리는 스타일 (실제로는 탑볼륨 아님)
-    const isDropStyle = styleName.includes('드롭') || styleName.includes('drop');
-
-    // ===== 조건부 멘트 생성 =====
-
-    // 1. 탑 볼륨 + 얼굴 길이 조합 (드롭컷은 탑볼륨 카테고리여도 실제론 내려뜨리는 스타일)
-    if (isTopVolumeStyle && !isDropStyle) {
-        if (isLongFace) {
-            reasons.push(`⚠️ 하안부 ${ratios.lowerRatio}% (긴 편) → 탑 볼륨이 얼굴을 더 길어 보이게 할 수 있음`);
-        } else if (isShortFace) {
-            reasons.push(`✓ 하안부 ${ratios.lowerRatio}% (짧은 편) → 탑 볼륨이 시선을 위로 끌어올려 얼굴이 갸름해 보임`);
-        } else {
-            reasons.push(`탑 볼륨으로 세련된 인상 연출`);
+    if (parts.length < 2) {
+        if (isLongFace && isSideVolumeStyle) {
+            parts.push(`✓ 하안부 ${ratios.lowerRatio}% → 사이드 볼륨으로 세로 비율 분산`);
+        } else if (isLongFace && isTopVolumeStyle) {
+            parts.push(`⚠️ 하안부 ${ratios.lowerRatio}% → 탑 볼륨이 길이 강조 가능`);
+        } else if (isShortFace && isTopVolumeStyle) {
+            parts.push(`✓ 하안부 ${ratios.lowerRatio}% → 탑 볼륨으로 갸름한 인상`);
         }
     }
 
-    // 1-2. 드롭컷: 앞머리를 자연스럽게 내려뜨리는 스타일 (탑볼륨 카테고리지만 다르게 처리)
-    if (isDropStyle) {
-        if (isLongFace) {
-            reasons.push(`✓ 드롭 스타일: 앞머리가 자연스럽게 내려와 세로 길이 분산`);
-        } else if (isWideForehead) {
-            reasons.push(`✓ 드롭 스타일: 내려뜨린 앞머리로 넓은 이마 자연스럽게 커버`);
-        } else {
-            reasons.push(`드롭 스타일: 자연스러운 흐름으로 부드러운 인상`);
-        }
+    // 사각턱 + 소프트닝
+    if (isSquareJaw && styleFeature && ['soft', 'dynamic', 'volume'].includes(styleFeature.mood) && parts.length < 2) {
+        parts.push(`✓ 광대/턱 ${ratios.cheekJawRatio} → 부드러운 질감이 각진 라인 소프닝`);
     }
 
-    // 2. 사이드 볼륨 + 얼굴 길이 조합
-    if (isSideVolumeStyle) {
-        if (isLongFace) {
-            reasons.push(`✓ 하안부 ${ratios.lowerRatio}% → 사이드 볼륨이 시선을 가로로 분산시켜 얼굴 길이 완화`);
-        } else if (isShortFace) {
-            reasons.push(`하안부 ${ratios.lowerRatio}% (짧은 편) → 사이드 볼륨이 얼굴을 더 짧아 보이게 할 수 있음`);
-        }
-        // 슬릭 스타일은 사이드 볼륨 설명 제외
-        if (isSlickStyle) {
-            reasons.length = 0; // 기존 이유 제거
-            reasons.push(`깔끔한 라인 정리로 단정한 인상`);
-        }
-    }
-
-    // 3. 짧은 머리 + 턱선 조합
-    if (isShortStyle) {
-        if (isSquareJaw) {
-            reasons.push(`⚠️ 광대/턱 비율 ${ratios.cheekJawRatio} → 짧은 기장이 각진 턱선을 그대로 노출`);
-        } else if (isOvalFace) {
-            reasons.push(`✓ 계란형(${ratios.cheekJawRatio}) → 어떤 기장이든 잘 어울림`);
-        } else {
-            reasons.push(`깔끔하고 시원한 인상`);
-        }
-    }
-
-    // 4. 이마 관련
-    if (isWideForehead) {
-        if (subCat === 'EB' || subCat === 'Eye Brow') {
-            reasons.push(`상안부 ${ratios.upperRatio}% → 눈썹 기장 앞머리로 넓은 이마 자연스럽게 커버`);
-        } else if (subCat === 'E' || subCat === 'Eye') {
-            reasons.push(`상안부 ${ratios.upperRatio}% → 눈 기장 앞머리로 이마 완전 커버`);
-        } else if (subCat === 'N' || subCat === 'None' || !subCat) {
-            if (isTopVolumeStyle || mainCat === 'PUSHED BACK') {
-                reasons.push(`⚠️ 상안부 ${ratios.upperRatio}% (넓은 편) → 앞머리 없이 이마가 완전 노출됨`);
+    // 이마 관련
+    if (isWideForehead && parts.length < 2) {
+        if (['EB', 'Eye Brow', 'E', 'Eye'].includes(subCat)) {
+            parts.push(`✓ 상안부 ${ratios.upperRatio}% → 앞머리로 넓은 이마 커버`);
+        } else if (['N', 'None'].includes(subCat) || !subCat) {
+            if (isTopVolumeStyle) {
+                parts.push(`⚠️ 상안부 ${ratios.upperRatio}% → 이마 노출 주의`);
             }
         }
-    } else if (isNarrowForehead) {
-        if (subCat === 'N' || subCat === 'None' || !subCat) {
-            reasons.push(`✓ 상안부 ${ratios.upperRatio}% (좁은 편) → 이마 노출로 균형감 있는 비율`);
+    }
+
+    // 스타일 reasons 배열에서 이미지 타입 관련 추가
+    if (style.reasons && style.reasons.length > 0 && parts.length < 2) {
+        const imageTypeReason = style.reasons.find(r => r.text && r.text.includes('무드'));
+        if (imageTypeReason) {
+            parts.push(imageTypeReason.type === 'positive' ? `✓ ${imageTypeReason.text}` : `⚠️ ${imageTypeReason.text}`);
         }
     }
 
-    // 5. 사각턱 + 기장 조합 (슬릭 스타일 제외)
-    if (isSquareJaw && !isShortStyle && !isSlickStyle) {
-        if (mainCat.includes('LENGTH') || isSideVolumeStyle) {
-            reasons.push(`광대/턱 비율 ${ratios.cheekJawRatio} → 기장감/볼륨으로 각진 턱선 소프닝`);
+    // 기본값 (아무것도 없을 때)
+    if (parts.length === 0) {
+        if (isOvalFace) {
+            parts.push(`✓ 이상적인 비율로 다양한 스타일 소화 가능`);
+        } else if (styleFeature) {
+            parts.push(`✨ ${styleFeature.keywords[0]}이(가) 특징인 스타일`);
+        } else {
+            parts.push(`균형 잡힌 얼굴형에 적합`);
         }
     }
 
-    // 슬릭 스타일 + 사각턱: 볼륨 대신 다른 설명
-    if (isSlickStyle && isSquareJaw) {
-        reasons.push(`슬릭한 라인으로 시크한 분위기 연출`);
-    }
-
-    // 6. 계란형은 대부분 OK
-    if (isOvalFace && reasons.length === 0) {
-        reasons.push(`✓ 이상적인 계란형(${ratios.cheekJawRatio}) → 다양한 스타일 소화 가능`);
-    }
-
-    // 7. 스타일 reasons 배열에서 추가 (중복 제외)
-    if (style.reasons && style.reasons.length > 0 && reasons.length < 2) {
-        style.reasons.forEach(r => {
-            if (r.type === 'positive' && !reasons.some(existing => existing.includes(r.text))) {
-                reasons.push(`✓ ${r.text}`);
-            } else if (r.type === 'negative' && !reasons.some(existing => existing.includes(r.text))) {
-                reasons.push(`⚠️ ${r.text}`);
-            }
-        });
-    }
-
-    // 8. 기본 이유
-    if (reasons.length === 0) {
-        reasons.push('균형 잡힌 얼굴형에 적합한 스타일');
-    }
-
-    return reasons.slice(0, 2).join(' / ');
+    return parts.slice(0, 2).join(' / ');
 }
 
 // 카테고리 카드 생성
