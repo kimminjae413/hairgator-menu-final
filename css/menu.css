@@ -114,12 +114,13 @@ html, body {
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
 
-    /* 안드로이드 터치 스크롤 부드럽게 */
+    /* 안드로이드 터치 스크롤 - 모멘텀 스크롤 최적화 */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
-    scroll-behavior: smooth;
-    touch-action: pan-x;
-    scroll-snap-type: x proximity;
+    /* scroll-behavior: smooth 제거 - 터치에 딜레이 발생시킴 */
+    /* scroll-snap 제거 - "꾹 눌러야" 느낌 유발 */
+    touch-action: manipulation;  /* pan-x보다 더 자연스러움 */
+    will-change: scroll-position;
 }
 
 .main-tabs::-webkit-scrollbar,
@@ -141,10 +142,8 @@ html, body {
     transition: all 0.3s;
     font-size: 14px;
     font-weight: 600;
-
-    /* 스크롤 스냅 */
-    scroll-snap-align: start;
     flex-shrink: 0;
+    /* scroll-snap-align 제거 - 안드로이드에서 "꾹 눌러야" 느낌 유발 */
 }
 
 /* 모바일/데스크탑 탭 이름 전환 */

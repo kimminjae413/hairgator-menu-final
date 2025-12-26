@@ -1750,34 +1750,73 @@ function generateStyleReason(style, analysis, ratios, score = 50) {
     // ⚠️ 저점수 (40점 이하): 경고/비추천 모드
     // ============================================
     if (score <= 40) {
-        // 1순위: 얼굴형 단점 부각 경고
-        if (isLongFace && isTopVolumeStyle) {
-            parts.push(`⚠️ 탑 볼륨이 긴 하안부(${ratios.lowerRatio}%)를 더 길어 보이게 합니다`);
+        // 무조건 경고 멘트 우선
+        if (isLongFace) {
+            if (isTopVolumeStyle) {
+                parts.push(`⚠️ 탑 볼륨이 긴 하안부(${ratios.lowerRatio}%)를 더욱 강조해 밸런스가 무너집니다`);
+            } else if (isShortStyle) {
+                parts.push(`⚠️ 짧은 기장이 긴 얼굴(${ratios.lowerRatio}%)을 커버해주지 못합니다`);
+            }
         }
-        if (isSquareJaw && isShortStyle) {
-            parts.push(`⚠️ 짧은 기장이 각진 턱선(${ratios.cheekJawRatio})을 그대로 노출시켜 인상이 강해 보일 수 있습니다`);
-        }
-        if (isSquareJaw && isTopVolumeStyle) {
-            parts.push(`⚠️ 볼륨이 위로 올라가면서 각진 라인이 더 강조될 수 있습니다`);
+        if (isSquareJaw) {
+            if (isShortStyle) {
+                parts.push(`⚠️ 짧은 기장이 각진 턱선(${ratios.cheekJawRatio})을 그대로 노출합니다`);
+            } else if (isTopVolumeStyle) {
+                parts.push(`⚠️ 볼륨이 위로 올라가면서 각진 라인이 더 강조됩니다`);
+            }
         }
         if (isWideForehead && (['N', 'None'].includes(subCat) || !subCat)) {
             if (isTopVolumeStyle || mainCat === 'PUSHED BACK') {
-                parts.push(`⚠️ 넓은 이마(${ratios.upperRatio}%)가 완전 노출되어 밸런스가 무너질 수 있습니다`);
+                parts.push(`⚠️ 넓은 이마(${ratios.upperRatio}%)가 완전 노출되어 밸런스가 무너집니다`);
             }
         }
         if (isShortFace && isSideVolumeStyle) {
             parts.push(`⚠️ 사이드 볼륨이 짧은 얼굴(${ratios.lowerRatio}%)을 더 짧아 보이게 합니다`);
         }
 
-        // 2순위: 스타일 리스크 언급
-        if (parts.length < 2) {
+        // 기본 경고 (조건에 안 걸렸을 때)
+        if (parts.length === 0) {
             if (isShortStyle) {
-                parts.push(`주의: 짧은 기장은 얼굴 단점이 그대로 드러날 수 있음`);
+                parts.push(`⚠️ 짧은 기장은 얼굴 단점이 그대로 드러날 수 있음`);
             } else if (isTopVolumeStyle) {
-                parts.push(`주의: 탑 볼륨은 밸런스 고려 필요`);
+                parts.push(`⚠️ 탑 볼륨은 얼굴 길이를 강조할 수 있음`);
             } else {
-                parts.push(`다른 스타일과 비교해보세요`);
+                parts.push(`⚠️ 얼굴형 커버에 적합하지 않음`);
             }
+        }
+
+        // 2순위: 대안 제시
+        if (parts.length < 2) {
+            parts.push(`다른 카테고리 스타일을 추천드립니다`);
+        }
+
+        return parts.slice(0, 2).join(' / ');
+    }
+
+    // ============================================
+    // 😐 중립 점수 (41~60점): 중립/보통 모드
+    // ============================================
+    if (score <= 60) {
+        // 스타일 특징은 언급하되, 단점도 함께 언급
+        if (styleFeature) {
+            // 긍정적이지 않은 중립 표현
+            parts.push(`${styleFeature.keywords[0]}이(가) 특징인 스타일`);
+        }
+
+        // 단점/한계점 언급
+        if (isLongFace) {
+            if (isShortStyle || isTopVolumeStyle) {
+                parts.push(`단, 긴 하안부(${ratios.lowerRatio}%)를 커버해주지는 못합니다`);
+            } else {
+                parts.push(`얼굴 길이 보정 효과는 제한적`);
+            }
+        } else if (isSquareJaw) {
+            parts.push(`턱선 소프닝 효과는 제한적`);
+        } else if (isWideForehead && isTopVolumeStyle) {
+            parts.push(`이마 노출에 주의 필요`);
+        } else {
+            // 기본 중립 멘트
+            parts.push(`나쁘지 않지만 베스트는 아님`);
         }
 
         return parts.slice(0, 2).join(' / ');
@@ -1821,7 +1860,7 @@ function generateStyleReason(style, analysis, ratios, score = 50) {
     }
 
     // ============================================
-    // 중간 점수 (41~79점): 일반 추천 모드
+    // 양호 점수 (61~79점): 일반 추천 모드
     // ============================================
 
     // 얼굴 조건 판별

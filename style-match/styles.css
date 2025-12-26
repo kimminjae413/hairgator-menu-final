@@ -82,9 +82,9 @@ body {
 
     /* 안드로이드 터치 스크롤 최적화 */
     -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
+    /* scroll-behavior: smooth 제거 - 터치에 딜레이 발생 */
     overscroll-behavior-y: contain;
-    touch-action: pan-y pinch-zoom;
+    touch-action: manipulation;  /* 더 자연스러운 터치 응답 */
 }
 
 /* Background Pattern - Light Theme */
@@ -1043,7 +1043,7 @@ body::after {
 
     /* 안드로이드 터치 스크롤 최적화 */
     -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
+    /* scroll-behavior: smooth 제거 - 터치에 딜레이 발생 */
     overscroll-behavior: contain;
 }
 
