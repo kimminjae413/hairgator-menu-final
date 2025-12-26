@@ -9,25 +9,31 @@
 async function generateSingleView(apiKey, sourceImageBase64, viewKey, angle, mimeType) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
 
-    const viewPrompts = {
-        front: 'front view, facing camera directly',
-        right: 'right side profile view, 90 degrees rotated',
-        back: 'back view, showing the back of the head',
-        left: 'left side profile view, 270 degrees rotated'
+    const viewDescriptions = {
+        front: 'front view (0°)',
+        right: 'right side profile (90°)',
+        back: 'back view (180°)',
+        left: 'left side profile (270°)'
     };
 
-    const prompt = `You are an expert AI that generates different angle views of a person's hairstyle.
+    const prompt = `[STRICT IMAGE TRANSFORMATION TASK]
 
-Given this reference image of a person with a specific hairstyle, generate a ${viewPrompts[viewKey]}.
+You are rotating a virtual camera around this person. Generate a ${viewDescriptions[viewKey]} of the EXACT SAME person.
 
-CRITICAL REQUIREMENTS:
-1. MAINTAIN THE EXACT SAME hairstyle - same cut, same color, same texture, same styling
-2. MAINTAIN THE EXACT SAME person appearance - face structure, skin tone, clothing, background
-3. Only rotate the view angle to ${angle}° (${viewKey} view)
-4. The hairstyle must be 100% consistent with the reference image
-5. Professional quality, natural lighting, photorealistic
+⚠️ ABSOLUTE RULES - DO NOT VIOLATE:
+1. FACE: Keep the EXACT same face. Same eyes, nose, lips, skin tone, facial structure. NO changes.
+2. HAIR: Keep the EXACT same hairstyle. Same cut, length, color, texture, styling, volume. NO changes.
+3. CLOTHES: Keep the EXACT same clothing. Same color, pattern, style. NO changes.
+4. BACKGROUND: Keep the EXACT same background color/pattern. NO changes.
+5. LIGHTING: Keep the EXACT same lighting conditions. NO changes.
 
-Generate ONLY the rotated view image. The hairstyle must be IDENTICAL to the reference.`;
+📐 ONLY CHANGE: The camera viewing angle to ${angle}° (${viewKey})
+
+This is NOT creative generation. This is a STRICT camera rotation task.
+The output must look like a photo of the SAME person taken from a different angle.
+If you cannot maintain 100% consistency, do NOT generate anything different.
+
+Output: Single image showing the ${viewDescriptions[viewKey]} of this exact person.`;
 
     const response = await fetch(url, {
         method: 'POST',

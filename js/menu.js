@@ -1174,11 +1174,11 @@ function render360Viewer(container, style, navIndicatorHTML = '') {
                 ">앞</span>
             </div>
 
-            <!-- 360° 배지 -->
+            <!-- 360° 배지 (왼쪽 상단으로 이동 - 닫기 버튼과 겹침 방지) -->
             <div style="
                 position: absolute;
                 top: 15px;
-                right: 15px;
+                left: 15px;
                 padding: 6px 12px;
                 background: rgba(0,0,0,0.6);
                 backdrop-filter: blur(8px);
@@ -1272,11 +1272,7 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
         angle = ((angle % 360) + 360) % 360;
         currentAngle = angle;
 
-        // 디버그: 이미지 개수 확인
-        if (images.length === 0) {
-            console.error('❌ 360° 이미지 없음! images:', images);
-            return;
-        }
+        if (images.length === 0) return;
 
         // 모든 이미지 투명도 초기화
         images.forEach(img => img.style.opacity = 0);
@@ -1304,10 +1300,6 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
         images[idx1].style.opacity = 1 - smoothBlend;
         images[idx2].style.opacity = smoothBlend;
 
-        // 디버그: 90도 이상 변할 때만 로그 (많이 드래그했을 때)
-        if (Math.abs(angle - 45) < 5 || Math.abs(angle - 135) < 5) {
-            console.log(`🖼️ opacity 적용: img[${idx1}]=${(1-smoothBlend).toFixed(2)}, img[${idx2}]=${smoothBlend.toFixed(2)}, angle=${angle.toFixed(0)}°`);
-        }
 
         // UI 업데이트
         const displayAngle = Math.round(angle);
@@ -1338,12 +1330,6 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
     // 초기 뷰 설정
     updateView(0);
 
-    // 디버그: 이미지 상태 확인
-    console.log('🖼️ 이미지 개수:', images.length);
-    images.forEach((img, i) => {
-        console.log(`  img[${i}]: loaded=${img.complete}, naturalWidth=${img.naturalWidth}, opacity=${img.style.opacity}, src=${img.src.substring(0, 50)}...`);
-    });
-
     // 3초 후 힌트 자동 숨김
     setTimeout(hideHint, 3000);
 
@@ -1354,7 +1340,6 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
         startY = e.touches[0].clientY;
         isVerticalSwipe = false;
         hideHint();
-        console.log('👆 360° touchstart:', startX);
 
         // 햅틱 피드백
         if (navigator.vibrate) {
@@ -1427,7 +1412,6 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
         eventTarget.style.cursor = 'grabbing';
         eventTarget.setPointerCapture(e.pointerId);
         hideHint();
-        console.log('🖱️ 360° pointerdown:', e.clientX);
     });
 
     eventTarget.addEventListener('pointermove', function(e) {
@@ -1438,35 +1422,25 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
         const sensitivity = 360 / viewerWidth;
 
         const newAngle = currentAngle - deltaX * sensitivity;
-        console.log('🔄 pointermove deltaX:', deltaX, 'newAngle:', newAngle.toFixed(1));
         updateView(newAngle);
         startX = e.clientX;
     });
 
     eventTarget.addEventListener('pointerup', function(e) {
         if (e.pointerType === 'touch') return;
-
         if (isDragging) {
             isDragging = false;
             eventTarget.style.cursor = 'grab';
-            console.log('🖱️ 360° pointerup');
         }
     });
 
-    eventTarget.addEventListener('pointercancel', function(e) {
+    eventTarget.addEventListener('pointercancel', function() {
         isDragging = false;
         eventTarget.style.cursor = 'grab';
     });
 
     // 초기 커서 설정
     eventTarget.style.cursor = 'grab';
-
-    // 디버그: 클릭 이벤트 테스트
-    eventTarget.addEventListener('click', function(e) {
-        console.log('🔍 360° container click:', e.target.className, 'clientX:', e.clientX);
-    });
-
-    console.log('✅ 360° 뷰어 로직 초기화 완료, eventTarget:', eventTarget);
 }
 
 // 스타일 상세 모달 열기 (헤어체험 버튼 추가)
