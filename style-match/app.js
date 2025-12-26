@@ -1555,11 +1555,21 @@ window.openStyleDetail = function(styleId) {
         if (parent && parent.openStyleModal) {
             const style = allStyles.find(s => s.styleId === styleId);
             if (style) {
-                parent.openStyleModal(style);
+                // openStyleModal은 id 필드를 사용하므로 매핑
+                const styleWithId = {
+                    ...style,
+                    id: style.styleId || styleId
+                };
+                console.log('📂 스타일 모달 열기:', styleWithId.name, styleWithId.id);
+                parent.openStyleModal(styleWithId);
+            } else {
+                console.warn('⚠️ 스타일을 찾을 수 없음:', styleId);
             }
+        } else {
+            console.warn('⚠️ parent.openStyleModal 없음');
         }
     } catch (e) {
-        console.log('스타일 상세 열기 실패:', e);
+        console.error('스타일 상세 열기 실패:', e);
     }
 };
 
