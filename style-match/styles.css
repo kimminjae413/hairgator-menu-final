@@ -1,6 +1,6 @@
 /* ==========================================
    AI Style Match - Clinical Beauty Design
-   클리니컬 뷰티 디자인 시스템
+   ?�리?�컬 뷰티 ?�자???�스??
    ========================================== */
 
 :root {
@@ -325,7 +325,7 @@ body::after {
     flex-shrink: 0;
 }
 
-/* Camera Area - 태블릿에서 크게 */
+/* Camera Area - ?�블릿에???�게 */
 .camera-area {
     position: relative;
     width: 100%;
@@ -345,7 +345,7 @@ body::after {
     transform: scaleX(-1); /* 거울 모드 */
 }
 
-/* 랜드마크 캔버스 - 더 투명하게 */
+/* ?�드마크 캔버??- ???�명?�게 */
 .landmark-canvas {
     position: absolute;
     top: 0;
@@ -354,10 +354,10 @@ body::after {
     height: 100%;
     pointer-events: none;
     transform: scaleX(-1);
-    opacity: 0.7; /* 더 투명하게 */
+    opacity: 0.7; /* ???�명?�게 */
 }
 
-/* 분석 중 오버레이 */
+/* 분석 �??�버?�이 */
 .analyzing-overlay {
     position: absolute;
     inset: 0;
@@ -382,7 +382,7 @@ body::after {
     50% { opacity: 0.5; }
 }
 
-/* 측정 값 표시 - 카메라 밖 아래쪽으로 이동 */
+/* 측정 �??�시 - 카메??�??�래쪽으�??�동 */
 .measurement-display {
     position: relative;
     display: flex;
@@ -792,12 +792,14 @@ body::after {
 }
 
 .category-reason {
-    padding: var(--space-md) var(--space-lg);
-    font-size: 0.9rem;
+    padding: var(--space-lg) var(--space-xl);
+    font-size: 0.95rem;
     color: var(--text-secondary);
-    line-height: 1.6;
+    line-height: 1.8;
     border-bottom: 1px solid var(--border-subtle);
     background: rgba(232, 196, 160, 0.03);
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 
 .category-reason strong {
@@ -868,18 +870,34 @@ body::after {
 .style-card-info {
     display: flex;
     justify-content: center;
-    padding: var(--space-sm);
+    align-items: center;
+    padding: var(--space-md);
     background: var(--bg-elevated);
     border-bottom: 1px solid var(--border-subtle);
 }
 
+/* 점수 배지 - 절대 줄바꿈 안함! */
+.style-score {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-secondary);
+    padding: 8px 16px;
+    background: linear-gradient(135deg, rgba(78,205,196,0.15), rgba(74,144,226,0.1));
+    border-radius: var(--radius-md);
+    white-space: nowrap;
+}
+
+/* 추천 이유 - 한글 단어 단위 줄바꿈 */
 .style-card-reason {
-    padding: var(--space-sm) var(--space-md);
-    font-size: 0.75rem;
+    padding: var(--space-md);
+    font-size: 0.8rem;
     color: var(--text-secondary);
-    line-height: 1.4;
-    min-height: 50px;
-    background: linear-gradient(135deg, rgba(232,196,160,0.05), rgba(78,205,196,0.05));
+    line-height: 1.6;
+    min-height: 55px;
+    background: linear-gradient(180deg, rgba(232,196,160,0.05), transparent);
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 
 .style-card-overlay {
@@ -1022,28 +1040,41 @@ body::after {
 }
 
 /* ==========================================
-   Responsive - Tablet First
+   Responsive - Tablet Optimized
    ========================================== */
 
-/* 태블릿 가로 (1024px 이상) - 2열 그리드 */
+/* 태블릿 (768px 이상) - 카드 리스트 세로 배치 */
 @media (min-width: 768px) {
+    .app-container {
+        max-width: 900px;
+    }
+
     .recommendations-container {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-lg);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-xl);
     }
 
     .category-card {
-        height: fit-content;
+        width: 100%;
     }
 
     .style-cards {
         grid-template-columns: repeat(3, 1fr);
-        gap: var(--space-sm);
+        gap: var(--space-md);
+        padding: var(--space-lg);
     }
 
     .style-card-reason {
-        font-size: 0.7rem;
-        min-height: 40px;
+        font-size: 0.8rem;
+        min-height: 50px;
+        word-break: keep-all;
+    }
+
+    .category-reason {
+        font-size: 1rem;
+        padding: var(--space-lg) var(--space-xl);
+        word-break: keep-all;
     }
 
     .analysis-section {
@@ -1057,35 +1088,43 @@ body::after {
     }
 }
 
-/* 큰 태블릿/데스크톱 (1200px 이상) - 3열 그리드 */
+/* 데스크톱 (1200px 이상) */
 @media (min-width: 1200px) {
-    .recommendations-container {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* 모바일 세로 (767px 이하) - 1열 */
-@media (max-width: 767px) {
-    .recommendations-container {
-        grid-template-columns: 1fr;
-        gap: var(--space-md);
+    .app-container {
+        max-width: 1100px;
     }
 
     .style-cards {
         grid-template-columns: repeat(3, 1fr);
-        gap: var(--space-xs);
-        padding: var(--space-sm);
+        gap: var(--space-lg);
+    }
+}
+
+/* 모바일 (767px 이하) */
+@media (max-width: 767px) {
+    .recommendations-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-lg);
+    }
+
+    .style-cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-sm);
+        padding: var(--space-md);
     }
 
     .style-card-reason {
-        font-size: 0.65rem;
-        min-height: 35px;
-        padding: var(--space-xs) var(--space-sm);
+        font-size: 0.75rem;
+        min-height: 45px;
+        padding: var(--space-sm);
+        word-break: keep-all;
     }
 
     .category-reason {
-        font-size: 0.8rem;
-        padding: var(--space-sm) var(--space-md);
+        font-size: 0.9rem;
+        padding: var(--space-md) var(--space-lg);
+        word-break: keep-all;
     }
 }
 
@@ -1113,21 +1152,38 @@ body::after {
         gap: var(--space-sm);
     }
 
+    .category-reason {
+        font-size: 0.85rem;
+        word-break: keep-all;
+    }
+
     .style-cards {
         grid-template-columns: repeat(3, 1fr);
-        gap: 4px;
-        padding: var(--space-xs);
+        gap: 6px;
+        padding: var(--space-sm);
     }
 
     .style-card-rank {
-        width: 20px;
-        height: 20px;
-        font-size: 0.7rem;
+        width: 22px;
+        height: 22px;
+        font-size: 0.75rem;
     }
 
     .style-card-name {
-        font-size: 0.6rem;
-        padding: 2px 4px;
+        font-size: 0.65rem;
+        padding: 3px 6px;
+    }
+
+    .style-card-reason {
+        font-size: 0.7rem;
+        word-break: keep-all;
+        min-height: 40px;
+    }
+
+    .style-score {
+        font-size: 0.9rem;
+        padding: 6px 12px;
+        white-space: nowrap;
     }
 
     .style-card-info {
@@ -1183,3 +1239,4 @@ body.light-theme .metrics-card,
 body.light-theme .category-card {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
