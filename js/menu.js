@@ -28,6 +28,12 @@ let currentStyleIndex = 0;       // 현재 표시 중인 스타일 인덱스
     document.addEventListener('touchmove', function(e) {
         const currentY = e.touches[0].clientY;
 
+        // 버튼/인터랙티브 요소는 항상 허용 (성별 선택 등)
+        const interactiveEl = e.target.closest('button, a, input, select, .gender-btn, .gender-selection');
+        if (interactiveEl) {
+            return;  // 클릭 허용
+        }
+
         // 스크롤 가능한 컨테이너 내부인지 확인 (세로 + 가로 모두)
         let el = e.target;
         while (el && el !== document.body) {
