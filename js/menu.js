@@ -1272,6 +1272,12 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
         angle = ((angle % 360) + 360) % 360;
         currentAngle = angle;
 
+        // 디버그: 이미지 개수 확인
+        if (images.length === 0) {
+            console.error('❌ 360° 이미지 없음! images:', images);
+            return;
+        }
+
         // 모든 이미지 투명도 초기화
         images.forEach(img => img.style.opacity = 0);
 
@@ -1421,6 +1427,7 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
         const sensitivity = 360 / viewerWidth;
 
         const newAngle = currentAngle - deltaX * sensitivity;
+        console.log('🔄 pointermove deltaX:', deltaX, 'newAngle:', newAngle.toFixed(1));
         updateView(newAngle);
         startX = e.clientX;
     });
