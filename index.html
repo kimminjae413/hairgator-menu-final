@@ -601,7 +601,7 @@
 </div>
 
           <!-- AI 스타일 매칭 섹션 -->
-          <div class="sidebar-section" id="styleMatchSection">
+          <div class="sidebar-section" id="styleMatchSection" style="display: none;">
               <div class="sidebar-menu-item" onclick="handleStyleMatchAccess(event)">
                   <span class="sidebar-icon">✨</span>
                   <div class="sidebar-text">
@@ -1590,6 +1590,7 @@
             const userInfo = document.getElementById('userInfo');
             const guestMessage = document.getElementById('guestMessage');
             const personalColorSection = document.getElementById('personalColorSection');
+            const styleMatchSection = document.getElementById('styleMatchSection');
             const designerName = document.getElementById('designerNameDisplay');
             const designerPhone = document.getElementById('designerPhoneDisplay');
             const sessionStatus = document.getElementById('sessionStatusDisplay');
@@ -1604,6 +1605,7 @@
                 userInfo.style.display = 'block';
                 guestMessage.style.display = 'none';
                 personalColorSection.style.display = 'block'; // 퍼스널컬러 버튼 표시
+                if (styleMatchSection) styleMatchSection.style.display = 'block'; // AI 스타일 매칭 표시
 
                 // 각 요소 null 체크
                 if (designerName) {
@@ -1628,6 +1630,7 @@
                 userInfo.style.display = 'none';
                 guestMessage.style.display = 'block';
                 personalColorSection.style.display = 'none'; // 퍼스널컬러 버튼 숨김
+                if (styleMatchSection) styleMatchSection.style.display = 'none'; // AI 스타일 매칭 숨김
             }
         }
         function formatPhoneNumber(phone) {
