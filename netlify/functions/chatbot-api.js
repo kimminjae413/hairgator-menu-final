@@ -10135,75 +10135,45 @@ async function getStylesForMatching(payload) {
 
   try {
     let allStyles = [];
+    let nextPageToken = null;
 
-    // 1. 여자 스타일: styles 컬렉션
-    if (!gender || gender === 'female') {
-      let nextPageToken = null;
-      do {
-        let url = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles?pageSize=300`;
-        if (nextPageToken) url += `&pageToken=${nextPageToken}`;
+    // hairstyles 컬렉션에서 조회 (메인 메뉴판과 동일한 데이터 소스)
+    do {
+      let url = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles?pageSize=300`;
+      if (nextPageToken) url += `&pageToken=${nextPageToken}`;
 
-        const response = await fetch(url);
-        const data = await response.json();
+      const response = await fetch(url);
+      const data = await response.json();
 
-        if (data.documents) {
-          const styles = data.documents.map(doc => {
-            const fields = doc.fields;
-            const styleId = fields.styleId?.stringValue || doc.name.split('/').pop();
-            const type = fields.type?.stringValue || 'cut';
-
-            if (type === 'perm') return null;
-
-            const seriesInfo = getSeriesInfo(styleId);
-            if (seriesInfo.gender !== 'female') return null;
-
-            return {
-              styleId,
-              name: fields.seriesName?.stringValue || '',
-              gender: 'female',
-              mainCategory: seriesInfo.mainCategory,
-              subCategory: '',
-              type: type,
-              series: fields.series?.stringValue || '',
-              resultImage: fields.resultImage?.stringValue || '',
-              textRecipe: fields.textRecipe?.stringValue || ''
-            };
-          }).filter(s => s !== null);
-
-          allStyles = allStyles.concat(styles);
-        }
-        nextPageToken = data.nextPageToken;
-      } while (nextPageToken);
-    }
-
-    // 2. 남자 스타일: men_styles 컬렉션
-    if (!gender || gender === 'male') {
-      const menUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/men_styles?pageSize=300`;
-      const menResponse = await fetch(menUrl);
-      const menData = await menResponse.json();
-
-      if (menData.documents) {
-        const menStyles = menData.documents.map(doc => {
+      if (data.documents) {
+        const styles = data.documents.map(doc => {
           const fields = doc.fields;
-          const styleId = doc.name.split('/').pop();
-          const seriesInfo = getSeriesInfo(styleId);
+          const docGender = fields.gender?.stringValue || '';
+
+          // 성별 필터링
+          if (gender && docGender !== gender) return null;
+
+          const code = fields.code?.stringValue || doc.name.split('/').pop();
+          const thumbnailUrl = fields.thumbnailUrl?.stringValue || '';
+          const imageUrl = fields.imageUrl?.stringValue || '';
 
           return {
-            styleId,
-            name: fields.seriesName?.stringValue || '',
-            gender: 'male',
-            mainCategory: seriesInfo.mainCategory,
-            subCategory: '',
+            styleId: code,
+            name: fields.name?.stringValue || '',
+            gender: docGender,
+            mainCategory: fields.mainCategory?.stringValue || '',
+            subCategory: fields.subCategory?.stringValue || '',
             type: 'cut',
-            series: fields.series?.stringValue || '',
-            resultImage: fields.resultImage?.stringValue || '',
-            textRecipe: fields.textRecipe?.stringValue || ''
+            series: code.substring(0, 2), // SF, SP, FU 등
+            // 이미지 URL: thumbnailUrl 우선, 없으면 imageUrl
+            resultImage: thumbnailUrl || imageUrl || ''
           };
-        });
+        }).filter(s => s !== null);
 
-        allStyles = allStyles.concat(menStyles);
+        allStyles = allStyles.concat(styles);
       }
-    }
+      nextPageToken = data.nextPageToken;
+    } while (nextPageToken);
 
     console.log(`✅ 스타일 목록 ${allStyles.length}개 반환 (gender=${gender})`);
 
