@@ -249,6 +249,46 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 동작: `_users.tokenBalance += tokenCount`
 
 ## 최근 작업 이력
+- 2025-12-27: AI 스타일 매칭 모달 완성 + 눈썹 분석 추가
+
+  ### 눈썹 분석 기능
+  - **5-point 랜드마크 시스템**: start, prePeak, peak, postPeak, end
+  - **눈썹 라인 분석 (Eyebrow Line)**:
+    - Arch_Ratio: (baseLineY - peak.y) / browWidth → 아치형/자연형/일자형
+    - Tail_Angle: Math.atan2(dy, dx) → 상승/하강 각도
+  - **눈썹 텍스처 분석 (Eyebrow Texture)**:
+    - Density: 픽셀 밀도 분석 → Hard/Soft/Medium
+    - Thickness: 눈썹 두께 비율
+  - **분류 결과**:
+    - 아치형(Arched): 원계, 곡선미 강조
+    - 자연형(Natural): 뉴트럴계, 밸런스
+    - 일자형(Straight): 쿨계, 세련된 느낌
+  - **함수**: `analyzeEyebrowLine()`, `classifyEyebrowLine()`, `analyzeEyebrowTexture()`, `analyzeEyebrows()`
+  - **null 체크 버그 수정**: lineData가 null일 때 기본값 반환
+
+  ### 스타일 모달 개선
+  - **버튼 잘림 문제 해결**:
+    - 이미지 max-height: 40vh, aspect-ratio: 1/1로 축소
+    - overflow-y: auto로 스크롤 가능하게
+  - **버튼 스타일 메인 서비스 통일**:
+    - 룩북/체험하기: 핑크 그라데이션 (`rgba(233,30,99,...)`)
+    - 레시피: 미니멀 회색 테두리
+  - **캐시 버스팅**: app.js, styles.css에 버전 쿼리 추가 (`?v=20251227-modal-fix`)
+
+  ### 룩북/체험하기/레시피 버튼 메인 서비스 연동
+  - **URL 파라미터 처리** (main.js `checkUrlForStyleModal()`):
+    - `action` 파라미터 추가: lookbook, hairtry, recipe
+    - `styleId` 파라미터로 스타일 조회
+  - **스타일 조회 개선**:
+    - document ID로 직접 조회 시도 (style-match 호환)
+    - styleId 필드로 쿼리 (폴백)
+  - **action별 기능 실행**:
+    - lookbook/hairtry: `HAIRGATOR_MENU.openAIPhotoModal()` 호출
+    - recipe: `navigateToRecipe()` 호출
+  - **파일 위치**:
+    - style-match/app.js: `goToLookbook()`, `goToHairTry()`, `goToRecipe()`
+    - js/main.js: `checkUrlForStyleModal()` 확장
+
 - 2025-12-26: AI 스타일 매칭 + 이미지 타입 시스템 추가
 
   ### AI 스타일 매칭 (얼굴 랜드마크 기반 헤어스타일 추천)
