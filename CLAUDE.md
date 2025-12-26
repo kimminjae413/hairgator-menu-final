@@ -249,6 +249,32 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 동작: `_users.tokenBalance += tokenCount`
 
 ## 최근 작업 이력
+- 2025-12-26: AI 스타일 매칭 기능 추가
+
+  ### AI 스타일 매칭 (얼굴 랜드마크 기반 헤어스타일 추천)
+  - **위치**: 사이드바 "퍼스널컬러" 위에 "AI 스타일 매칭" 메뉴 추가
+  - **폴더**: `style-match/` (index.html, app.js, styles.css)
+  - **기술**:
+    - MediaPipe Face Mesh (468 랜드마크 포인트)
+    - 클라이언트 실행 (API 비용 0원)
+  - **분석 항목**:
+    - 상안부/중안부/하안부 비율 (헤어라인-미간-코끝-턱끝)
+    - 광대/턱 비율 (얼굴형 판별: 계란형, 사각형, 하트형, 긴얼굴 등)
+  - **추천 로직**:
+    - 성별별 대분류 카테고리별 TOP 3 추천
+    - 여자: A~H LENGTH (8개 카테고리)
+    - 남자: SF/SP/FU/PB/BZ/CR/MH (7개 카테고리)
+    - 스코어링: 추천 조건 +30점, 회피 조건 -50점
+  - **핵심 기능**: **왜 추천하는지 이유 상세 설명**
+    - 랜드마크간 거리/비율 수치 표시
+    - 어떤 단점을 보완하는지 설명
+  - **디자인**: 클리니컬 뷰티 (Playfair Display 폰트, 골드/민트 액센트)
+  - **5개국어 지원**: ko, en, ja, zh, vi
+  - **함수**:
+    - `handleStyleMatchAccess()`: 사이드바 메뉴 클릭 핸들러
+    - `showStyleMatchView()` / `hideStyleMatchView()`: 뷰 표시/숨기기
+  - **i18n 키**: `styleMatch.*` (menuTitle, uploadTitle, faceMetrics, faceType, insight, issue, solution, reason 등)
+
 - 2025-12-24: OhMyApp 플랜 상품 로직 설정 + 플랜 시스템 + 무료 플랜 자동 초기화 + 결제 모달 수정
 
   ### OhMyApp 플랜 상품 로직 설정
