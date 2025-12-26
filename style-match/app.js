@@ -10,6 +10,13 @@ let uploadedImage = null;
 let analysisResults = null;
 let allStyles = [];
 
+// 카메라 관련
+let cameraStream = null;
+let cameraFaceMesh = null;
+let isCameraMode = true;
+let isFaceDetected = false;
+let lastFaceResults = null;
+
 // 랜드마크 인덱스 (MediaPipe Face Mesh 468 포인트)
 const LANDMARKS = {
     hairline: 10,       // 헤어라인 중심
@@ -51,8 +58,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
 
-    uploadArea.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', handleFileUpload);
+    if (uploadArea) {
+        uploadArea.addEventListener('click', () => fileInput.click());
+    }
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFileUpload);
+    }
 
     // MediaPipe 초기화
     await initFaceMesh();
@@ -62,6 +73,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 번역 적용
     applyTranslations();
+
+    // 카메라 모드로 시작
+    await startCamera();
 });
 
 // 테마 상속
@@ -136,6 +150,156 @@ async function initFaceMesh() {
     }
 }
 
+// ========== 카메라 기능 ==========
+async function startCamera() {
+    const video = document.getElementById('cameraVideo');
+    const captureBtn = document.getElementById('captureBtn');
+    const indicator = document.getElementById('faceDetectedIndicator');
+
+    if (!video) return;
+
+    try {
+        // 기존 스트림 정리
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+        }
+
+        // 카메라 스트림 요청
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: 'user',
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+            }
+        });
+
+        video.srcObject = cameraStream;
+        await video.play();
+
+        console.log('📷 카메라 스트림 시작');
+
+        // 실시간 얼굴 감지용 FaceMesh 설정
+        cameraFaceMesh = new FaceMesh({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+        });
+
+        cameraFaceMesh.setOptions({
+            maxNumFaces: 1,
+            refineLandmarks: true,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        cameraFaceMesh.onResults((results) => {
+            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                if (!isFaceDetected) {
+                    isFaceDetected = true;
+                    indicator.style.display = 'flex';
+                    captureBtn.disabled = !selectedGender;
+                    console.log('👤 얼굴 감지됨');
+                }
+                lastFaceResults = results;
+            } else {
+                if (isFaceDetected) {
+                    isFaceDetected = false;
+                    indicator.style.display = 'none';
+                    captureBtn.disabled = true;
+                }
+                lastFaceResults = null;
+            }
+        });
+
+        // 실시간 감지 루프
+        detectFacesLoop(video);
+
+    } catch (error) {
+        console.error('❌ 카메라 접근 실패:', error);
+        // 카메라 실패 시 업로드 모드로 전환
+        switchInputMode('upload');
+    }
+}
+
+async function detectFacesLoop(video) {
+    if (!cameraFaceMesh || !isCameraMode) return;
+
+    try {
+        await cameraFaceMesh.send({ image: video });
+    } catch (e) {
+        // 무시
+    }
+
+    if (isCameraMode && cameraStream) {
+        requestAnimationFrame(() => detectFacesLoop(video));
+    }
+}
+
+function stopCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+    isFaceDetected = false;
+    lastFaceResults = null;
+}
+
+// 카메라에서 캡처
+window.captureFromCamera = function() {
+    if (!lastFaceResults || !isFaceDetected) {
+        alert('얼굴을 감지할 수 없습니다. 카메라를 정면으로 바라봐주세요.');
+        return;
+    }
+
+    const video = document.getElementById('cameraVideo');
+    const canvas = document.getElementById('cameraCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // 캔버스 크기 설정
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // 거울 모드로 캡처 (CSS와 동일하게)
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    // 캡처한 이미지를 uploadedImage로 설정
+    uploadedImage = canvas.toDataURL('image/jpeg', 0.9);
+
+    console.log('📸 카메라에서 캡처 완료');
+
+    // 분석 버튼 활성화 체크
+    checkReadyState();
+
+    // 바로 분석 시작
+    if (selectedGender) {
+        startAnalysis();
+    }
+};
+
+// 입력 모드 전환
+window.switchInputMode = function(mode) {
+    const cameraArea = document.getElementById('cameraArea');
+    const uploadArea = document.getElementById('uploadArea');
+    const tabs = document.querySelectorAll('.mode-tab');
+
+    tabs.forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.mode === mode);
+    });
+
+    if (mode === 'camera') {
+        isCameraMode = true;
+        cameraArea.style.display = 'block';
+        uploadArea.style.display = 'none';
+        startCamera();
+    } else {
+        isCameraMode = false;
+        cameraArea.style.display = 'none';
+        uploadArea.style.display = 'block';
+        stopCamera();
+    }
+};
+
 // ========== 파일 업로드 ==========
 function handleFileUpload(event) {
     const file = event.target.files[0];
@@ -168,11 +332,26 @@ window.selectGender = function(gender) {
     });
 
     checkReadyState();
+
+    // 카메라 모드에서 캡처 버튼 활성화
+    if (isCameraMode && isFaceDetected) {
+        const captureBtn = document.getElementById('captureBtn');
+        if (captureBtn) {
+            captureBtn.disabled = false;
+        }
+    }
 };
 
 function checkReadyState() {
     const analyzeBtn = document.getElementById('analyzeBtn');
-    analyzeBtn.disabled = !(uploadedImage && selectedGender);
+
+    // 카메라 모드: 얼굴 감지 + 성별 선택
+    // 업로드 모드: 이미지 업로드 + 성별 선택
+    if (isCameraMode) {
+        analyzeBtn.disabled = true; // 카메라 모드에서는 캡처 버튼 사용
+    } else {
+        analyzeBtn.disabled = !(uploadedImage && selectedGender);
+    }
 }
 
 // ========== 분석 시작 ==========
@@ -529,8 +708,8 @@ async function loadStyles() {
 
         const baseUrl = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents`;
 
-        // hairstyles 컬렉션에서 스타일 로드
-        const response = await fetch(`${baseUrl}/hairstyles?pageSize=500`);
+        // styles 컬렉션에서 스타일 로드
+        const response = await fetch(`${baseUrl}/styles?pageSize=500`);
         const data = await response.json();
 
         if (data.documents) {

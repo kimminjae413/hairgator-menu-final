@@ -44,7 +44,48 @@
                     <h2 class="section-title" data-i18n="styleMatch.uploadTitle">얼굴 사진 분석</h2>
                 </div>
 
-                <div class="upload-area" id="uploadArea">
+                <!-- 입력 모드 선택 탭 -->
+                <div class="input-mode-tabs">
+                    <button class="mode-tab active" data-mode="camera" onclick="switchInputMode('camera')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                            <circle cx="12" cy="13" r="4"/>
+                        </svg>
+                        <span data-i18n="styleMatch.cameraMode">실시간 카메라</span>
+                    </button>
+                    <button class="mode-tab" data-mode="upload" onclick="switchInputMode('upload')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <span data-i18n="styleMatch.uploadMode">사진 업로드</span>
+                    </button>
+                </div>
+
+                <!-- 카메라 모드 -->
+                <div class="camera-area" id="cameraArea">
+                    <video id="cameraVideo" autoplay playsinline muted></video>
+                    <canvas id="cameraCanvas" style="display: none;"></canvas>
+                    <div class="camera-overlay" id="cameraOverlay">
+                        <div class="face-guide">
+                            <svg viewBox="0 0 200 260" fill="none">
+                                <ellipse cx="100" cy="130" rx="70" ry="90" stroke="currentColor" stroke-width="2" stroke-dasharray="8 4"/>
+                            </svg>
+                        </div>
+                        <p class="camera-hint" data-i18n="styleMatch.cameraHint">얼굴을 가이드 안에 맞춰주세요</p>
+                    </div>
+                    <div class="face-detected-indicator" id="faceDetectedIndicator" style="display: none;">
+                        <span class="indicator-dot"></span>
+                        <span data-i18n="styleMatch.faceDetected">얼굴 감지됨</span>
+                    </div>
+                    <button class="capture-btn" id="captureBtn" onclick="captureFromCamera()" disabled>
+                        <span class="capture-icon"></span>
+                    </button>
+                </div>
+
+                <!-- 업로드 모드 -->
+                <div class="upload-area" id="uploadArea" style="display: none;">
                     <div class="upload-placeholder" id="uploadPlaceholder">
                         <div class="upload-icon">
                             <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
