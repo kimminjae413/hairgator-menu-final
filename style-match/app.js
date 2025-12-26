@@ -856,6 +856,9 @@ function determineFaceType(ratios) {
 
 // ========== 결과 표시 ==========
 function displayAnalysisResults(ratios, analysis) {
+    // 카메라 종료 (결과 화면에서는 카메라 불필요)
+    stopCamera();
+
     // 섹션 표시
     document.getElementById('uploadSection').style.display = 'none';
     document.getElementById('analysisSection').style.display = 'block';
