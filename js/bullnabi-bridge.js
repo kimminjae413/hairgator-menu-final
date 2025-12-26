@@ -716,10 +716,10 @@
         getPlanName(planKey) {
             if (typeof t === 'function') {
                 const i18nKeys = {
-                    'free': 'pricing.freePlan',
-                    'basic': 'pricing.basicPlan',
-                    'pro': 'pricing.proPlan',
-                    'business': 'pricing.businessPlan'
+                    'free': 'payment.freePlan',
+                    'basic': 'payment.basicPlan',
+                    'pro': 'payment.proPlan',
+                    'business': 'payment.businessPlan'
                 };
                 return t(i18nKeys[planKey]) || planKey || 'Free';
             }
