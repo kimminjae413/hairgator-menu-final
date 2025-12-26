@@ -1773,8 +1773,8 @@ body.light-theme .category-card {
 
 .style-modal-image-wrapper {
     width: 100%;
-    aspect-ratio: 4/5;
-    max-height: 50vh;
+    aspect-ratio: 1/1;
+    max-height: 40vh;
     overflow: hidden;
     background: var(--bg-secondary);
 }
@@ -1845,38 +1845,38 @@ body.light-theme .category-card {
 /* 룩북, 헤어체험 버튼 - 핑크 그라데이션 (메인 서비스 동일) */
 .style-action-btn.lookbook,
 .style-action-btn.hairtry {
-    background: linear-gradient(135deg, rgba(233,30,99,0.15) 0%, rgba(194,24,91,0.1) 100%);
-    border: 1px solid rgba(233,30,99,0.4);
-    color: var(--text-primary);
+    background: linear-gradient(135deg, rgba(233,30,99,0.2) 0%, rgba(194,24,91,0.15) 100%);
+    border: 1px solid rgba(233,30,99,0.5);
+    color: #333;
 }
 
 .style-action-btn.lookbook:hover,
 .style-action-btn.hairtry:hover {
-    background: linear-gradient(135deg, rgba(233,30,99,0.25) 0%, rgba(194,24,91,0.2) 100%);
-    border-color: rgba(233,30,99,0.6);
-    box-shadow: 0 4px 12px rgba(233,30,99,0.2);
+    background: linear-gradient(135deg, rgba(233,30,99,0.35) 0%, rgba(194,24,91,0.25) 100%);
+    border-color: rgba(233,30,99,0.7);
+    box-shadow: 0 4px 12px rgba(233,30,99,0.25);
 }
 
 .style-action-btn.lookbook:active,
 .style-action-btn.hairtry:active {
     transform: translateY(0);
-    background: linear-gradient(135deg, rgba(233,30,99,0.3) 0%, rgba(194,24,91,0.25) 100%);
+    background: linear-gradient(135deg, rgba(233,30,99,0.4) 0%, rgba(194,24,91,0.3) 100%);
 }
 
 /* 레시피 버튼 - 미니멀 회색 (메인 서비스 동일) */
 .style-action-btn.recipe {
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.15);
-    color: var(--text-secondary);
+    border: 1px solid rgba(100,100,100,0.3);
+    color: #666;
 }
 
 .style-action-btn.recipe:hover {
-    border-color: rgba(255,255,255,0.3);
-    color: var(--text-primary);
-    background: rgba(255,255,255,0.05);
+    border-color: rgba(100,100,100,0.5);
+    color: #333;
+    background: rgba(100,100,100,0.08);
 }
 
 .style-action-btn.recipe:active {
-    background: rgba(255,255,255,0.08);
+    background: rgba(100,100,100,0.12);
 }
 
