@@ -667,55 +667,66 @@ function interpretAnalysis(ratios) {
         });
     }
 
-    // 2. 하안부 분석 (긴 얼굴)
-    if (raw.lowerRatio > raw.middleRatio * 1.15) {
+    // 2. 하안부 분석 (긴 얼굴) - 하안부가 40% 이상이면 긴 얼굴로 판단
+    const isLongFace = raw.lowerRatio > 0.40 || raw.lowerRatio > raw.middleRatio * 1.15;
+    const isShortFace = raw.lowerRatio < 0.28 || raw.lowerRatio < raw.middleRatio * 0.85;
+
+    if (isLongFace) {
         insights.push({
             type: 'long_face',
             value: `${ratios.lowerRatio}%`,
-            description: t('styleMatch.insight.longFace') || `하안부가 중안부보다 15% 이상 깁니다`,
-            issue: t('styleMatch.issue.longFace') || '긴 얼굴형',
-            solution: t('styleMatch.solution.longFace') || '가로 볼륨으로 세로 길이를 상쇄하는 스타일이 어울립니다'
+            description: `하안부가 평균(33%)보다 깁니다 (${ratios.lowerRatio}%)`,
+            issue: '긴 하관/긴 얼굴형',
+            solution: '가로 볼륨으로 세로 길이를 상쇄하는 스타일이 어울립니다'
         });
         if (selectedGender === 'female') {
             recommendations.push({
                 mainCategory: ['C LENGTH', 'D LENGTH', 'E LENGTH', 'F LENGTH'],
                 score: 40,
-                reason: t('styleMatch.reason.horizontalVolume') || '가로 볼륨으로 균형'
+                reason: '가로 볼륨으로 세로 비율 보정'
             });
             avoidances.push({
                 mainCategory: ['A LENGTH', 'B LENGTH'],
                 score: -20,
-                reason: t('styleMatch.reason.verticalLonger') || '세로로 더 길어 보임'
+                reason: '긴 기장이 얼굴을 더 길어 보이게 함'
             });
         } else {
+            // 긴 얼굴 남자: 사이드 볼륨 추천
             recommendations.push({
                 mainCategory: ['SIDE PART', 'SIDE FRINGE'],
-                score: 35,
-                reason: t('styleMatch.reason.sideVolume') || '사이드 볼륨으로 균형'
+                score: 50,
+                reason: '사이드 볼륨으로 얼굴 길이 분산'
+            });
+            // ⚠️ 긴 얼굴에 탑 볼륨 스타일은 감점!
+            avoidances.push({
+                mainCategory: ['FRINGE UP', 'PUSHED BACK', 'MOHICAN'],
+                score: -30,
+                reason: '탑 볼륨이 얼굴을 더 길어 보이게 함 (주의)'
             });
         }
     }
 
-    // 3. 짧은 얼굴
-    if (raw.lowerRatio < raw.middleRatio * 0.85) {
+    // 3. 짧은 얼굴 - 하안부가 28% 이하
+    if (isShortFace) {
         insights.push({
             type: 'short_face',
             value: `${ratios.lowerRatio}%`,
-            description: t('styleMatch.insight.shortFace') || `하안부가 중안부보다 짧습니다`,
-            issue: t('styleMatch.issue.shortFace') || '짧은 얼굴형',
-            solution: t('styleMatch.solution.shortFace') || '세로 길이를 연장하는 긴 기장이 어울립니다'
+            description: `하안부가 평균(33%)보다 짧습니다 (${ratios.lowerRatio}%)`,
+            issue: '짧은 얼굴형',
+            solution: '세로 길이를 연장하는 스타일이 어울립니다'
         });
         if (selectedGender === 'female') {
             recommendations.push({
                 mainCategory: ['A LENGTH', 'B LENGTH', 'C LENGTH'],
                 score: 35,
-                reason: t('styleMatch.reason.verticalExtend') || '세로 라인 연장'
+                reason: '긴 기장으로 세로 라인 연장'
             });
         } else {
+            // ✅ 짧은 얼굴에만 탑 볼륨 추천!
             recommendations.push({
                 mainCategory: ['FRINGE UP', 'PUSHED BACK', 'MOHICAN'],
                 score: 30,
-                reason: t('styleMatch.reason.topVolume') || '탑 볼륨으로 세로 연장'
+                reason: '탑 볼륨으로 시선을 위로 끌어올려 얼굴이 갸름해 보임'
             });
         }
     }
@@ -1080,77 +1091,119 @@ function generateCategoryReason(category, analysis, topStyles) {
     return reasonParts.join(' · ');
 }
 
-// 스타일별 개별 추천 이유 생성
+// 스타일별 개별 추천 이유 생성 (조건부 로직)
 function generateStyleReason(style, analysis, ratios) {
     const reasons = [];
 
-    // 1. 얼굴 비율 기반 추천 이유
-    if (ratios) {
-        const { upperRatio, lowerRatio, cheekJawRatio } = ratios.raw || {};
+    if (!ratios || !ratios.raw) {
+        return '얼굴형 분석 기반 추천';
+    }
 
-        // 이마 관련
-        if (upperRatio > 0.36) {
-            if (style.subCategory === 'EB' || style.subCategory === 'Eye Brow') {
-                reasons.push(`상안부 ${ratios.upperRatio}% → 눈썹 기장 앞머리로 이마 커버`);
-            } else if (style.subCategory === 'FH' || style.subCategory === 'Fore Head') {
-                reasons.push(`상안부 ${ratios.upperRatio}% → 이마선 앞머리로 부분 커버`);
-            } else if (style.subCategory === 'E' || style.subCategory === 'Eye') {
-                reasons.push(`상안부 ${ratios.upperRatio}% → 눈 기장 앞머리로 이마 완전 커버`);
-            }
-        }
+    const { upperRatio, lowerRatio, cheekJawRatio } = ratios.raw;
+    const isLongFace = lowerRatio > 0.40;
+    const isShortFace = lowerRatio < 0.28;
+    const isSquareJaw = cheekJawRatio < 1.15;
+    const isOvalFace = cheekJawRatio > 1.35;
+    const isWideForehead = upperRatio > 0.36;
+    const isNarrowForehead = upperRatio < 0.25;
 
-        // 하안부 관련 (긴 얼굴)
-        if (lowerRatio > upperRatio * 1.15) {
-            if (style.mainCategory?.includes('LENGTH') && !style.mainCategory?.includes('A') && !style.mainCategory?.includes('B')) {
-                reasons.push(`하안부 ${ratios.lowerRatio}% → 가로 볼륨으로 세로 비율 보정`);
-            }
-            if (style.mainCategory === 'SIDE PART' || style.mainCategory === 'SIDE FRINGE') {
-                reasons.push(`하안부 ${ratios.lowerRatio}% → 사이드 볼륨으로 얼굴 길이 분산`);
-            }
-            if (style.mainCategory === 'FRINGE UP' || style.mainCategory === 'PUSHED BACK' || style.mainCategory === 'MOHICAN') {
-                reasons.push(`탑 볼륨으로 시선 분산, 얼굴 길이 연장 효과`);
-            }
-        }
+    const styleName = (style.name || '').toLowerCase();
+    const mainCat = style.mainCategory || '';
+    const subCat = style.subCategory || '';
 
-        // 짧은 얼굴
-        if (lowerRatio < upperRatio * 0.85) {
-            if (style.mainCategory === 'FRINGE UP' || style.mainCategory === 'PUSHED BACK' || style.mainCategory === 'MOHICAN') {
-                reasons.push(`하안부 ${ratios.lowerRatio}% → 탑 볼륨으로 세로 라인 연장`);
-            }
-            if (style.mainCategory?.includes('A LENGTH') || style.mainCategory?.includes('B LENGTH')) {
-                reasons.push(`하안부 ${ratios.lowerRatio}% → 긴 기장으로 세로 라인 강조`);
-            }
-        }
+    // 탑 볼륨 스타일 (FRINGE UP, PUSHED BACK, MOHICAN)
+    const isTopVolumeStyle = ['FRINGE UP', 'PUSHED BACK', 'MOHICAN'].includes(mainCat);
 
-        // 광대/턱 비율
-        if (cheekJawRatio < 1.15) {
-            if (style.mainCategory?.includes('LENGTH')) {
-                reasons.push(`광대/턱 비율 ${ratios.cheekJawRatio} → 웨이브 스타일로 각진 턱선 완화`);
-            }
-            if (style.mainCategory === 'SIDE FRINGE' || style.mainCategory === 'SIDE PART') {
-                reasons.push(`광대/턱 비율 ${ratios.cheekJawRatio} → 사이드 볼륨으로 턱선 소프닝`);
-            }
-        } else if (cheekJawRatio > 1.35) {
-            reasons.push(`이상적인 계란형(${ratios.cheekJawRatio}) → 다양한 스타일 소화 가능`);
-        } else if (cheekJawRatio > 1.25) {
-            if (style.mainCategory?.includes('D') || style.mainCategory?.includes('E') || style.mainCategory?.includes('F')) {
-                reasons.push(`하트형(${ratios.cheekJawRatio}) → 턱 주변 볼륨으로 좁은 턱선 보완`);
-            }
+    // 사이드 볼륨 스타일
+    const isSideVolumeStyle = ['SIDE PART', 'SIDE FRINGE'].includes(mainCat);
+
+    // 짧은 머리 스타일 (턱선 노출)
+    const isShortStyle = ['BUZZ', 'CROP'].includes(mainCat);
+
+    // 슬릭/타이트 스타일 (볼륨 없음)
+    const isSlickStyle = styleName.includes('슬릭') || styleName.includes('slick');
+
+    // ===== 조건부 멘트 생성 =====
+
+    // 1. 탑 볼륨 + 얼굴 길이 조합
+    if (isTopVolumeStyle) {
+        if (isLongFace) {
+            reasons.push(`⚠️ 하안부 ${ratios.lowerRatio}% (긴 편) → 탑 볼륨이 얼굴을 더 길어 보이게 할 수 있음`);
+        } else if (isShortFace) {
+            reasons.push(`✓ 하안부 ${ratios.lowerRatio}% (짧은 편) → 탑 볼륨이 시선을 위로 끌어올려 얼굴이 갸름해 보임`);
+        } else {
+            reasons.push(`탑 볼륨으로 세련된 인상 연출`);
         }
     }
 
-    // 2. 스타일 reasons 배열에서 가져오기 (있으면)
-    if (style.reasons && style.reasons.length > 0) {
+    // 2. 사이드 볼륨 + 얼굴 길이 조합
+    if (isSideVolumeStyle) {
+        if (isLongFace) {
+            reasons.push(`✓ 하안부 ${ratios.lowerRatio}% → 사이드 볼륨이 시선을 가로로 분산시켜 얼굴 길이 완화`);
+        } else if (isShortFace) {
+            reasons.push(`하안부 ${ratios.lowerRatio}% (짧은 편) → 사이드 볼륨이 얼굴을 더 짧아 보이게 할 수 있음`);
+        }
+        // 슬릭 스타일은 사이드 볼륨 설명 제외
+        if (isSlickStyle) {
+            reasons.length = 0; // 기존 이유 제거
+            reasons.push(`깔끔한 라인 정리로 단정한 인상`);
+        }
+    }
+
+    // 3. 짧은 머리 + 턱선 조합
+    if (isShortStyle) {
+        if (isSquareJaw) {
+            reasons.push(`⚠️ 광대/턱 비율 ${ratios.cheekJawRatio} → 짧은 기장이 각진 턱선을 그대로 노출`);
+        } else if (isOvalFace) {
+            reasons.push(`✓ 계란형(${ratios.cheekJawRatio}) → 어떤 기장이든 잘 어울림`);
+        } else {
+            reasons.push(`깔끔하고 시원한 인상`);
+        }
+    }
+
+    // 4. 이마 관련
+    if (isWideForehead) {
+        if (subCat === 'EB' || subCat === 'Eye Brow') {
+            reasons.push(`상안부 ${ratios.upperRatio}% → 눈썹 기장 앞머리로 넓은 이마 자연스럽게 커버`);
+        } else if (subCat === 'E' || subCat === 'Eye') {
+            reasons.push(`상안부 ${ratios.upperRatio}% → 눈 기장 앞머리로 이마 완전 커버`);
+        } else if (subCat === 'N' || subCat === 'None' || !subCat) {
+            if (isTopVolumeStyle || mainCat === 'PUSHED BACK') {
+                reasons.push(`⚠️ 상안부 ${ratios.upperRatio}% (넓은 편) → 앞머리 없이 이마가 완전 노출됨`);
+            }
+        }
+    } else if (isNarrowForehead) {
+        if (subCat === 'N' || subCat === 'None' || !subCat) {
+            reasons.push(`✓ 상안부 ${ratios.upperRatio}% (좁은 편) → 이마 노출로 균형감 있는 비율`);
+        }
+    }
+
+    // 5. 사각턱 + 기장 조합
+    if (isSquareJaw && !isShortStyle) {
+        if (mainCat.includes('LENGTH') || isSideVolumeStyle) {
+            reasons.push(`광대/턱 비율 ${ratios.cheekJawRatio} → 기장감/볼륨으로 각진 턱선 소프닝`);
+        }
+    }
+
+    // 6. 계란형은 대부분 OK
+    if (isOvalFace && reasons.length === 0) {
+        reasons.push(`✓ 이상적인 계란형(${ratios.cheekJawRatio}) → 다양한 스타일 소화 가능`);
+    }
+
+    // 7. 스타일 reasons 배열에서 추가 (중복 제외)
+    if (style.reasons && style.reasons.length > 0 && reasons.length < 2) {
         style.reasons.forEach(r => {
-            if (!reasons.some(existing => existing.includes(r.text))) {
-                reasons.push(r.text);
+            if (r.type === 'positive' && !reasons.some(existing => existing.includes(r.text))) {
+                reasons.push(`✓ ${r.text}`);
+            } else if (r.type === 'negative' && !reasons.some(existing => existing.includes(r.text))) {
+                reasons.push(`⚠️ ${r.text}`);
             }
         });
     }
 
-    // 3. 기본 이유 (아무것도 없으면)
+    // 8. 기본 이유
     if (reasons.length === 0) {
-        reasons.push('얼굴형 분석 기반 추천 스타일');
+        reasons.push('균형 잡힌 얼굴형에 적합한 스타일');
     }
 
     return reasons.slice(0, 2).join(' / ');
