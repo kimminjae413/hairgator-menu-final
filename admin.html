@@ -5721,61 +5721,73 @@
 
                 console.log('🔄 360° 생성 시작:', styleId, sourceImageUrl);
 
-                // 2. Netlify 함수 호출하여 4개 뷰 이미지 생성
-                const response = await fetch('/.netlify/functions/generate-360-views', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        styleId: styleId,
-                        imageUrl: sourceImageUrl
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || '360° 생성 실패');
-                }
-
-                const result = await response.json();
-                console.log('✅ Gemini 이미지 생성 완료, Firebase 업로드 시작...');
-
-                // 3. base64 이미지들을 Firebase Storage에 업로드
-                showToast('Firebase Storage에 업로드 중...');
-                const views360 = {};
+                // 2. 4개 뷰 이미지를 병렬로 동시 생성
                 const viewKeys = ['front', 'right', 'back', 'left'];
 
-                for (const key of viewKeys) {
-                    if (result.images && result.images[key] && result.images[key].data) {
-                        const imageData = result.images[key];
+                // 단일 뷰 생성 + 업로드 함수
+                const generateAndUploadView = async (key) => {
+                    const response = await fetch('/.netlify/functions/generate-360-views', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            styleId: styleId,
+                            imageUrl: sourceImageUrl,
+                            viewKey: key
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `${key} 생성 실패`);
+                    }
+
+                    const result = await response.json();
+
+                    if (result.image && result.image.data) {
+                        const imageData = result.image;
                         const extension = imageData.mimeType.includes('jpeg') ? 'jpg' : 'png';
                         const filePath = `hairstyles/${styleId}/360/${key}.${extension}`;
 
-                        // base64를 Blob으로 변환
                         const byteCharacters = atob(imageData.data);
                         const byteNumbers = new Array(byteCharacters.length);
-                        for (let i = 0; i < byteCharacters.length; i++) {
-                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        for (let j = 0; j < byteCharacters.length; j++) {
+                            byteNumbers[j] = byteCharacters.charCodeAt(j);
                         }
                         const byteArray = new Uint8Array(byteNumbers);
                         const blob = new Blob([byteArray], { type: imageData.mimeType });
 
-                        // Firebase Storage 업로드
                         const storageRef = storage.ref(filePath);
                         await storageRef.put(blob);
-                        const downloadUrl = await storageRef.getDownloadURL();
-
-                        views360[key] = downloadUrl;
-                        console.log(`✅ ${key} 업로드 완료:`, downloadUrl);
+                        const url = await storageRef.getDownloadURL();
+                        console.log(`✅ ${key} 완료`);
+                        return { key, url };
                     }
-                }
+                    throw new Error(`${key} 이미지 없음`);
+                };
 
-                // 4. Firestore 업데이트
-                await db.collection('hairstyles').doc(styleId).update({
-                    views360: views360,
-                    views360UpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                // 4개 요청 병렬 실행
+                showToast('4개 뷰 동시 생성 중...');
+                const results = await Promise.allSettled(
+                    viewKeys.map(key => generateAndUploadView(key))
+                );
+
+                // 결과 정리
+                const views360 = {};
+                results.forEach(result => {
+                    if (result.status === 'fulfilled' && result.value) {
+                        views360[result.value.key] = result.value.url;
+                    }
                 });
 
-                // 5. 스타일 목록 새로고침
+                // 3. Firestore 업데이트
+                if (Object.keys(views360).length > 0) {
+                    await db.collection('hairstyles').doc(styleId).update({
+                        views360: views360,
+                        views360UpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+
+                // 4. 스타일 목록 새로고침
                 loadStyles();
 
                 showToast(`✅ 360° 뷰 생성 완료! ${Object.keys(views360).length}개 이미지 저장됨`);
@@ -5851,7 +5863,7 @@
         }
 
         /**
-         * 360° 뷰 생성 (확인 없이 - 일괄 처리용)
+         * 360° 뷰 생성 (확인 없이 - 일괄 처리용, 병렬 실행)
          */
         async function generate360ViewsSilent(styleId, data) {
             let sourceImageUrl = data.imageUrl;
@@ -5860,23 +5872,19 @@
             }
             if (!sourceImageUrl) throw new Error('이미지 없음');
 
-            const response = await fetch('/.netlify/functions/generate-360-views', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ styleId, imageUrl: sourceImageUrl })
-            });
-
-            if (!response.ok) throw new Error('API 호출 실패');
-
-            const result = await response.json();
-
-            // base64 이미지들을 Firebase Storage에 업로드
-            const views360 = {};
             const viewKeys = ['front', 'right', 'back', 'left'];
 
-            for (const key of viewKeys) {
-                if (result.images && result.images[key] && result.images[key].data) {
-                    const imageData = result.images[key];
+            const generateAndUploadView = async (key) => {
+                const response = await fetch('/.netlify/functions/generate-360-views', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ styleId, imageUrl: sourceImageUrl, viewKey: key })
+                });
+                if (!response.ok) throw new Error(`${key} 실패`);
+
+                const result = await response.json();
+                if (result.image && result.image.data) {
+                    const imageData = result.image;
                     const extension = imageData.mimeType.includes('jpeg') ? 'jpg' : 'png';
                     const filePath = `hairstyles/${styleId}/360/${key}.${extension}`;
 
@@ -5890,14 +5898,24 @@
 
                     const storageRef = storage.ref(filePath);
                     await storageRef.put(blob);
-                    views360[key] = await storageRef.getDownloadURL();
+                    return { key, url: await storageRef.getDownloadURL() };
                 }
-            }
+                throw new Error(`${key} 이미지 없음`);
+            };
 
-            await db.collection('hairstyles').doc(styleId).update({
-                views360: views360,
-                views360UpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            // 병렬 실행
+            const results = await Promise.allSettled(viewKeys.map(k => generateAndUploadView(k)));
+            const views360 = {};
+            results.forEach(r => {
+                if (r.status === 'fulfilled' && r.value) views360[r.value.key] = r.value.url;
             });
+
+            if (Object.keys(views360).length > 0) {
+                await db.collection('hairstyles').doc(styleId).update({
+                    views360: views360,
+                    views360UpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
         }
         </script>
     </body>
