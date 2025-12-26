@@ -1080,8 +1080,84 @@ function generateCategoryReason(category, analysis, topStyles) {
     return reasonParts.join(' · ');
 }
 
+// 스타일별 개별 추천 이유 생성
+function generateStyleReason(style, analysis, ratios) {
+    const reasons = [];
+
+    // 1. 얼굴 비율 기반 추천 이유
+    if (ratios) {
+        const { upperRatio, lowerRatio, cheekJawRatio } = ratios.raw || {};
+
+        // 이마 관련
+        if (upperRatio > 0.36) {
+            if (style.subCategory === 'EB' || style.subCategory === 'Eye Brow') {
+                reasons.push(`상안부 ${ratios.upperRatio}% → 눈썹 기장 앞머리로 이마 커버`);
+            } else if (style.subCategory === 'FH' || style.subCategory === 'Fore Head') {
+                reasons.push(`상안부 ${ratios.upperRatio}% → 이마선 앞머리로 부분 커버`);
+            } else if (style.subCategory === 'E' || style.subCategory === 'Eye') {
+                reasons.push(`상안부 ${ratios.upperRatio}% → 눈 기장 앞머리로 이마 완전 커버`);
+            }
+        }
+
+        // 하안부 관련 (긴 얼굴)
+        if (lowerRatio > upperRatio * 1.15) {
+            if (style.mainCategory?.includes('LENGTH') && !style.mainCategory?.includes('A') && !style.mainCategory?.includes('B')) {
+                reasons.push(`하안부 ${ratios.lowerRatio}% → 가로 볼륨으로 세로 비율 보정`);
+            }
+            if (style.mainCategory === 'SIDE PART' || style.mainCategory === 'SIDE FRINGE') {
+                reasons.push(`하안부 ${ratios.lowerRatio}% → 사이드 볼륨으로 얼굴 길이 분산`);
+            }
+            if (style.mainCategory === 'FRINGE UP' || style.mainCategory === 'PUSHED BACK' || style.mainCategory === 'MOHICAN') {
+                reasons.push(`탑 볼륨으로 시선 분산, 얼굴 길이 연장 효과`);
+            }
+        }
+
+        // 짧은 얼굴
+        if (lowerRatio < upperRatio * 0.85) {
+            if (style.mainCategory === 'FRINGE UP' || style.mainCategory === 'PUSHED BACK' || style.mainCategory === 'MOHICAN') {
+                reasons.push(`하안부 ${ratios.lowerRatio}% → 탑 볼륨으로 세로 라인 연장`);
+            }
+            if (style.mainCategory?.includes('A LENGTH') || style.mainCategory?.includes('B LENGTH')) {
+                reasons.push(`하안부 ${ratios.lowerRatio}% → 긴 기장으로 세로 라인 강조`);
+            }
+        }
+
+        // 광대/턱 비율
+        if (cheekJawRatio < 1.15) {
+            if (style.mainCategory?.includes('LENGTH')) {
+                reasons.push(`광대/턱 비율 ${ratios.cheekJawRatio} → 웨이브 스타일로 각진 턱선 완화`);
+            }
+            if (style.mainCategory === 'SIDE FRINGE' || style.mainCategory === 'SIDE PART') {
+                reasons.push(`광대/턱 비율 ${ratios.cheekJawRatio} → 사이드 볼륨으로 턱선 소프닝`);
+            }
+        } else if (cheekJawRatio > 1.35) {
+            reasons.push(`이상적인 계란형(${ratios.cheekJawRatio}) → 다양한 스타일 소화 가능`);
+        } else if (cheekJawRatio > 1.25) {
+            if (style.mainCategory?.includes('D') || style.mainCategory?.includes('E') || style.mainCategory?.includes('F')) {
+                reasons.push(`하트형(${ratios.cheekJawRatio}) → 턱 주변 볼륨으로 좁은 턱선 보완`);
+            }
+        }
+    }
+
+    // 2. 스타일 reasons 배열에서 가져오기 (있으면)
+    if (style.reasons && style.reasons.length > 0) {
+        style.reasons.forEach(r => {
+            if (!reasons.some(existing => existing.includes(r.text))) {
+                reasons.push(r.text);
+            }
+        });
+    }
+
+    // 3. 기본 이유 (아무것도 없으면)
+    if (reasons.length === 0) {
+        reasons.push('얼굴형 분석 기반 추천 스타일');
+    }
+
+    return reasons.slice(0, 2).join(' / ');
+}
+
 // 카테고리 카드 생성
-function createCategoryCard(category, reason, styles) {
+function createCategoryCard(category, reason, styles, ratios) {
     const card = document.createElement('div');
     card.className = 'category-card';
 
@@ -1096,24 +1172,20 @@ function createCategoryCard(category, reason, styles) {
         </div>
         <div class="category-reason">${reason}</div>
         <div class="style-cards">
-            ${styles.map((style, idx) => `
+            ${styles.map((style, idx) => {
+                const styleReason = generateStyleReason(style, analysisResults?.analysis, analysisResults?.ratios);
+                return `
                 <div class="style-card" onclick="openStyleDetail('${style.styleId}')">
+                    <div class="style-card-rank">${idx + 1}</div>
+                    <div class="style-card-name">${style.name || 'ChrisKiLAB'}</div>
                     <img src="${style.resultImage}" alt="${style.name}" loading="lazy"
                          onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%231a1a24%22 width=%22100%22 height=%22100%22/><text fill=%22%23666%22 x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22>No Image</text></svg>'">
-                    <div class="style-card-overlay">
-                        <span class="style-rank">${idx + 1}</span>
+                    <div class="style-card-info">
                         <span class="style-score">${style.score}점</span>
-                        <span class="style-name">${style.subCategory || ''}</span>
                     </div>
+                    <div class="style-card-reason">${styleReason}</div>
                 </div>
-            `).join('')}
-        </div>
-        <div class="score-reasons">
-            ${styles[0]?.reasons?.slice(0, 3).map(r => `
-                <span class="reason-tag ${r.type}">
-                    ${r.type === 'positive' ? '✓' : '⚠'} ${r.text}
-                </span>
-            `).join('') || ''}
+            `}).join('')}
         </div>
     `;
 
@@ -1160,11 +1232,24 @@ window.addEventListener('beforeunload', function() {
     stopCamera();
 });
 
+window.addEventListener('pagehide', function() {
+    stopCamera();
+});
+
+window.addEventListener('unload', function() {
+    stopCamera();
+});
+
 // 페이지 숨김 시 카메라 정리 (iOS Safari 등)
 document.addEventListener('visibilitychange', function() {
-    if (document.hidden && isCameraMode) {
+    if (document.hidden) {
         stopCamera();
     }
+});
+
+// popstate (뒤로가기) 시 카메라 정리
+window.addEventListener('popstate', function() {
+    stopCamera();
 });
 
 // 새로 분석
