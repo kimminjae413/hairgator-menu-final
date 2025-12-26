@@ -519,7 +519,129 @@ body::after {
     background: var(--text-muted);
 }
 
-/* Gender Selection */
+/* 기존 카메라 내부 촬영 버튼 숨김 */
+.camera-area .capture-btn {
+    display: none;
+}
+
+/* 외부 촬영 버튼 컨테이너 */
+.capture-btn-container {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.capture-btn-outside {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
+    background: var(--accent-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    box-shadow: 0 4px 16px rgba(194, 24, 91, 0.3);
+}
+
+.capture-btn-outside:disabled {
+    background: var(--bg-elevated);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.capture-btn-outside:not(:disabled):hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 24px rgba(194, 24, 91, 0.4);
+}
+
+.capture-icon-large {
+    width: 20px;
+    height: 20px;
+    background: #ffffff;
+    border-radius: 50%;
+}
+
+.capture-btn-outside:disabled .capture-icon-large {
+    background: var(--text-muted);
+}
+
+/* 성별 미선택 오버레이 */
+.gender-required-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(248, 247, 244, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: var(--radius-lg);
+}
+
+.gender-required-overlay p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    text-align: center;
+    padding: var(--space-lg);
+}
+
+.gender-required-overlay.hidden {
+    display: none;
+}
+
+.upload-area {
+    position: relative;
+}
+
+.upload-overlay {
+    border-radius: var(--radius-lg);
+}
+
+/* Step Label */
+.step-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    letter-spacing: 0.1em;
+    margin-bottom: var(--space-xs);
+}
+
+/* Gender Selection - First (상단 배치) */
+.gender-selection-first {
+    text-align: center;
+    padding: var(--space-lg);
+    background: var(--bg-card);
+    border: 2px solid var(--accent-primary);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-lg);
+    box-shadow: 0 2px 12px rgba(194, 24, 91, 0.1);
+}
+
+.gender-selection-first .gender-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+}
+
+/* Photo Input Section */
+.photo-input-section {
+    margin-bottom: var(--space-lg);
+}
+
+.photo-input-section .step-label {
+    margin-bottom: var(--space-sm);
+}
+
+/* Gender Selection (기존 - 하단용) */
 .gender-selection {
     text-align: center;
     margin-bottom: var(--space-lg);

@@ -531,6 +531,12 @@ window.selectGender = function(gender) {
         btn.classList.toggle('active', btn.dataset.gender === gender);
     });
 
+    // 성별 선택 시 오버레이 숨김
+    const overlay1 = document.getElementById('genderRequiredOverlay');
+    const overlay2 = document.getElementById('genderRequiredOverlayUpload');
+    if (overlay1) overlay1.classList.add('hidden');
+    if (overlay2) overlay2.classList.add('hidden');
+
     checkReadyState();
 
     // 카메라 모드에서 캡처 버튼 활성화

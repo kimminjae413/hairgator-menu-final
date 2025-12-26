@@ -44,66 +44,9 @@
                     <h2 class="section-title" data-i18n="styleMatch.uploadTitle">얼굴 사진 분석</h2>
                 </div>
 
-                <!-- 입력 모드 선택 탭 -->
-                <div class="input-mode-tabs">
-                    <button class="mode-tab active" data-mode="camera" onclick="switchInputMode('camera')">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
-                            <circle cx="12" cy="13" r="4"/>
-                        </svg>
-                        <span data-i18n="styleMatch.cameraMode">실시간 카메라</span>
-                    </button>
-                    <button class="mode-tab" data-mode="upload" onclick="switchInputMode('upload')">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                            <polyline points="17 8 12 3 7 8"/>
-                            <line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
-                        <span data-i18n="styleMatch.uploadMode">사진 업로드</span>
-                    </button>
-                </div>
-
-                <!-- 카메라 모드 -->
-                <div class="camera-area" id="cameraArea">
-                    <video id="cameraVideo" autoplay playsinline muted></video>
-                    <canvas id="cameraCanvas" style="display: none;"></canvas>
-                    <canvas id="landmarkCanvas" class="landmark-canvas"></canvas>
-                    <div class="camera-overlay" id="cameraOverlay">
-                        <div class="face-guide">
-                            <svg viewBox="0 0 200 260" fill="none">
-                                <ellipse cx="100" cy="130" rx="70" ry="90" stroke="currentColor" stroke-width="2" stroke-dasharray="8 4"/>
-                            </svg>
-                        </div>
-                        <p class="camera-hint" data-i18n="styleMatch.cameraHint">얼굴을 가이드 안에 맞춰주세요</p>
-                    </div>
-                    <div class="face-detected-indicator" id="faceDetectedIndicator" style="display: none;">
-                        <span class="indicator-dot"></span>
-                        <span data-i18n="styleMatch.faceDetected">얼굴 감지됨</span>
-                    </div>
-                    <button class="capture-btn" id="captureBtn" onclick="captureFromCamera()" disabled>
-                        <span class="capture-icon"></span>
-                    </button>
-                </div>
-
-                <!-- 업로드 모드 -->
-                <div class="upload-area" id="uploadArea" style="display: none;">
-                    <div class="upload-placeholder" id="uploadPlaceholder">
-                        <div class="upload-icon">
-                            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                                <circle cx="24" cy="18" r="8" stroke="currentColor" stroke-width="2"/>
-                                <path d="M8 42c0-8.837 7.163-16 16-16s16 7.163 16 16" stroke="currentColor" stroke-width="2"/>
-                            </svg>
-                        </div>
-                        <p class="upload-text" data-i18n="styleMatch.uploadText">사진을 업로드하세요</p>
-                        <p class="upload-hint" data-i18n="styleMatch.uploadHint">정면 사진이 가장 정확합니다</p>
-                    </div>
-                    <img id="previewImage" class="preview-image" style="display: none;">
-                    <canvas id="faceCanvas" class="face-canvas" style="display: none;"></canvas>
-                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
-                </div>
-
-                <!-- Gender Selection -->
-                <div class="gender-selection">
+                <!-- Step 1-1: Gender Selection (먼저!) -->
+                <div class="gender-selection-first">
+                    <p class="step-label">STEP 1</p>
                     <p class="gender-label" data-i18n="styleMatch.selectGender">성별 선택</p>
                     <div class="gender-buttons">
                         <button class="gender-btn" data-gender="female" onclick="selectGender('female')">
@@ -114,6 +57,80 @@
                             <span class="gender-icon">♂</span>
                             <span data-i18n="styleMatch.male">남성</span>
                         </button>
+                    </div>
+                </div>
+
+                <!-- Step 1-2: 입력 모드 선택 탭 -->
+                <div class="photo-input-section" id="photoInputSection">
+                    <p class="step-label">STEP 2</p>
+                    <div class="input-mode-tabs">
+                        <button class="mode-tab active" data-mode="camera" onclick="switchInputMode('camera')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                                <circle cx="12" cy="13" r="4"/>
+                            </svg>
+                            <span data-i18n="styleMatch.cameraMode">실시간 카메라</span>
+                        </button>
+                        <button class="mode-tab" data-mode="upload" onclick="switchInputMode('upload')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            <span data-i18n="styleMatch.uploadMode">사진 업로드</span>
+                        </button>
+                    </div>
+
+                    <!-- 카메라 모드 -->
+                    <div class="camera-area" id="cameraArea">
+                        <video id="cameraVideo" autoplay playsinline muted></video>
+                        <canvas id="cameraCanvas" style="display: none;"></canvas>
+                        <canvas id="landmarkCanvas" class="landmark-canvas"></canvas>
+                        <div class="camera-overlay" id="cameraOverlay">
+                            <div class="face-guide">
+                                <svg viewBox="0 0 200 260" fill="none">
+                                    <ellipse cx="100" cy="130" rx="70" ry="90" stroke="currentColor" stroke-width="2" stroke-dasharray="8 4"/>
+                                </svg>
+                            </div>
+                            <p class="camera-hint" data-i18n="styleMatch.cameraHint">얼굴을 가이드 안에 맞춰주세요</p>
+                        </div>
+                        <div class="face-detected-indicator" id="faceDetectedIndicator" style="display: none;">
+                            <span class="indicator-dot"></span>
+                            <span data-i18n="styleMatch.faceDetected">얼굴 감지됨</span>
+                        </div>
+                        <!-- 성별 미선택 오버레이 -->
+                        <div class="gender-required-overlay" id="genderRequiredOverlay">
+                            <p>👆 먼저 성별을 선택하세요</p>
+                        </div>
+                    </div>
+
+                    <!-- 촬영 버튼 (카메라 밖) -->
+                    <div class="capture-btn-container" id="captureBtnContainer">
+                        <button class="capture-btn-outside" id="captureBtn" onclick="captureFromCamera()" disabled>
+                            <span class="capture-icon-large"></span>
+                            <span>촬영하기</span>
+                        </button>
+                    </div>
+
+                    <!-- 업로드 모드 -->
+                    <div class="upload-area" id="uploadArea" style="display: none;">
+                        <div class="upload-placeholder" id="uploadPlaceholder">
+                            <div class="upload-icon">
+                                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                    <circle cx="24" cy="18" r="8" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M8 42c0-8.837 7.163-16 16-16s16 7.163 16 16" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <p class="upload-text" data-i18n="styleMatch.uploadText">사진을 업로드하세요</p>
+                            <p class="upload-hint" data-i18n="styleMatch.uploadHint">정면 사진이 가장 정확합니다</p>
+                        </div>
+                        <img id="previewImage" class="preview-image" style="display: none;">
+                        <canvas id="faceCanvas" class="face-canvas" style="display: none;"></canvas>
+                        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                        <!-- 성별 미선택 오버레이 -->
+                        <div class="gender-required-overlay upload-overlay" id="genderRequiredOverlayUpload">
+                            <p>👆 먼저 성별을 선택하세요</p>
+                        </div>
                     </div>
                 </div>
 
