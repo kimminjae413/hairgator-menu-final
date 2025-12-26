@@ -74,8 +74,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 번역 적용
     applyTranslations();
 
-    // 카메라 모드로 시작
-    await startCamera();
+    // 업로드 모드로 시작 (카메라 자동 시작 안함)
+    switchMode('upload');
 });
 
 // 테마 상속
@@ -1347,17 +1347,13 @@ window.addEventListener('popstate', function() {
     stopCamera();
 });
 
-// 페이지 로드 후 즉시 실행 - 이전 세션 카메라 정리
+// 페이지 로드 시 이전 카메라 상태만 정리 (새 카메라 시작 안함)
 document.addEventListener('DOMContentLoaded', function() {
-    // 모든 미디어 스트림 강제 종료 시도
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                // 즉시 종료
-                stream.getTracks().forEach(track => track.stop());
-            })
-            .catch(() => {});
-    }
+    // 전역 변수만 초기화 (getUserMedia 호출 안함 - 호출하면 카메라 시작됨)
+    cameraStream = null;
+    isCameraMode = false;
+    isFaceDetected = false;
+    lastFaceResults = null;
 });
 
 // 새로 분석
