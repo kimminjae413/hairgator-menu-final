@@ -249,7 +249,7 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 동작: `_users.tokenBalance += tokenCount`
 
 ## 최근 작업 이력
-- 2025-12-26: AI 스타일 매칭 기능 추가 + 디자이너 처방 + 버그 수정
+- 2025-12-26: AI 스타일 매칭 + 이미지 타입 시스템 추가
 
   ### AI 스타일 매칭 (얼굴 랜드마크 기반 헤어스타일 추천)
   - **위치**: 사이드바 "퍼스널컬러" 위에 "AI 스타일 매칭" 메뉴 추가
@@ -260,28 +260,39 @@ Then: [동작] (예: 기존 데이터를 수정)
   - **분석 항목**:
     - 상안부/중안부/하안부 비율 (헤어라인-미간-코끝-턱끝)
     - 광대/턱 비율 (얼굴형 판별: 계란형, 사각형, 하트형, 긴얼굴 등)
+    - **눈 사이 거리 비율** (이미지 타입 결정용)
   - **추천 로직**:
     - 성별별 대분류 카테고리별 TOP 3 추천
     - 여자: A~H LENGTH (8개 카테고리)
     - 남자: SF/SP/FU/PB/BZ/CR/MH (7개 카테고리)
-    - 스코어링: 추천 조건 +30점, 회피 조건 -50점
+    - 스코어링: 추천 조건 +30점, 회피 조건 -50점, **이미지 타입 무드 매칭 ±15점**
   - **핵심 기능**: **왜 추천하는지 이유 상세 설명**
     - 랜드마크간 거리/비율 수치 표시
     - 어떤 단점을 보완하는지 설명
   - **디자인**: 클리니컬 뷰티 (Playfair Display 폰트, 골드/민트 액센트)
   - **5개국어 지원**: ko, en, ja, zh, vi
-  - **함수**:
-    - `handleStyleMatchAccess()`: 사이드바 메뉴 클릭 핸들러
-    - `showStyleMatchView()` / `hideStyleMatchView()`: 뷰 표시/숨기기
-  - **i18n 키**: `styleMatch.*` (menuTitle, uploadTitle, faceMetrics, faceType, insight, issue, solution, reason 등)
+  - **i18n 키**: `styleMatch.*` (menuTitle, uploadTitle, faceMetrics, faceType, imageType, eyeDistance 등)
 
-  ### 디자이너 처방 기능 (옆머리 Side 처방)
-  - **3가지 처방 옵션**:
-    - `down` (누르기): 다운펌, 투블럭, 슬릭 - subCategory: None, Fore Head 부스트
-    - `volume` (살리기): 뿌리펌, 옆볼륨, C컬 - subCategory: Cheekbone, Eye 부스트
-    - `cover` (가리기): 사이드뱅, 레이어드 - subCategory: Eye Brow, Eye, Cheekbone 부스트
-  - **주의사항**: subCategory는 전체 이름 사용 ('EB' 아닌 'Eye Brow')
-  - **처방 수정자**: `prescriptionModifiers` 객체에서 처방별 점수 가감 정의
+  ### 이미지 타입 분석 시스템 (원계/뉴트럴/쿨계)
+  - **눈 사이 거리 비율 기반** 자동 분류:
+    - `eyeDistanceRatio >= 1.1` → **원계(Warm)**: 또렷하고 시원한 인상, 직선적 라인
+    - `eyeDistanceRatio <= 0.9` → **쿨계(Cool)**: 부드럽고 집중된 인상, 곡선 라인
+    - 그 외 → **뉴트럴계(Neutral)**: 균형 잡힌 인상
+  - **서브타입 (하드/소프트)**: 광대/턱 비율로 결정
+    - `cheekJawRatio < 1.15` → Hard (선명한 대비)
+    - `cheekJawRatio > 1.25` → Soft (부드러운 그라데이션)
+  - **스타일 무드 매칭**:
+    - 원계: 슬릭, 시크, 투블럭, 언더컷, 샤기 등 부스트
+    - 쿨계: 웨이브, 컬, C컬, S컬, 레이어 등 부스트
+    - 뉴트럴: 내추럴, 클래식 등 부스트
+  - **함수**:
+    - `determineImageType(ratios)`: 이미지 타입 분류
+    - `getImageTypeStyleKeywords(type, subType)`: 키워드 매칭
+  - **UI**: 분석 결과에 이미지 타입 배지 표시 (색상별 구분)
+
+  ### 제거된 기능
+  - **디자이너 처방 (Side 누르기/살리기/가리기)**: 이미지 타입으로 대체
+  - **메인 페이지 style-match iframe**: 카메라 자동 시작 버그 수정
 
   ### 스타일 모달 연동 (추천 스타일 클릭 시)
   - **문제**: style-match는 별도 페이지라 `parent.openStyleModal` 없음
