@@ -1393,16 +1393,20 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
         isVerticalSwipe = false;
     }, { passive: true });
 
-    // 마우스 이벤트 (데스크톱 테스트용)
-    viewer.addEventListener('mousedown', function(e) {
+    // 마우스 이벤트 (데스크톱 테스트용) - Pointer Events 사용
+    viewer.addEventListener('pointerdown', function(e) {
+        if (e.pointerType === 'touch') return; // 터치는 별도 처리
+
         isDragging = true;
         startX = e.clientX;
         viewer.style.cursor = 'grabbing';
+        viewer.setPointerCapture(e.pointerId); // 포인터 캡처로 document 이벤트 불필요
         hideHint();
+        console.log('🖱️ 360° pointerdown:', e.clientX);
     });
 
-    document.addEventListener('mousemove', function(e) {
-        if (!isDragging) return;
+    viewer.addEventListener('pointermove', function(e) {
+        if (!isDragging || e.pointerType === 'touch') return;
 
         const deltaX = e.clientX - startX;
         const viewerWidth = viewer.offsetWidth || 400;
@@ -1413,11 +1417,19 @@ function init360ViewerLogic(container, viewImages, viewLabels) {
         startX = e.clientX;
     });
 
-    document.addEventListener('mouseup', function() {
+    viewer.addEventListener('pointerup', function(e) {
+        if (e.pointerType === 'touch') return;
+
         if (isDragging) {
             isDragging = false;
-            if (viewer) viewer.style.cursor = 'grab';
+            viewer.style.cursor = 'grab';
+            console.log('🖱️ 360° pointerup');
         }
+    });
+
+    viewer.addEventListener('pointercancel', function(e) {
+        isDragging = false;
+        viewer.style.cursor = 'grab';
     });
 
     // 초기 커서 설정
