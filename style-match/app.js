@@ -199,11 +199,15 @@ async function startCamera() {
                     console.log('👤 얼굴 감지됨');
                 }
                 lastFaceResults = results;
+
+                // 실시간으로 랜드마크와 측정선 그리기
+                drawLandmarksOnCanvas(results.multiFaceLandmarks[0], video);
             } else {
                 if (isFaceDetected) {
                     isFaceDetected = false;
                     indicator.style.display = 'none';
                     captureBtn.disabled = true;
+                    clearLandmarkCanvas();
                 }
                 lastFaceResults = null;
             }
@@ -240,6 +244,166 @@ function stopCamera() {
     }
     isFaceDetected = false;
     lastFaceResults = null;
+    clearLandmarkCanvas();
+}
+
+// ========== 랜드마크 시각화 ==========
+function drawLandmarksOnCanvas(landmarks, video) {
+    const canvas = document.getElementById('landmarkCanvas');
+    if (!canvas || !landmarks) return;
+
+    const ctx = canvas.getContext('2d');
+
+    // 캔버스 크기를 비디오에 맞춤
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // 주요 랜드마크 인덱스
+    const keyPoints = {
+        hairline: 10,
+        glabella: 9,
+        noseTip: 1,
+        chin: 152,
+        leftZygoma: 234,
+        rightZygoma: 454,
+        leftGonion: 58,
+        rightGonion: 288,
+        leftEye: 33,
+        rightEye: 263
+    };
+
+    // 1. 얼굴 윤곽선 그리기 (연한 선)
+    const faceOutline = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10];
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(74, 144, 226, 0.4)';
+    ctx.lineWidth = 1;
+    faceOutline.forEach((idx, i) => {
+        const x = landmarks[idx].x * w;
+        const y = landmarks[idx].y * h;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // 2. 주요 측정선 그리기
+    // 세로선: 이마 ~ 턱 (핑크)
+    drawMeasurementLine(ctx, landmarks, keyPoints.hairline, keyPoints.chin, w, h, '#E91E63', '세로');
+
+    // 가로선: 광대 너비 (파랑)
+    drawMeasurementLine(ctx, landmarks, keyPoints.leftZygoma, keyPoints.rightZygoma, w, h, '#4A90E2', '광대');
+
+    // 가로선: 턱 너비 (노랑)
+    drawMeasurementLine(ctx, landmarks, keyPoints.leftGonion, keyPoints.rightGonion, w, h, '#fbbf24', '턱');
+
+    // 3. 주요 포인트 그리기 (밝은 점)
+    Object.values(keyPoints).forEach(idx => {
+        const x = landmarks[idx].x * w;
+        const y = landmarks[idx].y * h;
+
+        // 외곽 원
+        ctx.beginPath();
+        ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(233, 30, 99, 0.3)';
+        ctx.fill();
+
+        // 내부 점
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#E91E63';
+        ctx.fill();
+    });
+
+    // 4. 측정 값 표시
+    updateMeasurementDisplay(landmarks, w, h);
+}
+
+function drawMeasurementLine(ctx, landmarks, idx1, idx2, w, h, color, label) {
+    const x1 = landmarks[idx1].x * w;
+    const y1 = landmarks[idx1].y * h;
+    const x2 = landmarks[idx2].x * w;
+    const y2 = landmarks[idx2].y * h;
+
+    // 점선
+    ctx.beginPath();
+    ctx.setLineDash([5, 5]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 끝점 표시
+    [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(pt => {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+    });
+}
+
+function updateMeasurementDisplay(landmarks, w, h) {
+    let display = document.querySelector('.measurement-display');
+    if (!display) {
+        display = document.createElement('div');
+        display.className = 'measurement-display';
+        document.getElementById('cameraArea').appendChild(display);
+    }
+
+    // 비율 계산
+    const hairline = landmarks[10];
+    const glabella = landmarks[9];
+    const noseTip = landmarks[1];
+    const chin = landmarks[152];
+    const leftZygoma = landmarks[234];
+    const rightZygoma = landmarks[454];
+    const leftGonion = landmarks[58];
+    const rightGonion = landmarks[288];
+
+    const dist = (a, b) => Math.sqrt(Math.pow((a.x - b.x) * w, 2) + Math.pow((a.y - b.y) * h, 2));
+
+    const totalHeight = dist(hairline, chin);
+    const upperHeight = dist(hairline, glabella);
+    const middleHeight = dist(glabella, noseTip);
+    const lowerHeight = dist(noseTip, chin);
+    const faceWidth = dist(leftZygoma, rightZygoma);
+    const jawWidth = dist(leftGonion, rightGonion);
+
+    const upperRatio = Math.round(upperHeight / totalHeight * 100);
+    const middleRatio = Math.round(middleHeight / totalHeight * 100);
+    const lowerRatio = Math.round(lowerHeight / totalHeight * 100);
+    const widthRatio = (faceWidth / jawWidth).toFixed(2);
+
+    display.innerHTML = `
+        <div class="measurement-line">
+            <span class="measurement-label">상안부:</span>
+            <span class="measurement-value">${upperRatio}%</span>
+            <span class="measurement-label">중안부:</span>
+            <span class="measurement-value">${middleRatio}%</span>
+            <span class="measurement-label">하안부:</span>
+            <span class="measurement-value">${lowerRatio}%</span>
+        </div>
+        <div class="measurement-line">
+            <span class="measurement-label">광대/턱:</span>
+            <span class="measurement-value">${widthRatio}</span>
+        </div>
+    `;
+}
+
+function clearLandmarkCanvas() {
+    const canvas = document.getElementById('landmarkCanvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    const display = document.querySelector('.measurement-display');
+    if (display) display.remove();
 }
 
 // 카메라에서 캡처
@@ -739,15 +903,26 @@ function generateRecommendations(analysis) {
 
     const categories = selectedGender === 'female' ? FEMALE_CATEGORIES : MALE_CATEGORIES;
 
+    console.log('🎨 추천 생성 시작:', selectedGender, '스타일 수:', allStyles.length);
+    console.log('📂 카테고리:', categories);
+
+    // 스타일 데이터 확인
+    const genderStyles = allStyles.filter(s => s.gender === selectedGender);
+    console.log('👥 성별 필터링된 스타일:', genderStyles.length);
+    if (genderStyles.length > 0) {
+        console.log('📋 샘플 스타일:', genderStyles[0]);
+    }
+
     // 카테고리별 스타일 필터링 및 점수 계산
     categories.forEach(category => {
-        // 해당 카테고리 스타일 필터링
+        // 해당 카테고리 스타일 필터링 (type과 resultImage 조건 완화)
         const categoryStyles = allStyles.filter(s =>
             s.gender === selectedGender &&
             s.mainCategory === category &&
-            s.type === 'cut' &&
-            s.resultImage
+            (s.type === 'cut' || !s.type) // type이 'cut'이거나 없는 경우
         );
+
+        console.log(`📁 ${category}: ${categoryStyles.length}개 스타일`);
 
         if (categoryStyles.length === 0) return;
 
