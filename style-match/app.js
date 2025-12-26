@@ -697,37 +697,28 @@ function generateSummaryText(analysis) {
     summaryEl.textContent = summaryParts.join(' ');
 }
 
-// ========== 스타일 로드 (Firestore) ==========
+// ========== 스타일 로드 (Netlify 함수 사용) ==========
 async function loadStyles() {
     try {
-        // Firebase 설정 (메인 앱에서 가져오기)
-        const firebaseConfig = {
-            apiKey: "AIzaSyBrQS6eO4I0MIocRrBW_seLW2IGQNSqSQg",
-            projectId: "hairgator-66347"
-        };
+        console.log('📥 스타일 로드 시작...');
 
-        const baseUrl = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents`;
+        // Netlify 함수를 통해 스타일 로드 (Firestore 403 우회)
+        const response = await fetch('/.netlify/functions/chatbot-api', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'get_styles_for_matching',
+                payload: {}
+            })
+        });
 
-        // styles 컬렉션에서 스타일 로드
-        const response = await fetch(`${baseUrl}/styles?pageSize=500`);
         const data = await response.json();
 
-        if (data.documents) {
-            allStyles = data.documents.map(doc => {
-                const fields = doc.fields;
-                return {
-                    styleId: fields.styleId?.stringValue || '',
-                    name: fields.name?.stringValue || '',
-                    gender: fields.gender?.stringValue || '',
-                    mainCategory: fields.mainCategory?.stringValue || '',
-                    subCategory: fields.subCategory?.stringValue || '',
-                    type: fields.type?.stringValue || 'cut',
-                    series: fields.series?.stringValue || '',
-                    resultImage: fields.resultImage?.stringValue || '',
-                    textRecipe: fields.textRecipe?.stringValue || ''
-                };
-            });
+        if (data.success && data.styles) {
+            allStyles = data.styles;
             console.log(`✅ ${allStyles.length}개 스타일 로드 완료`);
+        } else {
+            console.error('스타일 로드 실패:', data.error);
         }
     } catch (error) {
         console.error('스타일 로드 실패:', error);
@@ -901,6 +892,9 @@ function showLoading(show) {
 }
 
 window.goBack = function() {
+    // 카메라 정리
+    stopCamera();
+
     try {
         if (parent && parent.hideStyleMatchView) {
             parent.hideStyleMatchView();
@@ -911,6 +905,18 @@ window.goBack = function() {
         window.history.back();
     }
 };
+
+// 페이지 종료 시 카메라 정리
+window.addEventListener('beforeunload', function() {
+    stopCamera();
+});
+
+// 페이지 숨김 시 카메라 정리 (iOS Safari 등)
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden && isCameraMode) {
+        stopCamera();
+    }
+});
 
 // 새로 분석
 window.resetAnalysis = function() {

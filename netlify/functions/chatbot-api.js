@@ -453,6 +453,10 @@ exports.handler = async (event, context) => {
       case 'get_cut_recipe_by_style':
         return await getCutRecipeByStyle(payload);
 
+      // ⭐ 스타일 매칭용 스타일 목록 조회
+      case 'get_styles_for_matching':
+        return await getStylesForMatching(payload);
+
       // ⭐ 파라미터 기반 커스텀 레시피 생성 (Firebase 기반)
       case 'generate_custom_recipe':
         return await generateCustomRecipeFromParams(payload, GEMINI_KEY);
@@ -10088,6 +10092,76 @@ async function getCutRecipeByStyle(payload) {
     console.error('❌ 커트 레시피 조회 오류:', error);
     return {
       statusCode: 500,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 스타일 매칭용 스타일 목록 조회 ====================
+async function getStylesForMatching(payload) {
+  const { gender } = payload;
+  console.log(`✨ 스타일 매칭용 목록 조회: ${gender || 'all'}`);
+
+  try {
+    // Firestore에서 스타일 목록 조회 (페이지네이션 포함)
+    let allStyles = [];
+    let nextPageToken = null;
+
+    do {
+      let url = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles?pageSize=300`;
+      if (nextPageToken) {
+        url += `&pageToken=${nextPageToken}`;
+      }
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.documents) {
+        const styles = data.documents.map(doc => {
+          const fields = doc.fields;
+          return {
+            styleId: fields.styleId?.stringValue || doc.name.split('/').pop(),
+            name: fields.name?.stringValue || '',
+            gender: fields.gender?.stringValue || '',
+            mainCategory: fields.mainCategory?.stringValue || '',
+            subCategory: fields.subCategory?.stringValue || '',
+            type: fields.type?.stringValue || 'cut',
+            series: fields.series?.stringValue || '',
+            resultImage: fields.resultImage?.stringValue || '',
+            textRecipe: fields.textRecipe?.stringValue || ''
+          };
+        });
+        allStyles = allStyles.concat(styles);
+      }
+
+      nextPageToken = data.nextPageToken;
+    } while (nextPageToken);
+
+    // 성별 필터링
+    if (gender) {
+      allStyles = allStyles.filter(s => s.gender === gender);
+    }
+
+    // 커트만 (펌 제외)
+    allStyles = allStyles.filter(s => s.type === 'cut' || !s.type);
+
+    console.log(`✅ 스타일 목록 ${allStyles.length}개 반환`);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        styles: allStyles,
+        count: allStyles.length
+      })
+    };
+
+  } catch (error) {
+    console.error('❌ 스타일 목록 조회 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
       body: JSON.stringify({ success: false, error: error.message })
     };
   }
