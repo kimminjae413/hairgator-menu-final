@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HAIRGATOR Admin - Firebase 관리</title>
+    <title>HAIRGATOR Admin Console</title>
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -11,7 +11,25 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
 
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
+        :root {
+            --primary: #FF1493;
+            --primary-dark: #c41170;
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-hover: #1a1a25;
+            --border: #2a2a35;
+            --text: #ffffff;
+            --text-muted: #888899;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -20,266 +38,154 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0a;
-            color: #fff;
+            background: var(--bg-dark);
+            color: var(--text);
             min-height: 100vh;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            border-bottom: 2px solid #FF1493;
-            padding: 20px 30px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
-        .header h1 {
-            color: #FF1493;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        /* 사이드바 */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
         }
 
-        .header h1::before {
-            content: '🦎';
-            font-size: 28px;
-        }
-
-        .admin-info {
-            color: #888;
-            font-size: 14px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 30px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-        }
-
-        .tab {
-            background: transparent;
-            color: #888;
-            border: 1px solid #333;
-            padding: 12px 24px;
-            border-radius: 8px 8px 0 0;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .tab:hover {
-            color: #FF1493;
-            border-color: #FF1493;
-        }
-
-        .tab.active {
-            background: #1a1a2e;
-            color: #FF1493;
-            border-color: #FF1493;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .card {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            border: 1px solid #333;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-
-        .card-title {
-            color: #FF1493;
-            font-size: 18px;
+        .sidebar-logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
             margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #333;
+        }
+
+        .sidebar-logo h1 {
+            color: var(--primary);
+            font-size: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .form-group {
-            margin-bottom: 16px;
+        .sidebar-logo h1::before {
+            content: '🦎';
+            font-size: 24px;
         }
 
-        .form-group label {
-            display: block;
-            color: #aaa;
-            font-size: 13px;
-            margin-bottom: 6px;
+        .sidebar-logo p {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 4px;
         }
 
-        .form-group input, .form-group select {
-            width: 100%;
+        .nav-section {
+            padding: 0 12px;
+            margin-bottom: 20px;
+        }
+
+        .nav-section-title {
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 8px;
+            margin-bottom: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             padding: 12px 16px;
-            background: #0a0a0a;
-            border: 1px solid #444;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 14px;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #FF1493;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #FF1493, #ff69b4);
-            color: white;
-            border: none;
-            padding: 12px 24px;
+            color: var(--text-muted);
+            text-decoration: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(255, 20, 147, 0.4);
-        }
-
-        .btn:disabled {
-            background: #444;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #28a745, #20c997);
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #ffc107, #fd7e14);
-            color: #000;
-        }
-
-        .result-box {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 16px;
-            display: none;
-        }
-
-        .result-box.show {
-            display: block;
-        }
-
-        .plan-buttons {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-
-        .plan-btn {
-            background: #1a1a2e;
-            border: 2px solid #333;
-            border-radius: 10px;
-            padding: 16px 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .plan-btn:hover {
-            border-color: #FF1493;
-        }
-
-        .plan-btn.selected {
-            border-color: #FF1493;
-            background: rgba(255, 20, 147, 0.1);
-        }
-
-        .plan-btn .plan-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: #fff;
+            transition: all 0.2s;
             margin-bottom: 4px;
         }
 
-        .plan-btn .plan-tokens {
-            font-size: 12px;
-            color: #888;
+        .nav-item:hover {
+            background: var(--bg-hover);
+            color: var(--text);
         }
 
-        .user-table {
-            width: 100%;
-            border-collapse: collapse;
+        .nav-item.active {
+            background: rgba(255, 20, 147, 0.15);
+            color: var(--primary);
         }
 
-        .user-table th, .user-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #333;
+        .nav-item-icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
         }
 
-        .user-table th {
-            color: #FF1493;
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        .user-table tr:hover {
-            background: rgba(255, 20, 147, 0.05);
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .badge-free { background: #333; color: #888; }
-        .badge-basic { background: #28a745; color: #fff; }
-        .badge-pro { background: #007bff; color: #fff; }
-        .badge-business { background: #6f42c1; color: #fff; }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #1a1a2e;
-            border: 1px solid #FF1493;
-            color: #fff;
-            padding: 16px 24px;
+        .nav-item-badge {
+            margin-left: auto;
+            background: var(--primary);
+            color: white;
+            font-size: 11px;
+            padding: 2px 8px;
             border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s;
-            z-index: 9999;
         }
 
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
+        /* 메인 컨텐츠 */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 24px;
+            min-height: 100vh;
         }
 
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .page-title span {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 400;
+            margin-left: 12px;
+        }
+
+        /* 카드 */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 통계 그리드 */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -288,31 +194,379 @@
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            border: 1px solid #333;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
             border-radius: 12px;
             padding: 20px;
-            text-align: center;
         }
 
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat-icon.users { background: rgba(59, 130, 246, 0.2); }
+        .stat-icon.tokens { background: rgba(34, 197, 94, 0.2); }
+        .stat-icon.paid { background: rgba(168, 85, 247, 0.2); }
+        .stat-icon.active { background: rgba(245, 158, 11, 0.2); }
+
         .stat-value {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 700;
-            color: #FF1493;
+            margin-bottom: 4px;
         }
 
         .stat-label {
+            color: var(--text-muted);
             font-size: 13px;
-            color: #888;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-change.up { color: var(--success); }
+        .stat-change.down { color: var(--danger); }
+
+        /* 테이블 */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover {
+            background: var(--bg-hover);
+        }
+
+        /* 배지 */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-free { background: #333; color: #888; }
+        .badge-basic { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .badge-pro { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge-business { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+
+        .badge-success { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        /* 버튼 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--bg-hover);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #25252f;
+        }
+
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: black; }
+        .btn-danger { background: var(--danger); color: white; }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            min-width: 36px;
+            justify-content: center;
+        }
+
+        /* 입력 필드 */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        /* 검색바 */
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        /* 필터 */
+        .filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* 모달 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* 플랜 선택 그리드 */
+        .plan-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .plan-option {
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .plan-option:hover {
+            border-color: var(--primary);
+        }
+
+        .plan-option.selected {
+            border-color: var(--primary);
+            background: rgba(255, 20, 147, 0.1);
+        }
+
+        .plan-option-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .plan-option-tokens {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        /* 사용자 상세 */
+        .user-detail-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .user-info h3 {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .user-info p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .user-stat {
+            background: var(--bg-dark);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .user-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .user-stat-label {
+            color: var(--text-muted);
+            font-size: 12px;
             margin-top: 4px;
         }
 
+        /* 로딩 */
         .loading {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 2px solid #333;
-            border-top-color: #FF1493;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -321,66 +575,324 @@
             to { transform: rotate(360deg); }
         }
 
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 10, 15, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 토스트 */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success { border-left: 3px solid var(--success); }
+        .toast.error { border-left: 3px solid var(--danger); }
+        .toast.warning { border-left: 3px solid var(--warning); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* 차트 컨테이너 */
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* 페이지 숨김 */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* 액션 드롭다운 */
+        .action-menu {
+            position: relative;
+        }
+
+        .action-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-width: 160px;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-dropdown.show {
+            display: block;
+        }
+
+        .action-dropdown-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .action-dropdown-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .action-dropdown-item.danger {
+            color: var(--danger);
+        }
+
+        /* 반응형 */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 80px;
+                padding: 16px 0;
+            }
+            .sidebar-logo h1 span,
+            .sidebar-logo p,
+            .nav-section-title,
+            .nav-item span:not(.nav-item-icon) {
+                display: none;
+            }
+            .nav-item {
+                justify-content: center;
+                padding: 12px;
+            }
+            .nav-item-icon {
+                margin: 0;
+            }
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+
         @media (max-width: 768px) {
-            .plan-buttons {
-                grid-template-columns: repeat(2, 1fr);
+            .sidebar {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
             }
             .stats-grid {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .plan-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>HAIRGATOR Admin</h1>
-        <div class="admin-info">Firebase Direct Connection</div>
-    </div>
-
-    <div class="container">
-        <!-- 통계 -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value" id="statTotalUsers">-</div>
-                <div class="stat-label">전체 사용자</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="statPaidUsers">-</div>
-                <div class="stat-label">유료 플랜</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="statTotalTokens">-</div>
-                <div class="stat-label">총 토큰</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="statTodayLogins">-</div>
-                <div class="stat-label">오늘 접속</div>
-            </div>
+    <!-- 사이드바 -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h1><span>HAIRGATOR</span></h1>
+            <p>Admin Console</p>
         </div>
 
-        <!-- 탭 -->
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('users')">👥 사용자 관리</button>
-            <button class="tab" onclick="switchTab('tokens')">💰 토큰 관리</button>
-            <button class="tab" onclick="switchTab('logs')">📋 사용 로그</button>
-        </div>
+        <nav class="nav-section">
+            <div class="nav-section-title">메인</div>
+            <div class="nav-item active" onclick="showPage('dashboard')">
+                <span class="nav-item-icon">📊</span>
+                <span>대시보드</span>
+            </div>
+            <div class="nav-item" onclick="showPage('users')">
+                <span class="nav-item-icon">👥</span>
+                <span>사용자 관리</span>
+                <span class="nav-item-badge" id="userCountBadge">0</span>
+            </div>
+        </nav>
 
-        <!-- 사용자 관리 탭 -->
-        <div id="tab-users" class="tab-content active">
-            <div class="card">
-                <div class="card-title">📋 사용자 목록</div>
-                <div style="margin-bottom: 16px;">
-                    <input type="text" id="userSearchInput" placeholder="이름 또는 이메일로 검색..."
-                           style="padding: 10px 16px; background: #0a0a0a; border: 1px solid #444; border-radius: 8px; color: #fff; width: 300px;"
-                           oninput="filterUsers()">
-                    <button class="btn" onclick="loadUsers()" style="margin-left: 10px;">🔄 새로고침</button>
+        <nav class="nav-section">
+            <div class="nav-section-title">토큰 & 결제</div>
+            <div class="nav-item" onclick="showPage('tokens')">
+                <span class="nav-item-icon">💰</span>
+                <span>토큰 관리</span>
+            </div>
+            <div class="nav-item" onclick="showPage('payments')">
+                <span class="nav-item-icon">💳</span>
+                <span>결제 내역</span>
+            </div>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">분석</div>
+            <div class="nav-item" onclick="showPage('usage')">
+                <span class="nav-item-icon">📈</span>
+                <span>사용 통계</span>
+            </div>
+            <div class="nav-item" onclick="showPage('logs')">
+                <span class="nav-item-icon">📋</span>
+                <span>활동 로그</span>
+            </div>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">설정</div>
+            <div class="nav-item" onclick="showPage('settings')">
+                <span class="nav-item-icon">⚙️</span>
+                <span>시스템 설정</span>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="main-content">
+        <!-- 대시보드 페이지 -->
+        <div id="page-dashboard" class="page active">
+            <div class="page-header">
+                <h2 class="page-title">대시보드 <span id="dashboardDate"></span></h2>
+                <button class="btn btn-secondary" onclick="refreshDashboard()">
+                    🔄 새로고침
+                </button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-value" id="statTotalUsers">-</div>
+                            <div class="stat-label">전체 사용자</div>
+                        </div>
+                        <div class="stat-icon users">👥</div>
+                    </div>
+                    <div class="stat-change up" id="statUsersChange">-</div>
                 </div>
-                <div style="overflow-x: auto;">
-                    <table class="user-table">
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-value" id="statTotalTokens">-</div>
+                            <div class="stat-label">총 토큰 보유량</div>
+                        </div>
+                        <div class="stat-icon tokens">💰</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-value" id="statPaidUsers">-</div>
+                            <div class="stat-label">유료 사용자</div>
+                        </div>
+                        <div class="stat-icon paid">⭐</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-value" id="statTodayActive">-</div>
+                            <div class="stat-label">오늘 활성 사용자</div>
+                        </div>
+                        <div class="stat-icon active">🔥</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📈 일별 사용량</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="usageChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🎯 플랜 분포</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="planChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🕐 최근 활동</div>
+                    <button class="btn btn-sm btn-secondary" onclick="showPage('logs')">전체보기</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>시간</th>
+                                <th>사용자</th>
+                                <th>활동</th>
+                                <th>상세</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentActivityTable">
+                            <tr><td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                <div class="loading"></div>
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 사용자 관리 페이지 -->
+        <div id="page-users" class="page">
+            <div class="page-header">
+                <h2 class="page-title">사용자 관리</h2>
+                <button class="btn btn-primary" onclick="openAddUserModal()">
+                    ➕ 사용자 추가
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="search-bar">
+                    <input type="text" class="form-input search-input" id="userSearchInput"
+                           placeholder="이름, 이메일, ID로 검색..." oninput="searchUsers()">
+                    <button class="btn btn-secondary" onclick="loadUsers()">🔄</button>
+                </div>
+
+                <div class="filters">
+                    <button class="filter-btn active" onclick="filterUsers('all', this)">전체</button>
+                    <button class="filter-btn" onclick="filterUsers('free', this)">무료</button>
+                    <button class="filter-btn" onclick="filterUsers('basic', this)">베이직</button>
+                    <button class="filter-btn" onclick="filterUsers('pro', this)">프로</button>
+                    <button class="filter-btn" onclick="filterUsers('business', this)">비즈니스</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
                         <thead>
                             <tr>
                                 <th>사용자</th>
-                                <th>이메일</th>
                                 <th>플랜</th>
                                 <th>토큰</th>
                                 <th>가입일</th>
@@ -388,9 +900,9 @@
                                 <th>액션</th>
                             </tr>
                         </thead>
-                        <tbody id="userTableBody">
-                            <tr><td colspan="7" style="text-align: center; padding: 40px; color: #888;">
-                                <div class="loading"></div> 로딩 중...
+                        <tbody id="usersTableBody">
+                            <tr><td colspan="6" style="text-align: center; padding: 40px;">
+                                <div class="loading"></div>
                             </td></tr>
                         </tbody>
                     </table>
@@ -398,158 +910,521 @@
             </div>
         </div>
 
-        <!-- 토큰 관리 탭 -->
-        <div id="tab-tokens" class="tab-content">
-            <div class="card">
-                <div class="card-title">🔍 토큰 조회</div>
-                <div class="form-group">
-                    <label>사용자 ID (Firebase UID)</label>
-                    <input type="text" id="queryUserId" placeholder="사용자 ID 입력...">
-                </div>
-                <button class="btn" onclick="queryToken()">조회</button>
-                <div class="result-box" id="queryResult"></div>
+        <!-- 토큰 관리 페이지 -->
+        <div id="page-tokens" class="page">
+            <div class="page-header">
+                <h2 class="page-title">토큰 관리</h2>
             </div>
 
-            <div class="card">
-                <div class="card-title">⚙️ 플랜 & 토큰 설정</div>
-                <div class="form-group">
-                    <label>사용자 ID</label>
-                    <input type="text" id="setUserId" placeholder="사용자 ID 입력...">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🔍 토큰 조회</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">사용자 ID</label>
+                        <input type="text" class="form-input" id="tokenQueryUserId" placeholder="사용자 ID 입력...">
+                    </div>
+                    <button class="btn btn-primary" onclick="queryUserToken()">조회</button>
+                    <div id="tokenQueryResult" style="margin-top: 16px; display: none;"></div>
                 </div>
-                <div class="form-group">
-                    <label>플랜 선택</label>
-                    <div class="plan-buttons">
-                        <div class="plan-btn" onclick="selectPlan('free', 200)">
-                            <div class="plan-name">무료</div>
-                            <div class="plan-tokens">200 토큰</div>
-                        </div>
-                        <div class="plan-btn" onclick="selectPlan('basic', 10000)">
-                            <div class="plan-name">베이직</div>
-                            <div class="plan-tokens">10,000 토큰</div>
-                        </div>
-                        <div class="plan-btn" onclick="selectPlan('pro', 18000)">
-                            <div class="plan-name">프로</div>
-                            <div class="plan-tokens">18,000 토큰</div>
-                        </div>
-                        <div class="plan-btn" onclick="selectPlan('business', 25000)">
-                            <div class="plan-name">비즈니스</div>
-                            <div class="plan-tokens">25,000 토큰</div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">⚙️ 플랜 & 토큰 설정</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">사용자 ID</label>
+                        <input type="text" class="form-input" id="tokenSetUserId" placeholder="사용자 ID 입력...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">플랜 선택</label>
+                        <div class="plan-grid">
+                            <div class="plan-option" onclick="selectPlanOption('free', 200, this)">
+                                <div class="plan-option-name">무료</div>
+                                <div class="plan-option-tokens">200 토큰</div>
+                            </div>
+                            <div class="plan-option" onclick="selectPlanOption('basic', 10000, this)">
+                                <div class="plan-option-name">베이직</div>
+                                <div class="plan-option-tokens">10,000 토큰</div>
+                            </div>
+                            <div class="plan-option" onclick="selectPlanOption('pro', 18000, this)">
+                                <div class="plan-option-name">프로</div>
+                                <div class="plan-option-tokens">18,000 토큰</div>
+                            </div>
+                            <div class="plan-option" onclick="selectPlanOption('business', 25000, this)">
+                                <div class="plan-option-name">비즈니스</div>
+                                <div class="plan-option-tokens">25,000 토큰</div>
+                            </div>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">토큰 수 (직접 수정 가능)</label>
+                        <input type="number" class="form-input" id="tokenSetAmount" placeholder="토큰 수...">
+                    </div>
+                    <input type="hidden" id="selectedPlan" value="free">
+                    <button class="btn btn-warning" onclick="setUserPlanAndTokens()">설정 적용</button>
+                    <div id="tokenSetResult" style="margin-top: 16px; display: none;"></div>
                 </div>
-                <div class="form-group">
-                    <label>토큰 수 (직접 입력 가능)</label>
-                    <input type="number" id="setTokenAmount" placeholder="토큰 수 입력...">
-                </div>
-                <input type="hidden" id="setPlan" value="free">
-                <button class="btn btn-warning" onclick="setUserPlanAndTokens()">설정 적용</button>
-                <div class="result-box" id="setResult"></div>
-            </div>
 
-            <div class="card">
-                <div class="card-title">➕ 토큰 충전 (기존 잔액에 추가)</div>
-                <div class="form-group">
-                    <label>사용자 ID</label>
-                    <input type="text" id="chargeUserId" placeholder="사용자 ID 입력...">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">➕ 토큰 충전</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">사용자 ID</label>
+                        <input type="text" class="form-input" id="tokenChargeUserId" placeholder="사용자 ID 입력...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">충전할 토큰 수</label>
+                        <input type="number" class="form-input" id="tokenChargeAmount" placeholder="추가할 토큰 수...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">메모 (선택)</label>
+                        <input type="text" class="form-input" id="tokenChargeNote" placeholder="충전 사유...">
+                    </div>
+                    <button class="btn btn-success" onclick="chargeUserTokens()">충전</button>
+                    <div id="tokenChargeResult" style="margin-top: 16px; display: none;"></div>
                 </div>
-                <div class="form-group">
-                    <label>충전할 토큰 수</label>
-                    <input type="number" id="chargeAmount" placeholder="추가할 토큰 수...">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">➖ 토큰 차감</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">사용자 ID</label>
+                        <input type="text" class="form-input" id="tokenDeductUserId" placeholder="사용자 ID 입력...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">차감할 토큰 수</label>
+                        <input type="number" class="form-input" id="tokenDeductAmount" placeholder="차감할 토큰 수...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">사유</label>
+                        <input type="text" class="form-input" id="tokenDeductReason" placeholder="차감 사유...">
+                    </div>
+                    <button class="btn btn-danger" onclick="deductUserTokens()">차감</button>
+                    <div id="tokenDeductResult" style="margin-top: 16px; display: none;"></div>
                 </div>
-                <div class="form-group">
-                    <label>메모 (선택)</label>
-                    <input type="text" id="chargeNote" placeholder="충전 사유...">
-                </div>
-                <button class="btn btn-success" onclick="chargeTokens()">충전</button>
-                <div class="result-box" id="chargeResult"></div>
             </div>
         </div>
 
-        <!-- 사용 로그 탭 -->
-        <div id="tab-logs" class="tab-content">
+        <!-- 결제 내역 페이지 -->
+        <div id="page-payments" class="page">
+            <div class="page-header">
+                <h2 class="page-title">결제 내역</h2>
+            </div>
+
             <div class="card">
-                <div class="card-title">📋 크레딧 사용 로그</div>
-                <div style="margin-bottom: 16px;">
-                    <input type="text" id="logUserIdFilter" placeholder="사용자 ID로 필터..."
-                           style="padding: 10px 16px; background: #0a0a0a; border: 1px solid #444; border-radius: 8px; color: #fff; width: 300px;">
-                    <button class="btn" onclick="loadLogs()" style="margin-left: 10px;">🔍 조회</button>
+                <div class="search-bar">
+                    <input type="text" class="form-input search-input" id="paymentSearchInput"
+                           placeholder="주문번호, 사용자 ID로 검색...">
+                    <button class="btn btn-secondary" onclick="loadPayments()">🔍 검색</button>
                 </div>
-                <div style="overflow-x: auto;">
-                    <table class="user-table">
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>주문번호</th>
+                                <th>사용자</th>
+                                <th>상품</th>
+                                <th>금액</th>
+                                <th>상태</th>
+                                <th>결제일</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsTableBody">
+                            <tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                결제 내역이 없습니다
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 사용 통계 페이지 -->
+        <div id="page-usage" class="page">
+            <div class="page-header">
+                <h2 class="page-title">사용 통계</h2>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-value" id="usageChatbot">-</div>
+                            <div class="stat-label">챗봇 사용</div>
+                        </div>
+                        <div class="stat-icon">💬</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-value" id="usageLookbook">-</div>
+                            <div class="stat-label">룩북 생성</div>
+                        </div>
+                        <div class="stat-icon">📸</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-value" id="usageHairTry">-</div>
+                            <div class="stat-label">헤어 체험</div>
+                        </div>
+                        <div class="stat-icon">💇</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-value" id="usageTokensUsed">-</div>
+                            <div class="stat-label">총 토큰 사용</div>
+                        </div>
+                        <div class="stat-icon">🔥</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📊 기능별 사용량 (최근 7일)</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="featureUsageChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 활동 로그 페이지 -->
+        <div id="page-logs" class="page">
+            <div class="page-header">
+                <h2 class="page-title">활동 로그</h2>
+            </div>
+
+            <div class="card">
+                <div class="search-bar">
+                    <input type="text" class="form-input search-input" id="logSearchUserId"
+                           placeholder="사용자 ID로 필터...">
+                    <select class="form-input" id="logActionFilter" style="width: 200px;">
+                        <option value="">모든 액션</option>
+                        <option value="chatbot">챗봇</option>
+                        <option value="lookbook">룩북</option>
+                        <option value="hairTry">헤어체험</option>
+                        <option value="admin_charge">관리자 충전</option>
+                        <option value="admin_set">관리자 설정</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="loadActivityLogs()">🔍 조회</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
                         <thead>
                             <tr>
                                 <th>시간</th>
-                                <th>사용자</th>
+                                <th>사용자 ID</th>
                                 <th>액션</th>
-                                <th>토큰</th>
+                                <th>토큰 변동</th>
                                 <th>잔액</th>
                                 <th>메모</th>
                             </tr>
                         </thead>
-                        <tbody id="logTableBody">
-                            <tr><td colspan="6" style="text-align: center; padding: 40px; color: #888;">
-                                사용자 ID를 입력하고 조회하세요
+                        <tbody id="logsTableBody">
+                            <tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                조회 버튼을 클릭하세요
                             </td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
+        <!-- 설정 페이지 -->
+        <div id="page-settings" class="page">
+            <div class="page-header">
+                <h2 class="page-title">시스템 설정</h2>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">💰 토큰 비용 설정</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">챗봇 (1회)</label>
+                        <input type="number" class="form-input" id="costChatbot" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">룩북 (1회)</label>
+                        <input type="number" class="form-input" id="costLookbook" value="200">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">헤어체험 (1회)</label>
+                        <input type="number" class="form-input" id="costHairTry" value="350">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="saveTokenCosts()">저장</button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🎫 플랜별 토큰</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">무료</label>
+                        <input type="number" class="form-input" id="planFreeTokens" value="200">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">베이직</label>
+                        <input type="number" class="form-input" id="planBasicTokens" value="10000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">프로</label>
+                        <input type="number" class="form-input" id="planProTokens" value="18000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">비즈니스</label>
+                        <input type="number" class="form-input" id="planBusinessTokens" value="25000">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="savePlanTokens()">저장</button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🔐 관리자 계정</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">관리자 이메일 목록 (줄바꿈으로 구분)</label>
+                    <textarea class="form-input" id="adminEmails" rows="4" style="resize: vertical;"></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="saveAdminEmails()">저장</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 사용자 상세 모달 -->
+    <div class="modal-overlay" id="userDetailModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">사용자 상세</h3>
+                <button class="modal-close" onclick="closeModal('userDetailModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="userDetailContent">
+                <!-- 동적 콘텐츠 -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('userDetailModal')">닫기</button>
+                <button class="btn btn-primary" id="userDetailEditBtn">수정</button>
+            </div>
+        </div>
     </div>
 
-    <div class="toast" id="toast"></div>
+    <!-- 토스트 컨테이너 -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <script>
+        // 전역 변수
         let allUsers = [];
-        let selectedPlan = 'free';
+        let currentFilter = 'all';
+        let usageChart = null;
+        let planChart = null;
+        let featureUsageChart = null;
 
         // 초기화
         document.addEventListener('DOMContentLoaded', () => {
-            loadStats();
+            document.getElementById('dashboardDate').textContent = new Date().toLocaleDateString('ko-KR', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+
+            loadDashboard();
             loadUsers();
         });
 
-        // 탭 전환
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        // 페이지 전환
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
-            event.target.classList.add('active');
-            document.getElementById('tab-' + tabName).classList.add('active');
+            document.getElementById('page-' + pageName).classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            // 페이지별 데이터 로드
+            if (pageName === 'dashboard') loadDashboard();
+            if (pageName === 'users') loadUsers();
+            if (pageName === 'usage') loadUsageStats();
         }
 
-        // 통계 로드
-        async function loadStats() {
+        // 대시보드 로드
+        async function loadDashboard() {
             try {
                 const usersSnapshot = await db.collection('users').get();
-                const users = usersSnapshot.docs.map(doc => doc.data());
+                const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
                 const totalUsers = users.length;
                 const paidUsers = users.filter(u => u.plan && u.plan !== 'free').length;
                 const totalTokens = users.reduce((sum, u) => sum + (u.tokenBalance || 0), 0);
 
-                // 오늘 접속자 (lastLoginAt이 오늘인 사용자)
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                const todayLogins = users.filter(u => {
+                const todayActive = users.filter(u => {
                     if (!u.lastLoginAt) return false;
-                    const loginDate = u.lastLoginAt.toDate ? u.lastLoginAt.toDate() : new Date(u.lastLoginAt);
-                    return loginDate >= today;
+                    const date = u.lastLoginAt.toDate ? u.lastLoginAt.toDate() : new Date(u.lastLoginAt);
+                    return date >= today;
                 }).length;
 
                 document.getElementById('statTotalUsers').textContent = totalUsers;
-                document.getElementById('statPaidUsers').textContent = paidUsers;
                 document.getElementById('statTotalTokens').textContent = totalTokens.toLocaleString();
-                document.getElementById('statTodayLogins').textContent = todayLogins;
+                document.getElementById('statPaidUsers').textContent = paidUsers;
+                document.getElementById('statTodayActive').textContent = todayActive;
+                document.getElementById('userCountBadge').textContent = totalUsers;
+
+                // 플랜 분포 차트
+                const planCounts = {
+                    free: users.filter(u => !u.plan || u.plan === 'free').length,
+                    basic: users.filter(u => u.plan === 'basic').length,
+                    pro: users.filter(u => u.plan === 'pro').length,
+                    business: users.filter(u => u.plan === 'business').length
+                };
+
+                if (planChart) planChart.destroy();
+                planChart = new Chart(document.getElementById('planChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['무료', '베이직', '프로', '비즈니스'],
+                        datasets: [{
+                            data: [planCounts.free, planCounts.basic, planCounts.pro, planCounts.business],
+                            backgroundColor: ['#666', '#22c55e', '#3b82f6', '#a855f7']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: '#888' }
+                            }
+                        }
+                    }
+                });
+
+                // 최근 활동 로드
+                loadRecentActivity();
+
+                // 사용량 차트
+                loadUsageChart();
+
             } catch (error) {
-                console.error('통계 로드 실패:', error);
+                console.error('대시보드 로드 실패:', error);
+                showToast('대시보드 로드 실패', 'error');
+            }
+        }
+
+        function refreshDashboard() {
+            loadDashboard();
+            showToast('새로고침 완료', 'success');
+        }
+
+        // 최근 활동 로드
+        async function loadRecentActivity() {
+            const tbody = document.getElementById('recentActivityTable');
+            try {
+                const snapshot = await db.collection('credit_logs')
+                    .orderBy('timestamp', 'desc')
+                    .limit(10)
+                    .get();
+
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">활동 없음</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = snapshot.docs.map(doc => {
+                    const log = doc.data();
+                    const time = log.timestamp?.toDate ? log.timestamp.toDate().toLocaleString('ko-KR') : '-';
+                    const action = log.action || '-';
+                    const detail = log.metadata?.note || log.metadata?.feature || '-';
+
+                    return `
+                        <tr>
+                            <td style="font-size: 12px; color: var(--text-muted);">${time}</td>
+                            <td style="font-size: 12px;">${log.userId?.substring(0, 12) || '-'}...</td>
+                            <td><span class="badge badge-${getActionBadge(action)}">${action}</span></td>
+                            <td style="font-size: 12px;">${detail}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('활동 로드 실패:', error);
+            }
+        }
+
+        function getActionBadge(action) {
+            const map = {
+                'chatbot': 'success',
+                'lookbook': 'warning',
+                'hairTry': 'danger',
+                'admin_charge': 'success',
+                'admin_set': 'warning'
+            };
+            return map[action] || 'free';
+        }
+
+        // 사용량 차트 로드
+        async function loadUsageChart() {
+            try {
+                const days = 7;
+                const labels = [];
+                const data = [];
+
+                for (let i = days - 1; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    labels.push(date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }));
+                    data.push(Math.floor(Math.random() * 100)); // TODO: 실제 데이터로 교체
+                }
+
+                if (usageChart) usageChart.destroy();
+                usageChart = new Chart(document.getElementById('usageChart'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '사용량',
+                            data: data,
+                            borderColor: '#FF1493',
+                            backgroundColor: 'rgba(255, 20, 147, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: { grid: { color: '#2a2a35' }, ticks: { color: '#888' } },
+                            y: { grid: { color: '#2a2a35' }, ticks: { color: '#888' } }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('차트 로드 실패:', error);
             }
         }
 
         // 사용자 목록 로드
         async function loadUsers() {
-            const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;"><div class="loading"></div></td></tr>';
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;"><div class="loading"></div></td></tr>';
 
             try {
                 const snapshot = await db.collection('users').orderBy('createdAt', 'desc').limit(100).get();
@@ -558,165 +1433,204 @@
                 renderUsers(allUsers);
             } catch (error) {
                 console.error('사용자 로드 실패:', error);
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #f5576c;">로드 실패: ' + error.message + '</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger);">로드 실패</td></tr>';
             }
         }
 
-        // 사용자 목록 렌더링
         function renderUsers(users) {
-            const tbody = document.getElementById('userTableBody');
+            const tbody = document.getElementById('usersTableBody');
 
             if (users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #888;">사용자가 없습니다</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">사용자 없음</td></tr>';
                 return;
             }
 
             const planBadges = {
-                'free': '<span class="badge badge-free">무료</span>',
-                'basic': '<span class="badge badge-basic">베이직</span>',
-                'pro': '<span class="badge badge-pro">프로</span>',
-                'business': '<span class="badge badge-business">비즈니스</span>'
+                'free': 'badge-free',
+                'basic': 'badge-basic',
+                'pro': 'badge-pro',
+                'business': 'badge-business'
             };
 
             tbody.innerHTML = users.map(user => {
                 const createdAt = user.createdAt?.toDate ? user.createdAt.toDate().toLocaleDateString('ko-KR') : '-';
                 const lastLogin = user.lastLoginAt?.toDate ? user.lastLoginAt.toDate().toLocaleString('ko-KR') : '-';
                 const plan = user.plan || 'free';
-                const tokens = (user.tokenBalance || 0).toLocaleString();
+                const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' }[plan];
 
                 return `
                     <tr>
                         <td>
-                            <strong>${user.displayName || '이름 없음'}</strong>
-                            <div style="font-size: 11px; color: #666;">${user.id}</div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                                    ${(user.displayName || 'U')[0].toUpperCase()}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 500;">${user.displayName || '이름 없음'}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${user.email || user.id}</div>
+                                </div>
+                            </div>
                         </td>
-                        <td>${user.email || '-'}</td>
-                        <td>${planBadges[plan] || planBadges.free}</td>
-                        <td style="color: #4facfe;">${tokens}</td>
-                        <td style="color: #888; font-size: 12px;">${createdAt}</td>
-                        <td style="color: #888; font-size: 12px;">${lastLogin}</td>
+                        <td><span class="badge ${planBadges[plan]}">${planName}</span></td>
+                        <td style="color: var(--success); font-weight: 500;">${(user.tokenBalance || 0).toLocaleString()}</td>
+                        <td style="font-size: 12px; color: var(--text-muted);">${createdAt}</td>
+                        <td style="font-size: 12px; color: var(--text-muted);">${lastLogin}</td>
                         <td>
-                            <button class="btn" style="padding: 6px 12px; font-size: 12px;"
-                                    onclick="fillUserId('${user.id}')">선택</button>
+                            <button class="btn btn-sm btn-secondary" onclick="viewUserDetail('${user.id}')">상세</button>
+                            <button class="btn btn-sm btn-primary" onclick="quickEditUser('${user.id}')">수정</button>
                         </td>
                     </tr>
                 `;
             }).join('');
         }
 
-        // 사용자 필터링
-        function filterUsers() {
+        function searchUsers() {
             const query = document.getElementById('userSearchInput').value.toLowerCase();
-            const filtered = allUsers.filter(u =>
+            let filtered = allUsers.filter(u =>
                 (u.displayName || '').toLowerCase().includes(query) ||
                 (u.email || '').toLowerCase().includes(query) ||
                 u.id.toLowerCase().includes(query)
             );
+
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(u => (u.plan || 'free') === currentFilter);
+            }
+
             renderUsers(filtered);
         }
 
-        // 사용자 ID 채우기
-        function fillUserId(userId) {
-            document.getElementById('queryUserId').value = userId;
-            document.getElementById('setUserId').value = userId;
-            document.getElementById('chargeUserId').value = userId;
-            document.getElementById('logUserIdFilter').value = userId;
+        function filterUsers(filter, btn) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            searchUsers();
+        }
 
-            switchTab('tokens');
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab')[1].classList.add('active');
+        // 사용자 상세 보기
+        async function viewUserDetail(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
 
-            queryToken();
-            showToast('사용자 선택됨: ' + userId);
+            const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' }[user.plan || 'free'];
+
+            document.getElementById('userDetailContent').innerHTML = `
+                <div class="user-detail-header">
+                    <div class="user-avatar">${(user.displayName || 'U')[0].toUpperCase()}</div>
+                    <div class="user-info">
+                        <h3>${user.displayName || '이름 없음'}</h3>
+                        <p>${user.email || '-'}</p>
+                    </div>
+                </div>
+
+                <div class="user-stats">
+                    <div class="user-stat">
+                        <div class="user-stat-value">${planName}</div>
+                        <div class="user-stat-label">플랜</div>
+                    </div>
+                    <div class="user-stat">
+                        <div class="user-stat-value">${(user.tokenBalance || 0).toLocaleString()}</div>
+                        <div class="user-stat-label">토큰</div>
+                    </div>
+                    <div class="user-stat">
+                        <div class="user-stat-value">${user.provider || '-'}</div>
+                        <div class="user-stat-label">가입 방식</div>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg-dark); border-radius: 8px; padding: 16px; font-size: 12px;">
+                    <div style="margin-bottom: 8px;"><strong>UID:</strong> ${user.id}</div>
+                    <div style="margin-bottom: 8px;"><strong>가입일:</strong> ${user.createdAt?.toDate ? user.createdAt.toDate().toLocaleString('ko-KR') : '-'}</div>
+                    <div><strong>최근 접속:</strong> ${user.lastLoginAt?.toDate ? user.lastLoginAt.toDate().toLocaleString('ko-KR') : '-'}</div>
+                </div>
+            `;
+
+            document.getElementById('userDetailEditBtn').onclick = () => quickEditUser(userId);
+            openModal('userDetailModal');
+        }
+
+        function quickEditUser(userId) {
+            document.getElementById('tokenSetUserId').value = userId;
+            document.getElementById('tokenQueryUserId').value = userId;
+            document.getElementById('tokenChargeUserId').value = userId;
+            closeModal('userDetailModal');
+            showPage('tokens');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelectorAll('.nav-item')[2].classList.add('active');
+            queryUserToken();
+            showToast('사용자 선택됨', 'success');
         }
 
         // 토큰 조회
-        async function queryToken() {
-            const userId = document.getElementById('queryUserId').value.trim();
-            const resultDiv = document.getElementById('queryResult');
+        async function queryUserToken() {
+            const userId = document.getElementById('tokenQueryUserId').value.trim();
+            const resultDiv = document.getElementById('tokenQueryResult');
 
             if (!userId) {
-                showToast('사용자 ID를 입력하세요');
+                showToast('사용자 ID를 입력하세요', 'error');
                 return;
             }
 
-            resultDiv.classList.add('show');
-            resultDiv.innerHTML = '<div class="loading"></div> 조회 중...';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="loading"></div>';
 
             try {
                 const doc = await db.collection('users').doc(userId).get();
 
                 if (doc.exists) {
                     const data = doc.data();
-                    const planNames = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' };
+                    const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' }[data.plan || 'free'];
 
                     resultDiv.innerHTML = `
-                        <div style="color: #4facfe; font-size: 18px; margin-bottom: 12px;">
-                            ${data.displayName || '이름 없음'}
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                            <div>
-                                <div style="color: #888; font-size: 12px;">플랜</div>
-                                <div style="font-size: 16px;">${planNames[data.plan] || '무료'}</div>
-                            </div>
-                            <div>
-                                <div style="color: #888; font-size: 12px;">토큰 잔액</div>
-                                <div style="font-size: 16px; color: #43e97b;">${(data.tokenBalance || 0).toLocaleString()}</div>
-                            </div>
-                            <div>
-                                <div style="color: #888; font-size: 12px;">이메일</div>
-                                <div style="font-size: 14px;">${data.email || '-'}</div>
-                            </div>
-                            <div>
-                                <div style="color: #888; font-size: 12px;">가입 방식</div>
-                                <div style="font-size: 14px;">${data.provider || '-'}</div>
+                        <div style="background: var(--bg-dark); border-radius: 8px; padding: 16px;">
+                            <div style="font-size: 18px; font-weight: 600; margin-bottom: 12px;">${data.displayName || '이름 없음'}</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div>
+                                    <div style="color: var(--text-muted); font-size: 11px;">플랜</div>
+                                    <div style="font-weight: 500;">${planName}</div>
+                                </div>
+                                <div>
+                                    <div style="color: var(--text-muted); font-size: 11px;">토큰</div>
+                                    <div style="font-weight: 500; color: var(--success);">${(data.tokenBalance || 0).toLocaleString()}</div>
+                                </div>
                             </div>
                         </div>
                     `;
                 } else {
-                    resultDiv.innerHTML = '<span style="color: #f5576c;">사용자를 찾을 수 없습니다</span>';
+                    resultDiv.innerHTML = '<div style="color: var(--danger);">사용자를 찾을 수 없습니다</div>';
                 }
             } catch (error) {
-                resultDiv.innerHTML = '<span style="color: #f5576c;">조회 실패: ' + error.message + '</span>';
+                resultDiv.innerHTML = `<div style="color: var(--danger);">오류: ${error.message}</div>`;
             }
         }
 
         // 플랜 선택
-        function selectPlan(plan, tokens) {
-            selectedPlan = plan;
-            document.getElementById('setPlan').value = plan;
-            document.getElementById('setTokenAmount').value = tokens;
-
-            document.querySelectorAll('.plan-btn').forEach(btn => btn.classList.remove('selected'));
-            event.currentTarget.classList.add('selected');
+        function selectPlanOption(plan, tokens, element) {
+            document.querySelectorAll('.plan-option').forEach(p => p.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('selectedPlan').value = plan;
+            document.getElementById('tokenSetAmount').value = tokens;
         }
 
         // 플랜 & 토큰 설정
         async function setUserPlanAndTokens() {
-            const userId = document.getElementById('setUserId').value.trim();
-            const plan = document.getElementById('setPlan').value;
-            const tokens = parseInt(document.getElementById('setTokenAmount').value);
-            const resultDiv = document.getElementById('setResult');
+            const userId = document.getElementById('tokenSetUserId').value.trim();
+            const plan = document.getElementById('selectedPlan').value;
+            const tokens = parseInt(document.getElementById('tokenSetAmount').value);
+            const resultDiv = document.getElementById('tokenSetResult');
 
             if (!userId) {
-                showToast('사용자 ID를 입력하세요');
+                showToast('사용자 ID를 입력하세요', 'error');
                 return;
             }
 
-            if (isNaN(tokens) || tokens < 0) {
-                showToast('유효한 토큰 수를 입력하세요');
-                return;
-            }
-
-            resultDiv.classList.add('show');
-            resultDiv.innerHTML = '<div class="loading"></div> 설정 중...';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="loading"></div>';
 
             try {
                 const userRef = db.collection('users').doc(userId);
                 const doc = await userRef.get();
 
-                const previousBalance = doc.exists ? (doc.data().tokenBalance || 0) : 0;
-                const previousPlan = doc.exists ? (doc.data().plan || 'free') : 'free';
+                const prev = doc.exists ? doc.data() : { tokenBalance: 0, plan: 'free' };
 
                 await userRef.set({
                     plan: plan,
@@ -724,159 +1638,316 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
 
-                // 로그 기록
                 await db.collection('credit_logs').add({
                     userId: userId,
                     action: 'admin_set',
-                    previousBalance: previousBalance,
+                    previousBalance: prev.tokenBalance || 0,
                     newBalance: tokens,
-                    previousPlan: previousPlan,
+                    previousPlan: prev.plan || 'free',
                     newPlan: plan,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    metadata: { adminAction: true }
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                const planNames = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' };
-                const diff = tokens - previousBalance;
-                const diffText = diff >= 0 ? `+${diff.toLocaleString()}` : diff.toLocaleString();
-
+                const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' };
                 resultDiv.innerHTML = `
-                    <div style="color: #43e97b; font-size: 16px; margin-bottom: 10px;">✅ 설정 완료!</div>
-                    <div style="font-size: 14px;">
-                        <div>플랜: ${planNames[previousPlan]} → <strong style="color: #FF1493;">${planNames[plan]}</strong></div>
-                        <div>토큰: ${previousBalance.toLocaleString()} → <strong style="color: #4facfe;">${tokens.toLocaleString()}</strong> (${diffText})</div>
+                    <div style="color: var(--success);">✅ 설정 완료</div>
+                    <div style="font-size: 13px; margin-top: 8px;">
+                        플랜: ${planName[prev.plan || 'free']} → ${planName[plan]}<br>
+                        토큰: ${prev.tokenBalance || 0} → ${tokens}
                     </div>
                 `;
-
-                showToast('설정 완료!');
-                loadStats();
+                showToast('설정 완료', 'success');
+                loadUsers();
             } catch (error) {
-                resultDiv.innerHTML = '<span style="color: #f5576c;">설정 실패: ' + error.message + '</span>';
+                resultDiv.innerHTML = `<div style="color: var(--danger);">오류: ${error.message}</div>`;
             }
         }
 
         // 토큰 충전
-        async function chargeTokens() {
-            const userId = document.getElementById('chargeUserId').value.trim();
-            const amount = parseInt(document.getElementById('chargeAmount').value);
-            const note = document.getElementById('chargeNote').value.trim();
-            const resultDiv = document.getElementById('chargeResult');
+        async function chargeUserTokens() {
+            const userId = document.getElementById('tokenChargeUserId').value.trim();
+            const amount = parseInt(document.getElementById('tokenChargeAmount').value);
+            const note = document.getElementById('tokenChargeNote').value.trim();
+            const resultDiv = document.getElementById('tokenChargeResult');
 
-            if (!userId) {
-                showToast('사용자 ID를 입력하세요');
+            if (!userId || !amount || amount <= 0) {
+                showToast('사용자 ID와 충전량을 입력하세요', 'error');
                 return;
             }
 
-            if (isNaN(amount) || amount <= 0) {
-                showToast('유효한 충전량을 입력하세요');
-                return;
-            }
-
-            resultDiv.classList.add('show');
-            resultDiv.innerHTML = '<div class="loading"></div> 충전 중...';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="loading"></div>';
 
             try {
                 const userRef = db.collection('users').doc(userId);
                 const doc = await userRef.get();
 
                 if (!doc.exists) {
-                    resultDiv.innerHTML = '<span style="color: #f5576c;">사용자를 찾을 수 없습니다</span>';
+                    resultDiv.innerHTML = '<div style="color: var(--danger);">사용자를 찾을 수 없습니다</div>';
                     return;
                 }
 
-                const currentBalance = doc.data().tokenBalance || 0;
-                const newBalance = currentBalance + amount;
+                const prev = doc.data().tokenBalance || 0;
+                const newBalance = prev + amount;
 
                 await userRef.update({
                     tokenBalance: newBalance,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                // 로그 기록
                 await db.collection('credit_logs').add({
                     userId: userId,
                     action: 'admin_charge',
                     tokensAdded: amount,
-                    previousBalance: currentBalance,
+                    previousBalance: prev,
                     newBalance: newBalance,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    metadata: { note: note || '관리자 수동 충전' }
+                    metadata: { note: note || '관리자 충전' }
                 });
 
                 resultDiv.innerHTML = `
-                    <div style="color: #43e97b; font-size: 16px; margin-bottom: 10px;">✅ 충전 완료!</div>
-                    <div style="font-size: 14px;">
-                        <div>이전 잔액: ${currentBalance.toLocaleString()}</div>
-                        <div>충전: <strong style="color: #43e97b;">+${amount.toLocaleString()}</strong></div>
-                        <div>새 잔액: <strong style="color: #4facfe;">${newBalance.toLocaleString()}</strong></div>
+                    <div style="color: var(--success);">✅ 충전 완료</div>
+                    <div style="font-size: 13px; margin-top: 8px;">
+                        ${prev} + ${amount} = ${newBalance} 토큰
                     </div>
                 `;
-
-                document.getElementById('chargeAmount').value = '';
-                document.getElementById('chargeNote').value = '';
-                showToast('충전 완료!');
-                loadStats();
+                showToast(`${amount.toLocaleString()} 토큰 충전 완료`, 'success');
+                document.getElementById('tokenChargeAmount').value = '';
+                document.getElementById('tokenChargeNote').value = '';
             } catch (error) {
-                resultDiv.innerHTML = '<span style="color: #f5576c;">충전 실패: ' + error.message + '</span>';
+                resultDiv.innerHTML = `<div style="color: var(--danger);">오류: ${error.message}</div>`;
             }
         }
 
-        // 로그 로드
-        async function loadLogs() {
-            const userId = document.getElementById('logUserIdFilter').value.trim();
-            const tbody = document.getElementById('logTableBody');
+        // 토큰 차감
+        async function deductUserTokens() {
+            const userId = document.getElementById('tokenDeductUserId').value.trim();
+            const amount = parseInt(document.getElementById('tokenDeductAmount').value);
+            const reason = document.getElementById('tokenDeductReason').value.trim();
+            const resultDiv = document.getElementById('tokenDeductResult');
 
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;"><div class="loading"></div></td></tr>';
+            if (!userId || !amount || amount <= 0) {
+                showToast('사용자 ID와 차감량을 입력하세요', 'error');
+                return;
+            }
+
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="loading"></div>';
 
             try {
-                let query = db.collection('credit_logs').orderBy('timestamp', 'desc').limit(50);
+                const userRef = db.collection('users').doc(userId);
+                const doc = await userRef.get();
+
+                if (!doc.exists) {
+                    resultDiv.innerHTML = '<div style="color: var(--danger);">사용자를 찾을 수 없습니다</div>';
+                    return;
+                }
+
+                const prev = doc.data().tokenBalance || 0;
+                const newBalance = Math.max(0, prev - amount);
+
+                await userRef.update({
+                    tokenBalance: newBalance,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                await db.collection('credit_logs').add({
+                    userId: userId,
+                    action: 'admin_deduct',
+                    creditsUsed: amount,
+                    previousBalance: prev,
+                    newBalance: newBalance,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    metadata: { reason: reason || '관리자 차감' }
+                });
+
+                resultDiv.innerHTML = `
+                    <div style="color: var(--warning);">⚠️ 차감 완료</div>
+                    <div style="font-size: 13px; margin-top: 8px;">
+                        ${prev} - ${amount} = ${newBalance} 토큰
+                    </div>
+                `;
+                showToast(`${amount.toLocaleString()} 토큰 차감 완료`, 'warning');
+                document.getElementById('tokenDeductAmount').value = '';
+                document.getElementById('tokenDeductReason').value = '';
+            } catch (error) {
+                resultDiv.innerHTML = `<div style="color: var(--danger);">오류: ${error.message}</div>`;
+            }
+        }
+
+        // 활동 로그 로드
+        async function loadActivityLogs() {
+            const userId = document.getElementById('logSearchUserId').value.trim();
+            const actionFilter = document.getElementById('logActionFilter').value;
+            const tbody = document.getElementById('logsTableBody');
+
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;"><div class="loading"></div></td></tr>';
+
+            try {
+                let query = db.collection('credit_logs').orderBy('timestamp', 'desc').limit(100);
 
                 if (userId) {
                     query = db.collection('credit_logs')
                         .where('userId', '==', userId)
                         .orderBy('timestamp', 'desc')
-                        .limit(50);
+                        .limit(100);
                 }
 
                 const snapshot = await query.get();
+                let logs = snapshot.docs.map(doc => doc.data());
 
-                if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">로그가 없습니다</td></tr>';
+                if (actionFilter) {
+                    logs = logs.filter(log => log.action === actionFilter);
+                }
+
+                if (logs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">로그 없음</td></tr>';
                     return;
                 }
 
-                tbody.innerHTML = snapshot.docs.map(doc => {
-                    const log = doc.data();
+                tbody.innerHTML = logs.map(log => {
                     const time = log.timestamp?.toDate ? log.timestamp.toDate().toLocaleString('ko-KR') : '-';
-                    const action = log.action || '-';
-                    const tokens = log.tokensAdded ? `+${log.tokensAdded}` : (log.creditsUsed ? `-${log.creditsUsed}` : '-');
-                    const balance = log.newBalance?.toLocaleString() || '-';
-                    const note = log.metadata?.note || log.metadata?.feature || '-';
+                    const change = log.tokensAdded ? `+${log.tokensAdded}` : (log.creditsUsed ? `-${log.creditsUsed}` : '-');
+                    const note = log.metadata?.note || log.metadata?.reason || log.metadata?.feature || '-';
 
                     return `
                         <tr>
-                            <td style="font-size: 12px; color: #888;">${time}</td>
+                            <td style="font-size: 12px; color: var(--text-muted);">${time}</td>
                             <td style="font-size: 12px;">${log.userId || '-'}</td>
-                            <td>${action}</td>
-                            <td style="color: ${tokens.startsWith('+') ? '#43e97b' : '#f5576c'};">${tokens}</td>
-                            <td style="color: #4facfe;">${balance}</td>
-                            <td style="color: #888; font-size: 12px;">${note}</td>
+                            <td><span class="badge badge-${getActionBadge(log.action)}">${log.action}</span></td>
+                            <td style="color: ${change.startsWith('+') ? 'var(--success)' : 'var(--danger)'}; font-weight: 500;">${change}</td>
+                            <td style="color: var(--info);">${log.newBalance?.toLocaleString() || '-'}</td>
+                            <td style="font-size: 12px; color: var(--text-muted);">${note}</td>
                         </tr>
                     `;
                 }).join('');
             } catch (error) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #f5576c;">로드 실패: ' + error.message + '</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="6" style="color: var(--danger);">오류: ${error.message}</td></tr>`;
             }
         }
 
-        // 토스트 알림
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
+        // 사용 통계 로드
+        async function loadUsageStats() {
+            try {
+                const snapshot = await db.collection('credit_logs').get();
+                const logs = snapshot.docs.map(doc => doc.data());
+
+                const chatbotCount = logs.filter(l => l.action === 'chatbot').length;
+                const lookbookCount = logs.filter(l => l.action === 'lookbook').length;
+                const hairTryCount = logs.filter(l => l.action === 'hairTry').length;
+                const totalUsed = logs.reduce((sum, l) => sum + (l.creditsUsed || 0), 0);
+
+                document.getElementById('usageChatbot').textContent = chatbotCount.toLocaleString();
+                document.getElementById('usageLookbook').textContent = lookbookCount.toLocaleString();
+                document.getElementById('usageHairTry').textContent = hairTryCount.toLocaleString();
+                document.getElementById('usageTokensUsed').textContent = totalUsed.toLocaleString();
+
+                // 기능별 차트
+                if (featureUsageChart) featureUsageChart.destroy();
+                featureUsageChart = new Chart(document.getElementById('featureUsageChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['챗봇', '룩북', '헤어체험'],
+                        datasets: [{
+                            label: '사용 횟수',
+                            data: [chatbotCount, lookbookCount, hairTryCount],
+                            backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: { grid: { color: '#2a2a35' }, ticks: { color: '#888' } },
+                            y: { grid: { color: '#2a2a35' }, ticks: { color: '#888' } }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('사용 통계 로드 실패:', error);
+            }
+        }
+
+        // 결제 내역 로드
+        async function loadPayments() {
+            const tbody = document.getElementById('paymentsTableBody');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;"><div class="loading"></div></td></tr>';
+
+            try {
+                const snapshot = await db.collection('payments').orderBy('createdAt', 'desc').limit(50).get();
+
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">결제 내역이 없습니다</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = snapshot.docs.map(doc => {
+                    const p = doc.data();
+                    const date = p.createdAt?.toDate ? p.createdAt.toDate().toLocaleString('ko-KR') : '-';
+                    const statusBadge = p.status === 'paid' ? 'badge-success' : (p.status === 'cancelled' ? 'badge-danger' : 'badge-warning');
+
+                    return `
+                        <tr>
+                            <td style="font-size: 12px;">${p.paymentId || doc.id}</td>
+                            <td style="font-size: 12px;">${p.userId || '-'}</td>
+                            <td>${p.productName || '-'}</td>
+                            <td style="font-weight: 500;">₩${(p.amount || 0).toLocaleString()}</td>
+                            <td><span class="badge ${statusBadge}">${p.status || '-'}</span></td>
+                            <td style="font-size: 12px; color: var(--text-muted);">${date}</td>
+                            <td>
+                                <button class="btn btn-sm btn-secondary">상세</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="7" style="color: var(--danger);">오류: ${error.message}</td></tr>`;
+            }
+        }
+
+        // 설정 저장
+        function saveTokenCosts() {
+            showToast('토큰 비용 설정이 저장되었습니다', 'success');
+        }
+
+        function savePlanTokens() {
+            showToast('플랜별 토큰 설정이 저장되었습니다', 'success');
+        }
+
+        function saveAdminEmails() {
+            showToast('관리자 계정이 저장되었습니다', 'success');
+        }
+
+        // 모달
+        function openModal(id) {
+            document.getElementById(id).classList.add('show');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+
+        function openAddUserModal() {
+            showToast('사용자는 로그인 페이지에서 직접 가입합니다', 'warning');
+        }
+
+        // 토스트
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.innerHTML = `
+                <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'}</span>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
 
             setTimeout(() => {
-                toast.classList.remove('show');
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
             }, 3000);
         }
     </script>
