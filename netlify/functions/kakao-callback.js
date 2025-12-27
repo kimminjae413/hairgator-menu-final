@@ -126,37 +126,47 @@ exports.handler = async (event, context) => {
             email: userData.kakao_account?.email
         });
 
-        // 2.5. 불나비 사용자 마이그레이션 체크 (이메일 매칭)
+        // 2.5. 불나비 사용자 마이그레이션 체크 (Firestore bullnabi_users 직접 조회)
         let bullnabiUserData = null;
         const userEmail = userData.kakao_account?.email;
 
         if (userEmail) {
             try {
-                console.log('🔄 불나비 사용자 마이그레이션 체크:', userEmail);
+                console.log('🔄 불나비 사용자 마이그레이션 체크 (Firestore):', userEmail);
 
-                // bullnabi-proxy API 호출
-                const bullnabiResponse = await fetch(`https://${event.headers.host}/.netlify/functions/bullnabi-proxy`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        action: 'getUserByEmail',
-                        email: userEmail
-                    })
-                });
+                const db = admin.firestore();
+                // bullnabi_users 컬렉션에서 직접 조회
+                const docId = `bullnabi_${userEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                const bullnabiDoc = await db.collection('bullnabi_users').doc(docId).get();
 
-                const bullnabiResult = await bullnabiResponse.json();
-
-                if (bullnabiResult.success && bullnabiResult.found) {
-                    bullnabiUserData = bullnabiResult.data;
-                    console.log('✅ 불나비 사용자 발견! 마이그레이션 진행:', {
-                        bullnabiUserId: bullnabiUserData.bullnabiUserId,
-                        tokenBalance: bullnabiUserData.tokenBalance,
-                        plan: bullnabiUserData.plan
-                    });
+                if (bullnabiDoc.exists) {
+                    const data = bullnabiDoc.data();
+                    bullnabiUserData = {
+                        bullnabiUserId: data.bullnabiUserId,
+                        tokenBalance: data.tokenBalance || 0,
+                        plan: data.plan || 'free',
+                        name: data.name || data.nickname || ''
+                    };
+                    console.log('✅ 불나비 사용자 발견! 마이그레이션 진행:', bullnabiUserData);
                 } else {
-                    console.log('ℹ️ 불나비에 해당 이메일 사용자 없음 (신규 사용자)');
+                    // 폴백: 이메일 필드로 쿼리
+                    const querySnapshot = await db.collection('bullnabi_users')
+                        .where('email', '==', userEmail)
+                        .limit(1)
+                        .get();
+
+                    if (!querySnapshot.empty) {
+                        const data = querySnapshot.docs[0].data();
+                        bullnabiUserData = {
+                            bullnabiUserId: data.bullnabiUserId,
+                            tokenBalance: data.tokenBalance || 0,
+                            plan: data.plan || 'free',
+                            name: data.name || data.nickname || ''
+                        };
+                        console.log('✅ 불나비 사용자 발견 (쿼리):', bullnabiUserData);
+                    } else {
+                        console.log('ℹ️ 불나비에 해당 이메일 사용자 없음 (신규 사용자)');
+                    }
                 }
             } catch (migrationError) {
                 console.error('⚠️ 불나비 마이그레이션 체크 실패 (계속 진행):', migrationError.message);
