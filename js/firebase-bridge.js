@@ -19,7 +19,7 @@
         },
 
         // 관리자 ID 목록
-        ADMIN_USER_IDS: [],
+        ADMIN_USER_IDS: ['kakao_4556280939', '691ceee09d868b5736d22007'],
 
         // 초기화
         init() {
