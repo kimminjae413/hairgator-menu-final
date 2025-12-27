@@ -1,21 +1,42 @@
 // 카카오 OAuth 콜백 처리 → Firebase Custom Token 발급
 const admin = require('firebase-admin');
 
-// Firebase Admin 초기화
-if (!admin.apps.length) {
-    admin.initializeApp({
+const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY || 'e085ad4b34b316bdd26d67bf620b2ec9';
+const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET || ''; // 선택적
+
+// Firebase Admin 초기화 함수
+function initializeFirebaseAdmin() {
+    if (admin.apps.length) {
+        return admin.apps[0];
+    }
+
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+    console.log('Firebase 환경변수 체크:', {
+        hasProjectId: !!projectId,
+        hasClientEmail: !!clientEmail,
+        hasPrivateKey: !!privateKey,
+        privateKeyLength: privateKey?.length || 0
+    });
+
+    if (!projectId || !clientEmail || !privateKey) {
+        throw new Error(`Firebase 환경변수 누락: projectId=${!!projectId}, clientEmail=${!!clientEmail}, privateKey=${!!privateKey}`);
+    }
+
+    return admin.initializeApp({
         credential: admin.credential.cert({
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+            projectId,
+            clientEmail,
+            privateKey: privateKey.replace(/\\n/g, '\n')
         })
     });
 }
 
-const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY || 'e085ad4b34b316bdd26d67bf620b2ec9';
-const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET || ''; // 선택적
-
 exports.handler = async (event, context) => {
+    console.log('카카오 콜백 함수 시작');
+
     const { code, error, error_description } = event.queryStringParameters || {};
 
     // 에러 처리
@@ -40,6 +61,10 @@ exports.handler = async (event, context) => {
     }
 
     try {
+        // Firebase Admin 초기화
+        initializeFirebaseAdmin();
+        console.log('Firebase Admin 초기화 성공');
+
         // 1. 인가 코드로 액세스 토큰 발급
         const REDIRECT_URI = `https://${event.headers.host}/.netlify/functions/kakao-callback`;
 
@@ -154,11 +179,18 @@ exports.handler = async (event, context) => {
         };
 
     } catch (error) {
-        console.error('카카오 로그인 처리 에러:', error);
+        console.error('카카오 로그인 처리 에러:', error.message);
+        console.error('에러 스택:', error.stack);
+
+        // 개발 환경에서는 상세 에러 표시
+        const errorMessage = process.env.NODE_ENV === 'development'
+            ? error.message
+            : '서버 오류가 발생했습니다.';
+
         return {
             statusCode: 302,
             headers: {
-                Location: `/login.html?error=${encodeURIComponent('서버 오류가 발생했습니다.')}`
+                Location: `/login.html?error=${encodeURIComponent(errorMessage)}`
             }
         };
     }
