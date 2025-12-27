@@ -428,6 +428,26 @@ const HAIRGATOR_I18N = {
       }
     },
 
+    // ========== AI 얼굴변환 & 영상변환 ==========
+    aiTransform: {
+      menuTitle: 'AI 얼굴변환 & 영상',
+      menuSubtitle: '얼굴 합성 · 영상 생성',
+      faceSwapTitle: '얼굴 변환',
+      faceSwapDesc: '헤어스타일 결과에 고객 얼굴을 합성합니다',
+      videoGenTitle: '영상 생성',
+      videoGenDesc: '이미지를 영상으로 변환합니다',
+      originalPhoto: '고객 사진',
+      targetStyle: '적용 스타일',
+      startFaceSwap: '얼굴 변환 시작',
+      startVideoGen: '영상 생성 시작',
+      videoDuration: '영상 길이',
+      promptLabel: '프롬프트 (선택)',
+      result: '변환 결과',
+      generatedVideo: '생성된 영상',
+      processing: 'AI 처리 중',
+      pleaseWait: '잠시만 기다려주세요...'
+    },
+
     // ========== 퍼스널컬러 ==========
     personalColor: {
       title: 'HAIRGATOR Personal Color',
@@ -1469,6 +1489,26 @@ const HAIRGATOR_I18N = {
       }
     },
 
+    // ========== AI Face & Video Transform ==========
+    aiTransform: {
+      menuTitle: 'AI Face & Video',
+      menuSubtitle: 'Face Swap · Video Gen',
+      faceSwapTitle: 'Face Transform',
+      faceSwapDesc: 'Composite customer face onto hairstyle result',
+      videoGenTitle: 'Video Generation',
+      videoGenDesc: 'Transform image into video',
+      originalPhoto: 'Customer Photo',
+      targetStyle: 'Target Style',
+      startFaceSwap: 'Start Face Swap',
+      startVideoGen: 'Start Video Generation',
+      videoDuration: 'Video Duration',
+      promptLabel: 'Prompt (Optional)',
+      result: 'Result',
+      generatedVideo: 'Generated Video',
+      processing: 'AI Processing',
+      pleaseWait: 'Please wait...'
+    },
+
     // ========== Personal Color ==========
     personalColor: {
       title: 'HAIRGATOR Personal Color',
@@ -2483,6 +2523,26 @@ const HAIRGATOR_I18N = {
       }
     },
 
+    // ========== AI顔変換＆動画変換 ==========
+    aiTransform: {
+      menuTitle: 'AI顔＆動画変換',
+      menuSubtitle: '顔合成・動画生成',
+      faceSwapTitle: '顔変換',
+      faceSwapDesc: 'ヘアスタイル結果にお客様の顔を合成',
+      videoGenTitle: '動画生成',
+      videoGenDesc: '画像を動画に変換',
+      originalPhoto: 'お客様の写真',
+      targetStyle: '適用スタイル',
+      startFaceSwap: '顔変換開始',
+      startVideoGen: '動画生成開始',
+      videoDuration: '動画の長さ',
+      promptLabel: 'プロンプト（任意）',
+      result: '変換結果',
+      generatedVideo: '生成された動画',
+      processing: 'AI処理中',
+      pleaseWait: 'しばらくお待ちください...'
+    },
+
     // ========== パーソナルカラー ==========
     personalColor: {
       title: 'HAIRGATOR Personal Color',
@@ -3491,6 +3551,26 @@ const HAIRGATOR_I18N = {
         chinVolume: '下巴周围蓬松带来平衡',
         foreheadBalance: '额头蓬松调整带来平衡'
       }
+    },
+
+    // ========== AI换脸&视频生成 ==========
+    aiTransform: {
+      menuTitle: 'AI换脸&视频',
+      menuSubtitle: '面部合成·视频生成',
+      faceSwapTitle: '换脸',
+      faceSwapDesc: '将顾客面部合成到发型效果图',
+      videoGenTitle: '视频生成',
+      videoGenDesc: '将图片转换为视频',
+      originalPhoto: '顾客照片',
+      targetStyle: '目标发型',
+      startFaceSwap: '开始换脸',
+      startVideoGen: '开始生成视频',
+      videoDuration: '视频时长',
+      promptLabel: '提示词（可选）',
+      result: '转换结果',
+      generatedVideo: '生成的视频',
+      processing: 'AI处理中',
+      pleaseWait: '请稍候...'
     },
 
     // ========== 个人色彩 ==========
@@ -4504,6 +4584,26 @@ const HAIRGATOR_I18N = {
         chinVolume: 'Độ phồng quanh cằm tạo cân bằng',
         foreheadBalance: 'Điều chỉnh độ phồng trán để cân bằng'
       }
+    },
+
+    // ========== AI Đổi Mặt & Video ==========
+    aiTransform: {
+      menuTitle: 'AI Đổi Mặt & Video',
+      menuSubtitle: 'Ghép mặt · Tạo video',
+      faceSwapTitle: 'Đổi Mặt',
+      faceSwapDesc: 'Ghép mặt khách hàng vào kết quả kiểu tóc',
+      videoGenTitle: 'Tạo Video',
+      videoGenDesc: 'Chuyển ảnh thành video',
+      originalPhoto: 'Ảnh khách hàng',
+      targetStyle: 'Kiểu tóc mục tiêu',
+      startFaceSwap: 'Bắt đầu đổi mặt',
+      startVideoGen: 'Bắt đầu tạo video',
+      videoDuration: 'Thời lượng video',
+      promptLabel: 'Prompt (Tùy chọn)',
+      result: 'Kết quả',
+      generatedVideo: 'Video đã tạo',
+      processing: 'AI đang xử lý',
+      pleaseWait: 'Vui lòng đợi...'
     },
 
     // ========== Màu cá nhân ==========

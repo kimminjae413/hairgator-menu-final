@@ -611,6 +611,18 @@
               </div>
           </div>
 
+          <!-- AI 얼굴변환 & 영상변환 섹션 -->
+          <div class="sidebar-section" id="aiTransformSection">
+              <div class="sidebar-menu-item" onclick="handleAiTransformAccess(event)">
+                  <span class="sidebar-icon">🎬</span>
+                  <div class="sidebar-text">
+                      <div class="sidebar-title" data-i18n="aiTransform.menuTitle">AI 얼굴변환 & 영상</div>
+                      <div class="sidebar-subtitle" data-i18n="aiTransform.menuSubtitle">얼굴 합성 · 영상 생성</div>
+                  </div>
+                  <span class="sidebar-arrow">→</span>
+              </div>
+          </div>
+
           <div class="sidebar-section" id="personalColorSection">
     <div class="sidebar-menu-item" onclick="handlePersonalColorAccess(event)">
         <span class="sidebar-icon">🌈</span>
@@ -2596,6 +2608,27 @@ function handleStyleMatchAccess(event) {
     // 300ms 대기 후 뷰 열기
     setTimeout(() => {
         showStyleMatchView();
+    }, 300);
+}
+
+// AI 얼굴변환 & 영상변환 접근 처리
+function handleAiTransformAccess(event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    console.log('🎬 AI Transform 버튼 클릭됨');
+
+    // 사이드바 먼저 닫기
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('active')) {
+        sidebar.classList.remove('active');
+    }
+
+    // 300ms 대기 후 페이지 이동
+    setTimeout(() => {
+        window.location.href = '/ai-transform/';
     }, 300);
 }
 

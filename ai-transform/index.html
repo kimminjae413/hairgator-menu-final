@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Transform - HAIRGATOR</title>
+
+    <!-- Cache Control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+
+    <!-- PWA -->
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Ambient Background -->
+    <div class="ambient-bg">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+        <div class="noise-overlay"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <button class="back-btn" onclick="history.back()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+        </button>
+        <div class="logo">
+            <span class="logo-text">AI</span>
+            <span class="logo-accent">TRANSFORM</span>
+        </div>
+        <div class="credit-badge">
+            <span class="credit-icon">◇</span>
+            <span class="credit-amount" id="creditAmount">--</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Tab Navigation -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="face">
+                <span class="tab-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>
+                    </svg>
+                </span>
+                <span class="tab-label">얼굴 변환</span>
+                <span class="tab-subtitle">Face Swap</span>
+            </button>
+            <button class="tab-btn" data-tab="video">
+                <span class="tab-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <polygon points="10,8 16,12 10,16"/>
+                    </svg>
+                </span>
+                <span class="tab-label">영상 생성</span>
+                <span class="tab-subtitle">Video Gen</span>
+            </button>
+        </nav>
+
+        <!-- Face Swap Section -->
+        <section class="tab-content active" id="face-content">
+            <div class="section-header">
+                <h2 class="section-title">AI Face Transform</h2>
+                <p class="section-desc">헤어스타일 결과 이미지에 고객 얼굴을 합성합니다</p>
+            </div>
+
+            <div class="upload-grid">
+                <!-- Original Image -->
+                <div class="upload-card" id="originalCard">
+                    <div class="upload-zone" id="originalZone">
+                        <input type="file" id="originalInput" accept="image/*" hidden>
+                        <div class="upload-placeholder">
+                            <div class="upload-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                    <circle cx="12" cy="8" r="3"/>
+                                    <path d="M6 20c0-3 3-5 6-5s6 2 6 5"/>
+                                    <rect x="2" y="2" width="20" height="20" rx="3"/>
+                                </svg>
+                            </div>
+                            <span class="upload-label">고객 사진</span>
+                            <span class="upload-hint">Customer Photo</span>
+                        </div>
+                        <img class="preview-image" id="originalPreview" alt="Original">
+                    </div>
+                    <div class="card-label">
+                        <span class="label-num">01</span>
+                        <span class="label-text">원본 얼굴</span>
+                    </div>
+                </div>
+
+                <!-- Arrow -->
+                <div class="transform-arrow">
+                    <div class="arrow-line"></div>
+                    <div class="arrow-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </div>
+                    <div class="arrow-line"></div>
+                </div>
+
+                <!-- Target Image -->
+                <div class="upload-card" id="targetCard">
+                    <div class="upload-zone" id="targetZone">
+                        <input type="file" id="targetInput" accept="image/*" hidden>
+                        <div class="upload-placeholder">
+                            <div class="upload-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                    <path d="M2 17l10 5 10-5"/>
+                                    <path d="M2 12l10 5 10-5"/>
+                                </svg>
+                            </div>
+                            <span class="upload-label">헤어스타일</span>
+                            <span class="upload-hint">Target Style</span>
+                        </div>
+                        <img class="preview-image" id="targetPreview" alt="Target">
+                    </div>
+                    <div class="card-label">
+                        <span class="label-num">02</span>
+                        <span class="label-text">적용 스타일</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generate Button -->
+            <button class="generate-btn" id="faceSwapBtn" disabled>
+                <span class="btn-text">얼굴 변환 시작</span>
+                <span class="btn-cost">
+                    <span class="cost-icon">◇</span>
+                    <span class="cost-amount">350</span>
+                </span>
+                <div class="btn-shine"></div>
+            </button>
+
+            <!-- Result Area -->
+            <div class="result-area" id="faceResultArea">
+                <div class="result-header">
+                    <h3 class="result-title">변환 결과</h3>
+                    <div class="result-actions">
+                        <button class="action-btn" id="downloadFaceBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" id="shareFaceBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="18" cy="5" r="3"/>
+                                <circle cx="6" cy="12" r="3"/>
+                                <circle cx="18" cy="19" r="3"/>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="result-image-container">
+                    <img class="result-image" id="faceResultImage" alt="Result">
+                </div>
+            </div>
+        </section>
+
+        <!-- Video Generation Section -->
+        <section class="tab-content" id="video-content">
+            <div class="section-header">
+                <h2 class="section-title">AI Video Generation</h2>
+                <p class="section-desc">정적 이미지를 생동감 있는 영상으로 변환합니다</p>
+            </div>
+
+            <!-- Video Source Upload -->
+            <div class="video-upload-area">
+                <div class="upload-card large" id="videoSourceCard">
+                    <div class="upload-zone" id="videoSourceZone">
+                        <input type="file" id="videoSourceInput" accept="image/*" hidden>
+                        <div class="upload-placeholder">
+                            <div class="upload-icon large">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8">
+                                    <rect x="2" y="2" width="20" height="20" rx="3"/>
+                                    <circle cx="12" cy="12" r="4"/>
+                                    <path d="M2 12h4M18 12h4M12 2v4M12 18v4"/>
+                                </svg>
+                            </div>
+                            <span class="upload-label">이미지 업로드</span>
+                            <span class="upload-hint">영상으로 변환할 이미지를 선택하세요</span>
+                        </div>
+                        <img class="preview-image" id="videoSourcePreview" alt="Source">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Options -->
+            <div class="options-panel">
+                <div class="option-group">
+                    <label class="option-label">영상 길이</label>
+                    <div class="option-buttons">
+                        <button class="option-btn active" data-duration="5">
+                            <span class="option-value">5</span>
+                            <span class="option-unit">초</span>
+                        </button>
+                        <button class="option-btn" data-duration="8">
+                            <span class="option-value">8</span>
+                            <span class="option-unit">초</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="option-group">
+                    <label class="option-label">프롬프트 (선택)</label>
+                    <div class="prompt-input-wrapper">
+                        <textarea class="prompt-input" id="videoPrompt" placeholder="예: 바람에 머리카락이 자연스럽게 날리는 모습" rows="2"></textarea>
+                        <div class="prompt-counter">
+                            <span id="promptCount">0</span>/200
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generate Video Button -->
+            <button class="generate-btn video-btn" id="videoGenBtn" disabled>
+                <span class="btn-text">영상 생성 시작</span>
+                <span class="btn-cost">
+                    <span class="cost-icon">◇</span>
+                    <span class="cost-amount" id="videoCost">500</span>
+                </span>
+                <div class="btn-shine"></div>
+            </button>
+
+            <!-- Video Result -->
+            <div class="result-area video-result" id="videoResultArea">
+                <div class="result-header">
+                    <h3 class="result-title">생성된 영상</h3>
+                    <div class="result-actions">
+                        <button class="action-btn" id="downloadVideoBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="video-container">
+                    <video class="result-video" id="resultVideo" controls loop playsinline></video>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+            <div class="loading-text">
+                <span class="loading-title" id="loadingTitle">AI 처리 중</span>
+                <span class="loading-desc" id="loadingDesc">잠시만 기다려주세요...</span>
+            </div>
+            <div class="loading-progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span class="toast-icon"></span>
+        <span class="toast-message"></span>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/firebase-bridge.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
