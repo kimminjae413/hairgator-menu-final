@@ -249,12 +249,12 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 동작: `_users.tokenBalance += tokenCount`
 
 ## 최근 작업 이력
-- 2025-12-27 (저녁): 불나비 → Firebase Auth 독립 마이그레이션
+- 2025-12-27 (저녁): 불나비 → Firebase Auth 독립 마이그레이션 ✅ 완료
 
   ### 배경
   - 헤어게이터 서비스를 불나비 앱 종속에서 완전 독립 웹앱으로 전환
   - MongoDB 의존성 제거, Firebase Auth + Firestore 기반으로 재구축
-  - 도메인: `hairgator.kr` (가비아에서 구매)
+  - 도메인: `hairgator.kr` (가비아에서 구매, Netlify 연결 완료)
 
   ### 인증 시스템 변경
   - **Firebase Auth** 도입: Google, 이메일/비밀번호, 카카오 (Custom Token)
@@ -264,8 +264,26 @@ Then: [동작] (예: 기존 데이터를 수정)
     - `netlify/functions/kakao-callback.js`: 카카오 OAuth 핸들러
   - **수정 파일**:
     - `js/auth.js`: 불나비 → Firebase Auth 전면 교체
-    - `js/firebase-config.js`: Auth 초기화 추가
+    - `js/firebase-config.js`: Auth 초기화 추가, Storage SDK 선택적 초기화
     - HTML 4개 파일: bullnabi-bridge.js → firebase-bridge.js 참조 변경
+
+  ### 카카오 로그인 연동 완료 ✅
+  - **도메인 연결**: `hairgator.kr` → Netlify 연결 완료
+  - **카카오 개발자 콘솔 설정 완료**:
+    - 앱 ID: 1298589
+    - 앱 이름: 헤어게이터
+    - 웹 도메인: `hairgator.kr`
+    - Redirect URI: `https://hairgator.kr/.netlify/functions/kakao-callback`
+  - **OAuth 플로우 테스트 통과**:
+    1. 카카오 OAuth 리다이렉트 정상
+    2. 액세스 토큰 발급 성공
+    3. Firebase Custom Token 생성 성공
+    4. Firestore 사용자 저장 (`kakao_4665545967`)
+    5. 신규 사용자 200 토큰 자동 지급
+    6. 메인 페이지 자동 리다이렉트
+  - **수정한 버그**:
+    - `kakao-callback.js`: Firebase Admin 초기화를 핸들러 내부로 이동 (환경변수 누락 시 상세 로그 출력)
+    - `firebase-config.js`: Storage SDK 선택적 초기화 (login.html에서 Storage SDK 없어도 에러 안남)
 
   ### Firestore 사용자 스키마 (`users` 컬렉션)
   ```javascript
@@ -287,15 +305,11 @@ Then: [동작] (예: 기존 데이터를 수정)
   - `getBullnabiUser()` 함수 유지 (Firebase 형식으로 변환)
   - `window.currentDesigner` 구조 유지
 
-  ### 대기 중인 작업 (Netlify 결제 후)
-  - Netlify 도메인 연결: `hairgator.kr` → `lovely-lebkuchen-4017ca.netlify.app`
-  - 카카오 개발자 콘솔: 도메인 + Redirect URI 등록
-    - 웹 도메인: `hairgator.kr`
-    - Redirect URI: `https://hairgator.kr/.netlify/functions/kakao-callback`
-
-  ### 카카오 REST API 키
-  - 기존 키 재사용: `e085ad4b34b316bdd26d67bf620b2ec9`
-  - Netlify 환경변수: `KAKAO_REST_API_KEY`
+  ### Netlify 환경변수 (필수)
+  - `FIREBASE_PROJECT_ID`: hairgatormenu-4a43e
+  - `FIREBASE_CLIENT_EMAIL`: firebase-adminsdk-xxx@xxx.iam.gserviceaccount.com
+  - `FIREBASE_PRIVATE_KEY`: -----BEGIN PRIVATE KEY-----...
+  - `KAKAO_REST_API_KEY`: e085ad4b34b316bdd26d67bf620b2ec9
 
 - 2025-12-27: AI 스타일 매칭 모달 완성 + 눈썹 분석 추가
 
