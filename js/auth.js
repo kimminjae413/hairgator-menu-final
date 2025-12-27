@@ -278,11 +278,18 @@ function getBullnabiUser() {
     const user = getFirebaseUser();
     if (!user) return null;
 
+    // window.currentDesigner에서 이름 우선 사용 (Firestore 데이터)
+    const name = window.currentDesigner?.name
+        || window.currentDesigner?.displayName
+        || user.displayName
+        || user.email?.split('@')[0]
+        || '사용자';
+
     // 불나비 형식으로 변환
     return {
         userId: user.uid,
         id: user.uid,
-        name: user.displayName || user.email?.split('@')[0] || '사용자',
+        name: name,
         email: user.email,
         remainCount: 0,
         tokenBalance: window.currentDesigner?.tokenBalance || 0,

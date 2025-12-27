@@ -446,17 +446,19 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         // 관리자 ID 목록
-        const ADMIN_IDS = ['691ceee09d868b5736d22007'];
+        const ADMIN_IDS = ['691ceee09d868b5736d22007', 'kakao_4556280939'];
 
         const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
         if (bullnabiUser) {
-            // 불나비 로그인 성공
+            // 불나비/Firebase 로그인 성공
             loginInfoPending = false;
             if (loginInfoTimeout) {
                 clearTimeout(loginInfoTimeout);
                 loginInfoTimeout = null;
             }
-            if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${bullnabiUser.name}`;
+            // 이름 표시: bullnabiUser.name (이미 window.currentDesigner?.name 폴백 포함)
+            const displayName = bullnabiUser.name || window.currentDesigner?.name || '사용자';
+            if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${displayName}`;
 
             // 플랜 & 토큰 표시
             const tokenBalance = bullnabiUser.tokenBalance ?? window.currentDesigner?.tokenBalance ?? 0;
