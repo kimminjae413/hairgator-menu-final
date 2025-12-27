@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지 - HAIRGATOR</title>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+
+    <!-- 다국어 -->
+    <script src="js/i18n.js"></script>
+
+    <style>
+        :root {
+            --primary: #E91E63;
+            --primary-dark: #C2185B;
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-hover: #1a1a25;
+            --border: #2a2a35;
+            --text: #ffffff;
+            --text-muted: #888899;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* 헤더 */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-title {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-spacer {
+            width: 40px;
+        }
+
+        /* 메인 컨텐츠 */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 프로필 카드 */
+        .profile-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 16px;
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .profile-email {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .profile-providers {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .provider-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        /* 플랜/토큰 카드 */
+        .plan-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .plan-name {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .plan-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .token-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .token-balance {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .token-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .charge-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .charge-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* 메뉴 섹션 */
+        .menu-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .menu-section-title {
+            padding: 16px 20px 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .menu-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 16px;
+        }
+
+        .menu-text {
+            flex: 1;
+        }
+
+        .menu-title {
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+
+        .menu-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .menu-arrow {
+            color: var(--text-muted);
+            font-size: 20px;
+        }
+
+        .menu-value {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-right: 8px;
+        }
+
+        /* 위험 버튼 */
+        .menu-item.danger .menu-title {
+            color: var(--danger);
+        }
+
+        .menu-item.danger .menu-icon {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* 모달 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .modal-btn-secondary {
+            background: var(--bg-hover);
+            color: var(--text);
+        }
+
+        .modal-btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* 결제 내역 */
+        .payment-list {
+            list-style: none;
+        }
+
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .payment-item:last-child {
+            border-bottom: none;
+        }
+
+        .payment-info {
+            flex: 1;
+        }
+
+        .payment-name {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .payment-date {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .payment-amount {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .payment-amount.positive {
+            color: var(--success);
+        }
+
+        .payment-amount.negative {
+            color: var(--danger);
+        }
+
+        /* 약관 본문 */
+        .terms-content {
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--text-muted);
+            white-space: pre-wrap;
+        }
+
+        /* 탈퇴 확인 */
+        .withdraw-warning {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .withdraw-warning h4 {
+            color: var(--danger);
+            margin-bottom: 8px;
+        }
+
+        .withdraw-warning ul {
+            margin-left: 20px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .withdraw-warning li {
+            margin-bottom: 4px;
+        }
+
+        .withdraw-confirm {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .withdraw-confirm input {
+            width: 20px;
+            height: 20px;
+        }
+
+        .withdraw-confirm label {
+            font-size: 14px;
+        }
+
+        /* 빈 상태 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        /* 로딩 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 토스트 */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            color: var(--text);
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: var(--success);
+        }
+
+        .toast.error {
+            background: var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <button class="back-btn" onclick="goBack()">←</button>
+        <h1 class="header-title">마이페이지</h1>
+        <div class="header-spacer"></div>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="container">
+        <!-- 프로필 카드 -->
+        <section class="profile-card">
+            <div class="profile-avatar" id="profileAvatar">
+                <span id="profileInitial">?</span>
+            </div>
+            <div class="profile-name" id="profileName">로딩중...</div>
+            <div class="profile-email" id="profileEmail">-</div>
+            <div class="profile-providers" id="profileProviders">
+                <!-- 연결된 소셜 계정 표시 -->
+            </div>
+        </section>
+
+        <!-- 플랜/토큰 카드 -->
+        <section class="plan-card">
+            <div class="plan-header">
+                <div>
+                    <div class="plan-name" id="planName">무료</div>
+                    <div class="plan-badge" id="planBadge">Free Plan</div>
+                </div>
+            </div>
+            <div class="token-info">
+                <div>
+                    <div class="token-balance" id="tokenBalance">0</div>
+                    <div class="token-label">보유 토큰</div>
+                </div>
+                <button class="charge-btn" onclick="openPaymentModal()">충전하기</button>
+            </div>
+        </section>
+
+        <!-- 결제/사용 내역 -->
+        <section class="menu-section">
+            <div class="menu-section-title">결제 및 사용</div>
+            <div class="menu-item" onclick="openPaymentHistoryModal()">
+                <div class="menu-icon">💳</div>
+                <div class="menu-text">
+                    <div class="menu-title">결제 내역</div>
+                    <div class="menu-subtitle">토큰 충전 및 사용 기록</div>
+                </div>
+                <span class="menu-arrow">›</span>
+            </div>
+            <div class="menu-item" onclick="openPaymentModal()">
+                <div class="menu-icon">💎</div>
+                <div class="menu-text">
+                    <div class="menu-title">플랜 업그레이드</div>
+                    <div class="menu-subtitle">프리미엄 기능 잠금 해제</div>
+                </div>
+                <span class="menu-arrow">›</span>
+            </div>
+        </section>
+
+        <!-- 고객 지원 -->
+        <section class="menu-section">
+            <div class="menu-section-title">고객 지원</div>
+            <div class="menu-item" onclick="openNoticeModal()">
+                <div class="menu-icon">📢</div>
+                <div class="menu-text">
+                    <div class="menu-title">공지사항</div>
+                </div>
+                <span class="menu-arrow">›</span>
+            </div>
+            <div class="menu-item" onclick="openInquiryModal()">
+                <div class="menu-icon">💬</div>
+                <div class="menu-text">
+                    <div class="menu-title">1:1 문의</div>
+                </div>
+                <span class="menu-arrow">›</span>
+            </div>
+            <div class="menu-item" onclick="openTermsModal()">
+                <div class="menu-icon">📄</div>
+                <div class="menu-text">
+                    <div class="menu-title">이용약관</div>
+                </div>
+                <span class="menu-arrow">›</span>
+            </div>
+            <div class="menu-item" onclick="openPrivacyModal()">
+                <div class="menu-icon">🔒</div>
+                <div class="menu-text">
+                    <div class="menu-title">개인정보처리방침</div>
+                </div>
+                <span class="menu-arrow">›</span>
+            </div>
+            <div class="menu-item" onclick="openLocationModal()">
+                <div class="menu-icon">📍</div>
+                <div class="menu-text">
+                    <div class="menu-title">위치기반서비스 이용약관</div>
+                </div>
+                <span class="menu-arrow">›</span>
+            </div>
+        </section>
+
+        <!-- 설정 -->
+        <section class="menu-section">
+            <div class="menu-section-title">설정</div>
+            <div class="menu-item" onclick="changeLanguage()">
+                <div class="menu-icon">🌐</div>
+                <div class="menu-text">
+                    <div class="menu-title">언어</div>
+                </div>
+                <span class="menu-value" id="currentLanguage">한국어</span>
+                <span class="menu-arrow">›</span>
+            </div>
+        </section>
+
+        <!-- 계정 -->
+        <section class="menu-section">
+            <div class="menu-section-title">계정</div>
+            <div class="menu-item" onclick="logout()">
+                <div class="menu-icon">🚪</div>
+                <div class="menu-text">
+                    <div class="menu-title">로그아웃</div>
+                </div>
+                <span class="menu-arrow">›</span>
+            </div>
+            <div class="menu-item danger" onclick="openWithdrawModal()">
+                <div class="menu-icon">⚠️</div>
+                <div class="menu-text">
+                    <div class="menu-title">회원 탈퇴</div>
+                    <div class="menu-subtitle">계정 및 모든 데이터 삭제</div>
+                </div>
+                <span class="menu-arrow">›</span>
+            </div>
+        </section>
+
+        <!-- 앱 정보 -->
+        <div style="text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 12px;">
+            <p>HAIRGATOR v1.0.0</p>
+            <p style="margin-top: 8px;">주식회사 에이아이더블유</p>
+            <p>고객센터: 02-6731-5000</p>
+        </div>
+    </main>
+
+    <!-- 결제 내역 모달 -->
+    <div class="modal-overlay" id="paymentHistoryModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">결제 내역</h2>
+                <button class="modal-close" onclick="closeModal('paymentHistoryModal')">×</button>
+            </div>
+            <div class="modal-body" id="paymentHistoryContent">
+                <div class="loading">로딩중</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 이용약관 모달 -->
+    <div class="modal-overlay" id="termsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">이용약관</h2>
+                <button class="modal-close" onclick="closeModal('termsModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="terms-content" id="termsContent">로딩중...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 개인정보처리방침 모달 -->
+    <div class="modal-overlay" id="privacyModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">개인정보처리방침</h2>
+                <button class="modal-close" onclick="closeModal('privacyModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="terms-content" id="privacyContent">로딩중...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 위치기반서비스 이용약관 모달 -->
+    <div class="modal-overlay" id="locationModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">위치기반서비스 이용약관</h2>
+                <button class="modal-close" onclick="closeModal('locationModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="terms-content" id="locationContent">로딩중...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 공지사항 모달 -->
+    <div class="modal-overlay" id="noticeModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">공지사항</h2>
+                <button class="modal-close" onclick="closeModal('noticeModal')">×</button>
+            </div>
+            <div class="modal-body" id="noticeContent">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📢</div>
+                    <p>공지사항이 없습니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1:1 문의 모달 -->
+    <div class="modal-overlay" id="inquiryModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">1:1 문의</h2>
+                <button class="modal-close" onclick="closeModal('inquiryModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; color: var(--text-muted);">문의사항이 있으시면 아래 연락처로 문의해주세요.</p>
+                <div class="menu-item" onclick="window.location.href='tel:02-6731-5000'">
+                    <div class="menu-icon">📞</div>
+                    <div class="menu-text">
+                        <div class="menu-title">전화 문의</div>
+                        <div class="menu-subtitle">02-6731-5000</div>
+                    </div>
+                </div>
+                <div class="menu-item" onclick="window.location.href='mailto:support@aiw.co.kr'">
+                    <div class="menu-icon">📧</div>
+                    <div class="menu-text">
+                        <div class="menu-title">이메일 문의</div>
+                        <div class="menu-subtitle">support@aiw.co.kr</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 회원 탈퇴 모달 -->
+    <div class="modal-overlay" id="withdrawModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">회원 탈퇴</h2>
+                <button class="modal-close" onclick="closeModal('withdrawModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="withdraw-warning">
+                    <h4>⚠️ 탈퇴 시 주의사항</h4>
+                    <ul>
+                        <li>모든 데이터가 즉시 삭제되며 복구할 수 없습니다.</li>
+                        <li>미사용 토큰은 환불되지 않습니다.</li>
+                        <li>탈퇴 후 3개월간 재가입이 불가능합니다.</li>
+                        <li>결제 내역은 법적 보관 의무에 따라 일정 기간 보관됩니다.</li>
+                    </ul>
+                </div>
+                <div class="withdraw-confirm">
+                    <input type="checkbox" id="withdrawConfirmCheck">
+                    <label for="withdrawConfirmCheck">위 내용을 모두 확인했으며, 탈퇴에 동의합니다.</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal('withdrawModal')">취소</button>
+                <button class="modal-btn modal-btn-danger" onclick="confirmWithdraw()" id="withdrawBtn" disabled>탈퇴하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 토스트 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 전역 변수
+        let currentUser = null;
+        let userDocId = null;
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Firebase Auth 상태 확인
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    currentUser = user;
+                    await loadUserData();
+                } else {
+                    // 로그인 안됨 → 로그인 페이지로
+                    window.location.href = '/login.html';
+                }
+            });
+
+            // 이용약관 로드
+            loadTerms();
+
+            // 탈퇴 체크박스 이벤트
+            document.getElementById('withdrawConfirmCheck').addEventListener('change', (e) => {
+                document.getElementById('withdrawBtn').disabled = !e.target.checked;
+            });
+        });
+
+        // 사용자 데이터 로드
+        async function loadUserData() {
+            try {
+                const email = currentUser.email;
+                const emailDocId = email ? email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_') : null;
+
+                // 이메일 기반 문서 조회
+                let userDoc = null;
+                if (emailDocId) {
+                    userDoc = await db.collection('users').doc(emailDocId).get();
+                    if (userDoc.exists) {
+                        userDocId = emailDocId;
+                    }
+                }
+
+                // 폴백: UID로 조회
+                if (!userDoc?.exists) {
+                    userDoc = await db.collection('users').doc(currentUser.uid).get();
+                    if (userDoc.exists) {
+                        userDocId = currentUser.uid;
+                    }
+                }
+
+                if (userDoc?.exists) {
+                    const data = userDoc.data();
+                    displayUserData(data);
+                } else {
+                    // 문서가 없으면 기본값 표시
+                    displayUserData({
+                        displayName: currentUser.displayName || currentUser.email?.split('@')[0] || '사용자',
+                        email: currentUser.email || '',
+                        photoURL: currentUser.photoURL || '',
+                        tokenBalance: 0,
+                        plan: 'free'
+                    });
+                }
+            } catch (error) {
+                console.error('사용자 데이터 로드 실패:', error);
+                showToast('데이터를 불러오는데 실패했습니다.', 'error');
+            }
+        }
+
+        // 사용자 데이터 표시
+        function displayUserData(data) {
+            // 프로필 아바타
+            const avatar = document.getElementById('profileAvatar');
+            if (data.photoURL) {
+                avatar.innerHTML = `<img src="${data.photoURL}" alt="프로필">`;
+            } else {
+                const initial = (data.displayName || data.name || '?').charAt(0).toUpperCase();
+                document.getElementById('profileInitial').textContent = initial;
+            }
+
+            // 이름, 이메일
+            document.getElementById('profileName').textContent = data.displayName || data.name || '사용자';
+            document.getElementById('profileEmail').textContent = data.email || '-';
+
+            // 연결된 소셜 계정
+            const providersEl = document.getElementById('profileProviders');
+            const providers = [];
+
+            if (data.linkedProviders?.kakao || data.primaryProvider === 'kakao') {
+                providers.push('<span class="provider-badge">🟡 카카오</span>');
+            }
+            if (data.linkedProviders?.google || data.primaryProvider === 'google') {
+                providers.push('<span class="provider-badge">🔵 구글</span>');
+            }
+            if (data.primaryProvider === 'email') {
+                providers.push('<span class="provider-badge">📧 이메일</span>');
+            }
+
+            providersEl.innerHTML = providers.join('') || '<span class="provider-badge">-</span>';
+
+            // 플랜
+            const planNames = {
+                'free': '무료',
+                'basic': '베이직',
+                'pro': '프로',
+                'business': '비즈니스'
+            };
+            const plan = data.plan || 'free';
+            document.getElementById('planName').textContent = planNames[plan] || '무료';
+            document.getElementById('planBadge').textContent = plan.charAt(0).toUpperCase() + plan.slice(1) + ' Plan';
+
+            // 토큰
+            document.getElementById('tokenBalance').textContent = (data.tokenBalance || 0).toLocaleString();
+
+            // 언어 설정
+            const langNames = { 'ko': '한국어', 'en': 'English', 'ja': '日本語', 'zh': '中文', 'vi': 'Tiếng Việt' };
+            const currentLang = localStorage.getItem('hairgator_language') || 'ko';
+            document.getElementById('currentLanguage').textContent = langNames[currentLang] || '한국어';
+        }
+
+        // 결제 내역 모달
+        async function openPaymentHistoryModal() {
+            openModal('paymentHistoryModal');
+
+            const content = document.getElementById('paymentHistoryContent');
+            content.innerHTML = '<div class="loading">로딩중</div>';
+
+            try {
+                if (!userDocId) {
+                    content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>결제 내역이 없습니다.</p></div>';
+                    return;
+                }
+
+                // 결제 내역 조회
+                const paymentsSnapshot = await db.collection('payments')
+                    .where('userId', '==', userDocId)
+                    .orderBy('createdAt', 'desc')
+                    .limit(20)
+                    .get();
+
+                // 토큰 사용 내역 조회
+                const logsSnapshot = await db.collection('credit_logs')
+                    .where('userId', '==', userDocId)
+                    .orderBy('timestamp', 'desc')
+                    .limit(20)
+                    .get();
+
+                // 합치기
+                const items = [];
+
+                paymentsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    items.push({
+                        type: 'payment',
+                        name: `${data.planKey || '결제'} 플랜`,
+                        amount: `+${(data.tokens || 0).toLocaleString()}`,
+                        date: data.createdAt?.toDate?.() || new Date(),
+                        positive: true
+                    });
+                });
+
+                logsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.action !== 'charge') {
+                        const actionNames = {
+                            'lookbook': '룩북',
+                            'hairTry': '헤어체험',
+                            'chatbot': '챗봇'
+                        };
+                        items.push({
+                            type: 'usage',
+                            name: actionNames[data.action] || data.action,
+                            amount: `-${(data.creditsUsed || 0).toLocaleString()}`,
+                            date: data.timestamp?.toDate?.() || new Date(),
+                            positive: false
+                        });
+                    }
+                });
+
+                // 날짜순 정렬
+                items.sort((a, b) => b.date - a.date);
+
+                if (items.length === 0) {
+                    content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>결제 내역이 없습니다.</p></div>';
+                    return;
+                }
+
+                // 렌더링
+                let html = '<ul class="payment-list">';
+                items.forEach(item => {
+                    const dateStr = item.date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' });
+                    html += `
+                        <li class="payment-item">
+                            <div class="payment-info">
+                                <div class="payment-name">${item.name}</div>
+                                <div class="payment-date">${dateStr}</div>
+                            </div>
+                            <div class="payment-amount ${item.positive ? 'positive' : 'negative'}">${item.amount} 토큰</div>
+                        </li>
+                    `;
+                });
+                html += '</ul>';
+
+                content.innerHTML = html;
+
+            } catch (error) {
+                console.error('결제 내역 로드 실패:', error);
+                content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>결제 내역을 불러오지 못했습니다.</p></div>';
+            }
+        }
+
+        // 약관 로드 (3개)
+        async function loadTerms() {
+            // 서비스 이용약관
+            try {
+                const response = await fetch('/terms/서비스_이용약관.txt');
+                const text = await response.text();
+                document.getElementById('termsContent').textContent = text;
+            } catch (error) {
+                console.error('서비스 이용약관 로드 실패:', error);
+                document.getElementById('termsContent').textContent = '이용약관을 불러오지 못했습니다.';
+            }
+
+            // 개인정보처리방침
+            try {
+                const response = await fetch('/terms/개인정보_처리방침.txt');
+                const text = await response.text();
+                document.getElementById('privacyContent').textContent = text;
+            } catch (error) {
+                console.error('개인정보처리방침 로드 실패:', error);
+                document.getElementById('privacyContent').textContent = '개인정보처리방침을 불러오지 못했습니다.';
+            }
+
+            // 위치기반서비스 이용약관
+            try {
+                const response = await fetch('/terms/위치기반서비스_이용약관.txt');
+                const text = await response.text();
+                document.getElementById('locationContent').textContent = text;
+            } catch (error) {
+                console.error('위치기반서비스 이용약관 로드 실패:', error);
+                document.getElementById('locationContent').textContent = '위치기반서비스 이용약관을 불러오지 못했습니다.';
+            }
+        }
+
+        // 결제 모달 (메인 페이지의 것 사용)
+        function openPaymentModal() {
+            // 메인 페이지로 이동해서 결제 모달 열기
+            window.location.href = '/?openPayment=true';
+        }
+
+        // 언어 변경
+        function changeLanguage() {
+            const langs = ['ko', 'en', 'ja', 'zh', 'vi'];
+            const langNames = ['한국어', 'English', '日本語', '中文', 'Tiếng Việt'];
+
+            const currentLang = localStorage.getItem('hairgator_language') || 'ko';
+            const currentIndex = langs.indexOf(currentLang);
+            const nextIndex = (currentIndex + 1) % langs.length;
+
+            localStorage.setItem('hairgator_language', langs[nextIndex]);
+            document.getElementById('currentLanguage').textContent = langNames[nextIndex];
+
+            showToast(`언어가 ${langNames[nextIndex]}(으)로 변경되었습니다.`, 'success');
+        }
+
+        // 로그아웃
+        async function logout() {
+            if (confirm('로그아웃하시겠습니까?')) {
+                try {
+                    await auth.signOut();
+                    localStorage.removeItem('firebase_user');
+                    window.location.href = '/login.html';
+                } catch (error) {
+                    console.error('로그아웃 실패:', error);
+                    showToast('로그아웃에 실패했습니다.', 'error');
+                }
+            }
+        }
+
+        // 회원 탈퇴 확인
+        async function confirmWithdraw() {
+            if (!document.getElementById('withdrawConfirmCheck').checked) {
+                showToast('탈퇴 동의에 체크해주세요.', 'error');
+                return;
+            }
+
+            if (!confirm('정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                return;
+            }
+
+            try {
+                // 1. Firestore 사용자 데이터 삭제 (또는 탈퇴 표시)
+                if (userDocId) {
+                    await db.collection('users').doc(userDocId).update({
+                        withdrawnAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        isWithdrawn: true,
+                        email: '', // 개인정보 삭제
+                        displayName: '탈퇴한 사용자'
+                    });
+                }
+
+                // 2. Firebase Auth 계정 삭제
+                await currentUser.delete();
+
+                showToast('회원 탈퇴가 완료되었습니다.', 'success');
+
+                // 로그인 페이지로 이동
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 1500);
+
+            } catch (error) {
+                console.error('회원 탈퇴 실패:', error);
+
+                if (error.code === 'auth/requires-recent-login') {
+                    showToast('보안을 위해 다시 로그인 후 탈퇴해주세요.', 'error');
+                    setTimeout(() => {
+                        auth.signOut();
+                        window.location.href = '/login.html?reauth=true';
+                    }, 2000);
+                } else {
+                    showToast('회원 탈퇴에 실패했습니다.', 'error');
+                }
+            }
+        }
+
+        // 모달 열기/닫기
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function openTermsModal() { openModal('termsModal'); }
+        function openPrivacyModal() { openModal('privacyModal'); }
+        function openLocationModal() { openModal('locationModal'); }
+        function openNoticeModal() { openModal('noticeModal'); }
+        function openInquiryModal() { openModal('inquiryModal'); }
+        function openWithdrawModal() {
+            document.getElementById('withdrawConfirmCheck').checked = false;
+            document.getElementById('withdrawBtn').disabled = true;
+            openModal('withdrawModal');
+        }
+
+        // 뒤로가기
+        function goBack() {
+            if (document.referrer && document.referrer.includes(window.location.host)) {
+                history.back();
+            } else {
+                window.location.href = '/';
+            }
+        }
+
+        // 토스트 메시지
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ESC로 모달 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+
+        // 모달 바깥 클릭시 닫기
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

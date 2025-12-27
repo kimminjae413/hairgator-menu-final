@@ -238,6 +238,128 @@
             display: block;
         }
 
+        /* 약관 동의 체크박스 */
+        .terms-agreement {
+            margin: 20px 0;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-size: 13px;
+        }
+
+        .terms-agreement-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .terms-check-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .terms-check-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .terms-check-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            accent-color: #0f3460;
+        }
+
+        .terms-check-item label {
+            flex: 1;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .terms-check-item .required {
+            color: #e53935;
+            margin-left: 4px;
+        }
+
+        .terms-view-btn {
+            background: none;
+            border: none;
+            color: #0f3460;
+            text-decoration: underline;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .terms-check-all {
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* 약관 모달 */
+        .terms-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .terms-modal-overlay.active {
+            display: flex;
+        }
+
+        .terms-modal {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .terms-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .terms-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .terms-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+        }
+
+        .terms-modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .terms-modal-content {
+            white-space: pre-wrap;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #333;
+        }
+
         /* 로딩 오버레이 */
         .loading-overlay {
             display: none;
@@ -357,6 +479,40 @@
                     <label for="signupPasswordConfirm">비밀번호 확인</label>
                     <input type="password" id="signupPasswordConfirm" placeholder="비밀번호 확인" required>
                 </div>
+
+                <!-- 약관 동의 -->
+                <div class="terms-agreement">
+                    <div class="terms-agreement-title">약관 동의</div>
+
+                    <div class="terms-check-item terms-check-all">
+                        <input type="checkbox" id="agreeAll" onclick="toggleAllTerms()">
+                        <label for="agreeAll"><strong>전체 동의</strong></label>
+                    </div>
+
+                    <div class="terms-check-item">
+                        <input type="checkbox" id="agreeService" class="terms-checkbox" required>
+                        <label for="agreeService">서비스 이용약관 동의<span class="required">(필수)</span></label>
+                        <button type="button" class="terms-view-btn" onclick="showTermsModal('service')">보기</button>
+                    </div>
+
+                    <div class="terms-check-item">
+                        <input type="checkbox" id="agreePrivacy" class="terms-checkbox" required>
+                        <label for="agreePrivacy">개인정보처리방침 동의<span class="required">(필수)</span></label>
+                        <button type="button" class="terms-view-btn" onclick="showTermsModal('privacy')">보기</button>
+                    </div>
+
+                    <div class="terms-check-item">
+                        <input type="checkbox" id="agreeLocation" class="terms-checkbox" required>
+                        <label for="agreeLocation">위치기반서비스 이용약관 동의<span class="required">(필수)</span></label>
+                        <button type="button" class="terms-view-btn" onclick="showTermsModal('location')">보기</button>
+                    </div>
+
+                    <div class="terms-check-item">
+                        <input type="checkbox" id="agreeMarketing" class="terms-checkbox">
+                        <label for="agreeMarketing">마케팅 정보 수신 동의 (선택)</label>
+                    </div>
+                </div>
+
                 <button type="submit" class="submit-btn">가입하기</button>
             </form>
         </div>
@@ -384,6 +540,19 @@
 
     <div id="loadingOverlay" class="loading-overlay">
         <div class="spinner"></div>
+    </div>
+
+    <!-- 약관 모달 -->
+    <div id="termsModalOverlay" class="terms-modal-overlay">
+        <div class="terms-modal">
+            <div class="terms-modal-header">
+                <h3 class="terms-modal-title" id="termsModalTitle">이용약관</h3>
+                <button class="terms-modal-close" onclick="closeTermsModal()">&times;</button>
+            </div>
+            <div class="terms-modal-body">
+                <div class="terms-modal-content" id="termsModalContent">로딩중...</div>
+            </div>
+        </div>
     </div>
 
     <!-- Firebase SDK -->
@@ -433,6 +602,59 @@
             document.getElementById('signupForm').classList.remove('active');
             document.getElementById('passwordResetForm').classList.add('active');
             clearMessage();
+        }
+
+        // ========== 약관 동의 관련 ==========
+        function toggleAllTerms() {
+            const allChecked = document.getElementById('agreeAll').checked;
+            document.querySelectorAll('.terms-checkbox').forEach(cb => {
+                cb.checked = allChecked;
+            });
+        }
+
+        // 개별 체크박스 변경 시 전체 동의 상태 업데이트
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.terms-checkbox').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const allChecked = [...document.querySelectorAll('.terms-checkbox')].every(c => c.checked);
+                    document.getElementById('agreeAll').checked = allChecked;
+                });
+            });
+        });
+
+        async function showTermsModal(type) {
+            const overlay = document.getElementById('termsModalOverlay');
+            const title = document.getElementById('termsModalTitle');
+            const content = document.getElementById('termsModalContent');
+
+            const titles = {
+                service: '서비스 이용약관',
+                privacy: '개인정보처리방침',
+                location: '위치기반서비스 이용약관'
+            };
+
+            const files = {
+                service: '/terms/서비스_이용약관.txt',
+                privacy: '/terms/개인정보_처리방침.txt',
+                location: '/terms/위치기반서비스_이용약관.txt'
+            };
+
+            title.textContent = titles[type] || '약관';
+            content.textContent = '로딩중...';
+            overlay.classList.add('active');
+
+            try {
+                const response = await fetch(files[type]);
+                const text = await response.text();
+                content.textContent = text;
+            } catch (error) {
+                console.error('약관 로드 실패:', error);
+                content.textContent = '약관을 불러오지 못했습니다.';
+            }
+        }
+
+        function closeTermsModal() {
+            document.getElementById('termsModalOverlay').classList.remove('active');
         }
 
         // ========== 불나비 사용자 마이그레이션 체크 (Firestore 직접 조회) ==========
@@ -547,6 +769,53 @@
             }
         }
 
+        // ========== Firestore 사용자 생성 (약관 동의 포함) ==========
+        async function createOrUpdateUserWithTerms(user, provider, termsAgreement) {
+            const userRef = db.collection('users').doc(user.uid);
+            const doc = await userRef.get();
+
+            const userData = {
+                uid: user.uid,
+                email: user.email || '',
+                displayName: user.displayName || '',
+                photoURL: user.photoURL || '',
+                provider: provider,
+                lastLoginAt: firebase.firestore.FieldValue.serverTimestamp(),
+                // 약관 동의 정보
+                termsAgreement: {
+                    service: termsAgreement.service || false,
+                    privacy: termsAgreement.privacy || false,
+                    location: termsAgreement.location || false,
+                    marketing: termsAgreement.marketing || false,
+                    agreedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }
+            };
+
+            if (!doc.exists) {
+                // 신규 사용자 - 불나비 마이그레이션 체크
+                const bullnabiData = await checkBullnabiMigration(user.email);
+
+                if (bullnabiData) {
+                    userData.tokenBalance = bullnabiData.tokenBalance || 200;
+                    userData.plan = bullnabiData.plan || 'free';
+                    userData.migratedFromBullnabi = true;
+                    userData.bullnabiUserId = bullnabiData.bullnabiUserId;
+                    userData.migratedAt = firebase.firestore.FieldValue.serverTimestamp();
+                    console.log('🎉 불나비 → Firebase 마이그레이션 완료:', bullnabiData.bullnabiUserId);
+                } else {
+                    userData.tokenBalance = 200;
+                    userData.plan = 'free';
+                }
+
+                userData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                await userRef.set(userData);
+                console.log('신규 사용자 생성 (약관 동의):', user.uid);
+            } else {
+                await userRef.update(userData);
+                console.log('사용자 정보 업데이트 (약관 동의):', user.uid);
+            }
+        }
+
         // ========== 로그인 성공 후 리다이렉트 ==========
         function redirectToMain() {
             window.location.href = '/';
@@ -629,7 +898,6 @@
         // ========== 이메일 회원가입 ==========
         async function signupWithEmail(e) {
             e.preventDefault();
-            showLoading();
             clearMessage();
 
             const name = document.getElementById('signupName').value;
@@ -637,11 +905,23 @@
             const password = document.getElementById('signupPassword').value;
             const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
 
+            // 필수 약관 동의 체크
+            const agreeService = document.getElementById('agreeService').checked;
+            const agreePrivacy = document.getElementById('agreePrivacy').checked;
+            const agreeLocation = document.getElementById('agreeLocation').checked;
+            const agreeMarketing = document.getElementById('agreeMarketing').checked;
+
+            if (!agreeService || !agreePrivacy || !agreeLocation) {
+                showMessage('필수 약관에 모두 동의해주세요.');
+                return;
+            }
+
             if (password !== passwordConfirm) {
-                hideLoading();
                 showMessage('비밀번호가 일치하지 않습니다.');
                 return;
             }
+
+            showLoading();
 
             try {
                 const result = await auth.createUserWithEmailAndPassword(email, password);
@@ -651,7 +931,14 @@
                     displayName: name
                 });
 
-                await createOrUpdateUser(result.user, 'email');
+                // 약관 동의 정보와 함께 사용자 생성
+                await createOrUpdateUserWithTerms(result.user, 'email', {
+                    service: agreeService,
+                    privacy: agreePrivacy,
+                    location: agreeLocation,
+                    marketing: agreeMarketing
+                });
+
                 showMessage('가입이 완료되었습니다!', 'success');
 
                 setTimeout(redirectToMain, 1000);
