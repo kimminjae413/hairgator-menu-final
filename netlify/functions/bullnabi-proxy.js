@@ -732,18 +732,131 @@ async function handleSetPlan(userId, plan) {
 }
 
 /**
+ * Firestore bullnabi_users 컬렉션에서 이메일로 사용자 조회
+ * 마이그레이션된 불나비 사용자 데이터를 Firebase에서 직접 조회
+ */
+async function handleGetUserByEmailFromFirestore(email) {
+    if (!db) {
+        console.warn('⚠️ Firestore 연결 없음');
+        return { success: false, found: false, error: 'Firestore not initialized' };
+    }
+
+    try {
+        console.log('🔍 Firestore bullnabi_users에서 이메일 조회:', email);
+
+        // 방법 1: 문서 ID로 직접 조회 (마이그레이션 스크립트에서 사용한 형식)
+        const docId = `bullnabi_${email.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        const userDoc = await db.collection('bullnabi_users').doc(docId).get();
+
+        if (userDoc.exists) {
+            const userData = userDoc.data();
+            console.log('✅ Firestore에서 마이그레이션된 사용자 발견:', {
+                docId: docId,
+                email: userData.email,
+                tokenBalance: userData.tokenBalance,
+                plan: userData.plan
+            });
+
+            return {
+                success: true,
+                found: true,
+                source: 'firestore_migration',
+                data: {
+                    bullnabiUserId: userData.bullnabiUserId,
+                    nickname: userData.nickname || userData.name || '',
+                    name: userData.name || '',
+                    email: userData.email || '',
+                    tokenBalance: userData.tokenBalance || 0,
+                    plan: userData.plan || 'free',
+                    remainCount: userData.remainCount || 0,
+                    phone: userData.phone || '',
+                    bullnabiCreateTime: userData.bullnabiCreateTime,
+                    bullnabiUpdateTime: userData.bullnabiUpdateTime,
+                    migratedAt: userData.migratedAt
+                }
+            };
+        }
+
+        // 방법 2: 이메일 필드로 쿼리 (폴백)
+        const querySnapshot = await db.collection('bullnabi_users')
+            .where('email', '==', email)
+            .limit(1)
+            .get();
+
+        if (!querySnapshot.empty) {
+            const doc = querySnapshot.docs[0];
+            const userData = doc.data();
+            console.log('✅ Firestore에서 마이그레이션된 사용자 발견 (쿼리):', {
+                docId: doc.id,
+                email: userData.email,
+                tokenBalance: userData.tokenBalance,
+                plan: userData.plan
+            });
+
+            return {
+                success: true,
+                found: true,
+                source: 'firestore_migration_query',
+                data: {
+                    bullnabiUserId: userData.bullnabiUserId,
+                    nickname: userData.nickname || userData.name || '',
+                    name: userData.name || '',
+                    email: userData.email || '',
+                    tokenBalance: userData.tokenBalance || 0,
+                    plan: userData.plan || 'free',
+                    remainCount: userData.remainCount || 0,
+                    phone: userData.phone || '',
+                    bullnabiCreateTime: userData.bullnabiCreateTime,
+                    bullnabiUpdateTime: userData.bullnabiUpdateTime,
+                    migratedAt: userData.migratedAt
+                }
+            };
+        }
+
+        console.log('ℹ️ Firestore bullnabi_users에서 사용자를 찾을 수 없음:', email);
+        return {
+            success: true,
+            found: false,
+            source: 'firestore_migration',
+            message: 'User not found in Firestore bullnabi_users'
+        };
+
+    } catch (error) {
+        console.error('❌ Firestore bullnabi_users 조회 오류:', error);
+        return { success: false, found: false, error: error.message };
+    }
+}
+
+/**
  * 이메일로 사용자 조회 (마이그레이션용)
  * Firebase Auth 로그인 시 불나비 사용자 데이터를 가져오기 위해 사용
+ *
+ * 조회 우선순위:
+ * 1. Firestore bullnabi_users 컬렉션 (마이그레이션된 데이터)
+ * 2. 불나비 API (아직 마이그레이션 안 된 사용자용 - 폴백)
  */
 async function handleGetUserByEmail(email) {
     try {
         console.log('📧 이메일로 사용자 조회:', email);
 
+        // 1️⃣ 먼저 Firestore bullnabi_users에서 조회 (마이그레이션된 데이터)
+        const firestoreResult = await handleGetUserByEmailFromFirestore(email);
+
+        if (firestoreResult.success && firestoreResult.found) {
+            console.log('✅ Firestore에서 마이그레이션된 사용자 반환');
+            return firestoreResult;
+        }
+
+        // 2️⃣ Firestore에 없으면 불나비 API 조회 (폴백 - API 종료 전까지만 작동)
+        console.log('🔄 Firestore에 없음, 불나비 API 폴백 시도...');
+
         let adminToken = process.env.BULLNABI_TOKEN;
         if (!adminToken) {
             const refreshResult = await handleRefreshToken();
             if (!refreshResult.success) {
-                return { success: false, error: '토큰 발급 실패' };
+                // 불나비 API 실패해도 Firestore 결과 반환
+                console.log('⚠️ 불나비 토큰 발급 실패, Firestore 결과 반환');
+                return firestoreResult;
             }
             adminToken = refreshResult.token;
         }
@@ -800,13 +913,14 @@ async function handleGetUserByEmail(email) {
             if (refreshResult.success) {
                 return await handleGetUserByEmail(email); // 재귀 호출
             }
-            return { success: false, error: 'Token refresh failed' };
+            // 갱신 실패 시 Firestore 결과 반환
+            return firestoreResult;
         }
 
         if (apiData.data && apiData.data.length > 0) {
             const userData = apiData.data[0];
 
-            console.log('✅ 불나비 사용자 발견:', {
+            console.log('✅ 불나비 API에서 사용자 발견:', {
                 id: userData._id?.$oid,
                 email: userData.email,
                 tokenBalance: userData.tokenBalance,
@@ -816,6 +930,7 @@ async function handleGetUserByEmail(email) {
             return {
                 success: true,
                 found: true,
+                source: 'bullnabi_api',
                 data: {
                     bullnabiUserId: userData._id?.$oid,
                     nickname: userData.nickname || userData.name || '',
@@ -830,15 +945,27 @@ async function handleGetUserByEmail(email) {
             };
         }
 
-        console.log('ℹ️ 불나비에서 사용자를 찾을 수 없음:', email);
+        console.log('ℹ️ 불나비와 Firestore 모두에서 사용자를 찾을 수 없음:', email);
         return {
             success: true,
             found: false,
-            message: 'User not found in Bullnabi'
+            message: 'User not found in Bullnabi or Firestore'
         };
 
     } catch (error) {
         console.error('❌ 이메일로 사용자 조회 오류:', error);
+
+        // API 오류 시에도 Firestore 결과 시도
+        try {
+            const firestoreResult = await handleGetUserByEmailFromFirestore(email);
+            if (firestoreResult.success && firestoreResult.found) {
+                console.log('✅ API 오류지만 Firestore에서 사용자 반환');
+                return firestoreResult;
+            }
+        } catch (fsError) {
+            console.error('❌ Firestore 폴백도 실패:', fsError);
+        }
+
         return { success: false, error: error.message };
     }
 }
