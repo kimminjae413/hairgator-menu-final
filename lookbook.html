@@ -1453,61 +1453,37 @@
             }
         }
 
-        // ==================== 토큰 차감 함수 (헤어게이터 토큰 시스템) ====================
+        // ==================== 토큰 차감 함수 (Firebase 직접 접근) ====================
         async function deductLookbookCredit() {
-            const LOOKBOOK_TOKEN_COST = 200; // 룩북 AI 분석 비용: 200 토큰
-
             try {
-                // 불나비 사용자 정보 확인
-                const bullnabiUser = localStorage.getItem('bullnabi_user');
-                if (!bullnabiUser) {
-                    console.warn('⚠️ 불나비 사용자 정보 없음, 토큰 차감 건너뜀');
+                // FirebaseBridge 사용 (Firestore 직접 접근)
+                if (!window.FirebaseBridge) {
+                    console.warn('⚠️ FirebaseBridge 없음, 토큰 차감 건너뜀');
                     return;
                 }
 
-                const user = JSON.parse(bullnabiUser);
-                const userId = user.userId || user.id;
-
+                // 현재 사용자 ID 가져오기
+                const userId = window.currentDesigner?.id;
                 if (!userId) {
                     console.warn('⚠️ userId 없음, 토큰 차감 건너뜀');
                     return;
                 }
 
-                console.log(`💳 서버에 토큰 차감 요청: userId=${userId}, cost=${LOOKBOOK_TOKEN_COST}`);
+                console.log(`💳 토큰 차감 요청: userId=${userId}, feature=lookbook`);
 
-                // Bullnabi API로 토큰 차감 요청
-                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'deductTokenBalance',
-                        userId: userId,
-                        data: {
-                            amount: LOOKBOOK_TOKEN_COST,
-                            feature: 'lookbook'
-                        }
-                    })
+                // FirebaseBridge로 토큰 차감 (Firestore 직접 접근)
+                const result = await window.FirebaseBridge.deductTokens(userId, 'lookbook', {
+                    source: 'lookbook.html'
                 });
-
-                const result = await response.json();
 
                 if (result.success) {
                     console.log(`✅ 토큰 차감 성공:`, result);
-
-                    // 로컬 스토리지에 토큰 잔액 저장
-                    user.tokenBalance = result.newBalance;
-                    localStorage.setItem('bullnabi_user', JSON.stringify(user));
-                    console.log(`💳 토큰 잔액 동기화: ${result.newBalance}`);
-
-                    // BullnabiBridge로 UI 업데이트
-                    if (window.BullnabiBridge && typeof window.BullnabiBridge.updateTokenDisplay === 'function') {
-                        window.BullnabiBridge.updateTokenDisplay(result.newBalance);
-                    }
+                    // UI 업데이트는 FirebaseBridge 내부에서 자동 처리
                 } else {
                     console.error('❌ 토큰 차감 실패:', result.error);
 
                     // 토큰 부족 시 안내
-                    if (result.code === 'INSUFFICIENT_TOKENS') {
+                    if (result.error?.includes('부족')) {
                         alert('토큰이 부족합니다. 토큰을 충전해주세요.');
                     }
                 }

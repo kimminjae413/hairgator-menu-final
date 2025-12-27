@@ -71,39 +71,42 @@ class AIStudio {
     this.init();
   }
 
-  // 사용자 프로필 사진 로드 (Firebase userSettings → localStorage → 불나비)
+  // 사용자 프로필 사진 로드 (Firebase 기반)
   async loadUserPhoto() {
     try {
-      // Firebase brandSettings에서 프로필 사진 가져오기 (localStorage 사용 안 함)
-      if (window.db) {
-        const userStr = localStorage.getItem('bullnabi_user');
-        if (userStr) {
-          const userInfo = JSON.parse(userStr);
-          const docId = `${userInfo.name}_${userInfo.phone || '0000'}`;
+      // 현재 사용자 정보 가져오기 (Firebase Auth 기반)
+      const currentUser = window.currentDesigner || JSON.parse(localStorage.getItem('firebase_user') || '{}');
+      const userId = currentUser?.id || currentUser?.uid;
 
-          try {
-            const doc = await window.db.collection('brandSettings').doc(docId).get();
-            if (doc.exists) {
-              const data = doc.data();
-              if (data.profileImage) {
-                this.userPhotoUrl = data.profileImage;
-                console.log('👤 Firebase brandSettings 프로필 사진 로드됨:', docId);
-                return;
-              }
+      if (!userId) {
+        console.log('👤 사용자 정보 없음, 프로필 사진 로드 스킵');
+        return;
+      }
+
+      // Firebase brandSettings에서 프로필 사진 가져오기
+      if (window.db) {
+        try {
+          // 이메일 기반 문서 ID 또는 레거시 형식 시도
+          const docId = userId;
+          const doc = await window.db.collection('brandSettings').doc(docId).get();
+          if (doc.exists) {
+            const data = doc.data();
+            if (data.profileImage) {
+              this.userPhotoUrl = data.profileImage;
+              console.log('👤 Firebase brandSettings 프로필 사진 로드됨:', docId);
+              return;
             }
-          } catch (fbError) {
-            console.warn('Firebase 프로필 사진 로드 실패:', fbError);
           }
+        } catch (fbError) {
+          console.warn('Firebase 프로필 사진 로드 실패:', fbError);
         }
       }
 
-      // 불나비 사용자 정보에서 프로필 사진 가져오기 (fallback)
-      const userStr = localStorage.getItem('bullnabi_user');
-      if (userStr) {
-        const userInfo = JSON.parse(userStr);
-        this.userPhotoUrl = userInfo.photoUrl || userInfo.profileImage || userInfo.photo || userInfo.profilePhoto || userInfo.image || null;
+      // currentDesigner에서 프로필 사진 가져오기 (fallback)
+      if (currentUser) {
+        this.userPhotoUrl = currentUser.photoURL || currentUser.photoUrl || currentUser.profileImage || null;
         if (this.userPhotoUrl) {
-          console.log('👤 불나비 프로필 사진 로드됨');
+          console.log('👤 currentDesigner 프로필 사진 로드됨');
           return;
         }
       }

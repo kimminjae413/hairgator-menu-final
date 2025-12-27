@@ -120,12 +120,15 @@
                     userId = parsed.userId || '';
                 }
 
-                // userId가 없으면 localStorage에서 가져오기
+                // userId가 없으면 currentDesigner 또는 localStorage에서 가져오기
+                if (!userId) {
+                    userId = window.currentDesigner?.id || '';
+                }
                 if (!userId) {
                     try {
-                        const bullnabiUser = localStorage.getItem('bullnabi_user');
-                        if (bullnabiUser) {
-                            userId = JSON.parse(bullnabiUser).id || '';
+                        const firebaseUser = localStorage.getItem('firebase_user');
+                        if (firebaseUser) {
+                            userId = JSON.parse(firebaseUser).id || '';
                         }
                     } catch (e) {}
                 }

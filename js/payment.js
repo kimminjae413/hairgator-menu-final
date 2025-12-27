@@ -154,17 +154,17 @@ const HAIRGATOR_PAYMENT = {
     const urlUserId = urlParams.get('userId');
     if (urlUserId) return urlUserId;
 
-    // 2. localStorage의 bullnabi_user에서 가져오기
+    // 2. window.currentDesigner에서 가져오기 (Firebase 기반)
+    if (window.currentDesigner?.id) return window.currentDesigner.id;
+
+    // 3. localStorage의 firebase_user에서 가져오기
     try {
-      const bullnabiUser = localStorage.getItem('bullnabi_user');
-      if (bullnabiUser) {
-        const parsed = JSON.parse(bullnabiUser);
+      const firebaseUser = localStorage.getItem('firebase_user');
+      if (firebaseUser) {
+        const parsed = JSON.parse(firebaseUser);
         if (parsed.id) return parsed.id;
       }
     } catch (e) {}
-
-    // 3. window.currentDesigner에서 가져오기
-    if (window.currentDesigner?.id) return window.currentDesigner.id;
 
     return null;
   },
@@ -176,17 +176,21 @@ const HAIRGATOR_PAYMENT = {
     // 현재 로그인한 사용자 정보 가져오기
     const userId = this.getUserId();
 
-    // 사용자 이름/이메일 가져오기
-    let userEmail = '';
-    let userName = '';
-    try {
-      const bullnabiUser = localStorage.getItem('bullnabi_user');
-      if (bullnabiUser) {
-        const parsed = JSON.parse(bullnabiUser);
-        userEmail = parsed.email || '';
-        userName = parsed.nickname || parsed.name || '';
-      }
-    } catch (e) {}
+    // 사용자 이름/이메일 가져오기 (Firebase 기반)
+    let userEmail = window.currentDesigner?.email || '';
+    let userName = window.currentDesigner?.name || window.currentDesigner?.displayName || '';
+
+    // fallback: localStorage
+    if (!userEmail || !userName) {
+      try {
+        const firebaseUser = localStorage.getItem('firebase_user');
+        if (firebaseUser) {
+          const parsed = JSON.parse(firebaseUser);
+          userEmail = userEmail || parsed.email || '';
+          userName = userName || parsed.name || parsed.displayName || '';
+        }
+      } catch (e) {}
+    }
 
     console.log('💳 결제 시도 - userId:', userId);
 

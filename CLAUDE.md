@@ -248,13 +248,100 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 조건: `productCategory == "plan"`
 - 동작: `_users.tokenBalance += tokenCount`
 
+## 불나비 → 헤어게이터 완전 독립 마이그레이션 (2025-12-28 진행중)
+
+### 배경
+- **드라이링크 앱** (일반인용) → registerType = "user"
+- **드라이링크 포 디자이너 앱** (헤어디자이너용) → registerType = "designer" → **헤어게이터로 변경**
+- 불나비 앱 종속에서 완전히 독립된 웹앱으로 전환
+
+### 불나비 DB 현황 (MongoDB 덤프: C:\Users\김민재\Desktop\bullnabi)
+- 총 사용자: 7,505명
+- 디자이너 (registerType=designer): 3,000명+ → `bullnabi_users` 컬렉션에 마이그레이션 완료
+- 헤어게이터 실사용자 (tokenBalance/plan 있음): 12명
+- 소셜 로그인: 카카오 80%, 구글 12%, 애플 8%
+
+### 불나비 API 의존성 현황
+
+#### bullnabi-proxy.js에서 불나비 API 직접 호출
+| 라인 | API | 용도 | 전환 방법 |
+|------|-----|------|----------|
+| 54 | `/bnb/user/token/loginByEmail` | 토큰 발급 | 제거 (Firebase Auth 사용) |
+| 118, 244, 890, 1363 | `/bnb/aggregateForTableWithDocTimeline` | 데이터 조회 | Firestore 직접 조회 |
+| 391 | `/bnb/create` | 히스토리 생성 | Firestore 직접 생성 |
+| 422, 517, 590, 700, 1025 | `/bnb/update` | 데이터 업데이트 | Firestore 직접 업데이트 |
+
+#### bullnabi-proxy.js를 호출하는 클라이언트
+| 파일 | 용도 | 전환 방법 |
+|------|------|----------|
+| `js/bullnabi-bridge.js` | 토큰 조회/차감, 플랜 조회 | firebase-bridge.js로 통합 |
+| `js/dynamic-token-service.js` | 동적 토큰 관리 | 제거 (불필요) |
+| `login.html` | 마이그레이션 체크 | Firestore 직접 조회 |
+| `lookbook.html` | 토큰 차감 | firebase-bridge.js 사용 |
+
+#### localStorage 'bullnabi_user' 사용 파일
+- `js/auth.js`, `js/main.js`, `js/ai-studio.js`, `js/payment.js`, `lookbook.html`
+- → `hairgator_user` 또는 Firebase Auth로 전환
+
+### 마이그레이션 작업 목록
+1. ✅ Firebase Auth 로그인 (카카오/구글/이메일)
+2. ✅ 이메일 기반 사용자 통합 (`users` 컬렉션)
+3. ✅ `bullnabi_users` 컬렉션에 디자이너 3000명+ 마이그레이션
+4. 🔄 bullnabi-proxy.js → Firestore 직접 접근으로 전환
+5. ⏳ 결제 시스템 독립 (포트원 직접 연동)
+6. ⏳ 마이페이지 완성
+
+### Firestore 컬렉션 구조
+
+#### `users` 컬렉션 (이메일 기반 문서 ID)
+```javascript
+{
+  // 문서 ID: "708eric_hanmail_net" (이메일 sanitize)
+  email: "708eric@hanmail.net",
+  name: "김민재",
+  phone: "01052592709",
+  displayName: "김민재",
+  photoURL: "https://...",
+
+  // 인증 정보
+  linkedProviders: {
+    kakao: { uid: "kakao_4556280939", kakaoId: 4556280939, linkedAt: Timestamp },
+    google: { uid: "firebase_uid", linkedAt: Timestamp }
+  },
+  primaryProvider: "kakao",
+
+  // 헤어게이터 데이터
+  tokenBalance: 8020,
+  plan: "basic",  // free, basic, pro, business
+
+  // 설정
+  language: "ko",
+  isMarketing: true,
+  servicePush: true,
+
+  // 메타
+  createdAt: Timestamp,
+  lastLoginAt: Timestamp,
+  migratedFromBullnabi: true,
+  bullnabiUserId: "691ceee09d868b5736d22007"
+}
+```
+
+#### `bullnabi_users` 컬렉션 (마이그레이션용, 읽기 전용)
+- 불나비에서 마이그레이션한 디자이너 원본 데이터
+- 로그인 시 이메일 매칭으로 `users`로 복사
+
 ## 최근 작업 이력
+- 2025-12-28: 불나비 완전 독립 마이그레이션 진행중
+  - 불나비 API 의존성 전체 파악 완료
+  - bullnabi-proxy.js → Firestore 직접 접근 전환 작업 시작
+
 - 2025-12-27 (저녁): 불나비 → Firebase Auth 독립 마이그레이션 ✅ 완료
 
   ### 배경
   - 헤어게이터 서비스를 불나비 앱 종속에서 완전 독립 웹앱으로 전환
   - MongoDB 의존성 제거, Firebase Auth + Firestore 기반으로 재구축
-  - 도메인: `hairgator.kr` (가비아에서 구매, Netlify 연결 완료)
+  - 도메인: `hairgator.kr` (가비아에서 구매)
 
   ### 인증 시스템 변경
   - **Firebase Auth** 도입: Google, 이메일/비밀번호, 카카오 (Custom Token)
