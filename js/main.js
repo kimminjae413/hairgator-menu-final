@@ -1830,10 +1830,21 @@ async function showProfileImageModal() {
     try {
         const userInfo = getUserInfo();
         if (window.db && userInfo) {
-            const docId = `${userInfo.name}_${userInfo.phone}`;
-            const doc = await window.db.collection('brandSettings').doc(docId).get();
-            if (doc.exists && doc.data().profileImage) {
-                savedImage = doc.data().profileImage;
+            // Firebase Auth 사용자: UID 기반 문서 ID
+            const primaryDocId = userInfo.id || `${userInfo.name}_${userInfo.phone}`;
+            const legacyDocId = `${userInfo.name}_${userInfo.phone}`;
+
+            console.log('👤 프로필 모달 이미지 로드:', primaryDocId);
+
+            // 1차: 새 문서 ID로 조회
+            let doc = await window.db.collection('brandSettings').doc(primaryDocId).get();
+            savedImage = doc.exists ? doc.data().profileImage : null;
+
+            // 2차: 없으면 레거시 문서 ID로 조회
+            if (!savedImage && primaryDocId !== legacyDocId) {
+                console.log('👤 모달 레거시 문서 ID로 재시도:', legacyDocId);
+                doc = await window.db.collection('brandSettings').doc(legacyDocId).get();
+                savedImage = doc.exists ? doc.data().profileImage : null;
             }
         }
     } catch (e) {
@@ -1997,7 +2008,9 @@ async function saveProfileImageToFirebase(imageData) {
             return;
         }
 
-        const docId = `${userInfo.name}_${userInfo.phone}`;
+        // Firebase Auth 사용자: UID 기반 문서 ID (applyProfileImage와 동일)
+        const docId = userInfo.id || `${userInfo.name}_${userInfo.phone}`;
+        console.log('📷 프로필 이미지 저장:', docId);
         await window.db.collection('brandSettings').doc(docId).set({
             profileImage: imageData,
             updatedAt: Date.now()
@@ -2023,18 +2036,28 @@ async function applyProfileImage() {
         if (!window.db || !userInfo) return;
 
         // Firebase Auth 사용자: UID 기반 문서 ID
-        // 불나비 사용자: name_phone 기반 문서 ID
-        const docId = userInfo.id || `${userInfo.name}_${userInfo.phone}`;
-        console.log('👤 프로필 이미지 로드 시도:', docId);
+        const primaryDocId = userInfo.id || `${userInfo.name}_${userInfo.phone}`;
+        // 레거시 문서 ID (기존 불나비 사용자용)
+        const legacyDocId = `${userInfo.name}_${userInfo.phone}`;
 
-        const doc = await window.db.collection('brandSettings').doc(docId).get();
+        console.log('👤 프로필 이미지 로드 시도:', primaryDocId);
 
-        if (doc.exists && doc.data().profileImage) {
-            const imageUrl = doc.data().profileImage;
+        // 1차: 새 문서 ID로 조회
+        let doc = await window.db.collection('brandSettings').doc(primaryDocId).get();
+        let imageUrl = doc.exists ? doc.data().profileImage : null;
+
+        // 2차: 없으면 레거시 문서 ID로 조회 (Firebase Auth 사용자의 기존 데이터 호환)
+        if (!imageUrl && primaryDocId !== legacyDocId) {
+            console.log('👤 레거시 문서 ID로 재시도:', legacyDocId);
+            doc = await window.db.collection('brandSettings').doc(legacyDocId).get();
+            imageUrl = doc.exists ? doc.data().profileImage : null;
+        }
+
+        if (imageUrl) {
             profileImage.innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
-            console.log('👤 Firebase에서 프로필 이미지 로드 성공:', docId);
+            console.log('👤 Firebase에서 프로필 이미지 로드 성공');
         } else {
-            console.log('👤 프로필 이미지 없음 (기본 아이콘 사용):', docId);
+            console.log('👤 프로필 이미지 없음 (기본 아이콘 사용)');
         }
     } catch (e) {
         console.warn('프로필 이미지 로드 실패:', e);
