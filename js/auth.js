@@ -59,8 +59,9 @@ function initFirebaseAuth() {
             // 로그인 페이지로 리다이렉트 (login.html이 아닌 경우에만)
             const currentPage = window.location.pathname;
             if (!currentPage.includes('login.html') && !currentPage.includes('admin.html')) {
-                // 메인 페이지에서는 로그인 화면 표시
-                showLoginScreen();
+                // login.html로 리다이렉트
+                console.log('🔄 로그인 페이지로 리다이렉트...');
+                window.location.href = '/login.html';
             }
         }
     });
