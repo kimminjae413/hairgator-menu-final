@@ -172,7 +172,7 @@
         const costEl = document.getElementById('videoCreditCost');
         if (costEl) {
             const cost = state.videoDuration === 5 ? COSTS.video5sec : COSTS.video8sec;
-            costEl.textContent = cost + '회';
+            costEl.textContent = cost;
         }
     }
 
