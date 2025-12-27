@@ -311,6 +311,33 @@ Then: [동작] (예: 기존 데이터를 수정)
   - `FIREBASE_PRIVATE_KEY`: -----BEGIN PRIVATE KEY-----...
   - `KAKAO_REST_API_KEY`: e085ad4b34b316bdd26d67bf620b2ec9
 
+  ### ⚠️ TODO: 불나비 사용자 일괄 마이그레이션 (1주일 내 실행 필요!)
+
+  **배경**: 불나비 API가 1주일 후 종료됨. 그 전에 기존 디자이너 데이터를 모두 Firestore로 복사해야 함.
+
+  **스크립트 위치**: `scripts/migrate-bullnabi-users.js`
+
+  **실행 방법**:
+  ```bash
+  cd C:\Users\김민재\Desktop\Hairgator_chatbot
+  node scripts/migrate-bullnabi-users.js
+  ```
+
+  **필요 환경변수** (.env 파일에 설정):
+  - `BULLNABI_LOGIN_ID`: 불나비 관리자 이메일
+  - `BULLNABI_LOGIN_PW`: 불나비 관리자 비밀번호
+  - `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`
+
+  **스크립트 동작**:
+  1. 불나비 API에서 `registerType == "디자이너"` 전체 조회
+  2. Firestore `bullnabi_users` 컬렉션에 저장 (email 기준)
+  3. 나중에 로그인 시 이메일 매칭으로 `users` 컬렉션으로 이동
+
+  **마이그레이션 플로우** (이미 구현됨):
+  - `kakao-callback.js`: 카카오 로그인 시 불나비 이메일 매칭 → tokenBalance/plan 마이그레이션
+  - `login.html`: Google/이메일 로그인 시 동일하게 마이그레이션
+  - `migratedFromBullnabi: true` 플래그로 중복 방지
+
 - 2025-12-27: AI 스타일 매칭 모달 완성 + 눈썹 분석 추가
 
   ### 눈썹 분석 기능
