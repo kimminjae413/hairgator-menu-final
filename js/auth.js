@@ -93,10 +93,23 @@ async function handleUserLogin(user) {
             console.log('🔍 auth.js: Firestore 데이터 =', JSON.stringify({
                 tokenBalance: firestoreData.tokenBalance,
                 plan: firestoreData.plan,
-                email: firestoreData.email
+                email: firestoreData.email,
+                displayName: firestoreData.displayName,
+                name: firestoreData.name,
+                nickname: firestoreData.nickname
             }));
             userData = { ...userData, ...firestoreData };
-            console.log('🔍 auth.js: 병합 후 userData.tokenBalance =', userData.tokenBalance);
+
+            // displayName이 비어있으면 name 또는 nickname 사용
+            if (!userData.displayName || userData.displayName.trim() === '') {
+                userData.displayName = firestoreData.name || firestoreData.nickname || user.email?.split('@')[0] || '사용자';
+            }
+
+            console.log('🔍 auth.js: 병합 후 userData =', {
+                displayName: userData.displayName,
+                tokenBalance: userData.tokenBalance,
+                plan: userData.plan
+            });
         } else {
             // 신규 사용자 - Firestore에 저장
             await db.collection('users').doc(user.uid).set({
