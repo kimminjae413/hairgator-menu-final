@@ -109,18 +109,11 @@ body {
     gap: 8px;
 }
 
-.header-title span:first-child {
-    font-size: 16px;
-    font-weight: 400;
-    letter-spacing: 3px;
-    color: var(--text-primary);
-}
-
-.header-title span:last-child {
+.header-title span {
     font-size: 16px;
     font-weight: 600;
-    letter-spacing: 3px;
-    color: var(--female-color);
+    letter-spacing: 1px;
+    color: var(--text-primary);
 }
 
 .credit-badge {
