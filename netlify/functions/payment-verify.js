@@ -1,10 +1,10 @@
 // netlify/functions/payment-verify.js
-// 포트원 V2 결제 검증 및 토큰 충전 (Bullnabi API 사용)
+// 포트원 V2 결제 검증 및 토큰 충전 (Firestore 직접 접근)
 
 const admin = require('firebase-admin');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
-// Firebase Admin 초기화 (bullnabi-proxy.js와 동일한 방식)
+// Firebase Admin 초기화
 if (!admin.apps.length) {
   try {
     admin.initializeApp({
@@ -149,7 +149,7 @@ exports.handler = async (event) => {
       };
     }
 
-    // 5. Bullnabi API로 토큰 충전 + 플랜 업그레이드
+    // 5. Firestore에서 직접 토큰 충전 + 플랜 업그레이드
     const chargeResult = await chargeTokens(userId, plan.tokens, planKey);
 
     if (!chargeResult.success) {
@@ -250,32 +250,29 @@ async function verifyPaymentWithPortone(paymentId) {
 }
 
 /**
- * Bullnabi API를 통한 토큰 충전 + 플랜 업그레이드
+ * Firestore에서 직접 토큰 충전 + 플랜 업그레이드
+ * userId는 이메일 기반 문서 ID (예: 708eric_hanmail_net)
  */
 async function chargeTokens(userId, tokens, planKey) {
   try {
-    // 1. 어드민 토큰 가져오기 (환경변수 또는 로그인)
-    let adminToken = process.env.BULLNABI_TOKEN;
-    if (!adminToken) {
-      const loginResult = await refreshBullnabiToken();
-      if (!loginResult.success) {
-        throw new Error('Bullnabi 토큰 발급 실패');
-      }
-      adminToken = loginResult.token;
-    }
+    // 1. 현재 사용자 데이터 조회
+    const userRef = db.collection('users').doc(userId);
+    const userDoc = await userRef.get();
 
-    // 2. 현재 사용자 데이터 조회
-    const userData = await getBullnabiUserData(adminToken, userId);
     let currentTokens = 0;
     let currentPlan = 'free';
-    if (userData.success && userData.data?.[0]) {
-      currentTokens = userData.data[0].tokenBalance || 0;
-      currentPlan = userData.data[0].plan || 'free';
+
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      currentTokens = userData.tokenBalance || 0;
+      currentPlan = userData.plan || 'free';
+    } else {
+      console.warn(`⚠️ 사용자 문서가 없습니다: ${userId}, 새로 생성합니다.`);
     }
 
     const newTokens = currentTokens + tokens;
 
-    // 플랜 결정: 추가 토큰 구매(tokens_5000)가 아니면 해당 플랜으로 업그레이드
+    // 2. 플랜 결정: 추가 토큰 구매(tokens_5000)가 아니면 해당 플랜으로 업그레이드
     // 플랜 우선순위: business > pro > basic > free
     const planPriority = { 'free': 0, 'basic': 1, 'pro': 2, 'business': 3, 'tokens_5000': -1 };
     let newPlan = currentPlan;
@@ -286,49 +283,32 @@ async function chargeTokens(userId, tokens, planKey) {
       }
     }
 
-    // 3. Bullnabi API로 토큰 업데이트
+    // 3. Firestore 업데이트
     const updateData = {
-      "_id": { "$oid": userId },
-      "tokenBalance": newTokens,
-      "plan": newPlan
+      tokenBalance: newTokens,
+      plan: newPlan,
+      lastChargedAt: admin.firestore.FieldValue.serverTimestamp()
     };
 
-    const updateParams = new URLSearchParams();
-    updateParams.append('metaCode', '_users');
-    updateParams.append('collectionName', '_users');
-    updateParams.append('documentJson', JSON.stringify(updateData));
-
-    const FormData = require('form-data');
-    const updateFormData = new FormData();
-
-    const updateResponse = await fetch(
-      `http://drylink.ohmyapp.io/bnb/update?${updateParams.toString()}`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${adminToken}`,
-          'Accept': 'application/json',
-          ...updateFormData.getHeaders()
-        },
-        body: updateFormData
-      }
-    );
-
-    const updateResult = await updateResponse.json();
-
-    if (updateResult.code === '1' || updateResult.code === 1 || updateResult.success) {
-      console.log(`✅ 토큰 충전 완료: userId=${userId}, added=${tokens}, newBalance=${newTokens}, plan=${newPlan}`);
-
-      return {
-        success: true,
-        previousTokens: currentTokens,
-        newTokens: newTokens,
-        previousPlan: currentPlan,
-        newPlan: newPlan
-      };
+    if (userDoc.exists) {
+      await userRef.update(updateData);
+    } else {
+      // 사용자 문서가 없으면 새로 생성
+      await userRef.set({
+        ...updateData,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
     }
 
-    throw new Error('Bullnabi API 업데이트 실패');
+    console.log(`✅ 토큰 충전 완료: userId=${userId}, added=${tokens}, newBalance=${newTokens}, plan=${newPlan}`);
+
+    return {
+      success: true,
+      previousTokens: currentTokens,
+      newTokens: newTokens,
+      previousPlan: currentPlan,
+      newPlan: newPlan
+    };
 
   } catch (error) {
     console.error('토큰 충전 오류:', error);
@@ -336,99 +316,5 @@ async function chargeTokens(userId, tokens, planKey) {
       success: false,
       error: error.message
     };
-  }
-}
-
-/**
- * Bullnabi 토큰 자동 갱신
- */
-async function refreshBullnabiToken() {
-  try {
-    const loginId = process.env.BULLNABI_LOGIN_ID;
-    const loginPw = process.env.BULLNABI_LOGIN_PW;
-
-    if (!loginId || !loginPw) {
-      return { success: false, error: 'Missing login credentials' };
-    }
-
-    const documentJson = {
-      loginId: loginId,
-      loginPw: loginPw,
-      isShortToken: true
-    };
-
-    const params = new URLSearchParams();
-    params.append('metaCode', '_users');
-    params.append('documentJson', JSON.stringify(documentJson));
-
-    const FormData = require('form-data');
-    const formData = new FormData();
-
-    const response = await fetch(
-      `http://drylink.ohmyapp.io/bnb/emailLogin?${params.toString()}`,
-      {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          ...formData.getHeaders()
-        },
-        body: formData
-      }
-    );
-
-    const result = await response.json();
-
-    if (result.code === '1' && result.token) {
-      return { success: true, token: result.token };
-    }
-
-    return { success: false, error: 'Login failed' };
-
-  } catch (error) {
-    console.error('Bullnabi 토큰 갱신 오류:', error);
-    return { success: false, error: error.message };
-  }
-}
-
-/**
- * Bullnabi 사용자 데이터 조회
- */
-async function getBullnabiUserData(adminToken, userId) {
-  try {
-    const documentJson = { "_id": { "$oid": userId } };
-    const projectionJson = { "tokenBalance": 1, "plan": 1 };
-
-    const params = new URLSearchParams();
-    params.append('metaCode', '_users');
-    params.append('collectionName', '_users');
-    params.append('documentJson', JSON.stringify(documentJson));
-    params.append('projectionJson', JSON.stringify(projectionJson));
-
-    const FormData = require('form-data');
-    const formData = new FormData();
-
-    const response = await fetch(
-      `http://drylink.ohmyapp.io/bnb/find?${params.toString()}`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${adminToken}`,
-          'Accept': 'application/json',
-          ...formData.getHeaders()
-        }
-      }
-    );
-
-    const result = await response.json();
-
-    if (result.code === '1' && result.documents) {
-      return { success: true, data: result.documents };
-    }
-
-    return { success: false, error: 'User not found' };
-
-  } catch (error) {
-    console.error('Bullnabi 사용자 조회 오류:', error);
-    return { success: false, error: error.message };
   }
 }
