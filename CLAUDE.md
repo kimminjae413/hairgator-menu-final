@@ -248,7 +248,7 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 조건: `productCategory == "plan"`
 - 동작: `_users.tokenBalance += tokenCount`
 
-## 불나비 → 헤어게이터 완전 독립 마이그레이션 (2025-12-28 진행중)
+## 불나비 → 헤어게이터 완전 독립 마이그레이션 (2025-12-28 완료)
 
 ### 배경
 - **드라이링크 앱** (일반인용) → registerType = "user"
@@ -261,35 +261,24 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 헤어게이터 실사용자 (tokenBalance/plan 있음): 12명
 - 소셜 로그인: 카카오 80%, 구글 12%, 애플 8%
 
-### 불나비 API 의존성 현황
-
-#### bullnabi-proxy.js에서 불나비 API 직접 호출
-| 라인 | API | 용도 | 전환 방법 |
-|------|-----|------|----------|
-| 54 | `/bnb/user/token/loginByEmail` | 토큰 발급 | 제거 (Firebase Auth 사용) |
-| 118, 244, 890, 1363 | `/bnb/aggregateForTableWithDocTimeline` | 데이터 조회 | Firestore 직접 조회 |
-| 391 | `/bnb/create` | 히스토리 생성 | Firestore 직접 생성 |
-| 422, 517, 590, 700, 1025 | `/bnb/update` | 데이터 업데이트 | Firestore 직접 업데이트 |
-
-#### bullnabi-proxy.js를 호출하는 클라이언트
-| 파일 | 용도 | 전환 방법 |
-|------|------|----------|
-| `js/bullnabi-bridge.js` | 토큰 조회/차감, 플랜 조회 | firebase-bridge.js로 통합 |
-| `js/dynamic-token-service.js` | 동적 토큰 관리 | 제거 (불필요) |
-| `login.html` | 마이그레이션 체크 | Firestore 직접 조회 |
-| `lookbook.html` | 토큰 차감 | firebase-bridge.js 사용 |
-
-#### localStorage 'bullnabi_user' 사용 파일
-- `js/auth.js`, `js/main.js`, `js/ai-studio.js`, `js/payment.js`, `lookbook.html`
-- → `hairgator_user` 또는 Firebase Auth로 전환
-
-### 마이그레이션 작업 목록
+### 마이그레이션 작업 완료 목록
 1. ✅ Firebase Auth 로그인 (카카오/구글/이메일)
 2. ✅ 이메일 기반 사용자 통합 (`users` 컬렉션)
 3. ✅ `bullnabi_users` 컬렉션에 디자이너 3000명+ 마이그레이션
-4. 🔄 bullnabi-proxy.js → Firestore 직접 접근으로 전환
-5. ⏳ 결제 시스템 독립 (포트원 직접 연동)
+4. ✅ bullnabi-proxy.js → Firestore 직접 접근으로 전환
+5. ✅ 결제 시스템 독립 (포트원 + Firestore 직접 연동)
 6. ⏳ 마이페이지 완성
+
+### 삭제된 레거시 파일
+- `js/bullnabi-bridge.js` (1,348줄) → `js/firebase-bridge.js`로 대체
+- `js/dynamic-token-service.js` → 미사용, 삭제
+- `netlify/functions/bullnabi-proxy.js` (1,498줄) → Firestore 직접 접근으로 대체
+- `netlify/functions/token-api.js` (334줄) → DEPRECATED, 삭제
+
+### 호환성 유지 레이어
+- `window.BullnabiBridge` → `window.FirebaseBridge` 별칭 제공
+- `window.getBullnabiUser()` → Firebase 사용자 정보를 불나비 형식으로 반환
+- localStorage `firebase_user` → 사용자 정보 캐싱
 
 ### Firestore 컬렉션 구조
 
@@ -332,9 +321,26 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 로그인 시 이메일 매칭으로 `users`로 복사
 
 ## 최근 작업 이력
-- 2025-12-28: 불나비 완전 독립 마이그레이션 진행중
-  - 불나비 API 의존성 전체 파악 완료
-  - bullnabi-proxy.js → Firestore 직접 접근 전환 작업 시작
+- 2025-12-28: 불나비 완전 독립 마이그레이션 **완료**
+
+  ### 삭제된 파일 (총 3,680줄 제거)
+  - `js/bullnabi-bridge.js` (1,348줄)
+  - `js/dynamic-token-service.js`
+  - `netlify/functions/bullnabi-proxy.js` (1,498줄)
+  - `netlify/functions/token-api.js` (334줄)
+
+  ### 수정된 파일
+  - `lookbook.html`: bullnabi-proxy → FirebaseBridge.deductTokens()
+  - `login.html`: bullnabi-proxy → Firestore bullnabi_users 직접 조회
+  - `netlify/functions/kakao-callback.js`: bullnabi-proxy → Firestore 직접 조회
+  - `netlify/functions/payment-verify.js`: Bullnabi API → Firestore 직접 토큰 충전
+  - `js/ai-studio.js`, `js/payment.js`, `payment-complete.html`: localStorage 정리
+  - `index.html`, `dist/index.html`: 레거시 스크립트 참조 제거
+
+  ### 결과
+  - 불나비 API 호출 **완전 제거** (`drylink.ohmyapp.io` 호출 없음)
+  - 모든 토큰/사용자 데이터를 Firestore에서 직접 관리
+  - Firebase Auth + Firestore 기반 독립 시스템 완성
 
 - 2025-12-27 (저녁): 불나비 → Firebase Auth 독립 마이그레이션 ✅ 완료
 
