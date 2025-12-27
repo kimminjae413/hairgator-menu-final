@@ -3,7 +3,9 @@
    Main Service Design System Matching
    ========================================== */
 
+/* 기본값: 다크 모드 */
 :root {
+    --primary-bg: #000000;
     --primary-dark: #000000;
     --primary-light: #ffffff;
     --male-color: #4A90E2;
@@ -14,6 +16,8 @@
     --border-color: #222222;
     --card-bg: #1a1a1a;
     --card-bg-elevated: #242424;
+    --header-bg: #000000;
+    --back-btn-bg: #2a2a2a;
 
     --ai-primary: #E91E63;
     --ai-secondary: #4A90E2;
@@ -22,6 +26,19 @@
     --ai-gradient-start: #E91E63;
     --ai-gradient-end: #C2185B;
     --ai-shadow: rgba(233, 30, 99, 0.3);
+}
+
+/* 라이트 모드 */
+body.light-theme {
+    --primary-bg: #ffffff;
+    --text-primary: #1a1a1a;
+    --text-secondary: #666666;
+    --text-muted: #999999;
+    --border-color: #e0e0e0;
+    --card-bg: #f5f5f5;
+    --card-bg-elevated: #ffffff;
+    --header-bg: #ffffff;
+    --back-btn-bg: #e5e5ea;
 }
 
 /* Reset */
@@ -34,17 +51,18 @@
 html {
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
-    background-color: #000000;
+    background-color: var(--primary-bg);
 }
 
 body {
     font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--primary-dark);
+    background: var(--primary-bg);
     color: var(--text-primary);
     min-height: 100vh;
     min-height: 100dvh;
     line-height: 1.5;
     -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ========== Header ========== */
@@ -54,13 +72,14 @@ body {
     left: 0;
     right: 0;
     height: 56px;
-    background: var(--primary-dark);
+    background: var(--header-bg);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0 16px;
     z-index: 100;
     border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.3s ease;
 }
 
 .back-btn {
@@ -69,7 +88,7 @@ body {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: #2a2a2a;
+    background: var(--back-btn-bg);
     border: none;
     cursor: pointer;
     display: flex;
@@ -81,7 +100,7 @@ body {
 }
 
 .back-btn:hover {
-    background: #3a3a3a;
+    opacity: 0.8;
 }
 
 .header-title {
