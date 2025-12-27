@@ -535,9 +535,10 @@
             clearMessage();
 
             // 카카오 OAuth 페이지로 리다이렉트
+            // scope=account_email: 이메일 권한 요청 (불나비 사용자 마이그레이션 매칭용)
             const REST_API_KEY = 'e085ad4b34b316bdd26d67bf620b2ec9';
             const REDIRECT_URI = window.location.origin + '/.netlify/functions/kakao-callback';
-            const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${REST_API_KEY}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code`;
+            const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${REST_API_KEY}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=account_email`;
 
             window.location.href = kakaoAuthUrl;
         }
