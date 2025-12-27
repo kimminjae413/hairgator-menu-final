@@ -14,13 +14,20 @@ firebase.initializeApp(firebaseConfig);
 
 // Firestore 초기화
 const db = firebase.firestore();
-const storage = firebase.storage();
 const auth = firebase.auth();
+
+// Storage는 SDK가 로드된 경우에만 초기화
+let storage = null;
+if (typeof firebase.storage === 'function') {
+    storage = firebase.storage();
+}
 
 // 전역 변수로 설정
 window.db = db;
-window.storage = storage;
 window.auth = auth;
+if (storage) {
+    window.storage = storage;
+}
 
 // 캐시 설정
 try {
