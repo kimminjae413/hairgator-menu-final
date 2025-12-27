@@ -1618,14 +1618,16 @@
                     designerPhone.textContent = `전화: ${currentDesigner.phone}`;
                 }
                 if (sessionStatus) {
-                    // BullnabiBridge를 사용해 플랜/토큰 표시 (관리자만 토큰 표시)
+                    // FirebaseBridge를 사용해 플랜/토큰 표시 (관리자만 토큰 표시)
                     const tokenBalance = currentDesigner.tokenBalance ?? currentDesigner.tokens ?? 0;
                     const plan = currentDesigner.plan || 'free';
-                    if (window.BullnabiBridge && typeof window.BullnabiBridge.updateTokenDisplay === 'function') {
+                    if (window.FirebaseBridge && typeof window.FirebaseBridge.updateTokenDisplay === 'function') {
+                        window.FirebaseBridge.updateTokenDisplay(tokenBalance, plan);
+                    } else if (window.BullnabiBridge && typeof window.BullnabiBridge.updateTokenDisplay === 'function') {
                         window.BullnabiBridge.updateTokenDisplay(tokenBalance, plan);
                     } else {
                         // 폴백: 플랜만 표시
-                        const planNames = { 'free': '무료', 'basic': '베이직', 'standard': '프로', 'business': '비즈니스' };
+                        const planNames = { 'free': '무료', 'basic': '베이직', 'pro': '프로', 'business': '비즈니스' };
                         sessionStatus.textContent = `현재 플랜: ${planNames[plan] || plan}`;
                     }
                 }
