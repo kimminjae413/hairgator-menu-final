@@ -228,6 +228,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
 
+                        <!-- AI 얼굴변환 & 영상 -->
+                        <div class="menu-item" id="aiTransformBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 20px;">🎬</span>
+                                <div style="flex: 1;">
+                                    <span class="sidebar-menu-text" style="font-size: 14px;">${t('aiTransform.menuTitle') || 'AI 얼굴변환 & 영상'}</span>
+                                    <div style="font-size: 11px; color: var(--text-secondary, #888); margin-top: 2px;">${t('aiTransform.menuSubtitle') || '얼굴 합성 · 영상 생성'}</div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- 상호 설정 -->
                         <div class="menu-item" id="brandSettingBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
@@ -326,6 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const themeToggleMenu = document.getElementById('themeToggleMenu');
         const styleMatchBtn = document.getElementById('styleMatchBtn');
         const personalColorBtn = document.getElementById('personalColorBtn');
+        const aiTransformBtn = document.getElementById('aiTransformBtn');
         const brandSettingBtn = document.getElementById('brandSettingBtn');
         const logoutBtn = document.getElementById('logoutBtn');
 
@@ -378,6 +390,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const gender = window.currentGender || 'female';
                 window.location.href = `/personal-color/?gender=${gender}`;
+            });
+        }
+
+        // AI 얼굴변환 & 영상
+        if (aiTransformBtn) {
+            aiTransformBtn.addEventListener('click', function() {
+                console.log('🎬 AI 얼굴변환 & 영상 클릭');
+                closeSidebar();
+                window.location.href = '/ai-transform/';
             });
         }
 
