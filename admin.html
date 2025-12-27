@@ -758,6 +758,10 @@
 
         <nav class="nav-section">
             <div class="nav-section-title">설정</div>
+            <div class="nav-item" onclick="showPage('appTabs')">
+                <span class="nav-item-icon">📱</span>
+                <span>앱 메뉴 관리</span>
+            </div>
             <div class="nav-item" onclick="showPage('settings')">
                 <span class="nav-item-icon">⚙️</span>
                 <span>시스템 설정</span>
@@ -1143,6 +1147,142 @@
             </div>
         </div>
 
+        <!-- 앱 메뉴 관리 페이지 -->
+        <div id="page-appTabs" class="page">
+            <div class="page-header">
+                <h2 class="page-title">📱 앱 메뉴 관리</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="importMongoDBTabs()">📥 MongoDB 데이터 가져오기</button>
+                    <button class="btn btn-primary" onclick="saveAppTabs()">💾 저장</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">하단 탭 설정</div>
+                    <p style="color: var(--text-muted); font-size: 13px; margin-top: 5px;">앱 하단에 표시되는 탭을 설정합니다. 비활성화하면 앱에서 해당 탭이 숨겨집니다.</p>
+                </div>
+
+                <div id="appTabsList" style="display: flex; flex-direction: column; gap: 16px;">
+                    <!-- Tab 1 -->
+                    <div class="tab-config-item" data-tab-id="1" style="background: var(--bg-hover); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+                        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                            <span style="font-size: 24px; cursor: move;">☰</span>
+                            <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Tab 1</span>
+                            <label style="display: flex; align-items: center; gap: 8px; margin-left: auto; cursor: pointer;">
+                                <input type="checkbox" id="tab1Enabled" checked style="width: 18px; height: 18px; accent-color: var(--primary);">
+                                <span style="font-size: 14px;">활성화</span>
+                            </label>
+                        </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px;">
+                            <div class="form-group">
+                                <label class="form-label">아이콘</label>
+                                <input type="text" class="form-input" id="tab1Icon" value="📋" placeholder="이모지">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">라벨</label>
+                                <input type="text" class="form-input" id="tab1Label" value="Style Menu">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">URL</label>
+                                <input type="text" class="form-input" id="tab1Url" value="https://hairgator.kr/">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2 -->
+                    <div class="tab-config-item" data-tab-id="2" style="background: var(--bg-hover); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+                        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                            <span style="font-size: 24px; cursor: move;">☰</span>
+                            <span style="background: var(--warning); color: black; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Tab 2</span>
+                            <span style="background: var(--danger); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px;">사이드바 통합됨</span>
+                            <label style="display: flex; align-items: center; gap: 8px; margin-left: auto; cursor: pointer;">
+                                <input type="checkbox" id="tab2Enabled" style="width: 18px; height: 18px; accent-color: var(--primary);">
+                                <span style="font-size: 14px;">활성화</span>
+                            </label>
+                        </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px;">
+                            <div class="form-group">
+                                <label class="form-label">아이콘</label>
+                                <input type="text" class="form-input" id="tab2Icon" value="🎬" placeholder="이모지">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">라벨</label>
+                                <input type="text" class="form-input" id="tab2Label" value="AI Face&Video">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">URL</label>
+                                <input type="text" class="form-input" id="tab2Url" value="https://hairgator.kr/ai-transform/">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3 -->
+                    <div class="tab-config-item" data-tab-id="3" style="background: var(--bg-hover); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+                        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                            <span style="font-size: 24px; cursor: move;">☰</span>
+                            <span style="background: var(--info); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Tab 3</span>
+                            <label style="display: flex; align-items: center; gap: 8px; margin-left: auto; cursor: pointer;">
+                                <input type="checkbox" id="tab3Enabled" checked style="width: 18px; height: 18px; accent-color: var(--primary);">
+                                <span style="font-size: 14px;">활성화</span>
+                            </label>
+                        </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px;">
+                            <div class="form-group">
+                                <label class="form-label">아이콘</label>
+                                <input type="text" class="form-input" id="tab3Icon" value="🛒" placeholder="이모지">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">라벨</label>
+                                <input type="text" class="form-input" id="tab3Label" value="상품">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">URL</label>
+                                <input type="text" class="form-input" id="tab3Url" value="https://hairgator.kr/products/">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 4 -->
+                    <div class="tab-config-item" data-tab-id="4" style="background: var(--bg-hover); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+                        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                            <span style="font-size: 24px; cursor: move;">☰</span>
+                            <span style="background: var(--success); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Tab 4</span>
+                            <label style="display: flex; align-items: center; gap: 8px; margin-left: auto; cursor: pointer;">
+                                <input type="checkbox" id="tab4Enabled" checked style="width: 18px; height: 18px; accent-color: var(--primary);">
+                                <span style="font-size: 14px;">활성화</span>
+                            </label>
+                        </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px;">
+                            <div class="form-group">
+                                <label class="form-label">아이콘</label>
+                                <input type="text" class="form-input" id="tab4Icon" value="👤" placeholder="이모지">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">라벨</label>
+                                <input type="text" class="form-input" id="tab4Label" value="My">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">URL</label>
+                                <input type="text" class="form-input" id="tab4Url" value="https://hairgator.kr/mypage.html">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <div class="card-title">⚠️ 참고사항</div>
+                </div>
+                <ul style="color: var(--text-muted); font-size: 14px; line-height: 1.8; padding-left: 20px;">
+                    <li><strong>Tab 2 (AI Face&Video)</strong>: 이미 Tab 1 사이드바에 통합되어 비활성화 권장</li>
+                    <li>설정 변경 후 <strong>저장</strong> 버튼을 눌러야 적용됩니다</li>
+                    <li>앱에서 변경사항을 보려면 앱을 새로고침하거나 재시작해야 합니다</li>
+                </ul>
+            </div>
+        </div>
+
         <!-- 설정 페이지 -->
         <div id="page-settings" class="page">
             <div class="page-header">
@@ -1258,6 +1398,7 @@
             if (pageName === 'dashboard') loadDashboard();
             if (pageName === 'users') loadUsers();
             if (pageName === 'usage') loadUsageStats();
+            if (pageName === 'appTabs') loadAppTabs();
         }
 
         // 대시보드 로드
@@ -1919,6 +2060,138 @@
 
         function saveAdminEmails() {
             showToast('관리자 계정이 저장되었습니다', 'success');
+        }
+
+        // ========== 앱 탭 관리 ==========
+        async function loadAppTabs() {
+            try {
+                const doc = await db.collection('app_config').doc('tabs').get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    for (let i = 1; i <= 4; i++) {
+                        const tab = data[`tab${i}`];
+                        if (tab) {
+                            document.getElementById(`tab${i}Enabled`).checked = tab.enabled !== false;
+                            document.getElementById(`tab${i}Icon`).value = tab.icon || '';
+                            document.getElementById(`tab${i}Label`).value = tab.label || '';
+                            document.getElementById(`tab${i}Url`).value = tab.url || '';
+                        }
+                    }
+                    console.log('✅ 앱 탭 설정 로드됨');
+                }
+            } catch (error) {
+                console.error('앱 탭 로드 오류:', error);
+            }
+        }
+
+        async function saveAppTabs() {
+            try {
+                const tabsConfig = {};
+                for (let i = 1; i <= 4; i++) {
+                    tabsConfig[`tab${i}`] = {
+                        enabled: document.getElementById(`tab${i}Enabled`).checked,
+                        icon: document.getElementById(`tab${i}Icon`).value,
+                        label: document.getElementById(`tab${i}Label`).value,
+                        url: document.getElementById(`tab${i}Url`).value,
+                        order: i
+                    };
+                }
+
+                await db.collection('app_config').doc('tabs').set({
+                    ...tabsConfig,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: currentUser?.email || 'admin'
+                }, { merge: true });
+
+                showToast('앱 탭 설정이 저장되었습니다', 'success');
+                console.log('✅ 앱 탭 설정 저장됨:', tabsConfig);
+            } catch (error) {
+                console.error('앱 탭 저장 오류:', error);
+                showToast('저장 실패: ' + error.message, 'error');
+            }
+        }
+
+        // MongoDB 덤프에서 추출한 탭 데이터
+        const MONGODB_TABS_DATA = {
+            tab1: {
+                enabled: true,
+                icon: '📋',
+                label: 'Style Menu',
+                url: 'https://lovely-lebkuchen-4017ca.netlify.app/?userId=${userInfo._id.oid}',
+                meta: 'styleMenuTab',
+                module: 'ohmyMultiLego',
+                iconSet: {
+                    light: 'https://drylink.ohmyapp.io/assets/users/_menu/2025/09/16/ea76c909-46ff-41d7-9615-35fd34dd042a_freeiconportfolio4365933zl8moqkx.png',
+                    light_selected: 'https://drylink.ohmyapp.io/assets/users/_menu/2025/09/16/1ec555db-739f-4508-936a-f65025a7ad42_freeiconportfolio4365945umiumame.png'
+                }
+            },
+            tab2: {
+                enabled: false,
+                icon: '🎬',
+                label: 'AI Face&Video Swap',
+                url: 'https://hgfaceswap.netlify.app/?userId=${userInfo._id.oid}',
+                meta: '',
+                module: 'webView',
+                iconSet: {
+                    light: 'https://drylink.ohmyapp.io/assets/users/_menu/2025/09/16/4938efd2-9612-47ee-bb04-18e4ef151798_20250916183314coklro0o.png',
+                    light_selected: 'https://drylink.ohmyapp.io/assets/users/_menu/2025/09/16/36091d81-cabc-4a75-8eab-66e665d500b9_20250916183416ap03g8rr.png'
+                }
+            },
+            tab3: {
+                enabled: true,
+                icon: '🛒',
+                label: '상품',
+                url: '',
+                meta: 'pkg_iamportPayment_productMulti',
+                module: 'ohmyMultiLego',
+                iconSet: {
+                    light: 'https://ohmyapp.ohmyapp.io/assets/users/iconUpload/2025/08/27/d7d63fb7-e19c-4900-914b-a625bb5ec70e_iconcardoffwvc4fqbs.png',
+                    light_selected: 'https://ohmyapp.ohmyapp.io/assets/users/iconUpload/2025/08/27/699d8c5c-7be8-4f0a-a4ef-9cb9236cb21d_iconcard0kpkg141.png'
+                }
+            },
+            tab4: {
+                enabled: true,
+                icon: '👤',
+                label: 'My',
+                url: '',
+                meta: 'myPage',
+                module: 'ohmyMultiLego',
+                iconSet: {
+                    light: 'https://ohmyapp.ohmyapp.io/assets/users/ooIcon/2022/11/11/c85b69ff-b97a-4918-b401-286f149d0a2d_iconSettingOff@3x.png',
+                    light_selected: 'https://ohmyapp.ohmyapp.io/assets/users/ooIcon/2022/11/11/1daeb767-5e76-4a4c-b8b2-1222245ca3f3_iconSettingOn@3x.png'
+                }
+            }
+        };
+
+        async function importMongoDBTabs() {
+            if (!confirm('MongoDB 덤프 데이터로 탭 설정을 덮어쓰시겠습니까?')) return;
+
+            try {
+                // UI에 값 채우기
+                for (let i = 1; i <= 4; i++) {
+                    const tab = MONGODB_TABS_DATA[`tab${i}`];
+                    if (tab) {
+                        document.getElementById(`tab${i}Enabled`).checked = tab.enabled;
+                        document.getElementById(`tab${i}Icon`).value = tab.icon || '';
+                        document.getElementById(`tab${i}Label`).value = tab.label || '';
+                        document.getElementById(`tab${i}Url`).value = tab.url || '';
+                    }
+                }
+
+                // Firestore에 저장
+                await db.collection('app_config').doc('tabs').set({
+                    ...MONGODB_TABS_DATA,
+                    source: 'mongodb_dump',
+                    importedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: currentUser?.email || 'admin'
+                });
+
+                showToast('MongoDB 데이터를 가져와 저장했습니다', 'success');
+                console.log('✅ MongoDB 탭 데이터 임포트 완료');
+            } catch (error) {
+                console.error('MongoDB 탭 임포트 오류:', error);
+                showToast('임포트 실패: ' + error.message, 'error');
+            }
         }
 
         // 모달
