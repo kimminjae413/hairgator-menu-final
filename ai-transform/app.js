@@ -1,6 +1,7 @@
 /**
  * HAIRGATOR AI Transform
  * Face Swap & Video Generation
+ * Uses remainCount (AI횟수권) from Bullnabi/OhMyApp
  */
 
 (function() {
@@ -8,566 +9,525 @@
 
     // ============ State ============
     const state = {
-        currentTab: 'face',
-        originalImage: null,
-        targetImage: null,
-        videoSourceImage: null,
+        currentTab: 'faceSwap',
+        customerPhoto: null,
+        targetStyle: null,
+        videoSource: null,
         videoDuration: 5,
         userId: null,
-        credits: 0,
+        remainCount: 0, // AI횟수권 (불나비 remainCount)
         isProcessing: false
     };
 
-    // ============ DOM Elements ============
-    const elements = {};
-
     // ============ Constants ============
     const COSTS = {
-        faceSwap: 350,
-        video5sec: 500,
-        video8sec: 800
+        faceSwap: 1,    // AI횟수권 1회
+        video5sec: 1,   // AI횟수권 1회
+        video8sec: 2    // AI횟수권 2회
     };
 
     const API_BASE = '/.netlify/functions';
 
     // ============ Initialize ============
+    document.addEventListener('DOMContentLoaded', init);
+
     function init() {
-        cacheElements();
-        bindEvents();
-        initAuth();
-        updateVideoCost();
+        bindTabEvents();
+        bindUploadEvents();
+        bindOptionEvents();
+        bindActionEvents();
+        loadUserCredits();
     }
 
-    function cacheElements() {
-        // Tabs
-        elements.tabBtns = document.querySelectorAll('.tab-btn');
-        elements.tabContents = document.querySelectorAll('.tab-content');
-
-        // Face Swap
-        elements.originalZone = document.getElementById('originalZone');
-        elements.originalInput = document.getElementById('originalInput');
-        elements.originalPreview = document.getElementById('originalPreview');
-        elements.targetZone = document.getElementById('targetZone');
-        elements.targetInput = document.getElementById('targetInput');
-        elements.targetPreview = document.getElementById('targetPreview');
-        elements.faceSwapBtn = document.getElementById('faceSwapBtn');
-        elements.faceResultArea = document.getElementById('faceResultArea');
-        elements.faceResultImage = document.getElementById('faceResultImage');
-        elements.downloadFaceBtn = document.getElementById('downloadFaceBtn');
-
-        // Video
-        elements.videoSourceZone = document.getElementById('videoSourceZone');
-        elements.videoSourceInput = document.getElementById('videoSourceInput');
-        elements.videoSourcePreview = document.getElementById('videoSourcePreview');
-        elements.videoPrompt = document.getElementById('videoPrompt');
-        elements.promptCount = document.getElementById('promptCount');
-        elements.videoCost = document.getElementById('videoCost');
-        elements.videoGenBtn = document.getElementById('videoGenBtn');
-        elements.videoResultArea = document.getElementById('videoResultArea');
-        elements.resultVideo = document.getElementById('resultVideo');
-        elements.downloadVideoBtn = document.getElementById('downloadVideoBtn');
-        elements.durationBtns = document.querySelectorAll('.option-btn[data-duration]');
-
-        // UI
-        elements.creditAmount = document.getElementById('creditAmount');
-        elements.loadingOverlay = document.getElementById('loadingOverlay');
-        elements.loadingTitle = document.getElementById('loadingTitle');
-        elements.loadingDesc = document.getElementById('loadingDesc');
-        elements.progressBar = document.getElementById('progressBar');
-        elements.toast = document.getElementById('toast');
+    // ============ Tab Navigation ============
+    function bindTabEvents() {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.tab;
+                switchTab(tab);
+            });
+        });
     }
 
-    function bindEvents() {
-        // Tab Navigation
-        elements.tabBtns.forEach(btn => {
-            btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    function switchTab(tabId) {
+        state.currentTab = tabId;
+
+        // Update tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabId);
         });
 
-        // Face Swap Upload Zones
-        elements.originalZone.addEventListener('click', () => elements.originalInput.click());
-        elements.originalInput.addEventListener('change', (e) => handleImageUpload(e, 'original'));
-        elements.targetZone.addEventListener('click', () => elements.targetInput.click());
-        elements.targetInput.addEventListener('change', (e) => handleImageUpload(e, 'target'));
+        // Update panels
+        document.querySelectorAll('.tab-panel').forEach(panel => {
+            panel.classList.toggle('active', panel.id === tabId + 'Panel');
+        });
+    }
 
-        // Face Swap Button
-        elements.faceSwapBtn.addEventListener('click', handleFaceSwap);
-        elements.downloadFaceBtn.addEventListener('click', () => downloadImage(elements.faceResultImage.src, 'hairgator-faceswap.png'));
+    // ============ Upload Events ============
+    function bindUploadEvents() {
+        // Customer photo
+        const customerInput = document.getElementById('customerPhotoInput');
+        if (customerInput) {
+            customerInput.addEventListener('change', (e) => handleUpload(e, 'customer'));
+        }
 
-        // Video Upload
-        elements.videoSourceZone.addEventListener('click', () => elements.videoSourceInput.click());
-        elements.videoSourceInput.addEventListener('change', (e) => handleImageUpload(e, 'videoSource'));
+        // Target style
+        const targetInput = document.getElementById('targetStyleInput');
+        if (targetInput) {
+            targetInput.addEventListener('change', (e) => handleUpload(e, 'target'));
+        }
 
-        // Video Options
-        elements.durationBtns.forEach(btn => {
+        // Video source
+        const videoInput = document.getElementById('videoSourceInput');
+        if (videoInput) {
+            videoInput.addEventListener('change', (e) => handleUpload(e, 'video'));
+        }
+    }
+
+    function handleUpload(e, type) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const dataUrl = event.target.result;
+
+            if (type === 'customer') {
+                state.customerPhoto = dataUrl;
+                updateUploadCard('customerPhotoCard', dataUrl);
+                checkFaceSwapReady();
+            } else if (type === 'target') {
+                state.targetStyle = dataUrl;
+                updateUploadCard('targetStyleCard', dataUrl);
+                checkFaceSwapReady();
+            } else if (type === 'video') {
+                state.videoSource = dataUrl;
+                updateVideoUploadCard(dataUrl);
+                checkVideoGenReady();
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function updateUploadCard(cardId, dataUrl) {
+        const card = document.getElementById(cardId);
+        if (!card) return;
+
+        card.classList.add('has-image');
+
+        // Remove placeholder and add image
+        const placeholder = card.querySelector('.upload-placeholder');
+        if (placeholder) placeholder.style.display = 'none';
+
+        let img = card.querySelector('img');
+        if (!img) {
+            img = document.createElement('img');
+            card.insertBefore(img, card.firstChild);
+        }
+        img.src = dataUrl;
+    }
+
+    function updateVideoUploadCard(dataUrl) {
+        const card = document.getElementById('videoSourceCard');
+        if (!card) return;
+
+        card.classList.add('has-image');
+
+        const placeholder = card.querySelector('.upload-placeholder');
+        if (placeholder) placeholder.style.display = 'none';
+
+        let img = card.querySelector('img');
+        if (!img) {
+            img = document.createElement('img');
+            card.insertBefore(img, card.firstChild);
+        }
+        img.src = dataUrl;
+    }
+
+    // ============ Option Events ============
+    function bindOptionEvents() {
+        // Video duration options
+        document.querySelectorAll('.option-btn[data-duration]').forEach(btn => {
             btn.addEventListener('click', () => {
-                elements.durationBtns.forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.option-btn[data-duration]').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 state.videoDuration = parseInt(btn.dataset.duration);
                 updateVideoCost();
             });
         });
-
-        // Video Prompt
-        elements.videoPrompt.addEventListener('input', () => {
-            const count = elements.videoPrompt.value.length;
-            elements.promptCount.textContent = count;
-            if (count > 200) {
-                elements.videoPrompt.value = elements.videoPrompt.value.slice(0, 200);
-                elements.promptCount.textContent = 200;
-            }
-        });
-
-        // Video Generate
-        elements.videoGenBtn.addEventListener('click', handleVideoGeneration);
-        elements.downloadVideoBtn.addEventListener('click', () => downloadVideo(elements.resultVideo.src));
-
-        // Drag & Drop
-        [elements.originalZone, elements.targetZone, elements.videoSourceZone].forEach(zone => {
-            zone.addEventListener('dragover', handleDragOver);
-            zone.addEventListener('dragleave', handleDragLeave);
-            zone.addEventListener('drop', handleDrop);
-        });
-    }
-
-    // ============ Auth ============
-    async function initAuth() {
-        try {
-            // Firebase Auth 상태 확인
-            if (typeof firebase !== 'undefined' && firebase.auth) {
-                firebase.auth().onAuthStateChanged(async (user) => {
-                    if (user) {
-                        state.userId = user.uid;
-                        await loadCredits();
-                    } else {
-                        // 로그인 필요
-                        showToast('로그인이 필요합니다', 'error');
-                        setTimeout(() => {
-                            window.location.href = '../login.html?redirect=' + encodeURIComponent(window.location.href);
-                        }, 1500);
-                    }
-                });
-            } else {
-                // URL 파라미터에서 userId 확인 (fallback)
-                const params = new URLSearchParams(window.location.search);
-                state.userId = params.get('userId');
-                if (state.userId) {
-                    await loadCredits();
-                }
-            }
-        } catch (error) {
-            console.error('Auth init error:', error);
-        }
-    }
-
-    async function loadCredits() {
-        try {
-            if (window.FirebaseBridge && typeof window.FirebaseBridge.getTokenBalance === 'function') {
-                const result = await window.FirebaseBridge.getTokenBalance(state.userId);
-                state.credits = result.tokenBalance || 0;
-                elements.creditAmount.textContent = state.credits.toLocaleString();
-            }
-        } catch (error) {
-            console.error('Failed to load credits:', error);
-            elements.creditAmount.textContent = '--';
-        }
-    }
-
-    // ============ Tab Navigation ============
-    function switchTab(tabName) {
-        state.currentTab = tabName;
-
-        elements.tabBtns.forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.tab === tabName);
-        });
-
-        elements.tabContents.forEach(content => {
-            content.classList.toggle('active', content.id === `${tabName}-content`);
-        });
-    }
-
-    // ============ Image Upload ============
-    function handleImageUpload(e, type) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        if (!file.type.startsWith('image/')) {
-            showToast('이미지 파일만 업로드 가능합니다', 'error');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const dataUrl = event.target.result;
-
-            if (type === 'original') {
-                state.originalImage = dataUrl;
-                elements.originalPreview.src = dataUrl;
-                elements.originalZone.classList.add('has-image');
-            } else if (type === 'target') {
-                state.targetImage = dataUrl;
-                elements.targetPreview.src = dataUrl;
-                elements.targetZone.classList.add('has-image');
-            } else if (type === 'videoSource') {
-                state.videoSourceImage = dataUrl;
-                elements.videoSourcePreview.src = dataUrl;
-                elements.videoSourceZone.classList.add('has-image');
-            }
-
-            updateButtonStates();
-        };
-        reader.readAsDataURL(file);
-    }
-
-    // Drag & Drop
-    function handleDragOver(e) {
-        e.preventDefault();
-        e.currentTarget.style.borderColor = 'var(--accent-primary)';
-        e.currentTarget.style.background = 'var(--accent-ghost)';
-    }
-
-    function handleDragLeave(e) {
-        e.preventDefault();
-        e.currentTarget.style.borderColor = '';
-        e.currentTarget.style.background = '';
-    }
-
-    function handleDrop(e) {
-        e.preventDefault();
-        e.currentTarget.style.borderColor = '';
-        e.currentTarget.style.background = '';
-
-        const file = e.dataTransfer.files[0];
-        if (!file || !file.type.startsWith('image/')) return;
-
-        // Determine which zone was dropped on
-        const zone = e.currentTarget;
-        let type = 'original';
-        if (zone === elements.targetZone) type = 'target';
-        else if (zone === elements.videoSourceZone) type = 'videoSource';
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const dataUrl = event.target.result;
-
-            if (type === 'original') {
-                state.originalImage = dataUrl;
-                elements.originalPreview.src = dataUrl;
-                elements.originalZone.classList.add('has-image');
-            } else if (type === 'target') {
-                state.targetImage = dataUrl;
-                elements.targetPreview.src = dataUrl;
-                elements.targetZone.classList.add('has-image');
-            } else if (type === 'videoSource') {
-                state.videoSourceImage = dataUrl;
-                elements.videoSourcePreview.src = dataUrl;
-                elements.videoSourceZone.classList.add('has-image');
-            }
-
-            updateButtonStates();
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function updateButtonStates() {
-        // Face Swap Button
-        const canFaceSwap = state.originalImage && state.targetImage && !state.isProcessing;
-        elements.faceSwapBtn.disabled = !canFaceSwap;
-
-        // Video Generate Button
-        const canGenVideo = state.videoSourceImage && !state.isProcessing;
-        elements.videoGenBtn.disabled = !canGenVideo;
     }
 
     function updateVideoCost() {
-        const cost = state.videoDuration === 5 ? COSTS.video5sec : COSTS.video8sec;
-        elements.videoCost.textContent = cost;
+        const costEl = document.getElementById('videoCreditCost');
+        if (costEl) {
+            const cost = state.videoDuration === 5 ? COSTS.video5sec : COSTS.video8sec;
+            costEl.textContent = cost + '회';
+        }
+    }
+
+    // ============ Action Events ============
+    function bindActionEvents() {
+        const faceSwapBtn = document.getElementById('faceSwapBtn');
+        if (faceSwapBtn) {
+            faceSwapBtn.addEventListener('click', handleFaceSwap);
+        }
+
+        const videoGenBtn = document.getElementById('videoGenBtn');
+        if (videoGenBtn) {
+            videoGenBtn.addEventListener('click', handleVideoGen);
+        }
+    }
+
+    function checkFaceSwapReady() {
+        const btn = document.getElementById('faceSwapBtn');
+        if (btn) {
+            btn.disabled = !(state.customerPhoto && state.targetStyle);
+        }
+    }
+
+    function checkVideoGenReady() {
+        const btn = document.getElementById('videoGenBtn');
+        if (btn) {
+            btn.disabled = !state.videoSource;
+        }
     }
 
     // ============ Face Swap ============
     async function handleFaceSwap() {
         if (state.isProcessing) return;
-        if (!state.originalImage || !state.targetImage) {
-            showToast('이미지를 모두 업로드해주세요', 'error');
+        if (!state.customerPhoto || !state.targetStyle) {
+            showToast('고객 사진과 헤어스타일을 모두 업로드해주세요', 'error');
             return;
         }
 
-        const cost = COSTS.faceSwap;
-        if (state.credits < cost) {
-            showToast(`크레딧이 부족합니다 (필요: ${cost})`, 'error');
+        // Check credits
+        if (state.remainCount < COSTS.faceSwap) {
+            showToast('AI 횟수권이 부족합니다', 'error');
             return;
         }
 
         state.isProcessing = true;
-        showLoading('얼굴 변환 중', 'AI가 이미지를 분석하고 있습니다...');
+        showLoading('얼굴 변환 중...', '잠시만 기다려주세요');
 
         try {
-            // 1. Upload images and get URLs
-            const [originalUrl, targetUrl] = await Promise.all([
-                uploadImage(state.originalImage),
-                uploadImage(state.targetImage)
-            ]);
-
-            updateProgress(30);
-
-            // 2. Call face swap API (vModel or similar)
             const response = await fetch(`${API_BASE}/hair-change`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'start',
-                    userImage: originalUrl,
-                    styleImage: targetUrl,
-                    userId: state.userId
+                    originalImage: state.customerPhoto.split(',')[1],
+                    hairstyleImage: state.targetStyle.split(',')[1]
                 })
             });
 
             const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(data.error || '얼굴 변환 실패');
-            }
-
-            updateProgress(50);
-
-            // 3. Poll for result if async
-            let resultUrl = data.resultUrl;
             if (data.taskId) {
-                resultUrl = await pollTaskStatus(data.taskId, 'hair-change');
+                // Poll for result
+                await pollFaceSwapStatus(data.taskId);
+            } else if (data.resultUrl || data.result) {
+                showFaceSwapResult(data.resultUrl || data.result);
+                await deductCredits(COSTS.faceSwap, 'faceSwap');
+            } else {
+                throw new Error(data.error || '얼굴 변환에 실패했습니다');
             }
-
-            updateProgress(90);
-
-            // 4. Deduct credits
-            await deductCredits(cost, 'faceSwap');
-
-            // 5. Show result
-            elements.faceResultImage.src = resultUrl;
-            elements.faceResultArea.classList.add('visible');
-
-            updateProgress(100);
-            hideLoading();
-            showToast('얼굴 변환 완료!', 'success');
-
         } catch (error) {
             console.error('Face swap error:', error);
-            hideLoading();
-            showToast(error.message || '처리 중 오류가 발생했습니다', 'error');
+            showToast(error.message || '얼굴 변환 중 오류가 발생했습니다', 'error');
         } finally {
             state.isProcessing = false;
-            updateButtonStates();
+            hideLoading();
+        }
+    }
+
+    async function pollFaceSwapStatus(taskId, attempt = 0) {
+        const maxAttempts = 30;
+        const interval = 2000;
+
+        if (attempt >= maxAttempts) {
+            throw new Error('처리 시간이 초과되었습니다');
+        }
+
+        updateLoading(`얼굴 변환 중... (${attempt + 1}/${maxAttempts})`);
+
+        const response = await fetch(`${API_BASE}/hair-change`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'status', taskId })
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'completed' && (data.resultUrl || data.result)) {
+            showFaceSwapResult(data.resultUrl || data.result);
+            await deductCredits(COSTS.faceSwap, 'faceSwap');
+            return;
+        } else if (data.status === 'failed') {
+            throw new Error(data.error || '얼굴 변환에 실패했습니다');
+        }
+
+        await new Promise(resolve => setTimeout(resolve, interval));
+        return pollFaceSwapStatus(taskId, attempt + 1);
+    }
+
+    function showFaceSwapResult(imageUrl) {
+        const resultSection = document.getElementById('faceSwapResult');
+        const resultImg = document.getElementById('faceSwapResultImg');
+
+        if (resultSection && resultImg) {
+            resultImg.src = imageUrl;
+            resultSection.classList.add('visible');
+            resultSection.scrollIntoView({ behavior: 'smooth' });
         }
     }
 
     // ============ Video Generation ============
-    async function handleVideoGeneration() {
+    async function handleVideoGen() {
         if (state.isProcessing) return;
-        if (!state.videoSourceImage) {
+        if (!state.videoSource) {
             showToast('이미지를 업로드해주세요', 'error');
             return;
         }
 
         const cost = state.videoDuration === 5 ? COSTS.video5sec : COSTS.video8sec;
-        if (state.credits < cost) {
-            showToast(`크레딧이 부족합니다 (필요: ${cost})`, 'error');
+        if (state.remainCount < cost) {
+            showToast('AI 횟수권이 부족합니다', 'error');
             return;
         }
 
         state.isProcessing = true;
-        showLoading('영상 생성 중', '3-5분 정도 소요됩니다...');
+        showLoading('영상 생성 중...', '3~8분 정도 소요됩니다');
 
         try {
-            // 1. Convert image to base64 (remove data URL prefix)
-            const base64Image = state.videoSourceImage.split(',')[1];
-
-            updateProgress(10);
-
-            // 2. Call Gemini Video API
             const response = await fetch(`${API_BASE}/gemini-video-proxy`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    images: [base64Image],
-                    prompt: elements.videoPrompt.value || '자연스럽게 움직이는 모습',
+                    images: [state.videoSource.split(',')[1]],
                     duration: state.videoDuration,
-                    aspectRatio: '9:16'
+                    aspectRatio: '9:16',
+                    prompt: '자연스럽게 움직이는 헤어스타일'
                 })
             });
 
             const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(data.error || '영상 생성 시작 실패');
+            if (data.operationName) {
+                await pollVideoStatus(data.operationName);
+                await deductCredits(cost, 'videoGen');
+            } else if (data.videoUrl) {
+                showVideoResult(data.videoUrl);
+                await deductCredits(cost, 'videoGen');
+            } else {
+                throw new Error(data.error || '영상 생성에 실패했습니다');
             }
-
-            updateProgress(20);
-
-            // 3. Poll for video status
-            const videoUrl = await pollVideoStatus(data.operationName || data.taskId);
-
-            updateProgress(90);
-
-            // 4. Deduct credits
-            await deductCredits(cost, 'videoGen');
-
-            // 5. Show result
-            elements.resultVideo.src = videoUrl;
-            elements.videoResultArea.classList.add('visible');
-
-            updateProgress(100);
-            hideLoading();
-            showToast('영상 생성 완료!', 'success');
-
         } catch (error) {
-            console.error('Video generation error:', error);
-            hideLoading();
-            showToast(error.message || '처리 중 오류가 발생했습니다', 'error');
+            console.error('Video gen error:', error);
+            showToast(error.message || '영상 생성 중 오류가 발생했습니다', 'error');
         } finally {
             state.isProcessing = false;
-            updateButtonStates();
+            hideLoading();
         }
     }
 
-    async function pollVideoStatus(operationName, maxAttempts = 60) {
-        const pollInterval = 5000; // 5초
+    async function pollVideoStatus(operationName, attempt = 0) {
+        const maxAttempts = 60;
+        const interval = 5000;
 
-        for (let i = 0; i < maxAttempts; i++) {
-            await sleep(pollInterval);
+        if (attempt >= maxAttempts) {
+            throw new Error('처리 시간이 초과되었습니다');
+        }
 
-            const progress = 20 + Math.min(70, (i / maxAttempts) * 70);
-            updateProgress(progress);
+        const minutes = Math.floor((attempt * 5) / 60);
+        const seconds = (attempt * 5) % 60;
+        updateLoading(`영상 생성 중... ${minutes}분 ${seconds}초`);
 
-            try {
-                const response = await fetch(`${API_BASE}/gemini-video-status`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ operationName })
-                });
+        const response = await fetch(`${API_BASE}/gemini-video-status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ operationName })
+        });
 
-                const data = await response.json();
+        const data = await response.json();
 
-                if (data.done && data.videoUrl) {
-                    return data.videoUrl;
-                }
-
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-            } catch (error) {
-                console.error('Poll error:', error);
-                if (i === maxAttempts - 1) throw error;
+        if (data.done) {
+            if (data.videoUrl) {
+                showVideoResult(data.videoUrl);
+                return;
+            } else if (data.error) {
+                throw new Error(data.error);
             }
         }
 
-        throw new Error('영상 생성 시간 초과');
+        await new Promise(resolve => setTimeout(resolve, interval));
+        return pollVideoStatus(operationName, attempt + 1);
     }
 
-    async function pollTaskStatus(taskId, endpoint, maxAttempts = 30) {
-        const pollInterval = 2000;
+    function showVideoResult(videoUrl) {
+        const resultContainer = document.getElementById('videoResult');
+        const videoPlayer = document.getElementById('videoResultPlayer');
 
-        for (let i = 0; i < maxAttempts; i++) {
-            await sleep(pollInterval);
-
-            const progress = 50 + Math.min(40, (i / maxAttempts) * 40);
-            updateProgress(progress);
-
-            try {
-                const response = await fetch(`${API_BASE}/${endpoint}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'status',
-                        taskId
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.status === 'completed' && data.resultUrl) {
-                    return data.resultUrl;
-                }
-
-                if (data.status === 'failed') {
-                    throw new Error(data.error || '처리 실패');
-                }
-
-            } catch (error) {
-                console.error('Poll error:', error);
-                if (i === maxAttempts - 1) throw error;
-            }
+        if (resultContainer && videoPlayer) {
+            videoPlayer.src = videoUrl;
+            resultContainer.classList.add('visible');
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
         }
-
-        throw new Error('처리 시간 초과');
     }
 
-    // ============ Utilities ============
-    async function uploadImage(dataUrl) {
-        // Simple approach: return the data URL as-is for now
-        // In production, upload to Firebase Storage or Cloudinary
-        return dataUrl;
+    // ============ Credits (remainCount) ============
+    async function loadUserCredits() {
+        try {
+            // Wait for Firebase Bridge to be ready
+            if (window.FirebaseBridge) {
+                await waitForAuth();
+                const user = window.currentDesigner;
+                if (user) {
+                    state.userId = user.id;
+                    // TODO: Load remainCount from OhMyApp/Bullnabi API
+                    // For now, use tokenBalance as fallback
+                    state.remainCount = user.tokenBalance || 0;
+                    updateCreditDisplay();
+                }
+            }
+        } catch (error) {
+            console.error('Error loading credits:', error);
+        }
+    }
+
+    function waitForAuth() {
+        return new Promise((resolve) => {
+            const check = () => {
+                if (window.currentDesigner) {
+                    resolve();
+                } else {
+                    setTimeout(check, 100);
+                }
+            };
+            check();
+        });
     }
 
     async function deductCredits(amount, feature) {
         try {
-            if (window.FirebaseBridge && typeof window.FirebaseBridge.deductTokensDynamic === 'function') {
-                await window.FirebaseBridge.deductTokensDynamic(state.userId, amount, feature);
-                state.credits -= amount;
-                elements.creditAmount.textContent = state.credits.toLocaleString();
+            // TODO: Deduct from remainCount via OhMyApp/Bullnabi API
+            // For now, deduct from tokenBalance via Firebase
+            if (window.FirebaseBridge && window.FirebaseBridge.deductTokens) {
+                await window.FirebaseBridge.deductTokens(amount * 100, feature); // Convert to tokens
             }
+            state.remainCount -= amount;
+            updateCreditDisplay();
         } catch (error) {
-            console.error('Failed to deduct credits:', error);
+            console.error('Error deducting credits:', error);
         }
     }
 
+    function updateCreditDisplay() {
+        const display = document.getElementById('creditDisplay');
+        if (display) {
+            display.textContent = state.remainCount;
+        }
+    }
+
+    // ============ UI Helpers ============
     function showLoading(title, desc) {
-        elements.loadingTitle.textContent = title;
-        elements.loadingDesc.textContent = desc;
-        elements.progressBar.style.width = '0%';
-        elements.loadingOverlay.classList.add('visible');
+        const overlay = document.getElementById('loadingOverlay');
+        const textEl = document.getElementById('loadingText');
+        const progressEl = document.getElementById('loadingProgress');
+
+        if (overlay) overlay.classList.add('visible');
+        if (textEl) textEl.textContent = title || '처리 중...';
+        if (progressEl) progressEl.textContent = desc || '';
+    }
+
+    function updateLoading(text) {
+        const progressEl = document.getElementById('loadingProgress');
+        if (progressEl) progressEl.textContent = text;
     }
 
     function hideLoading() {
-        elements.loadingOverlay.classList.remove('visible');
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.classList.remove('visible');
     }
 
-    function updateProgress(percent) {
-        elements.progressBar.style.width = `${percent}%`;
-    }
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
 
-    function showToast(message, type = 'success') {
-        const toast = elements.toast;
-        toast.className = `toast ${type}`;
-        toast.querySelector('.toast-message').textContent = message;
-        toast.classList.add('visible');
+        toast.textContent = message;
+        toast.className = 'toast visible ' + type;
 
         setTimeout(() => {
             toast.classList.remove('visible');
         }, 3000);
     }
 
-    function downloadImage(url, filename) {
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        link.click();
-    }
+    // ============ Download & Reset ============
+    window.downloadResult = function(type) {
+        let url, filename;
 
-    function downloadVideo(url) {
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'hairgator-video.mp4';
-        link.click();
-    }
+        if (type === 'faceSwap') {
+            const img = document.getElementById('faceSwapResultImg');
+            url = img?.src;
+            filename = 'hairgator-faceswap.png';
+        } else if (type === 'video') {
+            const video = document.getElementById('videoResultPlayer');
+            url = video?.src;
+            filename = 'hairgator-video.mp4';
+        }
 
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
+        if (url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+        }
+    };
 
-    // ============ Start ============
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
+    window.resetFaceSwap = function() {
+        state.customerPhoto = null;
+        state.targetStyle = null;
+
+        // Reset cards
+        ['customerPhotoCard', 'targetStyleCard'].forEach(id => {
+            const card = document.getElementById(id);
+            if (card) {
+                card.classList.remove('has-image');
+                const img = card.querySelector('img');
+                if (img) img.remove();
+                const placeholder = card.querySelector('.upload-placeholder');
+                if (placeholder) placeholder.style.display = '';
+            }
+        });
+
+        // Reset inputs
+        document.getElementById('customerPhotoInput').value = '';
+        document.getElementById('targetStyleInput').value = '';
+
+        // Hide result
+        const result = document.getElementById('faceSwapResult');
+        if (result) result.classList.remove('visible');
+
+        checkFaceSwapReady();
+    };
+
+    window.resetVideoGen = function() {
+        state.videoSource = null;
+
+        const card = document.getElementById('videoSourceCard');
+        if (card) {
+            card.classList.remove('has-image');
+            const img = card.querySelector('img');
+            if (img) img.remove();
+            const placeholder = card.querySelector('.upload-placeholder');
+            if (placeholder) placeholder.style.display = '';
+        }
+
+        document.getElementById('videoSourceInput').value = '';
+
+        const result = document.getElementById('videoResult');
+        if (result) result.classList.remove('visible');
+
+        checkVideoGenReady();
+    };
 
 })();

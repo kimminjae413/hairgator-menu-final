@@ -6039,6 +6039,30 @@ const HAIRGATOR_I18N = {
       agreeBtn: 'Setuju dan Lanjutkan'
     },
 
+    // ========== AI Transform ==========
+    aiTransform: {
+      menuTitle: 'AI Ganti Wajah & Video',
+      menuSubtitle: 'Ganti Wajah · Buat Video',
+      faceSwapTitle: 'Ganti Wajah',
+      videoGenTitle: 'Buat Video',
+      uploadPhoto: 'Unggah Foto',
+      uploadPhotoDesc: 'Pilih foto dengan wajah yang jelas',
+      selectHairstyle: 'Pilih Gaya Rambut',
+      selectHairstyleDesc: 'Pilih gaya rambut yang ingin diterapkan',
+      processing: 'Memproses...',
+      result: 'Hasil',
+      download: 'Unduh',
+      retry: 'Coba Lagi',
+      videoDuration: 'Durasi Video',
+      sec5: '5 detik',
+      sec8: '8 detik',
+      generateVideo: 'Buat Video',
+      videoProcessing: 'Membuat video... Ini mungkin memakan waktu beberapa menit.',
+      credits: 'Kredit',
+      creditsRequired: 'kredit diperlukan',
+      insufficientCredits: 'Kredit tidak cukup'
+    },
+
     // ========== Pembayaran/Paket ==========
     payment: {
       upgrade: 'Panduan Harga',
@@ -6646,6 +6670,30 @@ const HAIRGATOR_I18N = {
       content1: 'Todo el contenido proporcionado por HAIRGATOR, incluyendo imágenes, gráficos, textos y videos, es propiedad de <strong>AIW Inc.</strong> y está protegido por leyes de derechos de autor, patentes y marcas registradas.',
       content2: 'La copia, distribución, venta, exhibición o modificación no autorizada del contenido de HAIRGATOR puede resultar en <strong>responsabilidad civil y penal</strong>.',
       agreeBtn: 'Aceptar y Continuar'
+    },
+
+    // ========== AI Transform ==========
+    aiTransform: {
+      menuTitle: 'AI Cambio de Cara & Video',
+      menuSubtitle: 'Cambio de Cara · Generación de Video',
+      faceSwapTitle: 'Cambio de Cara',
+      videoGenTitle: 'Generar Video',
+      uploadPhoto: 'Subir Foto',
+      uploadPhotoDesc: 'Selecciona una foto con rostro claro',
+      selectHairstyle: 'Seleccionar Peinado',
+      selectHairstyleDesc: 'Elige el peinado a aplicar',
+      processing: 'Procesando...',
+      result: 'Resultado',
+      download: 'Descargar',
+      retry: 'Reintentar',
+      videoDuration: 'Duración del Video',
+      sec5: '5 segundos',
+      sec8: '8 segundos',
+      generateVideo: 'Generar Video',
+      videoProcessing: 'Generando video... Esto puede tardar unos minutos.',
+      credits: 'Créditos',
+      creditsRequired: 'créditos requeridos',
+      insufficientCredits: 'Créditos insuficientes'
     },
 
     // ========== Pago/Planes ==========
