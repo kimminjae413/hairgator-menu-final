@@ -104,9 +104,9 @@ const HAIRGATOR_I18N = {
 
       // 프로필 사진
       profilePhoto: '📷 프로필 사진',
-      profilePhotoHint: '',
-      profilePhotoHint2: '',
-      profilePhotoHint3: '',
+      profilePhotoHint: '프로필 사진은 스타일 상담 시 사용되며,',
+      profilePhotoHint2: '얼굴이 잘 보이는 사진',
+      profilePhotoHint3: '을 선택해 주세요.',
       selectPhoto: '사진 선택',
       deletePhoto: '사진 삭제',
       profileDeleted: '프로필 사진이 삭제되었습니다.',
@@ -1153,9 +1153,9 @@ const HAIRGATOR_I18N = {
 
       // Profile photo
       profilePhoto: '📷 Profile Photo',
-      profilePhotoHint: '',
-      profilePhotoHint2: '',
-      profilePhotoHint3: '',
+      profilePhotoHint: 'Your profile photo will be used for style consultations.',
+      profilePhotoHint2: 'Please select a photo with your face clearly visible',
+      profilePhotoHint3: '.',
       selectPhoto: 'Select Photo',
       deletePhoto: 'Delete Photo',
       profileDeleted: 'Profile photo deleted.',
@@ -2167,9 +2167,9 @@ const HAIRGATOR_I18N = {
 
       // プロフィール写真
       profilePhoto: '📷 プロフィール写真',
-      profilePhotoHint: '',
-      profilePhotoHint2: '',
-      profilePhotoHint3: '',
+      profilePhotoHint: 'プロフィール写真はスタイル相談に使用されます。',
+      profilePhotoHint2: 'お顔がはっきり見える写真',
+      profilePhotoHint3: 'を選択してください。',
       selectPhoto: '写真を選択',
       deletePhoto: '写真を削除',
       profileDeleted: 'プロフィール写真が削除されました。',
@@ -3177,9 +3177,9 @@ const HAIRGATOR_I18N = {
 
       // 个人照片
       profilePhoto: '📷 个人照片',
-      profilePhotoHint: '',
-      profilePhotoHint2: '',
-      profilePhotoHint3: '',
+      profilePhotoHint: '个人照片将用于发型咨询。',
+      profilePhotoHint2: '请选择一张面部清晰的照片',
+      profilePhotoHint3: '。',
       selectPhoto: '选择照片',
       deletePhoto: '删除照片',
       profileDeleted: '个人照片已删除。',
@@ -4190,9 +4190,9 @@ const HAIRGATOR_I18N = {
 
       // Ảnh hồ sơ
       profilePhoto: '📷 Ảnh hồ sơ',
-      profilePhotoHint: '',
-      profilePhotoHint2: '',
-      profilePhotoHint3: '',
+      profilePhotoHint: 'Ảnh hồ sơ sẽ được sử dụng để tư vấn kiểu tóc.',
+      profilePhotoHint2: 'Vui lòng chọn ảnh thể hiện rõ khuôn mặt',
+      profilePhotoHint3: '.',
       selectPhoto: 'Chọn ảnh',
       deletePhoto: 'Xóa ảnh',
       profileDeleted: 'Đã xóa ảnh hồ sơ.',
@@ -5191,9 +5191,9 @@ const HAIRGATOR_I18N = {
 
       // Foto profil
       profilePhoto: '📷 Foto Profil',
-      profilePhotoHint: '',
-      profilePhotoHint2: '',
-      profilePhotoHint3: '',
+      profilePhotoHint: 'Foto profil akan digunakan untuk konsultasi gaya rambut.',
+      profilePhotoHint2: 'Silakan pilih foto dengan wajah yang terlihat jelas',
+      profilePhotoHint3: '.',
       selectPhoto: 'Pilih foto',
       deletePhoto: 'Hapus foto',
       profileDeleted: 'Foto profil telah dihapus.',
@@ -6079,9 +6079,9 @@ const HAIRGATOR_I18N = {
       fontBebas: 'Bebas Neue',
 
       profilePhoto: '📷 Foto de Perfil',
-      profilePhotoHint: '',
-      profilePhotoHint2: '',
-      profilePhotoHint3: '',
+      profilePhotoHint: 'La foto de perfil se usará para consultas de estilo.',
+      profilePhotoHint2: 'Por favor, seleccione una foto donde su rostro sea claramente visible',
+      profilePhotoHint3: '.',
       selectPhoto: 'Seleccionar Foto',
       deletePhoto: 'Eliminar Foto',
       profileDeleted: 'Foto de perfil eliminada.',
