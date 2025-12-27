@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAIRGATOR - 로그인</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a1a2e;
+            letter-spacing: 2px;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+            color: #999;
+            font-size: 13px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #ddd;
+        }
+
+        .divider span {
+            padding: 0 16px;
+        }
+
+        /* 소셜 로그인 버튼 */
+        .social-btn {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            border: none;
+            margin-bottom: 12px;
+        }
+
+        .social-btn img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .social-btn.kakao {
+            background: #FEE500;
+            color: #000000;
+        }
+
+        .social-btn.kakao:hover {
+            background: #F5DC00;
+        }
+
+        .social-btn.google {
+            background: #fff;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .social-btn.google:hover {
+            background: #f8f8f8;
+            border-color: #ccc;
+        }
+
+        /* 이메일 로그인 폼 */
+        .email-form {
+            margin-top: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #0f3460;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(15, 52, 96, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 회원가입/비밀번호 찾기 링크 */
+        .auth-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 24px;
+            font-size: 14px;
+        }
+
+        .auth-links a {
+            color: #666;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .auth-links a:hover {
+            color: #0f3460;
+        }
+
+        /* 회원가입 폼 (기본 숨김) */
+        .signup-form {
+            display: none;
+        }
+
+        .signup-form.active {
+            display: block;
+        }
+
+        .login-form.hidden {
+            display: none;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            color: #333;
+        }
+
+        /* 에러/성공 메시지 */
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .message.error {
+            background: #fee;
+            color: #c00;
+            display: block;
+        }
+
+        .message.success {
+            background: #efe;
+            color: #060;
+            display: block;
+        }
+
+        /* 로딩 오버레이 */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 반응형 */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 32px 24px;
+            }
+
+            .logo h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>HAIRGATOR</h1>
+            <p>헤어 디자이너를 위한 AI 어시스턴트</p>
+        </div>
+
+        <div id="messageBox" class="message"></div>
+
+        <!-- 로그인 폼 -->
+        <div id="loginForm" class="login-form">
+            <button class="social-btn kakao" onclick="loginWithKakao()">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 3C5.58 3 2 5.91 2 9.5C2 11.77 3.47 13.77 5.74 14.89L4.81 18.21C4.75 18.43 5.01 18.6 5.2 18.47L9.15 15.85C9.43 15.88 9.71 15.9 10 15.9C14.42 15.9 18 12.99 18 9.4C18 5.91 14.42 3 10 3Z" fill="#000000"/>
+                </svg>
+                카카오로 시작하기
+            </button>
+
+            <button class="social-btn google" onclick="loginWithGoogle()">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M19.6 10.23c0-.68-.06-1.33-.17-1.96H10v3.7h5.38a4.6 4.6 0 01-2 3.02v2.5h3.24c1.89-1.74 2.98-4.3 2.98-7.26z" fill="#4285F4"/>
+                    <path d="M10 20c2.7 0 4.96-.9 6.62-2.42l-3.24-2.5c-.9.6-2.04.95-3.38.95-2.6 0-4.8-1.75-5.58-4.1H1.08v2.6A9.99 9.99 0 0010 20z" fill="#34A853"/>
+                    <path d="M4.42 11.93a6.02 6.02 0 010-3.86v-2.6H1.08a9.99 9.99 0 000 9.06l3.34-2.6z" fill="#FBBC05"/>
+                    <path d="M10 3.96c1.47 0 2.78.5 3.82 1.5l2.86-2.86A9.99 9.99 0 0010 0 9.99 9.99 0 001.08 5.47l3.34 2.6c.78-2.35 2.98-4.1 5.58-4.1z" fill="#EA4335"/>
+                </svg>
+                Google로 시작하기
+            </button>
+
+            <div class="divider"><span>또는</span></div>
+
+            <form class="email-form" onsubmit="loginWithEmail(event)">
+                <div class="form-group">
+                    <label for="email">이메일</label>
+                    <input type="email" id="email" placeholder="example@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" placeholder="비밀번호 입력" required>
+                </div>
+                <button type="submit" class="submit-btn">로그인</button>
+            </form>
+
+            <div class="auth-links">
+                <a href="#" onclick="showSignupForm()">회원가입</a>
+                <a href="#" onclick="showPasswordReset()">비밀번호 찾기</a>
+            </div>
+        </div>
+
+        <!-- 회원가입 폼 -->
+        <div id="signupForm" class="signup-form">
+            <button class="back-btn" onclick="showLoginForm()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+                뒤로가기
+            </button>
+
+            <h2 style="margin-bottom: 24px; font-size: 20px;">회원가입</h2>
+
+            <form class="email-form" onsubmit="signupWithEmail(event)">
+                <div class="form-group">
+                    <label for="signupName">이름</label>
+                    <input type="text" id="signupName" placeholder="이름 입력" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">이메일</label>
+                    <input type="email" id="signupEmail" placeholder="example@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">비밀번호</label>
+                    <input type="password" id="signupPassword" placeholder="6자 이상" minlength="6" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPasswordConfirm">비밀번호 확인</label>
+                    <input type="password" id="signupPasswordConfirm" placeholder="비밀번호 확인" required>
+                </div>
+                <button type="submit" class="submit-btn">가입하기</button>
+            </form>
+        </div>
+
+        <!-- 비밀번호 찾기 폼 -->
+        <div id="passwordResetForm" class="signup-form">
+            <button class="back-btn" onclick="showLoginForm()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+                뒤로가기
+            </button>
+
+            <h2 style="margin-bottom: 24px; font-size: 20px;">비밀번호 찾기</h2>
+
+            <form class="email-form" onsubmit="resetPassword(event)">
+                <div class="form-group">
+                    <label for="resetEmail">가입한 이메일</label>
+                    <input type="email" id="resetEmail" placeholder="example@email.com" required>
+                </div>
+                <button type="submit" class="submit-btn">비밀번호 재설정 메일 보내기</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+
+    <script>
+        // ========== UI 헬퍼 함수 ==========
+        function showMessage(text, type = 'error') {
+            const box = document.getElementById('messageBox');
+            box.textContent = text;
+            box.className = 'message ' + type;
+        }
+
+        function clearMessage() {
+            const box = document.getElementById('messageBox');
+            box.className = 'message';
+            box.textContent = '';
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('signupForm').classList.remove('active');
+            document.getElementById('passwordResetForm').classList.remove('active');
+            clearMessage();
+        }
+
+        function showSignupForm() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupForm').classList.add('active');
+            document.getElementById('passwordResetForm').classList.remove('active');
+            clearMessage();
+        }
+
+        function showPasswordReset() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupForm').classList.remove('active');
+            document.getElementById('passwordResetForm').classList.add('active');
+            clearMessage();
+        }
+
+        // ========== Firestore 사용자 생성/업데이트 ==========
+        async function createOrUpdateUser(user, provider) {
+            const userRef = db.collection('users').doc(user.uid);
+            const doc = await userRef.get();
+
+            const userData = {
+                uid: user.uid,
+                email: user.email || '',
+                displayName: user.displayName || '',
+                photoURL: user.photoURL || '',
+                provider: provider,
+                lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            if (!doc.exists) {
+                // 신규 사용자
+                userData.tokenBalance = 200;  // 무료 토큰
+                userData.plan = 'free';
+                userData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                await userRef.set(userData);
+                console.log('신규 사용자 생성:', user.uid);
+            } else {
+                // 기존 사용자 업데이트
+                await userRef.update(userData);
+                console.log('사용자 정보 업데이트:', user.uid);
+            }
+        }
+
+        // ========== 로그인 성공 후 리다이렉트 ==========
+        function redirectToMain() {
+            window.location.href = '/';
+        }
+
+        // ========== 카카오 로그인 ==========
+        function loginWithKakao() {
+            showLoading();
+            clearMessage();
+
+            // 카카오 OAuth 페이지로 리다이렉트
+            const REST_API_KEY = 'e085ad4b34b316bdd26d67bf620b2ec9';
+            const REDIRECT_URI = window.location.origin + '/.netlify/functions/kakao-callback';
+            const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${REST_API_KEY}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code`;
+
+            window.location.href = kakaoAuthUrl;
+        }
+
+        // ========== Google 로그인 ==========
+        async function loginWithGoogle() {
+            showLoading();
+            clearMessage();
+
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
+
+                await createOrUpdateUser(result.user, 'google');
+                showMessage('로그인 성공!', 'success');
+
+                setTimeout(redirectToMain, 1000);
+            } catch (error) {
+                console.error('Google 로그인 에러:', error);
+                hideLoading();
+
+                if (error.code === 'auth/popup-closed-by-user') {
+                    showMessage('로그인이 취소되었습니다.');
+                } else if (error.code === 'auth/popup-blocked') {
+                    showMessage('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+                } else {
+                    showMessage('로그인 중 오류가 발생했습니다.');
+                }
+            }
+        }
+
+        // ========== 이메일 로그인 ==========
+        async function loginWithEmail(e) {
+            e.preventDefault();
+            showLoading();
+            clearMessage();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const result = await auth.signInWithEmailAndPassword(email, password);
+                await createOrUpdateUser(result.user, 'email');
+                showMessage('로그인 성공!', 'success');
+
+                setTimeout(redirectToMain, 1000);
+            } catch (error) {
+                console.error('이메일 로그인 에러:', error);
+                hideLoading();
+
+                if (error.code === 'auth/user-not-found') {
+                    showMessage('등록되지 않은 이메일입니다.');
+                } else if (error.code === 'auth/wrong-password') {
+                    showMessage('비밀번호가 올바르지 않습니다.');
+                } else if (error.code === 'auth/invalid-email') {
+                    showMessage('유효하지 않은 이메일 형식입니다.');
+                } else if (error.code === 'auth/too-many-requests') {
+                    showMessage('너무 많은 시도가 있었습니다. 잠시 후 다시 시도해주세요.');
+                } else {
+                    showMessage('로그인 중 오류가 발생했습니다.');
+                }
+            }
+        }
+
+        // ========== 이메일 회원가입 ==========
+        async function signupWithEmail(e) {
+            e.preventDefault();
+            showLoading();
+            clearMessage();
+
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
+
+            if (password !== passwordConfirm) {
+                hideLoading();
+                showMessage('비밀번호가 일치하지 않습니다.');
+                return;
+            }
+
+            try {
+                const result = await auth.createUserWithEmailAndPassword(email, password);
+
+                // 프로필 업데이트
+                await result.user.updateProfile({
+                    displayName: name
+                });
+
+                await createOrUpdateUser(result.user, 'email');
+                showMessage('가입이 완료되었습니다!', 'success');
+
+                setTimeout(redirectToMain, 1000);
+            } catch (error) {
+                console.error('회원가입 에러:', error);
+                hideLoading();
+
+                if (error.code === 'auth/email-already-in-use') {
+                    showMessage('이미 사용 중인 이메일입니다.');
+                } else if (error.code === 'auth/weak-password') {
+                    showMessage('비밀번호는 6자 이상이어야 합니다.');
+                } else if (error.code === 'auth/invalid-email') {
+                    showMessage('유효하지 않은 이메일 형식입니다.');
+                } else {
+                    showMessage('가입 중 오류가 발생했습니다.');
+                }
+            }
+        }
+
+        // ========== 비밀번호 재설정 ==========
+        async function resetPassword(e) {
+            e.preventDefault();
+            showLoading();
+            clearMessage();
+
+            const email = document.getElementById('resetEmail').value;
+
+            try {
+                await auth.sendPasswordResetEmail(email);
+                hideLoading();
+                showMessage('비밀번호 재설정 메일을 보냈습니다. 이메일을 확인해주세요.', 'success');
+            } catch (error) {
+                console.error('비밀번호 재설정 에러:', error);
+                hideLoading();
+
+                if (error.code === 'auth/user-not-found') {
+                    showMessage('등록되지 않은 이메일입니다.');
+                } else {
+                    showMessage('메일 전송 중 오류가 발생했습니다.');
+                }
+            }
+        }
+
+        // ========== 카카오 콜백 처리 (URL 파라미터 확인) ==========
+        async function handleKakaoCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const customToken = urlParams.get('token');
+            const error = urlParams.get('error');
+
+            if (error) {
+                hideLoading();
+                showMessage('카카오 로그인 중 오류가 발생했습니다: ' + error);
+                // URL 파라미터 제거
+                window.history.replaceState({}, document.title, '/login.html');
+                return;
+            }
+
+            if (customToken) {
+                showLoading();
+                try {
+                    // Firebase Custom Token으로 로그인
+                    const result = await auth.signInWithCustomToken(customToken);
+                    await createOrUpdateUser(result.user, 'kakao');
+                    showMessage('카카오 로그인 성공!', 'success');
+
+                    // URL 파라미터 제거
+                    window.history.replaceState({}, document.title, '/login.html');
+
+                    setTimeout(redirectToMain, 1000);
+                } catch (error) {
+                    console.error('카카오 로그인 에러:', error);
+                    hideLoading();
+                    showMessage('카카오 로그인 처리 중 오류가 발생했습니다.');
+                    window.history.replaceState({}, document.title, '/login.html');
+                }
+            }
+        }
+
+        // ========== 이미 로그인된 상태 확인 ==========
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // 이미 로그인된 경우 메인으로 이동
+                // 단, 카카오 콜백 처리 중이면 대기
+                const urlParams = new URLSearchParams(window.location.search);
+                if (!urlParams.get('token')) {
+                    redirectToMain();
+                }
+            }
+        });
+
+        // 페이지 로드 시 카카오 콜백 확인
+        document.addEventListener('DOMContentLoaded', handleKakaoCallback);
+    </script>
+</body>
+</html>

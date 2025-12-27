@@ -1,52 +1,15 @@
-// ========== 인증 시스템 ==========
+// ========== Firebase Auth 인증 시스템 ==========
+// 2025-12-27: 불나비 → Firebase Auth 전환
+
+// 인증 상태 변수
+let currentUser = null;
+let authInitialized = false;
 
 // DOM 로드 완료 후 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    /* ========== 로그인 폼 처리 (백업용 - 불나비 자동 로그인 사용으로 비활성화) ==========
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+    initFirebaseAuth();
 
-            const name = document.getElementById('designerName').value;
-            const phone = document.getElementById('phoneNumber').value;
-            const password = document.getElementById('password').value;
-
-            // 로그인 검증
-            if (name && phone.length === 4 && password.length === 4) {
-                // localStorage에 저장 (24시간 유지)
-                localStorage.setItem('designerName', name);
-                localStorage.setItem('designerPhone', phone);
-                localStorage.setItem('designerPassword', password);
-                localStorage.setItem('loginTime', new Date().getTime());
-
-                // 화면 전환
-                document.getElementById('loginScreen').classList.remove('active');
-                document.getElementById('genderSelection').classList.add('active');
-
-                // 디자이너 이름 표시
-                if (document.getElementById('designerNameDisplay')) {
-                    document.getElementById('designerNameDisplay').textContent = name;
-                }
-
-                console.log('로그인 성공:', name);
-            } else {
-                alert('모든 정보를 정확히 입력해주세요');
-            }
-        });
-    }
-    ========== 로그인 폼 처리 종료 ========== */
-
-    // 기존 불나비 세션이 있는지 확인
-    const bullnabiUser = getBullnabiUser();
-    if (bullnabiUser) {
-        console.log('기존 불나비 세션 복원:', bullnabiUser.name);
-    }
-
-    // ⚠️ 성별 버튼 이벤트 리스너 제거 (중복 호출 방지)
-    // index.html의 onclick="selectGender()" 만 사용
-
-    // ⭐ 성별 선택 화면 번역 적용
+    // 성별 선택 화면 번역 적용
     setTimeout(() => {
         const maleLabelElements = document.querySelectorAll('.gender-btn.male .gender-label');
         const femaleLabelElements = document.querySelectorAll('.gender-btn.female .gender-label');
@@ -62,119 +25,123 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ 성별 선택 화면 번역 적용 완료');
     }, 500);
 
-    console.log('✅ 인증 시스템 초기화 완료 (불나비 자동 로그인 전용)');
+    console.log('✅ Firebase Auth 인증 시스템 초기화 완료');
 });
 
-// ========== 불나비 연동 기능 ==========
-
 /**
- * 불나비 네이티브 앱을 통한 자동 로그인
+ * Firebase Auth 초기화 및 상태 감지
  */
-async function loginWithBullnabi(userInfo) {
-    try {
-        console.log('불나비 자동 로그인 시작:', userInfo);
+function initFirebaseAuth() {
+    // Firebase Auth가 로드될 때까지 대기
+    if (typeof firebase === 'undefined' || !firebase.auth) {
+        console.log('⏳ Firebase Auth 로드 대기 중...');
+        setTimeout(initFirebaseAuth, 100);
+        return;
+    }
 
-        // ⭐ 사용자 변경 감지: 이전 사용자와 다르면 프로필 이미지 초기화
-        const previousUser = localStorage.getItem('bullnabi_user');
-        if (previousUser) {
-            try {
-                const prevUserInfo = JSON.parse(previousUser);
-                const prevUserId = prevUserInfo.userId || prevUserInfo.id;
-                const currentUserId = userInfo.userId || userInfo.id;
+    const auth = firebase.auth();
 
-                if (prevUserId && currentUserId && prevUserId !== currentUserId) {
-                    console.log('👤 사용자 변경 감지:', prevUserId, '→', currentUserId);
-                    // 이전 사용자의 프로필 이미지 및 브랜드 설정 초기화
-                    localStorage.removeItem('hairgator_profile_image');
-                    localStorage.removeItem('hairgator_brand_name');
-                    localStorage.removeItem('hairgator_brand_font');
-                    localStorage.removeItem('hairgator_brand_color_light');
-                    localStorage.removeItem('hairgator_brand_color_dark');
-                }
-            } catch (e) {
-                console.warn('이전 사용자 정보 파싱 실패:', e);
+    // 인증 상태 변경 감지
+    auth.onAuthStateChanged(async (user) => {
+        authInitialized = true;
+
+        if (user) {
+            // 로그인 상태
+            console.log('🔐 Firebase Auth 로그인:', user.email || user.uid);
+            currentUser = user;
+
+            await handleUserLogin(user);
+        } else {
+            // 로그아웃 상태
+            console.log('🔓 Firebase Auth 로그아웃 상태');
+            currentUser = null;
+
+            // 로그인 페이지로 리다이렉트 (login.html이 아닌 경우에만)
+            const currentPage = window.location.pathname;
+            if (!currentPage.includes('login.html') && !currentPage.includes('admin.html')) {
+                // 메인 페이지에서는 로그인 화면 표시
+                showLoginScreen();
             }
         }
+    });
+}
 
-        // 불나비 사용자 정보 저장
-        localStorage.setItem('bullnabi_user', JSON.stringify(userInfo));
-        localStorage.setItem('bullnabi_login_time', new Date().getTime());
-        
-        // HAIRGATOR 기존 로그인 정보도 저장
-        localStorage.setItem('designerName', userInfo.name || '불나비 사용자');
-        localStorage.setItem('designerPhone', '0000');
-        localStorage.setItem('loginTime', new Date().getTime());
-        
-        // 화면 전환
-        const loginScreen = document.getElementById('loginScreen');
-        const genderSelection = document.getElementById('genderSelection');
-        
-        if (loginScreen) {
-            loginScreen.style.display = 'none';
-            loginScreen.style.visibility = 'hidden';
-            loginScreen.style.opacity = '0';
-            loginScreen.classList.remove('active');
-        }
-        
-        if (genderSelection) {
-            genderSelection.style.display = 'flex';
-            genderSelection.style.visibility = 'visible';
-            genderSelection.style.opacity = '1';
-            genderSelection.classList.add('active');
-        }
-        
-        // 디자이너 이름 표시
-        const designerNameDisplay = document.getElementById('designerNameDisplay');
-        if (designerNameDisplay) {
-            designerNameDisplay.textContent = userInfo.name || '불나비 사용자';
-        }
-        
-        // 권한 시스템
-        if (window.permissionManager) {
-            window.permissionManager.currentUser = {
-                id: userInfo.userId || userInfo.id,
-                name: userInfo.name,
-                email: userInfo.email,
-                isBullnabiUser: true,
-                credits: userInfo.remainCount || 0,
-                loginTime: new Date()
-            };
-            window.permissionManager.updatePermissions();
-        }
-        
-        // 토큰 시스템
-        if (window.onTokenSystemLogin) {
-            window.onTokenSystemLogin({
-                id: userInfo.userId || userInfo.id,
-                name: userInfo.name,
-                credits: userInfo.remainCount || 0,
-                isBullnabiUser: true
+/**
+ * 사용자 로그인 처리
+ */
+async function handleUserLogin(user) {
+    try {
+        // Firestore에서 사용자 추가 정보 로드
+        const db = firebase.firestore();
+        const userDoc = await db.collection('users').doc(user.uid).get();
+
+        let userData = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || user.email?.split('@')[0] || '사용자',
+            photoURL: user.photoURL,
+            provider: user.providerData[0]?.providerId || 'unknown',
+            tokenBalance: 200,
+            plan: 'free'
+        };
+
+        if (userDoc.exists) {
+            const firestoreData = userDoc.data();
+            userData = { ...userData, ...firestoreData };
+        } else {
+            // 신규 사용자 - Firestore에 저장
+            await db.collection('users').doc(user.uid).set({
+                uid: user.uid,
+                email: user.email,
+                displayName: userData.displayName,
+                photoURL: user.photoURL,
+                provider: userData.provider,
+                tokenBalance: 200,
+                plan: 'free',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
             });
+            console.log('👤 신규 사용자 생성:', user.uid);
         }
-        
-        // currentDesigner 호환성
+
+        // 마지막 로그인 시간 업데이트
+        await db.collection('users').doc(user.uid).update({
+            lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(() => {}); // 실패해도 무시
+
+        // localStorage에 사용자 정보 캐시 (오프라인 지원)
+        localStorage.setItem('hairgator_user', JSON.stringify({
+            uid: userData.uid,
+            email: userData.email,
+            displayName: userData.displayName,
+            photoURL: userData.photoURL,
+            provider: userData.provider,
+            tokenBalance: userData.tokenBalance,
+            plan: userData.plan,
+            loginTime: Date.now()
+        }));
+
+        // window.currentDesigner 호환성 유지
         window.currentDesigner = {
-            id: userInfo.userId || userInfo.id,
-            name: userInfo.name,
-            phone: userInfo.phone || '0000',
-            tokens: userInfo.remainCount || 0, // 레거시: 불나비 회수
-            tokenBalance: 0, // 신규: 헤어게이터 토큰
-            isBullnabiUser: true
+            id: userData.uid,
+            name: userData.displayName,
+            email: userData.email,
+            phone: '0000',
+            tokens: 0, // 레거시
+            tokenBalance: userData.tokenBalance,
+            plan: userData.plan,
+            isFirebaseUser: true
         };
 
         // UI 업데이트
-        if (typeof updateUserInfo === 'function') {
-            updateUserInfo();
+        updateUIAfterLogin(userData);
+
+        // 토큰 표시 업데이트
+        if (window.FirebaseBridge) {
+            window.FirebaseBridge.updateTokenDisplay(userData.tokenBalance, userData.plan);
         }
 
-        // ⭐ 사이드바 로그인 정보 업데이트
-        if (typeof window.updateLoginInfo === 'function') {
-            window.updateLoginInfo();
-        }
-
-        console.log('불나비 자동 로그인 완료:', userInfo.name);
-
-        // ⭐ Firebase에서 사용자 설정 (테마, 언어) 로드
+        // 사용자 설정 로드 (테마, 언어)
         if (typeof window.loadUserSettingsFromFirebase === 'function') {
             window.loadUserSettingsFromFirebase().then(settings => {
                 if (settings) {
@@ -183,116 +150,208 @@ async function loginWithBullnabi(userInfo) {
             });
         }
 
-        // ⭐ 헤어게이터 토큰 잔액 조회 (Bullnabi API 사용)
-        try {
-            const userId = userInfo.userId || userInfo.id;
-            if (userId) {
-                let tokenBalance = 0;
-                let userPlan = 'free';
+        console.log('✅ 사용자 로그인 처리 완료:', userData.displayName, '토큰:', userData.tokenBalance);
 
-                // Bullnabi API로 토큰 잔액 조회
-                try {
-                    const response = await fetch('/.netlify/functions/bullnabi-proxy', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'getTokenBalance',
-                            userId: userId
-                        })
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        tokenBalance = result.tokenBalance || 0;
-                        userPlan = result.plan || 'free';
-                    }
-                } catch (apiError) {
-                    console.warn('⚠️ Bullnabi API 토큰 조회 실패:', apiError);
-                }
-
-                window.currentDesigner.tokenBalance = tokenBalance;
-                window.currentDesigner.plan = userPlan;
-                userInfo.tokenBalance = tokenBalance;
-                userInfo.plan = userPlan;
-
-                // localStorage에도 저장
-                const storedUser = JSON.parse(localStorage.getItem('bullnabi_user') || '{}');
-                storedUser.tokenBalance = tokenBalance;
-                storedUser.plan = userPlan;
-                localStorage.setItem('bullnabi_user', JSON.stringify(storedUser));
-
-                // UI 업데이트 (BullnabiBridge 사용)
-                if (window.BullnabiBridge && typeof window.BullnabiBridge.updateTokenDisplay === 'function') {
-                    window.BullnabiBridge.updateTokenDisplay(tokenBalance, userPlan);
-                } else {
-                    // 폴백: 직접 업데이트
-                    const sessionStatus = document.getElementById('sessionStatusDisplay');
-                    if (sessionStatus) {
-                        const planNames = { 'free': '무료', 'basic': '베이직', 'pro': '프로', 'business': '비즈니스' };
-                        sessionStatus.textContent = `현재 플랜: ${planNames[userPlan] || userPlan}`;
-                    }
-                }
-
-                console.log('💰 헤어게이터 토큰 잔액:', tokenBalance, '플랜:', userPlan);
-            }
-        } catch (tokenError) {
-            console.warn('⚠️ 토큰 잔액 조회 실패:', tokenError);
-        }
-
-        // 성공 알림
-        if (typeof showToast === 'function') {
-            showToast(`${userInfo.name}님 환영합니다!`, 'success');
-        }
-        
     } catch (error) {
-        console.error('불나비 자동 로그인 실패:', error);
-        
-        const loginScreen = document.getElementById('loginScreen');
-        const genderSelection = document.getElementById('genderSelection');
-        
-        if (loginScreen) {
-            loginScreen.style.display = 'flex';
-            loginScreen.classList.add('active');
+        console.error('❌ 사용자 로그인 처리 실패:', error);
+    }
+}
+
+/**
+ * 로그인 후 UI 업데이트
+ */
+function updateUIAfterLogin(userData) {
+    // 로그인 화면 숨기기
+    const loginScreen = document.getElementById('loginScreen');
+    const genderSelection = document.getElementById('genderSelection');
+
+    if (loginScreen) {
+        loginScreen.style.display = 'none';
+        loginScreen.style.visibility = 'hidden';
+        loginScreen.style.opacity = '0';
+        loginScreen.classList.remove('active');
+    }
+
+    if (genderSelection) {
+        genderSelection.style.display = 'flex';
+        genderSelection.style.visibility = 'visible';
+        genderSelection.style.opacity = '1';
+        genderSelection.classList.add('active');
+    }
+
+    // 디자이너 이름 표시
+    const designerNameDisplay = document.getElementById('designerNameDisplay');
+    if (designerNameDisplay) {
+        designerNameDisplay.textContent = userData.displayName;
+    }
+
+    // 사이드바 로그인 정보 업데이트
+    if (typeof window.updateLoginInfo === 'function') {
+        window.updateLoginInfo();
+    }
+
+    // 기타 UI 업데이트
+    if (typeof updateUserInfo === 'function') {
+        updateUserInfo();
+    }
+
+    // 환영 메시지
+    if (typeof showToast === 'function') {
+        showToast(`${userData.displayName}님 환영합니다!`, 'success');
+    }
+}
+
+/**
+ * 로그인 화면 표시
+ */
+function showLoginScreen() {
+    const loginScreen = document.getElementById('loginScreen');
+    const genderSelection = document.getElementById('genderSelection');
+
+    if (loginScreen) {
+        loginScreen.style.display = 'flex';
+        loginScreen.style.visibility = 'visible';
+        loginScreen.style.opacity = '1';
+        loginScreen.classList.add('active');
+    }
+
+    if (genderSelection) {
+        genderSelection.style.display = 'none';
+        genderSelection.classList.remove('active');
+    }
+}
+
+/**
+ * 현재 Firebase 사용자 정보 조회
+ */
+function getFirebaseUser() {
+    // Firebase Auth에서 직접 조회
+    if (firebase.auth && firebase.auth().currentUser) {
+        return firebase.auth().currentUser;
+    }
+
+    // localStorage 캐시 확인
+    try {
+        const cached = localStorage.getItem('hairgator_user');
+        if (cached) {
+            const userData = JSON.parse(cached);
+            // 24시간 세션 체크
+            if (userData.loginTime && (Date.now() - userData.loginTime) < 24 * 60 * 60 * 1000) {
+                return userData;
+            } else {
+                localStorage.removeItem('hairgator_user');
+            }
         }
-        
-        if (genderSelection) {
-            genderSelection.style.display = 'none';
-            genderSelection.classList.remove('active');
-        }
-        
+    } catch (e) {
+        console.warn('캐시 사용자 정보 파싱 실패:', e);
+    }
+
+    return null;
+}
+
+/**
+ * 불나비 호환 - getBullnabiUser() 대체
+ */
+function getBullnabiUser() {
+    const user = getFirebaseUser();
+    if (!user) return null;
+
+    // 불나비 형식으로 변환
+    return {
+        userId: user.uid,
+        id: user.uid,
+        name: user.displayName || user.email?.split('@')[0] || '사용자',
+        email: user.email,
+        remainCount: 0,
+        tokenBalance: window.currentDesigner?.tokenBalance || 0,
+        plan: window.currentDesigner?.plan || 'free'
+    };
+}
+
+/**
+ * 로그아웃
+ */
+async function logout() {
+    try {
+        await firebase.auth().signOut();
+
+        // localStorage 정리
+        localStorage.removeItem('hairgator_user');
+        localStorage.removeItem('hairgator_profile_image');
+        localStorage.removeItem('hairgator_brand_name');
+        localStorage.removeItem('hairgator_brand_font');
+        localStorage.removeItem('hairgator_brand_color_light');
+        localStorage.removeItem('hairgator_brand_color_dark');
+
+        // 전역 변수 초기화
+        currentUser = null;
+        window.currentDesigner = null;
+
+        console.log('🔓 로그아웃 완료');
+
+        // 로그인 페이지로 이동
+        window.location.href = '/login.html';
+
+    } catch (error) {
+        console.error('❌ 로그아웃 실패:', error);
         if (typeof showToast === 'function') {
-            showToast('자동 로그인에 실패했습니다.', 'error');
+            showToast('로그아웃에 실패했습니다.', 'error');
         }
     }
 }
 
 /**
- * 불나비 사용자 정보 조회
+ * 불나비 호환 - loginWithBullnabi() (더 이상 사용 안 함)
+ * 기존 코드 호환성을 위해 유지
  */
-function getBullnabiUser() {
-    try {
-        const userStr = localStorage.getItem('bullnabi_user');
-        if (userStr) {
-            const userInfo = JSON.parse(userStr);
-            const loginTime = localStorage.getItem('bullnabi_login_time');
-            
-            // 24시간 세션 체크
-            if (loginTime && (Date.now() - parseInt(loginTime)) < 24 * 60 * 60 * 1000) {
-                return userInfo;
-            } else {
-                localStorage.removeItem('bullnabi_user');
-                localStorage.removeItem('bullnabi_login_time');
-                return null;
-            }
-        }
-        return null;
-    } catch (error) {
-        console.error('불나비 사용자 정보 조회 실패:', error);
-        return null;
+async function loginWithBullnabi(userInfo) {
+    console.warn('⚠️ loginWithBullnabi()는 더 이상 사용되지 않습니다. Firebase Auth를 사용하세요.');
+
+    // 기존 불나비 앱에서 호출되는 경우 처리
+    // Firebase Auth로 전환 안내
+    if (typeof showToast === 'function') {
+        showToast('새로운 로그인 방식을 사용해주세요.', 'info');
     }
+
+    // 로그인 페이지로 리다이렉트
+    setTimeout(() => {
+        window.location.href = '/login.html';
+    }, 1500);
+}
+
+/**
+ * 사용자 ID 조회 (여러 페이지에서 사용)
+ */
+function getCurrentUserId() {
+    if (window.currentDesigner?.id) {
+        return window.currentDesigner.id;
+    }
+
+    const user = getFirebaseUser();
+    return user?.uid || null;
+}
+
+/**
+ * 인증 여부 확인
+ */
+function isAuthenticated() {
+    return !!getFirebaseUser();
+}
+
+/**
+ * 인증 초기화 완료 여부
+ */
+function isAuthInitialized() {
+    return authInitialized;
 }
 
 // 전역 함수 노출
-window.loginWithBullnabi = loginWithBullnabi;
-window.getBullnabiUser = getBullnabiUser;
+window.loginWithBullnabi = loginWithBullnabi; // 호환성
+window.getBullnabiUser = getBullnabiUser; // 호환성
+window.getFirebaseUser = getFirebaseUser;
+window.getCurrentUserId = getCurrentUserId;
+window.isAuthenticated = isAuthenticated;
+window.isAuthInitialized = isAuthInitialized;
+window.logout = logout;
 
-console.log('🔐 HAIRGATOR 인증 시스템 로드 완료');
+console.log('🔐 HAIRGATOR Firebase Auth 시스템 로드 완료');

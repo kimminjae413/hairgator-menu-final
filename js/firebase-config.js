@@ -15,10 +15,12 @@ firebase.initializeApp(firebaseConfig);
 // Firestore 초기화
 const db = firebase.firestore();
 const storage = firebase.storage();
+const auth = firebase.auth();
 
 // 전역 변수로 설정
 window.db = db;
 window.storage = storage;
+window.auth = auth;
 
 // 캐시 설정
 try {

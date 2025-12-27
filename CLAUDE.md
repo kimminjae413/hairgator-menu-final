@@ -249,6 +249,54 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 동작: `_users.tokenBalance += tokenCount`
 
 ## 최근 작업 이력
+- 2025-12-27 (저녁): 불나비 → Firebase Auth 독립 마이그레이션
+
+  ### 배경
+  - 헤어게이터 서비스를 불나비 앱 종속에서 완전 독립 웹앱으로 전환
+  - MongoDB 의존성 제거, Firebase Auth + Firestore 기반으로 재구축
+  - 도메인: `hairgator.kr` (가비아에서 구매)
+
+  ### 인증 시스템 변경
+  - **Firebase Auth** 도입: Google, 이메일/비밀번호, 카카오 (Custom Token)
+  - **신규 파일**:
+    - `login.html`: 로그인 페이지 (Google/카카오/이메일 선택)
+    - `js/firebase-bridge.js`: Firestore 토큰 관리 (bullnabi-bridge.js 대체)
+    - `netlify/functions/kakao-callback.js`: 카카오 OAuth 핸들러
+  - **수정 파일**:
+    - `js/auth.js`: 불나비 → Firebase Auth 전면 교체
+    - `js/firebase-config.js`: Auth 초기화 추가
+    - HTML 4개 파일: bullnabi-bridge.js → firebase-bridge.js 참조 변경
+
+  ### Firestore 사용자 스키마 (`users` 컬렉션)
+  ```javascript
+  {
+    uid: "firebase_uid 또는 kakao_12345",
+    email: "user@example.com",
+    displayName: "홍길동",
+    photoURL: "https://...",
+    provider: "google" | "kakao" | "email",
+    tokenBalance: 200,  // 신규 가입 시 200 토큰 지급
+    plan: "free",
+    createdAt: Timestamp,
+    lastLoginAt: Timestamp
+  }
+  ```
+
+  ### 호환성 유지
+  - `window.BullnabiBridge` 별칭 유지 (기존 코드 호환)
+  - `getBullnabiUser()` 함수 유지 (Firebase 형식으로 변환)
+  - `window.currentDesigner` 구조 유지
+
+  ### 대기 중인 작업 (Netlify 결제 후)
+  - Netlify 도메인 연결: `hairgator.kr` → `lovely-lebkuchen-4017ca.netlify.app`
+  - 카카오 개발자 콘솔: 도메인 + Redirect URI 등록
+    - 웹 도메인: `hairgator.kr`
+    - Redirect URI: `https://hairgator.kr/.netlify/functions/kakao-callback`
+
+  ### 카카오 REST API 키
+  - 기존 키 재사용: `e085ad4b34b316bdd26d67bf620b2ec9`
+  - Netlify 환경변수: `KAKAO_REST_API_KEY`
+
 - 2025-12-27: AI 스타일 매칭 모달 완성 + 눈썹 분석 추가
 
   ### 눈썹 분석 기능
