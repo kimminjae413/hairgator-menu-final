@@ -1,9 +1,32 @@
 // ========== Firebase Auth 인증 시스템 ==========
 // 2025-12-27: 불나비 → Firebase Auth 전환
+// 2025-12-27: 이메일 기반 사용자 통합 (다중 로그인 방식 지원)
 
 // 인증 상태 변수
 let currentUser = null;
 let authInitialized = false;
+
+/**
+ * 이메일을 Firestore 문서 ID로 변환
+ * @param {string} email - 이메일 주소
+ * @returns {string} - 문서 ID (예: 708eric_hanmail_net)
+ */
+function sanitizeEmailForDocId(email) {
+    if (!email) return null;
+    return email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_');
+}
+
+/**
+ * Provider ID에서 provider 이름 추출
+ * @param {string} providerId - Firebase provider ID
+ * @returns {string} - provider 이름 (google, kakao, email)
+ */
+function getProviderName(providerId) {
+    if (providerId?.includes('google')) return 'google';
+    if (providerId?.includes('kakao')) return 'kakao';
+    if (providerId?.includes('password')) return 'email';
+    return providerId || 'unknown';
+}
 
 // DOM 로드 완료 후 초기화
 document.addEventListener('DOMContentLoaded', function() {
@@ -68,88 +91,115 @@ function initFirebaseAuth() {
 }
 
 /**
- * 사용자 로그인 처리
+ * 사용자 로그인 처리 (이메일 기반 통합)
+ * - 동일 이메일이면 어떤 로그인 방식이든 같은 사용자로 인식
+ * - linkedProviders에 각 로그인 방식별 UID 저장
  */
 async function handleUserLogin(user) {
     try {
-        // Firestore에서 사용자 추가 정보 로드
         const db = firebase.firestore();
-        console.log('🔍 auth.js: Firestore 조회 시작 - uid:', user.uid);
-        const userDoc = await db.collection('users').doc(user.uid).get();
-        console.log('🔍 auth.js: userDoc.exists =', userDoc.exists);
+        const email = user.email;
+        const providerName = getProviderName(user.providerData[0]?.providerId);
+
+        // 이메일이 없으면 UID 기반 폴백 (카카오 이메일 미제공 등)
+        if (!email) {
+            console.warn('⚠️ 이메일 없음, UID 기반 폴백:', user.uid);
+            await handleUserLoginByUid(user);
+            return;
+        }
+
+        // 이메일 기반 문서 ID
+        const emailDocId = sanitizeEmailForDocId(email);
+        console.log('🔍 auth.js: 이메일 기반 조회 -', emailDocId);
+
+        const userDoc = await db.collection('users').doc(emailDocId).get();
 
         let userData = {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName || user.email?.split('@')[0] || '사용자',
+            email: email,
+            displayName: user.displayName || email.split('@')[0] || '사용자',
             photoURL: user.photoURL,
-            provider: user.providerData[0]?.providerId || 'unknown',
+            primaryProvider: providerName,
             tokenBalance: 200,
             plan: 'free'
         };
 
         if (userDoc.exists) {
+            // 기존 사용자 - 데이터 병합 및 provider 연결
             const firestoreData = userDoc.data();
-            console.log('🔍 auth.js: Firestore 데이터 =', JSON.stringify({
-                tokenBalance: firestoreData.tokenBalance,
-                plan: firestoreData.plan,
+            console.log('🔍 auth.js: 기존 사용자 발견 =', {
                 email: firestoreData.email,
                 displayName: firestoreData.displayName,
-                name: firestoreData.name,
-                nickname: firestoreData.nickname
-            }));
+                tokenBalance: firestoreData.tokenBalance,
+                plan: firestoreData.plan,
+                linkedProviders: Object.keys(firestoreData.linkedProviders || {})
+            });
+
             userData = { ...userData, ...firestoreData };
 
             // displayName이 비어있으면 name 또는 nickname 사용
             if (!userData.displayName || userData.displayName.trim() === '') {
-                userData.displayName = firestoreData.name || firestoreData.nickname || user.email?.split('@')[0] || '사용자';
+                userData.displayName = firestoreData.name || firestoreData.nickname || email.split('@')[0] || '사용자';
             }
 
-            console.log('🔍 auth.js: 병합 후 userData =', {
-                displayName: userData.displayName,
-                tokenBalance: userData.tokenBalance,
-                plan: userData.plan
+            // linkedProviders 업데이트 (새 provider 추가)
+            const linkedProviders = firestoreData.linkedProviders || {};
+            if (!linkedProviders[providerName]) {
+                linkedProviders[providerName] = {
+                    uid: user.uid,
+                    linkedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                console.log(`🔗 새 로그인 방식 연결: ${providerName}`);
+            }
+
+            // Firestore 업데이트
+            await db.collection('users').doc(emailDocId).update({
+                linkedProviders: linkedProviders,
+                lastLoginAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastProvider: providerName
             });
+
         } else {
-            // 신규 사용자 - Firestore에 저장
-            await db.collection('users').doc(user.uid).set({
-                uid: user.uid,
-                email: user.email,
+            // 신규 사용자 - 이메일 기반으로 생성
+            const linkedProviders = {
+                [providerName]: {
+                    uid: user.uid,
+                    linkedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }
+            };
+
+            await db.collection('users').doc(emailDocId).set({
+                email: email,
                 displayName: userData.displayName,
                 photoURL: user.photoURL,
-                provider: userData.provider,
+                primaryProvider: providerName,
+                linkedProviders: linkedProviders,
                 tokenBalance: 200,
                 plan: 'free',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
             });
-            console.log('👤 신규 사용자 생성:', user.uid);
+            console.log('👤 신규 사용자 생성 (이메일 기반):', emailDocId);
         }
 
-        // 마지막 로그인 시간 업데이트
-        await db.collection('users').doc(user.uid).update({
-            lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).catch(() => {}); // 실패해도 무시
-
-        // localStorage에 사용자 정보 캐시 (오프라인 지원)
+        // localStorage에 사용자 정보 캐시
         localStorage.setItem('hairgator_user', JSON.stringify({
-            uid: userData.uid,
+            docId: emailDocId,
             email: userData.email,
             displayName: userData.displayName,
             photoURL: userData.photoURL,
-            provider: userData.provider,
+            provider: providerName,
             tokenBalance: userData.tokenBalance,
             plan: userData.plan,
             loginTime: Date.now()
         }));
 
-        // window.currentDesigner 호환성 유지
+        // window.currentDesigner 호환성 유지 (id는 이메일 기반 docId 사용)
         window.currentDesigner = {
-            id: userData.uid,
+            id: emailDocId,  // 이메일 기반 문서 ID
             name: userData.displayName,
             email: userData.email,
             phone: '0000',
-            tokens: 0, // 레거시
+            tokens: 0,
             tokenBalance: userData.tokenBalance,
             plan: userData.plan,
             isFirebaseUser: true
@@ -172,10 +222,92 @@ async function handleUserLogin(user) {
             });
         }
 
-        console.log('✅ 사용자 로그인 처리 완료:', userData.displayName, '토큰:', userData.tokenBalance);
+        console.log('✅ 사용자 로그인 처리 완료:', userData.displayName, '토큰:', userData.tokenBalance, 'via', providerName);
 
     } catch (error) {
         console.error('❌ 사용자 로그인 처리 실패:', error);
+    }
+}
+
+/**
+ * 이메일 없는 경우 UID 기반 폴백 로그인 처리
+ */
+async function handleUserLoginByUid(user) {
+    try {
+        const db = firebase.firestore();
+        const providerName = getProviderName(user.providerData[0]?.providerId);
+
+        // UID 기반 문서 조회
+        const userDoc = await db.collection('users').doc(user.uid).get();
+
+        let userData = {
+            uid: user.uid,
+            displayName: user.displayName || '사용자',
+            photoURL: user.photoURL,
+            provider: providerName,
+            tokenBalance: 200,
+            plan: 'free'
+        };
+
+        if (userDoc.exists) {
+            const firestoreData = userDoc.data();
+            userData = { ...userData, ...firestoreData };
+
+            if (!userData.displayName || userData.displayName.trim() === '') {
+                userData.displayName = firestoreData.name || firestoreData.nickname || '사용자';
+            }
+
+            await db.collection('users').doc(user.uid).update({
+                lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(() => {});
+        } else {
+            await db.collection('users').doc(user.uid).set({
+                uid: user.uid,
+                displayName: userData.displayName,
+                photoURL: user.photoURL,
+                provider: providerName,
+                tokenBalance: 200,
+                plan: 'free',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            console.log('👤 신규 사용자 생성 (UID 기반):', user.uid);
+        }
+
+        // localStorage 캐시
+        localStorage.setItem('hairgator_user', JSON.stringify({
+            docId: user.uid,
+            uid: user.uid,
+            displayName: userData.displayName,
+            photoURL: userData.photoURL,
+            provider: providerName,
+            tokenBalance: userData.tokenBalance,
+            plan: userData.plan,
+            loginTime: Date.now()
+        }));
+
+        // window.currentDesigner
+        window.currentDesigner = {
+            id: user.uid,
+            name: userData.displayName,
+            email: '',
+            phone: '0000',
+            tokens: 0,
+            tokenBalance: userData.tokenBalance,
+            plan: userData.plan,
+            isFirebaseUser: true
+        };
+
+        updateUIAfterLogin(userData);
+
+        if (window.FirebaseBridge) {
+            window.FirebaseBridge.updateTokenDisplay(userData.tokenBalance, userData.plan);
+        }
+
+        console.log('✅ 사용자 로그인 처리 완료 (UID 기반):', userData.displayName);
+
+    } catch (error) {
+        console.error('❌ UID 기반 로그인 처리 실패:', error);
     }
 }
 
@@ -273,6 +405,7 @@ function getFirebaseUser() {
 
 /**
  * 불나비 호환 - getBullnabiUser() 대체
+ * 이메일 기반 사용자 ID 반환
  */
 function getBullnabiUser() {
     const user = getFirebaseUser();
@@ -285,10 +418,13 @@ function getBullnabiUser() {
         || user.email?.split('@')[0]
         || '사용자';
 
+    // 이메일 기반 사용자 ID (window.currentDesigner.id가 이미 이메일 기반)
+    const emailDocId = window.currentDesigner?.id || sanitizeEmailForDocId(user.email) || user.uid;
+
     // 불나비 형식으로 변환
     return {
-        userId: user.uid,
-        id: user.uid,
+        userId: emailDocId,  // 이메일 기반 문서 ID
+        id: emailDocId,      // 이메일 기반 문서 ID
         name: name,
         email: user.email,
         remainCount: 0,

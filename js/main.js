@@ -445,8 +445,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
 
-        // 관리자 ID 목록
-        const ADMIN_IDS = ['691ceee09d868b5736d22007', 'kakao_4556280939'];
+        // 관리자 ID 목록 (이메일 기반: email.replace(/@/g, '_').replace(/\./g, '_'))
+        const ADMIN_IDS = ['708eric_hanmail_net'];
 
         const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
         if (bullnabiUser) {

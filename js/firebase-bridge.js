@@ -1,11 +1,20 @@
 // HAIRGATOR Firebase 인증 및 사용자 관리 브릿지
 // js/firebase-bridge.js
 // 기존 bullnabi-bridge.js를 대체
+// 2025-12-27: 이메일 기반 사용자 통합
 
 (function() {
     'use strict';
 
     console.log('🔥 Firebase 브릿지 초기화 중...');
+
+    /**
+     * 이메일을 Firestore 문서 ID로 변환
+     */
+    function sanitizeEmailForDocId(email) {
+        if (!email) return null;
+        return email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_');
+    }
 
     const FirebaseBridge = {
         currentUser: null,
@@ -18,8 +27,8 @@
             chatbot: 10
         },
 
-        // 관리자 ID 목록
-        ADMIN_USER_IDS: ['kakao_4556280939', '691ceee09d868b5736d22007'],
+        // 관리자 ID 목록 (이메일 기반: email.replace(/@/g, '_').replace(/\./g, '_'))
+        ADMIN_USER_IDS: ['708eric_hanmail_net'],
 
         // 초기화
         init() {
@@ -60,12 +69,36 @@
             });
         },
 
-        // Firestore에서 사용자 데이터 로드
+        // Firestore에서 사용자 데이터 로드 (이메일 기반 우선)
         async loadUserData(uid) {
             try {
-                const userDoc = await db.collection('users').doc(uid).get();
+                const firebaseUser = auth.currentUser;
+                const email = firebaseUser?.email;
 
-                if (userDoc.exists) {
+                // 이메일 기반 문서 ID 우선 시도
+                const emailDocId = sanitizeEmailForDocId(email);
+                let userDoc = null;
+                let docId = null;
+
+                // 1차: 이메일 기반 조회
+                if (emailDocId) {
+                    userDoc = await db.collection('users').doc(emailDocId).get();
+                    if (userDoc.exists) {
+                        docId = emailDocId;
+                        console.log('📧 이메일 기반 사용자 문서 발견:', emailDocId);
+                    }
+                }
+
+                // 2차: 이메일 기반에 없으면 UID로 폴백
+                if (!userDoc?.exists) {
+                    userDoc = await db.collection('users').doc(uid).get();
+                    if (userDoc.exists) {
+                        docId = uid;
+                        console.log('🔑 UID 기반 사용자 문서 발견:', uid);
+                    }
+                }
+
+                if (userDoc?.exists) {
                     const userData = userDoc.data();
 
                     // displayName이 비어있으면 name 또는 nickname 사용
@@ -74,15 +107,15 @@
                         || userData.nickname
                         || '사용자';
 
-                    // 전역 변수에 저장
+                    // 전역 변수에 저장 (id는 이메일 기반 docId 사용)
                     window.currentDesigner = {
-                        id: uid,
+                        id: docId,  // 이메일 기반 문서 ID
                         name: displayName,
-                        email: userData.email || '',
+                        email: userData.email || email || '',
                         photoURL: userData.photoURL || '',
                         tokenBalance: userData.tokenBalance || 0,
                         plan: userData.plan || 'free',
-                        provider: userData.provider || 'email',
+                        provider: userData.provider || userData.primaryProvider || 'email',
                         isFirebaseUser: true
                     };
 
@@ -90,7 +123,7 @@
                     localStorage.setItem('firebase_user', JSON.stringify(window.currentDesigner));
 
                     console.log('📊 사용자 데이터 로드 완료:', {
-                        uid: uid,
+                        docId: docId,
                         name: displayName,
                         tokenBalance: userData.tokenBalance,
                         plan: userData.plan
@@ -98,7 +131,7 @@
 
                     return userData;
                 } else {
-                    console.warn('⚠️ 사용자 문서가 없습니다:', uid);
+                    console.warn('⚠️ 사용자 문서가 없습니다:', emailDocId || uid);
                     return null;
                 }
             } catch (error) {

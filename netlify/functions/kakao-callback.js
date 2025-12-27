@@ -180,33 +180,50 @@ exports.handler = async (event, context) => {
         const customToken = await admin.auth().createCustomToken(firebaseUid, additionalClaims);
         console.log('Firebase Custom Token 생성 성공:', firebaseUid);
 
-        // 4. Firestore에 사용자 정보 저장/업데이트
+        // 4. Firestore에 사용자 정보 저장/업데이트 (이메일 기반)
         const db = admin.firestore();
-        const userRef = db.collection('users').doc(firebaseUid);
+        const kakaoEmail = userData.kakao_account?.email;
+
+        // 이메일 기반 문서 ID (email이 없으면 UID 기반 폴백)
+        const sanitizeEmail = (email) => email ? email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_') : null;
+        const emailDocId = sanitizeEmail(kakaoEmail) || firebaseUid;
+
+        console.log('📧 이메일 기반 문서 ID:', emailDocId, '(email:', kakaoEmail, ')');
+
+        const userRef = db.collection('users').doc(emailDocId);
         const userDoc = await userRef.get();
 
         const userDataToSave = {
-            uid: firebaseUid,
-            email: userData.kakao_account?.email || '',
+            email: kakaoEmail || '',
             displayName: userData.properties?.nickname || '',
             photoURL: userData.properties?.profile_image || '',
-            provider: 'kakao',
+            primaryProvider: 'kakao',
             kakaoId: userData.id,
-            lastLoginAt: admin.firestore.FieldValue.serverTimestamp()
+            lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
+            lastProvider: 'kakao'
         };
 
         if (!userDoc.exists) {
-            // 신규 사용자
+            // 신규 사용자 - 이메일 기반 문서 생성
             userDataToSave.createdAt = admin.firestore.FieldValue.serverTimestamp();
+            userDataToSave.linkedProviders = {
+                kakao: {
+                    uid: firebaseUid,
+                    kakaoId: userData.id,
+                    linkedAt: admin.firestore.FieldValue.serverTimestamp()
+                }
+            };
 
             // 불나비에서 마이그레이션된 사용자인 경우
             if (bullnabiUserData) {
                 userDataToSave.tokenBalance = bullnabiUserData.tokenBalance || 200;
                 userDataToSave.plan = bullnabiUserData.plan || 'free';
+                userDataToSave.name = bullnabiUserData.name || userData.properties?.nickname || '';
                 userDataToSave.migratedFromBullnabi = true;
                 userDataToSave.bullnabiUserId = bullnabiUserData.bullnabiUserId;
                 userDataToSave.migratedAt = admin.firestore.FieldValue.serverTimestamp();
-                console.log('🎉 불나비 → Firebase 마이그레이션 완료:', {
+                console.log('🎉 불나비 → Firebase 마이그레이션 완료 (이메일 기반):', {
+                    emailDocId,
                     firebaseUid,
                     bullnabiUserId: bullnabiUserData.bullnabiUserId,
                     tokenBalance: userDataToSave.tokenBalance,
@@ -219,28 +236,40 @@ exports.handler = async (event, context) => {
             }
 
             await userRef.set(userDataToSave);
-            console.log('신규 카카오 사용자 생성:', firebaseUid);
+            console.log('👤 신규 카카오 사용자 생성 (이메일 기반):', emailDocId);
         } else {
-            // 기존 Firebase 사용자 업데이트
+            // 기존 사용자 업데이트
             const existingData = userDoc.data();
+
+            // linkedProviders 업데이트 (카카오 추가)
+            const linkedProviders = existingData.linkedProviders || {};
+            if (!linkedProviders.kakao) {
+                linkedProviders.kakao = {
+                    uid: firebaseUid,
+                    kakaoId: userData.id,
+                    linkedAt: admin.firestore.FieldValue.serverTimestamp()
+                };
+                userDataToSave.linkedProviders = linkedProviders;
+                console.log('🔗 기존 계정에 카카오 연결:', emailDocId);
+            }
 
             // 아직 마이그레이션 안 된 사용자이고 불나비에 데이터가 있는 경우
             if (!existingData.migratedFromBullnabi && bullnabiUserData) {
                 userDataToSave.tokenBalance = bullnabiUserData.tokenBalance || existingData.tokenBalance || 200;
                 userDataToSave.plan = bullnabiUserData.plan || existingData.plan || 'free';
+                userDataToSave.name = bullnabiUserData.name || existingData.name || '';
                 userDataToSave.migratedFromBullnabi = true;
                 userDataToSave.bullnabiUserId = bullnabiUserData.bullnabiUserId;
                 userDataToSave.migratedAt = admin.firestore.FieldValue.serverTimestamp();
-                console.log('🎉 기존 사용자 불나비 → Firebase 마이그레이션 완료:', {
-                    firebaseUid,
-                    bullnabiUserId: bullnabiUserData.bullnabiUserId,
+                console.log('🎉 기존 사용자 불나비 마이그레이션 완료:', {
+                    emailDocId,
                     previousTokens: existingData.tokenBalance,
                     newTokens: userDataToSave.tokenBalance
                 });
             }
 
             await userRef.update(userDataToSave);
-            console.log('카카오 사용자 정보 업데이트:', firebaseUid);
+            console.log('📝 카카오 사용자 정보 업데이트:', emailDocId);
         }
 
         // 5. 로그인 페이지로 리다이렉트 (토큰 전달)
