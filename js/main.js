@@ -1430,7 +1430,17 @@ function showBrandSettingModal() {
 
 // 사용자 정보 가져오기 (불나비 또는 localStorage)
 function getUserInfo() {
-    // 불나비 사용자 우선
+    // Firebase 사용자 우선 (window.currentDesigner)
+    if (window.currentDesigner && window.currentDesigner.id) {
+        return {
+            name: window.currentDesigner.name || '사용자',
+            phone: window.currentDesigner.phone || window.currentDesigner.id,
+            id: window.currentDesigner.id,
+            email: window.currentDesigner.email
+        };
+    }
+
+    // 불나비 사용자
     const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
     if (bullnabiUser && bullnabiUser.name && bullnabiUser.phone) {
         return { name: bullnabiUser.name, phone: bullnabiUser.phone };
@@ -2010,13 +2020,19 @@ async function applyProfileImage() {
         const userInfo = getUserInfo();
         if (!window.db || !userInfo) return;
 
-        const docId = `${userInfo.name}_${userInfo.phone}`;
+        // Firebase Auth 사용자: UID 기반 문서 ID
+        // 불나비 사용자: name_phone 기반 문서 ID
+        const docId = userInfo.id || `${userInfo.name}_${userInfo.phone}`;
+        console.log('👤 프로필 이미지 로드 시도:', docId);
+
         const doc = await window.db.collection('brandSettings').doc(docId).get();
 
         if (doc.exists && doc.data().profileImage) {
             const imageUrl = doc.data().profileImage;
             profileImage.innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
-            console.log('👤 Firebase에서 프로필 이미지 로드:', docId);
+            console.log('👤 Firebase에서 프로필 이미지 로드 성공:', docId);
+        } else {
+            console.log('👤 프로필 이미지 없음 (기본 아이콘 사용):', docId);
         }
     } catch (e) {
         console.warn('프로필 이미지 로드 실패:', e);
