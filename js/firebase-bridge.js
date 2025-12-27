@@ -68,10 +68,16 @@
                 if (userDoc.exists) {
                     const userData = userDoc.data();
 
+                    // displayName이 비어있으면 name 또는 nickname 사용
+                    const displayName = userData.displayName?.trim()
+                        || userData.name
+                        || userData.nickname
+                        || '사용자';
+
                     // 전역 변수에 저장
                     window.currentDesigner = {
                         id: uid,
-                        name: userData.displayName || '사용자',
+                        name: displayName,
                         email: userData.email || '',
                         photoURL: userData.photoURL || '',
                         tokenBalance: userData.tokenBalance || 0,
@@ -85,7 +91,7 @@
 
                     console.log('📊 사용자 데이터 로드 완료:', {
                         uid: uid,
-                        name: userData.displayName,
+                        name: displayName,
                         tokenBalance: userData.tokenBalance,
                         plan: userData.plan
                     });
