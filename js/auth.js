@@ -74,7 +74,9 @@ async function handleUserLogin(user) {
     try {
         // Firestore에서 사용자 추가 정보 로드
         const db = firebase.firestore();
+        console.log('🔍 auth.js: Firestore 조회 시작 - uid:', user.uid);
         const userDoc = await db.collection('users').doc(user.uid).get();
+        console.log('🔍 auth.js: userDoc.exists =', userDoc.exists);
 
         let userData = {
             uid: user.uid,
@@ -88,7 +90,13 @@ async function handleUserLogin(user) {
 
         if (userDoc.exists) {
             const firestoreData = userDoc.data();
+            console.log('🔍 auth.js: Firestore 데이터 =', JSON.stringify({
+                tokenBalance: firestoreData.tokenBalance,
+                plan: firestoreData.plan,
+                email: firestoreData.email
+            }));
             userData = { ...userData, ...firestoreData };
+            console.log('🔍 auth.js: 병합 후 userData.tokenBalance =', userData.tokenBalance);
         } else {
             // 신규 사용자 - Firestore에 저장
             await db.collection('users').doc(user.uid).set({
