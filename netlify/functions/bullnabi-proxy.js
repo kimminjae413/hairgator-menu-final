@@ -732,6 +732,118 @@ async function handleSetPlan(userId, plan) {
 }
 
 /**
+ * 이메일로 사용자 조회 (마이그레이션용)
+ * Firebase Auth 로그인 시 불나비 사용자 데이터를 가져오기 위해 사용
+ */
+async function handleGetUserByEmail(email) {
+    try {
+        console.log('📧 이메일로 사용자 조회:', email);
+
+        let adminToken = process.env.BULLNABI_TOKEN;
+        if (!adminToken) {
+            const refreshResult = await handleRefreshToken();
+            if (!refreshResult.success) {
+                return { success: false, error: '토큰 발급 실패' };
+            }
+            adminToken = refreshResult.token;
+        }
+
+        const metaCode = '_users';
+        const collectionName = '_users';
+        const documentJson = {
+            "pipeline": {
+                "$match": {
+                    "email": email
+                },
+                "$project": {
+                    "nickname": 1,
+                    "email": 1,
+                    "remainCount": 1,
+                    "tokenBalance": 1,
+                    "plan": 1,
+                    "name": 1,
+                    "phone": 1,
+                    "_createTime": 1,
+                    "_updateTime": 1
+                }
+            }
+        };
+
+        const params = new URLSearchParams();
+        params.append('metaCode', metaCode);
+        params.append('collectionName', collectionName);
+        params.append('documentJson', JSON.stringify(documentJson));
+
+        const url = `http://drylink.ohmyapp.io/bnb/aggregateForTableWithDocTimeline?${params.toString()}`;
+
+        const FormData = require('form-data');
+        const formData = new FormData();
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${adminToken}`,
+                'Accept': 'application/json',
+                ...formData.getHeaders()
+            },
+            body: formData
+        });
+
+        const responseText = await response.text();
+        const apiData = JSON.parse(responseText);
+
+        // 토큰 만료 체크
+        if (apiData.code === -110 || apiData.code === '-110') {
+            // 토큰 갱신 후 재시도
+            console.log('🔄 토큰 만료, 갱신 후 재시도...');
+            const refreshResult = await handleRefreshToken();
+            if (refreshResult.success) {
+                return await handleGetUserByEmail(email); // 재귀 호출
+            }
+            return { success: false, error: 'Token refresh failed' };
+        }
+
+        if (apiData.data && apiData.data.length > 0) {
+            const userData = apiData.data[0];
+
+            console.log('✅ 불나비 사용자 발견:', {
+                id: userData._id?.$oid,
+                email: userData.email,
+                tokenBalance: userData.tokenBalance,
+                plan: userData.plan
+            });
+
+            return {
+                success: true,
+                found: true,
+                data: {
+                    bullnabiUserId: userData._id?.$oid,
+                    nickname: userData.nickname || userData.name || '',
+                    email: userData.email || '',
+                    tokenBalance: userData.tokenBalance,
+                    plan: userData.plan || 'free',
+                    remainCount: userData.remainCount || 0,
+                    phone: userData.phone || '',
+                    _createTime: userData._createTime,
+                    _updateTime: userData._updateTime
+                }
+            };
+        }
+
+        console.log('ℹ️ 불나비에서 사용자를 찾을 수 없음:', email);
+        return {
+            success: true,
+            found: false,
+            message: 'User not found in Bullnabi'
+        };
+
+    } catch (error) {
+        console.error('❌ 이메일로 사용자 조회 오류:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
  * 토큰 차감 (헤어게이터 기능 사용 시)
  */
 async function handleDeductTokenBalance(userId, amount, feature) {
@@ -1027,6 +1139,26 @@ exports.handler = async (event, context) => {
             }
 
             const result = await handleSetPlan(userId, data.plan);
+            return {
+                statusCode: result.success ? 200 : 500,
+                headers: corsHeaders,
+                body: JSON.stringify(result)
+            };
+        }
+
+        // 10. 이메일로 사용자 조회 (마이그레이션용)
+        if (action === 'getUserByEmail') {
+            console.log('📧 이메일로 사용자 조회 요청');
+
+            if (!data?.email) {
+                return {
+                    statusCode: 400,
+                    headers: corsHeaders,
+                    body: JSON.stringify({ success: false, error: 'email required' })
+                };
+            }
+
+            const result = await handleGetUserByEmail(data.email);
             return {
                 statusCode: result.success ? 200 : 500,
                 headers: corsHeaders,

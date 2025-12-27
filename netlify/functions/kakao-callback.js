@@ -126,6 +126,44 @@ exports.handler = async (event, context) => {
             email: userData.kakao_account?.email
         });
 
+        // 2.5. 불나비 사용자 마이그레이션 체크 (이메일 매칭)
+        let bullnabiUserData = null;
+        const userEmail = userData.kakao_account?.email;
+
+        if (userEmail) {
+            try {
+                console.log('🔄 불나비 사용자 마이그레이션 체크:', userEmail);
+
+                // bullnabi-proxy API 호출
+                const bullnabiResponse = await fetch(`https://${event.headers.host}/.netlify/functions/bullnabi-proxy`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'getUserByEmail',
+                        email: userEmail
+                    })
+                });
+
+                const bullnabiResult = await bullnabiResponse.json();
+
+                if (bullnabiResult.success && bullnabiResult.found) {
+                    bullnabiUserData = bullnabiResult.data;
+                    console.log('✅ 불나비 사용자 발견! 마이그레이션 진행:', {
+                        bullnabiUserId: bullnabiUserData.bullnabiUserId,
+                        tokenBalance: bullnabiUserData.tokenBalance,
+                        plan: bullnabiUserData.plan
+                    });
+                } else {
+                    console.log('ℹ️ 불나비에 해당 이메일 사용자 없음 (신규 사용자)');
+                }
+            } catch (migrationError) {
+                console.error('⚠️ 불나비 마이그레이션 체크 실패 (계속 진행):', migrationError.message);
+                // 마이그레이션 실패해도 로그인은 계속 진행
+            }
+        }
+
         // 3. Firebase Custom Token 생성
         // 카카오 ID를 Firebase UID로 사용 (접두사 추가)
         const firebaseUid = `kakao_${userData.id}`;
@@ -159,13 +197,48 @@ exports.handler = async (event, context) => {
 
         if (!userDoc.exists) {
             // 신규 사용자
-            userDataToSave.tokenBalance = 200;
-            userDataToSave.plan = 'free';
             userDataToSave.createdAt = admin.firestore.FieldValue.serverTimestamp();
+
+            // 불나비에서 마이그레이션된 사용자인 경우
+            if (bullnabiUserData) {
+                userDataToSave.tokenBalance = bullnabiUserData.tokenBalance || 200;
+                userDataToSave.plan = bullnabiUserData.plan || 'free';
+                userDataToSave.migratedFromBullnabi = true;
+                userDataToSave.bullnabiUserId = bullnabiUserData.bullnabiUserId;
+                userDataToSave.migratedAt = admin.firestore.FieldValue.serverTimestamp();
+                console.log('🎉 불나비 → Firebase 마이그레이션 완료:', {
+                    firebaseUid,
+                    bullnabiUserId: bullnabiUserData.bullnabiUserId,
+                    tokenBalance: userDataToSave.tokenBalance,
+                    plan: userDataToSave.plan
+                });
+            } else {
+                // 순수 신규 사용자
+                userDataToSave.tokenBalance = 200;
+                userDataToSave.plan = 'free';
+            }
+
             await userRef.set(userDataToSave);
             console.log('신규 카카오 사용자 생성:', firebaseUid);
         } else {
-            // 기존 사용자 업데이트
+            // 기존 Firebase 사용자 업데이트
+            const existingData = userDoc.data();
+
+            // 아직 마이그레이션 안 된 사용자이고 불나비에 데이터가 있는 경우
+            if (!existingData.migratedFromBullnabi && bullnabiUserData) {
+                userDataToSave.tokenBalance = bullnabiUserData.tokenBalance || existingData.tokenBalance || 200;
+                userDataToSave.plan = bullnabiUserData.plan || existingData.plan || 'free';
+                userDataToSave.migratedFromBullnabi = true;
+                userDataToSave.bullnabiUserId = bullnabiUserData.bullnabiUserId;
+                userDataToSave.migratedAt = admin.firestore.FieldValue.serverTimestamp();
+                console.log('🎉 기존 사용자 불나비 → Firebase 마이그레이션 완료:', {
+                    firebaseUid,
+                    bullnabiUserId: bullnabiUserData.bullnabiUserId,
+                    previousTokens: existingData.tokenBalance,
+                    newTokens: userDataToSave.tokenBalance
+                });
+            }
+
             await userRef.update(userDataToSave);
             console.log('카카오 사용자 정보 업데이트:', firebaseUid);
         }

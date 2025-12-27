@@ -435,6 +435,37 @@
             clearMessage();
         }
 
+        // ========== 불나비 사용자 마이그레이션 체크 ==========
+        async function checkBullnabiMigration(email) {
+            if (!email) return null;
+
+            try {
+                console.log('🔄 불나비 사용자 마이그레이션 체크:', email);
+
+                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'getUserByEmail',
+                        email: email
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.found) {
+                    console.log('✅ 불나비 사용자 발견:', result.data);
+                    return result.data;
+                }
+
+                console.log('ℹ️ 불나비에 해당 이메일 사용자 없음');
+                return null;
+            } catch (error) {
+                console.error('⚠️ 불나비 마이그레이션 체크 실패:', error);
+                return null;
+            }
+        }
+
         // ========== Firestore 사용자 생성/업데이트 ==========
         async function createOrUpdateUser(user, provider) {
             const userRef = db.collection('users').doc(user.uid);
@@ -450,14 +481,44 @@
             };
 
             if (!doc.exists) {
-                // 신규 사용자
-                userData.tokenBalance = 200;  // 무료 토큰
-                userData.plan = 'free';
+                // 신규 사용자 - 불나비 마이그레이션 체크
+                const bullnabiData = await checkBullnabiMigration(user.email);
+
+                if (bullnabiData) {
+                    // 불나비에서 마이그레이션
+                    userData.tokenBalance = bullnabiData.tokenBalance || 200;
+                    userData.plan = bullnabiData.plan || 'free';
+                    userData.migratedFromBullnabi = true;
+                    userData.bullnabiUserId = bullnabiData.bullnabiUserId;
+                    userData.migratedAt = firebase.firestore.FieldValue.serverTimestamp();
+                    console.log('🎉 불나비 → Firebase 마이그레이션 완료:', bullnabiData.bullnabiUserId);
+                } else {
+                    // 순수 신규 사용자
+                    userData.tokenBalance = 200;
+                    userData.plan = 'free';
+                }
+
                 userData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                 await userRef.set(userData);
                 console.log('신규 사용자 생성:', user.uid);
             } else {
-                // 기존 사용자 업데이트
+                // 기존 Firebase 사용자
+                const existingData = doc.data();
+
+                // 아직 마이그레이션 안 된 사용자인 경우 체크
+                if (!existingData.migratedFromBullnabi) {
+                    const bullnabiData = await checkBullnabiMigration(user.email);
+
+                    if (bullnabiData) {
+                        userData.tokenBalance = bullnabiData.tokenBalance || existingData.tokenBalance || 200;
+                        userData.plan = bullnabiData.plan || existingData.plan || 'free';
+                        userData.migratedFromBullnabi = true;
+                        userData.bullnabiUserId = bullnabiData.bullnabiUserId;
+                        userData.migratedAt = firebase.firestore.FieldValue.serverTimestamp();
+                        console.log('🎉 기존 사용자 불나비 마이그레이션 완료:', bullnabiData.bullnabiUserId);
+                    }
+                }
+
                 await userRef.update(userData);
                 console.log('사용자 정보 업데이트:', user.uid);
             }
