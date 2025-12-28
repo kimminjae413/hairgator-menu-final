@@ -1122,6 +1122,65 @@
                     <canvas id="featureUsageChart"></canvas>
                 </div>
             </div>
+
+            <!-- 헤어스타일 통계 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">💇 헤어스타일 통계</div>
+                    <button class="btn btn-secondary" onclick="loadHairstyleStats()">🔄 새로고침</button>
+                </div>
+
+                <div class="stats-grid" style="margin-bottom: 20px;">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-value" id="totalStyles">-</div>
+                                <div class="stat-label">전체 스타일</div>
+                            </div>
+                            <div class="stat-icon" style="background: rgba(255, 20, 147, 0.2);">💇</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-value" id="totalMale">-</div>
+                                <div class="stat-label">남성 스타일</div>
+                            </div>
+                            <div class="stat-icon" style="background: rgba(74, 144, 217, 0.2);">👨</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-value" id="totalFemale">-</div>
+                                <div class="stat-label">여성 스타일</div>
+                            </div>
+                            <div class="stat-icon" style="background: rgba(255, 20, 147, 0.2);">👩</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                    <div style="background: var(--bg-hover); border-radius: 12px; padding: 20px;">
+                        <h4 style="margin-bottom: 12px; color: var(--text-muted);">성별 비율</h4>
+                        <div style="height: 200px;">
+                            <canvas id="genderPieChart"></canvas>
+                        </div>
+                    </div>
+                    <div style="background: var(--bg-hover); border-radius: 12px; padding: 20px;">
+                        <h4 style="margin-bottom: 12px; color: #4A90D9;">👨 남성 카테고리</h4>
+                        <div style="height: 200px;">
+                            <canvas id="maleBarChart"></canvas>
+                        </div>
+                    </div>
+                    <div style="background: var(--bg-hover); border-radius: 12px; padding: 20px;">
+                        <h4 style="margin-bottom: 12px; color: #FF1493;">👩 여성 카테고리</h4>
+                        <div style="height: 200px;">
+                            <canvas id="femaleBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 활동 로그 페이지 -->
@@ -1644,6 +1703,9 @@
         let usageChart = null;
         let planChart = null;
         let featureUsageChart = null;
+        let genderPieChart = null;
+        let maleBarChart = null;
+        let femaleBarChart = null;
 
         // 초기화
         document.addEventListener('DOMContentLoaded', () => {
@@ -2279,6 +2341,179 @@
             } catch (error) {
                 console.error('사용 통계 로드 실패:', error);
             }
+
+            // 헤어스타일 통계도 함께 로드
+            loadHairstyleStats();
+        }
+
+        // 헤어스타일 통계 로드
+        async function loadHairstyleStats() {
+            try {
+                console.log('📊 헤어스타일 통계 로드 시작...');
+
+                const snapshot = await db.collection('hairstyles').get();
+                const totalStyles = snapshot.size;
+
+                // 남성/여성 카테고리 정의
+                const MALE_CATEGORIES = ['Side Fade', 'Side Part', 'Full Up', 'Push Back', 'Buzz', 'Crop', 'Mushroom \\ Home'];
+                const FEMALE_CATEGORIES = ['A Length', 'B Length', 'C Length', 'D Length', 'E Length', 'F Length', 'G Length', 'H Length'];
+
+                // 통계 집계
+                const stats = {
+                    male: {},
+                    female: {}
+                };
+
+                MALE_CATEGORIES.forEach(cat => { stats.male[cat] = 0; });
+                FEMALE_CATEGORIES.forEach(cat => { stats.female[cat] = 0; });
+
+                let maleCount = 0;
+                let femaleCount = 0;
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const gender = data.gender;
+                    const mainCategory = data.mainCategory;
+
+                    if (gender === 'male') {
+                        maleCount++;
+                        if (stats.male[mainCategory] !== undefined) {
+                            stats.male[mainCategory]++;
+                        }
+                    } else if (gender === 'female') {
+                        femaleCount++;
+                        if (stats.female[mainCategory] !== undefined) {
+                            stats.female[mainCategory]++;
+                        }
+                    }
+                });
+
+                // 통계 숫자 업데이트
+                document.getElementById('totalStyles').textContent = totalStyles.toLocaleString();
+                document.getElementById('totalMale').textContent = maleCount.toLocaleString();
+                document.getElementById('totalFemale').textContent = femaleCount.toLocaleString();
+
+                // 차트 렌더링
+                renderGenderPieChart(maleCount, femaleCount);
+                renderMaleBarChart(stats.male, MALE_CATEGORIES);
+                renderFemaleBarChart(stats.female, FEMALE_CATEGORIES);
+
+                console.log('✅ 헤어스타일 통계 로드 완료:', { total: totalStyles, male: maleCount, female: femaleCount });
+
+            } catch (error) {
+                console.error('❌ 헤어스타일 통계 로드 실패:', error);
+            }
+        }
+
+        // 성별 비율 도넛 차트
+        function renderGenderPieChart(maleCount, femaleCount) {
+            const canvas = document.getElementById('genderPieChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            if (genderPieChart) genderPieChart.destroy();
+
+            genderPieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['👨 남성', '👩 여성'],
+                    datasets: [{
+                        data: [maleCount, femaleCount],
+                        backgroundColor: ['#4A90D9', '#FF1493'],
+                        borderColor: ['#3A80C9', '#E01483'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#fff', font: { size: 12 }, padding: 15 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = maleCount + femaleCount;
+                                    const pct = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
+                                    return `${context.label}: ${context.raw}개 (${pct}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 남성 카테고리별 바 차트
+        function renderMaleBarChart(maleStats, categories) {
+            const canvas = document.getElementById('maleBarChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            if (maleBarChart) maleBarChart.destroy();
+
+            const data = categories.map(cat => maleStats[cat] || 0);
+
+            maleBarChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: categories.map(c => c.replace(' \\ ', '/')),
+                    datasets: [{
+                        data: data,
+                        backgroundColor: 'rgba(74, 144, 217, 0.7)',
+                        borderColor: '#4A90D9',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, grid: { color: '#2a2a35' }, ticks: { color: '#888' } },
+                        y: { grid: { display: false }, ticks: { color: '#4A90D9', font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        // 여성 카테고리별 바 차트
+        function renderFemaleBarChart(femaleStats, categories) {
+            const canvas = document.getElementById('femaleBarChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            if (femaleBarChart) femaleBarChart.destroy();
+
+            const data = categories.map(cat => femaleStats[cat] || 0);
+
+            femaleBarChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: 'rgba(255, 20, 147, 0.7)',
+                        borderColor: '#FF1493',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, grid: { color: '#2a2a35' }, ticks: { color: '#888' } },
+                        y: { grid: { display: false }, ticks: { color: '#FF1493', font: { size: 10 } } }
+                    }
+                }
+            });
         }
 
         // 결제 내역 로드
@@ -2464,25 +2699,26 @@
         }
 
         // ==================== 헤어스타일 관리 ====================
+        // Firestore hairstyles 컬렉션의 실제 카테고리명 (mainCategory 필드값)
         const STYLE_CATEGORIES = {
             male: {
-                'SIDE FADE': ['N', 'FH', 'EB', 'E', 'CB'],
-                'SIDE PART': ['N', 'FH', 'EB', 'E', 'CB'],
-                'FULL UP': ['N', 'FH', 'EB', 'E', 'CB'],
-                'PUSH BACK': ['N', 'FH', 'EB', 'E', 'CB'],
-                'BUZZ': ['N', 'FH', 'EB', 'E', 'CB'],
-                'CROP': ['N', 'FH', 'EB', 'E', 'CB'],
-                'MUSHROOM / HOME': ['N', 'FH', 'EB', 'E', 'CB']
+                'Side Fade': ['N', 'FH', 'EB', 'E', 'CB'],
+                'Side Part': ['N', 'FH', 'EB', 'E', 'CB'],
+                'Full Up': ['N', 'FH', 'EB', 'E', 'CB'],
+                'Push Back': ['N', 'FH', 'EB', 'E', 'CB'],
+                'Buzz': ['N', 'FH', 'EB', 'E', 'CB'],
+                'Crop': ['N', 'FH', 'EB', 'E', 'CB'],
+                'Mushroom / Home': ['N', 'FH', 'EB', 'E', 'CB']
             },
             female: {
-                'A LENGTH': ['N', 'FH', 'EB', 'E', 'CB'],
-                'B LENGTH': ['N', 'FH', 'EB', 'E', 'CB'],
-                'C LENGTH': ['N', 'FH', 'EB', 'E', 'CB'],
-                'D LENGTH': ['N', 'FH', 'EB', 'E', 'CB'],
-                'E LENGTH': ['N', 'FH', 'EB', 'E', 'CB'],
-                'F LENGTH': ['N', 'FH', 'EB', 'E', 'CB'],
-                'G LENGTH': ['N', 'FH', 'EB', 'E', 'CB'],
-                'H LENGTH': ['N', 'FH', 'EB', 'E', 'CB']
+                'A Length': ['N', 'FH', 'EB', 'E', 'CB'],
+                'B Length': ['N', 'FH', 'EB', 'E', 'CB'],
+                'C Length': ['N', 'FH', 'EB', 'E', 'CB'],
+                'D Length': ['N', 'FH', 'EB', 'E', 'CB'],
+                'E Length': ['N', 'FH', 'EB', 'E', 'CB'],
+                'F Length': ['N', 'FH', 'EB', 'E', 'CB'],
+                'G Length': ['N', 'FH', 'EB', 'E', 'CB'],
+                'H Length': ['N', 'FH', 'EB', 'E', 'CB']
             }
         };
 
@@ -2538,8 +2774,9 @@
             grid.innerHTML = '<div class="loading" style="grid-column: 1/-1;"></div>';
 
             try {
-                const collection = gender === 'male' ? 'men_styles' : 'styles';
-                const snapshot = await db.collection(collection)
+                // hairstyles 컬렉션 사용 (메인 메뉴판과 동일)
+                const snapshot = await db.collection('hairstyles')
+                    .where('gender', '==', gender)
                     .where('mainCategory', '==', category)
                     .where('subCategory', '==', subcategory)
                     .get();
@@ -2556,7 +2793,7 @@
                     const data = doc.data();
                     const thumbnail = data.thumbnailUrl || data.resultImage || 'https://via.placeholder.com/180x220?text=No+Image';
                     return `
-                        <div class="style-card" style="background: var(--bg-hover); border-radius: 12px; overflow: hidden; cursor: pointer;" onclick="openStyleDetail('${doc.id}')">
+                        <div class="style-card" style="background: var(--bg-hover); border-radius: 12px; overflow: hidden; cursor: pointer;" onclick="openStyleDetail('${doc.id}', '${gender}')">
                             <img src="${thumbnail}" style="width: 100%; height: 140px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/180x140?text=Error'">
                             <div style="padding: 12px;">
                                 <div style="font-weight: 600; font-size: 13px;">${data.styleId || doc.id}</div>
@@ -2568,12 +2805,13 @@
 
             } catch (error) {
                 console.error('스타일 로드 오류:', error);
-                grid.innerHTML = '<p style="color: var(--danger); grid-column: 1/-1; text-align: center;">오류가 발생했습니다</p>';
+                grid.innerHTML = `<p style="color: var(--danger); grid-column: 1/-1; text-align: center;">오류: ${error.message}</p>`;
             }
         }
 
-        function openStyleDetail(styleId) {
-            showToast(`스타일 상세: ${styleId}`, 'success');
+        function openStyleDetail(styleId, gender) {
+            // 메인 사이트의 스타일 상세 페이지로 이동
+            window.open(`https://hairgator.kr/?styleId=${styleId}&gender=${gender}`, '_blank');
         }
 
         function openAddStyleModal() {
