@@ -454,9 +454,14 @@ Then: [동작] (예: 기존 데이터를 수정)
   - **잘못된 값**: Side Fade, Full Up, Push Back, Mushroom/Home
   - **올바른 값 (Firestore 실제값)**: SIDE FRINGE, SIDE PART, FRINGE UP, PUSHED BACK, BUZZ, CROP, MOHICAN
 
+  ### 중분류(subCategory) 값 수정 (중요!)
+  - **잘못된 값**: 'N', 'FH', 'EB', 'E', 'CB' (축약형)
+  - **올바른 값 (Firestore 실제값)**: 'None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'
+
   ### 커밋
   - `feda316`: fix: admin.html 헤어스타일 관리 Firebase 연동 + 통계 차트
   - `8eff504`: fix: admin.html 남자 카테고리명 Firestore 실제 값으로 수정
+  - `74d5cf2`: fix: admin.html 중분류 값 Firestore 실제 값으로 수정
 
 - 2025-12-28: 불나비 완전 독립 마이그레이션 **완료**
 
