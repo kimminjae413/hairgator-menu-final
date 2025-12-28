@@ -1,5 +1,118 @@
 # HAIRGATOR 챗봇 - Claude 작업 가이드
 
+## ⚠️ 절대 다시 묻지 말 것 (2025-12-28 확정)
+
+### OhMyApp/불나비/MongoDB 완전 독립 완료
+
+**배경:**
+- OhMyApp = 불나비 = MongoDB = 같은 서비스 (앱 빌더 플랫폼)
+- 이용료 내면서 써왔으나 **비협조적이라 탈출함**
+- MongoDB 덤프 받아서 나옴
+
+**현재 상태:**
+- ✅ hairgator.kr 웹사이트: **완전 독립 완료** (Firebase Auth + Firestore)
+- ❌ OhMyApp 어드민 (drylink.ohmyapp.io): **안 씀**
+- ❌ 불나비 앱 (앱스토어): **버림** (OhMyApp 서버 연결되어 있어서 탭 4개 나오는 문제 있음)
+- 🔨 새 앱스토어 앱: **Flutter WebView로 새로 만들어야 함** (hairgator.kr 감싸는 방식)
+
+**절대 하지 말 것:**
+- "OhMyApp 어드민에서 설정하세요" 같은 말 하지 마
+- "불나비 앱 탭 설정" 얘기 꺼내지 마
+- "PWA로 하면 어때요?" 제안하지 마
+- 이 주제로 다시 질문하지 마
+
+**핵심 답변:** 기존 불나비 앱은 OhMyApp 서버 주소가 앱 안에 하드코딩되어 있어서, 백엔드만 Firebase로 바꿔도 앱이 계속 OhMyApp 서버로 요청 보냄. **기존 앱 재활용 불가능. 새 앱 만들어야 함.**
+
+**목표:** OhMyApp 어드민처럼 hairgator 어드민에서 탭 설정 변경하면 앱에 반영되게 하기
+- 새 앱(Flutter)이 **Firestore app_config/tabs**에서 탭 설정 로드
+- admin.html에서 탭 설정 변경 → Firestore 업데이트 → 앱에 반영
+- 이미 admin.html에 "앱 메뉴 관리" 기능 추가됨 (MongoDB 데이터 가져오기 버튼 포함)
+
+**앱스토어 앱 만들 때:** Flutter 앱이 Firestore에서 탭 설정 읽어서 하단 네비게이션 구성하도록 개발.
+
+---
+
+## Flutter 앱 빌드 (2025-12-28 진행 중)
+
+### 현재 상태 (2025-12-28 저녁)
+- ✅ **APK 빌드 성공**: `C:\hairgator_flutter_app\build\app\outputs\flutter-apk\app-release.apk` (19.4MB)
+- ✅ **로그인 화면 태블릿 레이아웃 수정 완료**:
+  - 태블릿(600px 이상)에서 카드 형태 UI로 변경
+  - maxWidth 380px, 둥근 모서리, 그림자 효과
+  - 그라데이션 배경 추가
+- ✅ **로고 교체 완료**: `로고.png` → `assets/logo.png`
+- ✅ **디버그 APK 빌드 완료**: `app-debug.apk`
+- ⏳ **에뮬레이터 테스트 필요**: 좀비 프로세스 문제로 재부팅 후 진행
+- ⏳ Firebase 설정 필요 (google-services.json)
+- ⏳ 앱스토어 심사 (서명 키 생성 후)
+
+### 재부팅 후 할 일
+1. 태블릿 에뮬레이터 실행: `Pixel_Tablet_API_36`
+2. 디버그 APK 설치: `adb install C:/hairgator_flutter_app/build/app/outputs/flutter-apk/app-debug.apk`
+3. 로그인 화면 태블릿 레이아웃 확인
+4. 로고 표시 확인
+
+### 디스크 공간 정리 기록
+- Medium_Phone 에뮬레이터 스냅샷 삭제: **2.1GB 확보**
+- 현재 C드라이브 여유 공간: ~2.5GB
+
+### 프로젝트 경로 (한글 경로 문제로 C:\ 루트에 위치)
+- **Flutter 프로젝트**: `C:\hairgator_flutter_app\`
+- **Flutter SDK**: `C:\flutter\`
+- **Android SDK**: `C:\Android\Sdk\`
+- **Gradle 캐시**: `C:\gradle_home\` (GRADLE_USER_HOME)
+
+### 빌드 명령어 (필수 환경변수 포함)
+```bash
+export GRADLE_USER_HOME="C:/gradle_home"
+export JAVA_HOME="C:/Program Files/Android/Android Studio/jbr"
+export JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
+cd /c/hairgator_flutter_app
+C:/flutter/bin/flutter.bat build apk --release
+```
+
+### 버전 정보 (호환성 문제 해결됨)
+- Flutter: 3.24.5
+- Gradle: 8.5 (`gradle-wrapper.properties`)
+- Android Gradle Plugin: 8.3.0 (`settings.gradle`)
+- Kotlin: 1.9.22
+- Java: 17 (targetCompatibility)
+- NDK: 25.1.8937393
+- compileSdk: 34
+
+### 주요 파일 구조
+```
+C:\hairgator_flutter_app\
+├── lib\
+│   ├── main.dart              # 앱 진입점
+│   ├── models\
+│   │   └── tab_config.dart    # 탭 설정 모델
+│   ├── screens\
+│   │   └── home_screen.dart   # WebView + 하단 탭
+│   └── services\
+│       └── firestore_service.dart  # Firestore 탭 설정 로드
+├── android\
+│   ├── app\build.gradle       # NDK, Java 버전 설정
+│   ├── settings.gradle        # AGP, Kotlin 버전 설정
+│   └── gradle\wrapper\gradle-wrapper.properties  # Gradle 버전
+└── pubspec.yaml               # 의존성 (webview_flutter, firebase_core, cloud_firestore)
+```
+
+### 다음 단계
+1. **Firebase 설정**: Firebase Console에서 Android 앱 등록 → `google-services.json` 다운로드 → `android/app/` 폴더에 배치
+2. **테스트**: APK 파일을 핸드폰에 설치하여 테스트
+3. **서명 키 생성**: 릴리스용 keystore 생성
+4. **App Bundle 빌드**: `flutter build appbundle --release`
+5. **Play Store 심사 제출**
+
+### 트러블슈팅 기록 (다시 겪지 않도록)
+- **한글 경로 문제**: 사용자명(김민재)에 한글 → Flutter SDK, 프로젝트, Gradle 캐시 모두 C:\ 루트로 이동
+- **Developer Mode 필수**: Windows 설정 → 시스템 → 개발자용 → 개발자 모드 켜기
+- **Java 21 호환성**: AGP 8.3.0 이상 + Gradle 8.5 이상 필요
+- **디스크 공간**: 최소 2-3GB 필요 (빌드 시 캐시 생성)
+
+---
+
 ## 핵심 아키텍처 (절대 잊지 말 것!)
 
 ### RAG 시스템
@@ -321,6 +434,25 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 로그인 시 이메일 매칭으로 `users`로 복사
 
 ## 최근 작업 이력
+- 2025-12-29: admin.html 헤어스타일 관리 + 통계 Firebase 연동
+
+  ### 헤어스타일 관리 Firebase 연결 수정
+  - **컬렉션 변경**: `men_styles`/`styles` → `hairstyles` (메인 메뉴판과 동일)
+  - **카테고리명 수정**: 대문자 → Title Case (`A LENGTH` → `A Length`, `SIDE FADE` → `Side Fade`)
+  - **gender 필터 추가**: `.where('gender', '==', gender)` 쿼리 추가
+  - **openStyleDetail 함수 수정**: gender 파라미터 추가하여 새 창에서 스타일 상세 열기
+
+  ### 사용 통계에 헤어스타일 통계 추가
+  - **스타일 수 카드**: 전체/남성/여성 스타일 수 표시
+  - **성별 비율 도넛 차트**: Chart.js 사용 (남성 파란색, 여성 핑크색)
+  - **남성 카테고리별 바 차트**: Side Fade, Side Part, Full Up, Push Back, Buzz, Crop, Mushroom/Home
+  - **여성 카테고리별 바 차트**: A~H Length
+  - **loadHairstyleStats() 함수**: hairstyles 컬렉션에서 통계 집계
+  - **자동 로드**: loadUsageStats() 호출 시 함께 로드
+
+  ### 커밋
+  - `feda316`: fix: admin.html 헤어스타일 관리 Firebase 연동 + 통계 차트
+
 - 2025-12-28: 불나비 완전 독립 마이그레이션 **완료**
 
   ### 삭제된 파일 (총 3,680줄 제거)
