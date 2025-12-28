@@ -2701,26 +2701,27 @@
         }
 
         // ==================== 헤어스타일 관리 ====================
-        // Firestore hairstyles 컬렉션의 실제 카테고리명 (mainCategory 필드값)
+        // Firestore hairstyles 컬렉션의 실제 카테고리명 (mainCategory, subCategory 필드값)
+        const STYLE_SUBCATEGORIES = ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'];
         const STYLE_CATEGORIES = {
             male: {
-                'SIDE FRINGE': ['N', 'FH', 'EB', 'E', 'CB'],
-                'SIDE PART': ['N', 'FH', 'EB', 'E', 'CB'],
-                'FRINGE UP': ['N', 'FH', 'EB', 'E', 'CB'],
-                'PUSHED BACK': ['N', 'FH', 'EB', 'E', 'CB'],
-                'BUZZ': ['N', 'FH', 'EB', 'E', 'CB'],
-                'CROP': ['N', 'FH', 'EB', 'E', 'CB'],
-                'MOHICAN': ['N', 'FH', 'EB', 'E', 'CB']
+                'SIDE FRINGE': STYLE_SUBCATEGORIES,
+                'SIDE PART': STYLE_SUBCATEGORIES,
+                'FRINGE UP': STYLE_SUBCATEGORIES,
+                'PUSHED BACK': STYLE_SUBCATEGORIES,
+                'BUZZ': STYLE_SUBCATEGORIES,
+                'CROP': STYLE_SUBCATEGORIES,
+                'MOHICAN': STYLE_SUBCATEGORIES
             },
             female: {
-                'A Length': ['N', 'FH', 'EB', 'E', 'CB'],
-                'B Length': ['N', 'FH', 'EB', 'E', 'CB'],
-                'C Length': ['N', 'FH', 'EB', 'E', 'CB'],
-                'D Length': ['N', 'FH', 'EB', 'E', 'CB'],
-                'E Length': ['N', 'FH', 'EB', 'E', 'CB'],
-                'F Length': ['N', 'FH', 'EB', 'E', 'CB'],
-                'G Length': ['N', 'FH', 'EB', 'E', 'CB'],
-                'H Length': ['N', 'FH', 'EB', 'E', 'CB']
+                'A Length': STYLE_SUBCATEGORIES,
+                'B Length': STYLE_SUBCATEGORIES,
+                'C Length': STYLE_SUBCATEGORIES,
+                'D Length': STYLE_SUBCATEGORIES,
+                'E Length': STYLE_SUBCATEGORIES,
+                'F Length': STYLE_SUBCATEGORIES,
+                'G Length': STYLE_SUBCATEGORIES,
+                'H Length': STYLE_SUBCATEGORIES
             }
         };
 
