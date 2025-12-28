@@ -2355,7 +2355,7 @@
                 const totalStyles = snapshot.size;
 
                 // 남성/여성 카테고리 정의
-                const MALE_CATEGORIES = ['Side Fade', 'Side Part', 'Full Up', 'Push Back', 'Buzz', 'Crop', 'Mushroom \\ Home'];
+                const MALE_CATEGORIES = ['SIDE FRINGE', 'SIDE PART', 'FRINGE UP', 'PUSHED BACK', 'BUZZ', 'CROP', 'MOHICAN'];
                 const FEMALE_CATEGORIES = ['A Length', 'B Length', 'C Length', 'D Length', 'E Length', 'F Length', 'G Length', 'H Length'];
 
                 // 통계 집계
@@ -2455,11 +2455,13 @@
             if (maleBarChart) maleBarChart.destroy();
 
             const data = categories.map(cat => maleStats[cat] || 0);
+            // 축약형 라벨 (차트에서 가독성 향상)
+            const shortLabels = ['SF', 'SP', 'FU', 'PB', 'BZ', 'CR', 'MH'];
 
             maleBarChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: categories.map(c => c.replace(' \\ ', '/')),
+                    labels: shortLabels,
                     datasets: [{
                         data: data,
                         backgroundColor: 'rgba(74, 144, 217, 0.7)',
@@ -2702,13 +2704,13 @@
         // Firestore hairstyles 컬렉션의 실제 카테고리명 (mainCategory 필드값)
         const STYLE_CATEGORIES = {
             male: {
-                'Side Fade': ['N', 'FH', 'EB', 'E', 'CB'],
-                'Side Part': ['N', 'FH', 'EB', 'E', 'CB'],
-                'Full Up': ['N', 'FH', 'EB', 'E', 'CB'],
-                'Push Back': ['N', 'FH', 'EB', 'E', 'CB'],
-                'Buzz': ['N', 'FH', 'EB', 'E', 'CB'],
-                'Crop': ['N', 'FH', 'EB', 'E', 'CB'],
-                'Mushroom / Home': ['N', 'FH', 'EB', 'E', 'CB']
+                'SIDE FRINGE': ['N', 'FH', 'EB', 'E', 'CB'],
+                'SIDE PART': ['N', 'FH', 'EB', 'E', 'CB'],
+                'FRINGE UP': ['N', 'FH', 'EB', 'E', 'CB'],
+                'PUSHED BACK': ['N', 'FH', 'EB', 'E', 'CB'],
+                'BUZZ': ['N', 'FH', 'EB', 'E', 'CB'],
+                'CROP': ['N', 'FH', 'EB', 'E', 'CB'],
+                'MOHICAN': ['N', 'FH', 'EB', 'E', 'CB']
             },
             female: {
                 'A Length': ['N', 'FH', 'EB', 'E', 'CB'],
