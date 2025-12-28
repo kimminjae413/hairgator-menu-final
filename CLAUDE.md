@@ -445,13 +445,18 @@ Then: [동작] (예: 기존 데이터를 수정)
   ### 사용 통계에 헤어스타일 통계 추가
   - **스타일 수 카드**: 전체/남성/여성 스타일 수 표시
   - **성별 비율 도넛 차트**: Chart.js 사용 (남성 파란색, 여성 핑크색)
-  - **남성 카테고리별 바 차트**: Side Fade, Side Part, Full Up, Push Back, Buzz, Crop, Mushroom/Home
+  - **남성 카테고리별 바 차트**: SF, SP, FU, PB, BZ, CR, MH (축약형 라벨)
   - **여성 카테고리별 바 차트**: A~H Length
   - **loadHairstyleStats() 함수**: hairstyles 컬렉션에서 통계 집계
   - **자동 로드**: loadUsageStats() 호출 시 함께 로드
 
+  ### 남자 카테고리명 수정 (중요!)
+  - **잘못된 값**: Side Fade, Full Up, Push Back, Mushroom/Home
+  - **올바른 값 (Firestore 실제값)**: SIDE FRINGE, SIDE PART, FRINGE UP, PUSHED BACK, BUZZ, CROP, MOHICAN
+
   ### 커밋
   - `feda316`: fix: admin.html 헤어스타일 관리 Firebase 연동 + 통계 차트
+  - `8eff504`: fix: admin.html 남자 카테고리명 Firestore 실제 값으로 수정
 
 - 2025-12-28: 불나비 완전 독립 마이그레이션 **완료**
 
