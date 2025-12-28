@@ -757,6 +757,26 @@
         </nav>
 
         <nav class="nav-section">
+            <div class="nav-section-title">콘텐츠</div>
+            <div class="nav-item" onclick="showPage('styles')">
+                <span class="nav-item-icon">💇</span>
+                <span>헤어스타일 관리</span>
+            </div>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">AI 생성</div>
+            <div class="nav-item" onclick="showPage('cardNews')">
+                <span class="nav-item-icon">📰</span>
+                <span>카드뉴스 생성</span>
+            </div>
+            <div class="nav-item" onclick="showPage('videoGen')">
+                <span class="nav-item-icon">🎬</span>
+                <span>영상 생성</span>
+            </div>
+        </nav>
+
+        <nav class="nav-section">
             <div class="nav-section-title">설정</div>
             <div class="nav-item" onclick="showPage('appTabs')">
                 <span class="nav-item-icon">📱</span>
@@ -1280,6 +1300,255 @@
                     <li>설정 변경 후 <strong>저장</strong> 버튼을 눌러야 적용됩니다</li>
                     <li>앱에서 변경사항을 보려면 앱을 새로고침하거나 재시작해야 합니다</li>
                 </ul>
+            </div>
+        </div>
+
+        <!-- 헤어스타일 관리 페이지 -->
+        <div id="page-styles" class="page">
+            <div class="page-header">
+                <h2 class="page-title">💇 헤어스타일 관리</h2>
+                <button class="btn" onclick="openAddStyleModal()">+ 새 스타일 추가</button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">카테고리 선택</div>
+                </div>
+                <div style="display: flex; gap: 16px; flex-wrap: wrap; padding: 20px;">
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label>성별</label>
+                        <select id="styleGenderSelect" onchange="loadStyleCategories()">
+                            <option value="">성별 선택</option>
+                            <option value="male">남성</option>
+                            <option value="female">여성</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label>대분류</label>
+                        <select id="styleCategorySelect" onchange="loadStyleSubcategories()">
+                            <option value="">대분류 선택</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label>중분류 (앞머리 길이)</label>
+                        <select id="styleSubcategorySelect" onchange="loadStylesList()">
+                            <option value="">중분류 선택</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <div class="card-title">등록된 스타일</div>
+                    <span id="stylesCountBadge" style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px;">0개</span>
+                </div>
+                <div id="stylesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; padding: 20px;">
+                    <p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">카테고리를 선택하세요</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 카드뉴스 생성 페이지 -->
+        <div id="page-cardNews" class="page">
+            <div class="page-header">
+                <h2 class="page-title">📰 AI 카드뉴스 생성기</h2>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">카드뉴스 제작</div>
+                </div>
+                <div style="padding: 20px;">
+                    <p style="color: var(--text-muted); margin-bottom: 20px;">
+                        프롬프트를 입력하면 AI가 인스타그램용 카드뉴스 이미지를 생성합니다.
+                    </p>
+
+                    <!-- 제목 입력 -->
+                    <div class="form-group">
+                        <label>📌 카드뉴스 제목</label>
+                        <input type="text" id="cardNewsTitle" placeholder="예: 2025 봄 시즌 헤어 트렌드">
+                    </div>
+
+                    <!-- 각 장별 내용 -->
+                    <div class="form-group" style="margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <label>📝 각 장별 내용</label>
+                            <span id="cardNewsPageCount" style="color: var(--primary); font-size: 13px;">1장</span>
+                        </div>
+                        <div id="cardNewsPagesContainer">
+                            <!-- 동적 생성 -->
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 12px;">
+                            <button onclick="addCardNewsPage()" class="btn" style="flex: 1;">➕ 장 추가</button>
+                            <button onclick="removeCardNewsPage()" id="removePageBtn" class="btn btn-secondary" style="flex: 1; display: none;">➖ 장 삭제</button>
+                        </div>
+                    </div>
+
+                    <!-- 옵션 선택 -->
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>이미지 비율</label>
+                        <select id="cardNewsRatio">
+                            <option value="1:1" selected>정사각형 (1:1)</option>
+                            <option value="4:5">세로형 (4:5) - 피드 추천</option>
+                            <option value="9:16">스토리/릴스 (9:16)</option>
+                        </select>
+                    </div>
+
+                    <!-- 브랜드 스타일 안내 -->
+                    <div style="margin-top: 16px; padding: 12px 16px; background: rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.3); border-radius: 8px;">
+                        <p style="color: var(--primary); font-size: 13px; margin: 0;">
+                            <strong>📌 HAIRGATOR 브랜드 스타일 적용</strong><br>
+                            <span style="color: var(--text-muted);">화이트 바탕 + 핑크(#E91E63) 포인트 컬러 | 타겟: 헤어디자이너</span>
+                        </p>
+                    </div>
+
+                    <!-- 생성 버튼 -->
+                    <button id="generateCardNewsBtn" onclick="generateCardNews()" class="btn" style="width: 100%; margin-top: 24px; padding: 16px; font-size: 16px;">
+                        🎨 카드뉴스 생성하기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 생성된 카드뉴스 결과 -->
+            <div id="cardNewsResultSection" class="card" style="margin-top: 20px; display: none;">
+                <div class="card-header">
+                    <div class="card-title">🖼️ 생성된 카드뉴스</div>
+                    <button onclick="downloadAllCardNews()" class="btn btn-sm" style="background: var(--success);">📦 전체 다운로드</button>
+                </div>
+                <div id="cardNewsResultGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; padding: 20px;">
+                    <!-- 동적 생성 -->
+                </div>
+
+                <!-- 인스타그램 캡션 -->
+                <div id="cardNewsCaptionSection" style="margin: 0 20px 20px; padding: 16px; background: rgba(33, 150, 243, 0.1); border: 1px solid rgba(33, 150, 243, 0.3); border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="color: var(--info); font-size: 14px; margin: 0;">📝 인스타그램 캡션</h4>
+                        <button onclick="copyCaption()" class="btn btn-sm" style="background: var(--info);">📋 복사</button>
+                    </div>
+                    <div id="cardNewsCaption" style="color: var(--text); font-size: 13px; line-height: 1.8; white-space: pre-wrap;"></div>
+                </div>
+
+                <!-- 추천 해시태그 -->
+                <div id="cardNewsKeywordsSection" style="margin: 0 20px 20px; padding: 16px; background: rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.3); border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="color: var(--primary); font-size: 14px; margin: 0;">#️⃣ 추천 해시태그</h4>
+                        <button onclick="copyKeywords()" class="btn btn-sm">📋 복사</button>
+                    </div>
+                    <div id="cardNewsKeywords" style="color: var(--text); font-size: 13px; line-height: 1.8;"></div>
+                </div>
+            </div>
+
+            <!-- 히스토리 -->
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <div class="card-title">📜 생성 히스토리</div>
+                    <button onclick="clearCardNewsHistory()" class="btn btn-sm btn-danger">🗑️ 전체 삭제</button>
+                </div>
+                <div id="cardNewsHistoryList" style="padding: 20px;">
+                    <p style="color: var(--text-muted); text-align: center;">히스토리가 없습니다</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 영상 생성 페이지 -->
+        <div id="page-videoGen" class="page">
+            <div class="page-header">
+                <h2 class="page-title">🎬 AI 숏폼 영상 생성기</h2>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Veo 3.1 영상 생성</div>
+                </div>
+                <div style="padding: 20px;">
+                    <p style="color: var(--text-muted); margin-bottom: 20px;">
+                        Veo 3.1 모델을 활용한 유튜브/인스타그램 숏폼 영상을 생성합니다.
+                    </p>
+
+                    <!-- 영상 프롬프트 입력 -->
+                    <div class="form-group">
+                        <label>영상 설명 (프롬프트)</label>
+                        <textarea id="videoPrompt" placeholder="예: 미용실에서 레이어드컷 시술하는 장면, 가위로 머리카락을 자르는 클로즈업..." style="min-height: 100px;"></textarea>
+                    </div>
+
+                    <!-- 첫 프레임 이미지 -->
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>📷 첫 프레임 이미지 (시작) <span style="color: var(--success); font-size: 12px;">이 이미지에서 영상이 시작됩니다</span></label>
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
+                            <label id="videoInputImageAddBtn" style="cursor: pointer; background: rgba(76, 175, 80, 0.1); border: 2px dashed var(--success); padding: 14px 24px; border-radius: 10px; color: var(--success); font-size: 14px; font-weight: 600;">
+                                🖼️ 첫 프레임 선택
+                                <input type="file" id="videoInputImageFile" accept="image/*" style="display: none;" onchange="setVideoInputImage(event)">
+                            </label>
+                            <div id="videoInputImagePreview" style="display: none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- 마지막 프레임 이미지 -->
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>🎬 마지막 프레임 이미지 (끝) <span style="color: var(--info); font-size: 12px;">선택 - 첫 프레임과 함께 사용하면 보간 영상 생성</span></label>
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
+                            <label id="videoLastFrameAddBtn" style="cursor: pointer; background: rgba(59, 130, 246, 0.1); border: 2px dashed var(--info); padding: 14px 24px; border-radius: 10px; color: var(--info); font-size: 14px; font-weight: 600;">
+                                🖼️ 마지막 프레임 선택
+                                <input type="file" id="videoLastFrameFile" accept="image/*" style="display: none;" onchange="setVideoLastFrame(event)">
+                            </label>
+                            <div id="videoLastFramePreview" style="display: none;"></div>
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 11px; margin-top: 8px;">첫 프레임 → 마지막 프레임 사이를 자연스럽게 연결하는 영상이 생성됩니다</p>
+                    </div>
+
+                    <!-- 옵션 선택 -->
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+                        <div class="form-group" style="flex: 1; min-width: 140px;">
+                            <label>영상 길이</label>
+                            <select id="videoDuration">
+                                <option value="5">5초</option>
+                                <option value="8" selected>8초</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 160px;">
+                            <label>화면 비율</label>
+                            <select id="videoAspectRatio">
+                                <option value="9:16" selected>세로형 9:16 (릴스/숏츠)</option>
+                                <option value="16:9">가로형 16:9 (유튜브)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 브랜드 안내 -->
+                    <div style="margin-top: 20px; padding: 12px 16px; background: rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.3); border-radius: 8px;">
+                        <p style="color: var(--primary); font-size: 13px; margin: 0;">
+                            <strong>📌 HAIRGATOR 브랜드 스타일</strong><br>
+                            <span style="color: var(--text-muted);">헤어디자이너 타겟 | 전문적이고 세련된 미용실 분위기</span>
+                        </p>
+                    </div>
+
+                    <!-- 생성 버튼 -->
+                    <button id="generateVideoBtn" onclick="generateVideo()" class="btn" style="width: 100%; margin-top: 24px; padding: 16px; font-size: 16px; background: linear-gradient(135deg, #9c27b0, #673ab7);">
+                        🎬 영상 생성하기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 생성된 영상 결과 -->
+            <div id="videoResultSection" class="card" style="margin-top: 20px; display: none;">
+                <div class="card-header">
+                    <div class="card-title">🎥 생성된 영상</div>
+                </div>
+                <div id="videoResultContainer" style="padding: 20px;">
+                    <!-- 동적 생성 -->
+                </div>
+            </div>
+
+            <!-- 히스토리 -->
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <div class="card-title">📜 생성 히스토리</div>
+                    <button onclick="clearVideoHistory()" class="btn btn-sm btn-danger">🗑️ 전체 삭제</button>
+                </div>
+                <div id="videoHistoryList" style="padding: 20px;">
+                    <p style="color: var(--text-muted); text-align: center;">히스토리가 없습니다</p>
+                </div>
             </div>
         </div>
 
@@ -2193,6 +2462,639 @@
                 showToast('임포트 실패: ' + error.message, 'error');
             }
         }
+
+        // ==================== 헤어스타일 관리 ====================
+        const STYLE_CATEGORIES = {
+            male: {
+                'SIDE FADE': ['N', 'FH', 'EB', 'E', 'CB'],
+                'SIDE PART': ['N', 'FH', 'EB', 'E', 'CB'],
+                'FULL UP': ['N', 'FH', 'EB', 'E', 'CB'],
+                'PUSH BACK': ['N', 'FH', 'EB', 'E', 'CB'],
+                'BUZZ': ['N', 'FH', 'EB', 'E', 'CB'],
+                'CROP': ['N', 'FH', 'EB', 'E', 'CB'],
+                'MUSHROOM / HOME': ['N', 'FH', 'EB', 'E', 'CB']
+            },
+            female: {
+                'A LENGTH': ['N', 'FH', 'EB', 'E', 'CB'],
+                'B LENGTH': ['N', 'FH', 'EB', 'E', 'CB'],
+                'C LENGTH': ['N', 'FH', 'EB', 'E', 'CB'],
+                'D LENGTH': ['N', 'FH', 'EB', 'E', 'CB'],
+                'E LENGTH': ['N', 'FH', 'EB', 'E', 'CB'],
+                'F LENGTH': ['N', 'FH', 'EB', 'E', 'CB'],
+                'G LENGTH': ['N', 'FH', 'EB', 'E', 'CB'],
+                'H LENGTH': ['N', 'FH', 'EB', 'E', 'CB']
+            }
+        };
+
+        function loadStyleCategories() {
+            const gender = document.getElementById('styleGenderSelect').value;
+            const categorySelect = document.getElementById('styleCategorySelect');
+            const subcategorySelect = document.getElementById('styleSubcategorySelect');
+
+            categorySelect.innerHTML = '<option value="">대분류 선택</option>';
+            subcategorySelect.innerHTML = '<option value="">중분류 선택</option>';
+            document.getElementById('stylesGrid').innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">카테고리를 선택하세요</p>';
+
+            if (!gender) return;
+
+            const categories = Object.keys(STYLE_CATEGORIES[gender] || {});
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        function loadStyleSubcategories() {
+            const gender = document.getElementById('styleGenderSelect').value;
+            const category = document.getElementById('styleCategorySelect').value;
+            const subcategorySelect = document.getElementById('styleSubcategorySelect');
+
+            subcategorySelect.innerHTML = '<option value="">중분류 선택</option>';
+
+            if (!gender || !category) return;
+
+            const subcategories = STYLE_CATEGORIES[gender][category] || [];
+            subcategories.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub;
+                option.textContent = sub;
+                subcategorySelect.appendChild(option);
+            });
+        }
+
+        async function loadStylesList() {
+            const gender = document.getElementById('styleGenderSelect').value;
+            const category = document.getElementById('styleCategorySelect').value;
+            const subcategory = document.getElementById('styleSubcategorySelect').value;
+            const grid = document.getElementById('stylesGrid');
+
+            if (!gender || !category || !subcategory) {
+                grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">카테고리를 선택하세요</p>';
+                return;
+            }
+
+            grid.innerHTML = '<div class="loading" style="grid-column: 1/-1;"></div>';
+
+            try {
+                const collection = gender === 'male' ? 'men_styles' : 'styles';
+                const snapshot = await db.collection(collection)
+                    .where('mainCategory', '==', category)
+                    .where('subCategory', '==', subcategory)
+                    .get();
+
+                if (snapshot.empty) {
+                    grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">등록된 스타일이 없습니다</p>';
+                    document.getElementById('stylesCountBadge').textContent = '0개';
+                    return;
+                }
+
+                document.getElementById('stylesCountBadge').textContent = `${snapshot.size}개`;
+
+                grid.innerHTML = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    const thumbnail = data.thumbnailUrl || data.resultImage || 'https://via.placeholder.com/180x220?text=No+Image';
+                    return `
+                        <div class="style-card" style="background: var(--bg-hover); border-radius: 12px; overflow: hidden; cursor: pointer;" onclick="openStyleDetail('${doc.id}')">
+                            <img src="${thumbnail}" style="width: 100%; height: 140px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/180x140?text=Error'">
+                            <div style="padding: 12px;">
+                                <div style="font-weight: 600; font-size: 13px;">${data.styleId || doc.id}</div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${data.styleName || ''}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('스타일 로드 오류:', error);
+                grid.innerHTML = '<p style="color: var(--danger); grid-column: 1/-1; text-align: center;">오류가 발생했습니다</p>';
+            }
+        }
+
+        function openStyleDetail(styleId) {
+            showToast(`스타일 상세: ${styleId}`, 'success');
+        }
+
+        function openAddStyleModal() {
+            showToast('스타일 추가 기능은 준비 중입니다', 'warning');
+        }
+
+        // ==================== 카드뉴스 생성 ====================
+        let cardNewsPageImages = {};
+        let cardNewsPageNum = 1;
+        let generatedCardNewsImages = [];
+
+        function createPageHTML(pageNum) {
+            return `
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                    <span style="color: var(--primary); font-weight: 600; min-width: 50px; padding-top: 10px;">${pageNum}장</span>
+                    <div style="flex: 1;">
+                        <textarea id="cardNewsPage${pageNum}" placeholder="본문 텍스트를 입력하세요..."
+                            style="width: 100%; background: var(--bg-hover); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 10px; font-size: 13px; min-height: 60px; resize: vertical;"></textarea>
+                        <div style="margin-top: 8px;">
+                            <input type="text" id="cardNewsImagePrompt${pageNum}" placeholder="(이미지 프롬프트: AI가 이 느낌의 이미지 생성)"
+                                style="width: 100%; background: rgba(59, 130, 246, 0.1); border: 1px solid var(--info); border-radius: 6px; color: var(--info); padding: 8px 10px; font-size: 12px;">
+                        </div>
+                        <div style="margin-top: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <span style="color: var(--text-muted); font-size: 11px;">또는 직접 첨부:</span>
+                            <label id="cardNewsPageImgLabel${pageNum}_1" style="cursor: pointer; background: var(--bg-hover); padding: 6px 12px; border-radius: 6px; font-size: 12px; color: var(--text-muted);">
+                                📷 이미지 1
+                                <input type="file" accept="image/*" style="display: none;" onchange="previewPageImage(${pageNum}, 1, event)">
+                            </label>
+                            <div id="cardNewsPageImgPreview${pageNum}_1" style="display: none;"></div>
+                            <label id="cardNewsPageImgLabel${pageNum}_2" style="cursor: pointer; background: var(--bg-hover); padding: 6px 12px; border-radius: 6px; font-size: 12px; color: var(--text-muted);">
+                                📷 이미지 2
+                                <input type="file" accept="image/*" style="display: none;" onchange="previewPageImage(${pageNum}, 2, event)">
+                            </label>
+                            <div id="cardNewsPageImgPreview${pageNum}_2" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function addCardNewsPage() {
+            if (cardNewsPageNum >= 10) {
+                showToast('최대 10장까지 추가할 수 있습니다', 'warning');
+                return;
+            }
+            cardNewsPageNum++;
+
+            const container = document.getElementById('cardNewsPagesContainer');
+            const pageDiv = document.createElement('div');
+            pageDiv.id = `cardNewsPageDiv${cardNewsPageNum}`;
+            pageDiv.style.cssText = 'margin-bottom: 16px; padding: 12px; background: var(--bg-hover); border-radius: 10px; border: 1px solid var(--border);';
+            pageDiv.innerHTML = createPageHTML(cardNewsPageNum);
+            container.appendChild(pageDiv);
+
+            updatePageCount();
+        }
+
+        function removeCardNewsPage() {
+            if (cardNewsPageNum <= 1) return;
+            delete cardNewsPageImages[cardNewsPageNum];
+            const pageDiv = document.getElementById(`cardNewsPageDiv${cardNewsPageNum}`);
+            if (pageDiv) pageDiv.remove();
+            cardNewsPageNum--;
+            updatePageCount();
+        }
+
+        function updatePageCount() {
+            document.getElementById('cardNewsPageCount').textContent = `${cardNewsPageNum}장`;
+            document.getElementById('removePageBtn').style.display = cardNewsPageNum > 1 ? 'block' : 'none';
+        }
+
+        function previewPageImage(pageNum, imgIndex, event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                if (!cardNewsPageImages[pageNum]) cardNewsPageImages[pageNum] = [];
+                cardNewsPageImages[pageNum][imgIndex - 1] = {
+                    data: base64.split(',')[1],
+                    mimeType: file.type || 'image/jpeg',
+                    preview: base64
+                };
+
+                const preview = document.getElementById(`cardNewsPageImgPreview${pageNum}_${imgIndex}`);
+                preview.style.display = 'flex';
+                preview.innerHTML = `<img src="${base64}" style="height: 40px; border-radius: 4px;"><button onclick="clearPageImage(${pageNum}, ${imgIndex})" style="background: none; border: none; color: var(--danger); cursor: pointer; margin-left: 4px;">✕</button>`;
+
+                const label = document.getElementById(`cardNewsPageImgLabel${pageNum}_${imgIndex}`);
+                if (label) {
+                    label.style.background = 'rgba(76, 175, 80, 0.2)';
+                    label.style.color = 'var(--success)';
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearPageImage(pageNum, imgIndex) {
+            if (cardNewsPageImages[pageNum]) {
+                cardNewsPageImages[pageNum][imgIndex - 1] = null;
+                if (!cardNewsPageImages[pageNum].some(img => img)) delete cardNewsPageImages[pageNum];
+            }
+            document.getElementById(`cardNewsPageImgPreview${pageNum}_${imgIndex}`).style.display = 'none';
+            const label = document.getElementById(`cardNewsPageImgLabel${pageNum}_${imgIndex}`);
+            if (label) {
+                label.style.background = 'var(--bg-hover)';
+                label.style.color = 'var(--text-muted)';
+            }
+        }
+
+        async function generateCardNews() {
+            const title = document.getElementById('cardNewsTitle').value.trim();
+            const count = cardNewsPageNum;
+            const pages = [];
+
+            for (let i = 1; i <= count; i++) {
+                const pageContent = document.getElementById(`cardNewsPage${i}`)?.value.trim() || '';
+                pages.push(pageContent);
+            }
+
+            if (!title && !pages[0]) {
+                showToast('제목 또는 1장 내용을 입력해주세요', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('generateCardNewsBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> 생성 중...';
+
+            try {
+                generatedCardNewsImages = [];
+                const ratio = document.getElementById('cardNewsRatio').value;
+
+                for (let i = 0; i < count; i++) {
+                    const pageImages = cardNewsPageImages[i + 1] || [];
+                    const imageUrl = await generateCardNewsWithCanvas(i + 1, count, title, pages[i], pageImages, ratio);
+                    generatedCardNewsImages.push({ url: imageUrl, page: i + 1 });
+                }
+
+                displayCardNewsResult(generatedCardNewsImages);
+                saveCardNewsHistory(title, generatedCardNewsImages);
+                showToast(`${generatedCardNewsImages.length}개 카드뉴스 생성 완료!`, 'success');
+
+            } catch (error) {
+                console.error('카드뉴스 생성 오류:', error);
+                showToast('생성 실패: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🎨 카드뉴스 생성하기';
+            }
+        }
+
+        async function generateCardNewsWithCanvas(pageNum, totalPages, title, content, imagesArray, ratio) {
+            const validImages = (imagesArray || []).filter(img => img && img.preview);
+
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                const sizes = { '1:1': { width: 1080, height: 1080 }, '4:5': { width: 1080, height: 1350 }, '9:16': { width: 1080, height: 1920 } };
+                const size = sizes[ratio] || sizes['1:1'];
+                canvas.width = size.width;
+                canvas.height = size.height;
+
+                // 배경 그라데이션
+                const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                gradient.addColorStop(0, '#ffffff');
+                gradient.addColorStop(0.5, '#fff5f8');
+                gradient.addColorStop(1, '#ffe4ec');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // 상단 핑크 바
+                ctx.fillStyle = '#E91E63';
+                ctx.fillRect(0, 0, canvas.width, 8);
+
+                // 제목
+                if (title) {
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.font = 'bold 48px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(title, canvas.width / 2, 80);
+                }
+
+                // 내용
+                if (content) {
+                    ctx.fillStyle = '#333333';
+                    ctx.font = '32px sans-serif';
+                    ctx.textAlign = 'center';
+                    wrapTextCanvas(ctx, content, canvas.width / 2, canvas.height / 2, canvas.width - 100, 42);
+                }
+
+                // 페이지 번호
+                ctx.fillStyle = '#E91E63';
+                ctx.font = 'bold 28px sans-serif';
+                ctx.fillText(`${pageNum} / ${totalPages}`, canvas.width / 2, canvas.height - 30);
+
+                // 워터마크
+                ctx.fillStyle = 'rgba(233, 30, 99, 0.3)';
+                ctx.font = 'bold 18px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText('HAIRGATOR', canvas.width - 30, canvas.height - 30);
+
+                resolve(canvas.toDataURL('image/png'));
+            });
+        }
+
+        function wrapTextCanvas(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split('');
+            let line = '';
+            let lineCount = 0;
+
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n];
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > maxWidth && n > 0) {
+                    ctx.fillText(line, x, y + lineCount * lineHeight);
+                    line = words[n];
+                    lineCount++;
+                } else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, x, y + lineCount * lineHeight);
+        }
+
+        function displayCardNewsResult(images) {
+            document.getElementById('cardNewsResultSection').style.display = 'block';
+            document.getElementById('cardNewsResultGrid').innerHTML = images.map((img, idx) => `
+                <div style="background: var(--bg-hover); border-radius: 12px; overflow: hidden;">
+                    <img src="${img.url}" alt="카드뉴스 ${idx + 1}" style="width: 100%; display: block;">
+                    <div style="padding: 12px; text-align: center;">
+                        <button onclick="downloadCardNews(${idx})" class="btn btn-sm">⬇️ 다운로드</button>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('cardNewsCaption').textContent = `✨ ${document.getElementById('cardNewsTitle').value || '새로운 소식'}\n\n자세한 내용은 프로필 링크에서 확인하세요!\n\n#헤어스타일 #미용실 #HAIRGATOR`;
+            document.getElementById('cardNewsKeywords').textContent = '#헤어스타일 #헤어디자이너 #미용실 #헤어트렌드 #HAIRGATOR #뷰티 #헤어컷 #펌 #염색';
+        }
+
+        function downloadCardNews(index) {
+            const img = generatedCardNewsImages[index];
+            if (!img) return;
+            const a = document.createElement('a');
+            a.href = img.url;
+            a.download = `hairgator_cardnews_${index + 1}.png`;
+            a.click();
+        }
+
+        function downloadAllCardNews() {
+            generatedCardNewsImages.forEach((img, idx) => {
+                setTimeout(() => downloadCardNews(idx), idx * 500);
+            });
+        }
+
+        function saveCardNewsHistory(title, images) {
+            const history = JSON.parse(localStorage.getItem('cardNewsHistory') || '[]');
+            history.unshift({ id: Date.now(), title: title || '제목 없음', images: images.map(i => i.url), date: new Date().toISOString() });
+            localStorage.setItem('cardNewsHistory', JSON.stringify(history.slice(0, 20)));
+            loadCardNewsHistory();
+        }
+
+        function loadCardNewsHistory() {
+            const history = JSON.parse(localStorage.getItem('cardNewsHistory') || '[]');
+            const container = document.getElementById('cardNewsHistoryList');
+
+            if (history.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">히스토리가 없습니다</p>';
+                return;
+            }
+
+            container.innerHTML = history.map(item => `
+                <div style="display: flex; gap: 12px; padding: 12px; background: var(--bg-hover); border-radius: 8px; margin-bottom: 8px;">
+                    <img src="${item.images[0]}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600;">${item.title}</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">${new Date(item.date).toLocaleDateString()} · ${item.images.length}장</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function clearCardNewsHistory() {
+            if (!confirm('모든 히스토리를 삭제하시겠습니까?')) return;
+            localStorage.removeItem('cardNewsHistory');
+            loadCardNewsHistory();
+            showToast('히스토리가 삭제되었습니다', 'success');
+        }
+
+        function copyCaption() {
+            const text = document.getElementById('cardNewsCaption').textContent;
+            navigator.clipboard.writeText(text);
+            showToast('캡션이 복사되었습니다', 'success');
+        }
+
+        function copyKeywords() {
+            const text = document.getElementById('cardNewsKeywords').textContent;
+            navigator.clipboard.writeText(text);
+            showToast('해시태그가 복사되었습니다', 'success');
+        }
+
+        // ==================== 영상 생성 (Veo) ====================
+        let videoInputImage = null;
+        let videoLastFrame = null;
+
+        function setVideoInputImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Full = e.target.result;
+                videoInputImage = {
+                    data: base64Full.split(',')[1],
+                    mimeType: file.type || 'image/png',
+                    preview: base64Full
+                };
+
+                const previewDiv = document.getElementById('videoInputImagePreview');
+                previewDiv.style.display = 'flex';
+                previewDiv.innerHTML = `
+                    <div style="position: relative; display: inline-block;">
+                        <img src="${base64Full}" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid var(--success);">
+                        <button onclick="clearVideoInputImage()" style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: var(--danger); border: none; color: white; cursor: pointer;">✕</button>
+                    </div>
+                `;
+
+                const addBtn = document.getElementById('videoInputImageAddBtn');
+                addBtn.style.background = 'rgba(76, 175, 80, 0.2)';
+                addBtn.innerHTML = '✅ 이미지 선택됨<input type="file" accept="image/*" style="display: none;" onchange="setVideoInputImage(event)">';
+
+                showToast('첫 프레임 이미지가 설정되었습니다', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearVideoInputImage() {
+            videoInputImage = null;
+            document.getElementById('videoInputImagePreview').style.display = 'none';
+            document.getElementById('videoInputImagePreview').innerHTML = '';
+
+            const addBtn = document.getElementById('videoInputImageAddBtn');
+            addBtn.style.background = 'rgba(76, 175, 80, 0.1)';
+            addBtn.innerHTML = '🖼️ 첫 프레임 선택<input type="file" accept="image/*" style="display: none;" onchange="setVideoInputImage(event)">';
+        }
+
+        function setVideoLastFrame(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Full = e.target.result;
+                videoLastFrame = {
+                    data: base64Full.split(',')[1],
+                    mimeType: file.type || 'image/png',
+                    preview: base64Full
+                };
+
+                const previewDiv = document.getElementById('videoLastFramePreview');
+                previewDiv.style.display = 'flex';
+                previewDiv.innerHTML = `
+                    <div style="position: relative; display: inline-block;">
+                        <img src="${base64Full}" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid var(--info);">
+                        <button onclick="clearVideoLastFrame()" style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: var(--danger); border: none; color: white; cursor: pointer;">✕</button>
+                    </div>
+                `;
+
+                const addBtn = document.getElementById('videoLastFrameAddBtn');
+                addBtn.style.background = 'rgba(59, 130, 246, 0.2)';
+                addBtn.innerHTML = '✅ 이미지 선택됨<input type="file" accept="image/*" style="display: none;" onchange="setVideoLastFrame(event)">';
+
+                showToast('마지막 프레임 이미지가 설정되었습니다', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearVideoLastFrame() {
+            videoLastFrame = null;
+            document.getElementById('videoLastFramePreview').style.display = 'none';
+            document.getElementById('videoLastFramePreview').innerHTML = '';
+
+            const addBtn = document.getElementById('videoLastFrameAddBtn');
+            addBtn.style.background = 'rgba(59, 130, 246, 0.1)';
+            addBtn.innerHTML = '🖼️ 마지막 프레임 선택<input type="file" accept="image/*" style="display: none;" onchange="setVideoLastFrame(event)">';
+        }
+
+        async function generateVideo() {
+            const prompt = document.getElementById('videoPrompt').value.trim();
+            if (!prompt) {
+                showToast('영상 설명을 입력해주세요', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('generateVideoBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> 영상 생성 시작 중...';
+
+            const duration = document.getElementById('videoDuration').value;
+            const aspectRatio = document.getElementById('videoAspectRatio').value;
+
+            try {
+                const payload = { prompt, duration, aspect_ratio: aspectRatio };
+
+                if (videoInputImage) {
+                    payload.input_image = { data: videoInputImage.data, mimeType: videoInputImage.mimeType };
+                }
+                if (videoLastFrame) {
+                    payload.last_image = { data: videoLastFrame.data, mimeType: videoLastFrame.mimeType };
+                }
+
+                // 1단계: 영상 생성 시작
+                const startResponse = await fetch('/.netlify/functions/chatbot-api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'generate_video_start', payload })
+                });
+
+                const startResult = await startResponse.json();
+                if (!startResult.success || !startResult.operationName) {
+                    throw new Error(startResult.error || '영상 생성 시작 실패');
+                }
+
+                const operationName = startResult.operationName;
+
+                // 2단계: 상태 확인 폴링
+                const maxAttempts = 60;
+                for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                    btn.innerHTML = `<span class="loading"></span> 영상 생성 중... (${attempt * 5}초)`;
+                    await new Promise(r => setTimeout(r, 5000));
+
+                    const statusResponse = await fetch('/.netlify/functions/chatbot-api', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'generate_video_status', payload: { operationName } })
+                    });
+
+                    const statusResult = await statusResponse.json();
+                    if (statusResult.done) {
+                        if (statusResult.success && statusResult.data) {
+                            displayVideoResult(statusResult.data);
+                            saveVideoHistory(prompt, statusResult.data);
+                            showToast('영상 생성 완료!', 'success');
+                            return;
+                        } else {
+                            throw new Error(statusResult.error || '영상 생성 실패');
+                        }
+                    }
+                }
+
+                throw new Error('영상 생성 시간 초과 (5분)');
+
+            } catch (error) {
+                console.error('영상 생성 오류:', error);
+                showToast('생성 실패: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🎬 영상 생성하기';
+            }
+        }
+
+        function displayVideoResult(data) {
+            const container = document.getElementById('videoResultContainer');
+            container.innerHTML = `
+                <video controls style="width: 100%; max-width: 400px; border-radius: 8px; margin: 0 auto; display: block;">
+                    <source src="${data.video_url}" type="video/mp4">
+                </video>
+                <div style="margin-top: 16px; text-align: center;">
+                    <a href="${data.video_url}" download="hairgator_video_${Date.now()}.mp4" class="btn" style="background: var(--success);">⬇️ 다운로드</a>
+                </div>
+            `;
+            document.getElementById('videoResultSection').style.display = 'block';
+        }
+
+        function saveVideoHistory(prompt, data) {
+            const history = JSON.parse(localStorage.getItem('videoHistory') || '[]');
+            history.unshift({ id: Date.now(), prompt: prompt.substring(0, 50), video_url: data.video_url, date: new Date().toISOString() });
+            localStorage.setItem('videoHistory', JSON.stringify(history.slice(0, 10)));
+            loadVideoHistory();
+        }
+
+        function loadVideoHistory() {
+            const history = JSON.parse(localStorage.getItem('videoHistory') || '[]');
+            const container = document.getElementById('videoHistoryList');
+
+            if (history.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">히스토리가 없습니다</p>';
+                return;
+            }
+
+            container.innerHTML = history.map(item => `
+                <div style="padding: 12px; background: var(--bg-hover); border-radius: 8px; margin-bottom: 8px;">
+                    <div style="font-weight: 600;">${item.prompt}...</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${new Date(item.date).toLocaleDateString()}</div>
+                    <a href="${item.video_url}" target="_blank" style="font-size: 12px; color: var(--primary);">영상 보기 →</a>
+                </div>
+            `).join('');
+        }
+
+        function clearVideoHistory() {
+            if (!confirm('모든 히스토리를 삭제하시겠습니까?')) return;
+            localStorage.removeItem('videoHistory');
+            loadVideoHistory();
+            showToast('히스토리가 삭제되었습니다', 'success');
+        }
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 카드뉴스 초기 입력창 생성
+            const container = document.getElementById('cardNewsPagesContainer');
+            if (container) {
+                container.innerHTML = `<div id="cardNewsPageDiv1" style="margin-bottom: 16px; padding: 12px; background: var(--bg-hover); border-radius: 10px; border: 1px solid var(--border);">${createPageHTML(1)}</div>`;
+                updatePageCount();
+            }
+
+            // 히스토리 로드
+            loadCardNewsHistory();
+            loadVideoHistory();
+        });
 
         // 모달
         function openModal(id) {
