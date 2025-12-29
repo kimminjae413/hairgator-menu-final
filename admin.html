@@ -393,6 +393,45 @@
             font-size: 13px;
         }
 
+        /* 기간 필터 버튼 */
+        .period-filter-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .period-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .period-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .period-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* 하이라이트 카드 (신규 가입자/접속자) */
+        .stat-card-highlight {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .stat-card-highlight .stat-value {
+            color: var(--primary);
+        }
+
         .stat-change {
             font-size: 12px;
             display: flex;
@@ -1418,6 +1457,34 @@
         <div id="page-usage" class="page">
             <div class="page-header">
                 <h2 class="page-title">사용 통계</h2>
+                <div class="period-filter-group">
+                    <button class="period-btn active" data-period="day" onclick="changeStatsPeriod('day')">일</button>
+                    <button class="period-btn" data-period="week" onclick="changeStatsPeriod('week')">주</button>
+                    <button class="period-btn" data-period="month" onclick="changeStatsPeriod('month')">월</button>
+                    <button class="period-btn" data-period="year" onclick="changeStatsPeriod('year')">년</button>
+                </div>
+            </div>
+
+            <!-- 신규 가입자/접속자 카드 -->
+            <div class="stats-grid" style="margin-bottom: 16px;">
+                <div class="stat-card stat-card-highlight">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-value" id="usageNewUsers">-</div>
+                            <div class="stat-label">신규 가입자</div>
+                        </div>
+                        <div class="stat-icon">👤</div>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-highlight">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-value" id="usageActiveUsers">-</div>
+                            <div class="stat-label">접속자 수</div>
+                        </div>
+                        <div class="stat-icon">🟢</div>
+                    </div>
+                </div>
             </div>
 
             <div class="stats-grid">
@@ -3326,11 +3393,51 @@
             }
         }
 
+        // 현재 선택된 통계 기간
+        let currentStatsPeriod = 'day';
+
+        // 기간 필터 변경
+        function changeStatsPeriod(period) {
+            currentStatsPeriod = period;
+
+            // 버튼 활성화 상태 변경
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.period === period);
+            });
+
+            // 통계 다시 로드
+            loadUsageStats();
+        }
+
+        // 기간에 따른 시작 날짜 계산
+        function getStartDateForPeriod(period) {
+            const now = new Date();
+            switch (period) {
+                case 'day':
+                    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                case 'week':
+                    const weekAgo = new Date(now);
+                    weekAgo.setDate(now.getDate() - 7);
+                    return weekAgo;
+                case 'month':
+                    return new Date(now.getFullYear(), now.getMonth(), 1);
+                case 'year':
+                    return new Date(now.getFullYear(), 0, 1);
+                default:
+                    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            }
+        }
+
         // 사용 통계 로드
         async function loadUsageStats() {
             try {
-                const snapshot = await db.collection('credit_logs').get();
-                const logs = snapshot.docs.map(doc => doc.data());
+                const startDate = getStartDateForPeriod(currentStatsPeriod);
+
+                // credit_logs에서 기간 내 로그 조회
+                const logsSnapshot = await db.collection('credit_logs')
+                    .where('timestamp', '>=', startDate)
+                    .get();
+                const logs = logsSnapshot.docs.map(doc => doc.data());
 
                 const chatbotCount = logs.filter(l => l.action === 'chatbot').length;
                 const lookbookCount = logs.filter(l => l.action === 'lookbook').length;
@@ -3342,6 +3449,24 @@
                 document.getElementById('usageHairTry').textContent = hairTryCount.toLocaleString();
                 document.getElementById('usageTokensUsed').textContent = totalUsed.toLocaleString();
 
+                // 신규 가입자 수 (users 컬렉션에서 createdAt 기준)
+                const usersSnapshot = await db.collection('users')
+                    .where('createdAt', '>=', startDate)
+                    .get();
+                const newUsersCount = usersSnapshot.size;
+                document.getElementById('usageNewUsers').textContent = newUsersCount.toLocaleString();
+
+                // 접속자 수 (users 컬렉션에서 lastLoginAt 기준)
+                const activeUsersSnapshot = await db.collection('users')
+                    .where('lastLoginAt', '>=', startDate)
+                    .get();
+                const activeUsersCount = activeUsersSnapshot.size;
+                document.getElementById('usageActiveUsers').textContent = activeUsersCount.toLocaleString();
+
+                // 기간 라벨 업데이트
+                const periodLabels = { day: '오늘', week: '이번 주', month: '이번 달', year: '올해' };
+                const periodLabel = periodLabels[currentStatsPeriod] || '오늘';
+
                 // 기능별 차트
                 if (featureUsageChart) featureUsageChart.destroy();
                 featureUsageChart = new Chart(document.getElementById('featureUsageChart'), {
@@ -3349,7 +3474,7 @@
                     data: {
                         labels: ['챗봇', '룩북', '헤어체험'],
                         datasets: [{
-                            label: '사용 횟수',
+                            label: `사용 횟수 (${periodLabel})`,
                             data: [chatbotCount, lookbookCount, hairTryCount],
                             backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444']
                         }]
