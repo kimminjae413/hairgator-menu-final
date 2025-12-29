@@ -2491,7 +2491,7 @@
             const password = document.getElementById('newAdminPassword').value;
 
             if (!name || !email || !password) {
-                showToast('모든 ?�드�??�력?�세??', 'error');
+                showToast('모든 필드를 입력하세요', 'error');
                 return;
             }
 
@@ -2557,23 +2557,24 @@
             document.getElementById('changePasswordModal').classList.add('show');
         }
 
-        // 비�?번호 변�?        async function changePassword() {
+        // 비밀번호 변경
+        async function changePassword() {
             const currentPw = document.getElementById('currentPassword').value;
             const newPw = document.getElementById('newPassword').value;
             const confirmPw = document.getElementById('confirmPassword').value;
 
             if (!currentPw || !newPw || !confirmPw) {
-                showToast('모든 ?�드�??�력?�세??', 'error');
+                showToast('모든 필드를 입력하세요', 'error');
                 return;
             }
 
             if (!/^\d{6}$/.test(newPw)) {
-                showToast('??비�?번호???�자 6?�리?�야 ?�니??', 'error');
+                showToast('새 비밀번호는 숫자 6자리여야 합니다', 'error');
                 return;
             }
 
             if (newPw !== confirmPw) {
-                showToast('??비�?번호가 ?�치?��? ?�습?�다.', 'error');
+                showToast('새 비밀번호가 일치하지 않습니다.', 'error');
                 return;
             }
 

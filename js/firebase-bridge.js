@@ -186,19 +186,41 @@
 
         // ========== 토큰 관리 함수들 ==========
 
-        // 토큰 잔액 조회
-        async getTokenBalance(uid) {
+        // 사용자 문서 ID 가져오기 (이메일 기반 우선)
+        async getUserDocId() {
+            // 1. window.currentDesigner에서 가져오기
+            if (window.currentDesigner?.id) {
+                return window.currentDesigner.id;
+            }
+            // 2. Firebase Auth 사용자 이메일로 생성
+            const firebaseUser = typeof auth !== 'undefined' ? auth.currentUser : null;
+            if (firebaseUser?.email) {
+                return firebaseUser.email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_');
+            }
+            // 3. localStorage에서 복구
             try {
-                if (!uid) {
-                    uid = this.currentUser?.uid;
+                const saved = localStorage.getItem('firebase_user');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.id) return parsed.id;
+                }
+            } catch (e) {}
+            return null;
+        },
+
+        // 토큰 잔액 조회
+        async getTokenBalance(docId) {
+            try {
+                if (!docId) {
+                    docId = await this.getUserDocId();
                 }
 
-                if (!uid) {
-                    console.error('❌ uid가 없습니다');
-                    return { success: false, error: 'uid required' };
+                if (!docId) {
+                    console.error('❌ 사용자 문서 ID가 없습니다');
+                    return { success: false, error: 'User doc ID required', tokenBalance: 0 };
                 }
 
-                const userDoc = await db.collection('users').doc(uid).get();
+                const userDoc = await db.collection('users').doc(docId).get();
 
                 if (userDoc.exists) {
                     const userData = userDoc.data();
@@ -227,7 +249,7 @@
                     return { success: false, error: 'uid required', plan: 'free' };
                 }
 
-                const userDoc = await db.collection('users').doc(uid).get();
+                const userDoc = await db.collection('users').doc(docId).get();
 
                 if (userDoc.exists) {
                     return {

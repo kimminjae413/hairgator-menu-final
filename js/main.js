@@ -112,12 +112,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 // displayName 우선순위: Firestore > window.currentDesigner > Auth > 기본값
                 let displayName = user.displayName;
 
-                // Firestore에서 사용자 정보 가져오기
+                // Firestore에서 사용자 정보 가져오기 (이메일 기반 문서 ID 사용)
                 try {
-                    const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
-                    if (userDoc.exists) {
+                    // 이메일 기반 문서 ID 생성
+                    const emailDocId = user.email ? user.email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_') : null;
+
+                    // window.currentDesigner가 있으면 그 ID 우선 사용
+                    const docId = window.currentDesigner?.id || emailDocId;
+
+                    if (docId) {
+                        const userDoc = await firebase.firestore().collection('users').doc(docId).get();
+                        if (userDoc.exists) {
                         const userData = userDoc.data();
                         displayName = userData.name || userData.displayName || displayName;
+                        }
                     }
                 } catch (e) {
                     console.log('Firestore 사용자 정보 조회 실패:', e);
