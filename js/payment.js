@@ -333,6 +333,146 @@ function selectPlan(planType) {
   }
 }
 
+// ========== 본인인증 기능 ==========
+
+/**
+ * 본인인증 완료 여부 확인
+ * @param {string} userId - 사용자 ID
+ * @returns {Promise<Object|null>} 인증 정보 (verifiedName, verifiedPhone) 또는 null
+ */
+async function checkIdentityVerification(userId) {
+  if (!userId) return null;
+
+  try {
+    const userDoc = await firebase.firestore()
+      .collection('users')
+      .doc(userId)
+      .get();
+
+    if (userDoc.exists) {
+      const data = userDoc.data();
+      if (data.identityVerified && data.verifiedName && data.verifiedPhone) {
+        return {
+          verified: true,
+          name: data.verifiedName,
+          phone: data.verifiedPhone,
+          verifiedAt: data.identityVerifiedAt
+        };
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('본인인증 확인 오류:', error);
+    return null;
+  }
+}
+
+/**
+ * 본인인증 요청
+ * @param {string} userId - 사용자 ID
+ * @returns {Promise<Object>} 인증 결과
+ */
+async function requestIdentityVerification(userId) {
+  if (!userId) {
+    throw new Error('로그인이 필요합니다.');
+  }
+
+  console.log('🔐 본인인증 시작:', userId);
+
+  try {
+    // 고유 인증 ID 생성
+    const identityVerificationId = `HG_ID_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // 포트원 본인인증 요청
+    const response = await PortOne.requestIdentityVerification({
+      storeId: HAIRGATOR_PAYMENT.storeId,
+      identityVerificationId: identityVerificationId,
+      channelKey: HAIRGATOR_PAYMENT.channelKey,
+      windowType: { pc: 'POPUP', mobile: 'REDIRECTION' },
+      redirectUrl: window.location.origin + '/identity-complete.html'
+    });
+
+    console.log('🔐 본인인증 응답:', response);
+
+    // 에러 처리
+    if (response.code) {
+      if (response.code === 'USER_CANCEL') {
+        return { success: false, cancelled: true, message: '본인인증이 취소되었습니다.' };
+      }
+      throw new Error(response.message || '본인인증에 실패했습니다.');
+    }
+
+    // 서버에서 본인인증 결과 검증 및 저장
+    const verifyResponse = await fetch('/.netlify/functions/identity-verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identityVerificationId: identityVerificationId,
+        userId: userId
+      })
+    });
+
+    const verifyResult = await verifyResponse.json();
+
+    if (!verifyResponse.ok || !verifyResult.success) {
+      throw new Error(verifyResult.error || '본인인증 검증에 실패했습니다.');
+    }
+
+    console.log('✅ 본인인증 완료:', verifyResult);
+
+    return {
+      success: true,
+      name: verifyResult.name,
+      phone: verifyResult.phone
+    };
+
+  } catch (error) {
+    console.error('본인인증 오류:', error);
+    throw error;
+  }
+}
+
+/**
+ * 본인인증 필수 확인 후 결제 진행
+ * @param {string} planKey - 요금제 키
+ */
+async function verifyAndPay(planKey) {
+  const userId = HAIRGATOR_PAYMENT.getUserId();
+  if (!userId) {
+    alert('로그인이 필요합니다.');
+    return;
+  }
+
+  // 본인인증 여부 확인
+  const verification = await checkIdentityVerification(userId);
+
+  if (!verification) {
+    // 본인인증 필요
+    const confirmed = confirm('결제를 진행하려면 본인인증이 필요합니다.\n본인인증을 진행하시겠습니까?');
+    if (!confirmed) return;
+
+    try {
+      const result = await requestIdentityVerification(userId);
+
+      if (result.cancelled) {
+        return;
+      }
+
+      if (result.success) {
+        alert(`본인인증이 완료되었습니다!\n${result.name}님, 결제를 진행합니다.`);
+        // 본인인증 완료 후 결제 진행
+        await showPaymentOptions(planKey);
+      }
+    } catch (error) {
+      alert(error.message || '본인인증에 실패했습니다.');
+      return;
+    }
+  } else {
+    // 이미 본인인증 완료 - 바로 결제
+    await showPaymentOptions(planKey);
+  }
+}
+
 // ========== 빌링키 (카드 저장) 기능 ==========
 
 /**
@@ -887,6 +1027,11 @@ window.HAIRGATOR_PAYMENT = HAIRGATOR_PAYMENT;
 window.selectPlan = selectPlan;
 window.purchasePlan = (planKey) => HAIRGATOR_PAYMENT.purchasePlan(planKey);
 window.purchaseExtraCredits = () => HAIRGATOR_PAYMENT.purchaseExtraCredits();
+
+// 본인인증 관련 함수 노출
+window.checkIdentityVerification = checkIdentityVerification;
+window.requestIdentityVerification = requestIdentityVerification;
+window.verifyAndPay = verifyAndPay;
 
 // 빌링키 관련 함수 노출
 window.getSavedCards = getSavedCards;

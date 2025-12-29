@@ -2749,16 +2749,27 @@
                 const plan = user.plan || 'free';
                 const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' }[plan];
 
+                // 본인인증 뱃지
+                const verifiedBadge = user.identityVerified
+                    ? '<span style="background: #10B981; color: white; font-size: 9px; padding: 1px 4px; border-radius: 3px; margin-left: 4px;" title="본인인증 완료">✓</span>'
+                    : '';
+
+                // 실명 표시 (본인인증 시)
+                const displayName = user.identityVerified && user.verifiedName
+                    ? user.verifiedName
+                    : (user.displayName || '이름 없음');
+
                 return `
                     <tr>
                         <td>
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 600;">
-                                    ${(user.displayName || 'U')[0].toUpperCase()}
+                                    ${displayName[0].toUpperCase()}
                                 </div>
                                 <div>
-                                    <div style="font-weight: 500;">${user.displayName || '이름 없음'}</div>
+                                    <div style="font-weight: 500;">${displayName}${verifiedBadge}</div>
                                     <div style="font-size: 11px; color: var(--text-muted);">${user.email || user.id}</div>
+                                    ${user.verifiedPhone ? `<div style="font-size: 10px; color: #10B981;">${user.verifiedPhone}</div>` : ''}
                                 </div>
                             </div>
                         </td>
@@ -2804,14 +2815,38 @@
 
             const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' }[user.plan || 'free'];
 
+            // 본인인증 정보 표시
+            const verifiedBadge = user.identityVerified
+                ? '<span style="background: #10B981; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 8px;">인증완료</span>'
+                : '<span style="background: #F59E0B; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 8px;">미인증</span>';
+
+            // 실명/전화번호 (본인인증 완료 시)
+            const verifiedInfo = user.identityVerified
+                ? `<div style="margin-top: 16px; background: #ECFDF5; border-radius: 8px; padding: 12px; border: 1px solid #10B981;">
+                    <div style="font-size: 11px; color: #065F46; font-weight: 600; margin-bottom: 8px;">✅ 본인인증 정보</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <div>
+                            <div style="color: #065F46; font-size: 10px;">실명</div>
+                            <div style="font-weight: 600; color: #047857;">${user.verifiedName || '-'}</div>
+                        </div>
+                        <div>
+                            <div style="color: #065F46; font-size: 10px;">전화번호</div>
+                            <div style="font-weight: 600; color: #047857;">${user.verifiedPhone || '-'}</div>
+                        </div>
+                    </div>
+                   </div>`
+                : '';
+
             document.getElementById('userDetailContent').innerHTML = `
                 <div class="user-detail-header">
                     <div class="user-avatar">${(user.displayName || 'U')[0].toUpperCase()}</div>
                     <div class="user-info">
-                        <h3>${user.displayName || '이름 없음'}</h3>
+                        <h3>${user.displayName || '이름 없음'}${verifiedBadge}</h3>
                         <p>${user.email || '-'}</p>
                     </div>
                 </div>
+
+                ${verifiedInfo}
 
                 <div class="user-stats">
                     <div class="user-stat">

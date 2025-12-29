@@ -176,8 +176,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // 결제 처리 (payment.js 사용)
-        // showPaymentOptions: 저장된 카드가 있으면 선택 UI 표시, 없으면 일반 결제
-        if (typeof window.showPaymentOptions === 'function') {
+        // verifyAndPay: 본인인증 확인 후 결제 진행
+        if (typeof window.verifyAndPay === 'function') {
+            try {
+                await window.verifyAndPay(planType);
+            } catch (e) {
+                console.error('결제 오류:', e);
+                alert('결제 처리 중 오류가 발생했습니다.');
+            }
+        } else if (typeof window.showPaymentOptions === 'function') {
+            // fallback: 본인인증 함수 없으면 기존 방식
             try {
                 await window.showPaymentOptions(planType);
             } catch (e) {
