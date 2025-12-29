@@ -1200,7 +1200,18 @@
                     <button class="btn btn-secondary" onclick="loadUsers()">🔄</button>
                 </div>
 
+                <!-- 데이터 출처 필터 -->
+                <div class="filters" style="margin-bottom: 8px;">
+                    <span style="font-size: 12px; color: var(--text-muted); margin-right: 8px;">출처:</span>
+                    <button class="filter-btn source-btn active" data-source="all" onclick="setUserSource('all')">전체</button>
+                    <button class="filter-btn source-btn" data-source="firebase" onclick="setUserSource('firebase')">Firebase</button>
+                    <button class="filter-btn source-btn" data-source="bullnabi" onclick="setUserSource('bullnabi')">불나비</button>
+                    <span id="userTotalCount" style="margin-left: auto; font-size: 12px; color: var(--text-muted);"></span>
+                </div>
+
+                <!-- 플랜 필터 -->
                 <div class="filters">
+                    <span style="font-size: 12px; color: var(--text-muted); margin-right: 8px;">플랜:</span>
                     <button class="filter-btn active" onclick="filterUsers('all', this)">전체</button>
                     <button class="filter-btn" onclick="filterUsers('free', this)">무료</button>
                     <button class="filter-btn" onclick="filterUsers('basic', this)">베이직</button>
@@ -1213,10 +1224,10 @@
                         <thead>
                             <tr>
                                 <th>사용자</th>
+                                <th>상태</th>
                                 <th>플랜</th>
                                 <th>토큰</th>
                                 <th>가입일</th>
-                                <th>최근 접속</th>
                                 <th>액션</th>
                             </tr>
                         </thead>
@@ -2712,20 +2723,92 @@
             }
         }
 
-        // 사용자 목록 로드
+        // 사용자 목록 로드 (Firebase users + Bullnabi users 통합)
+        let userSource = 'all'; // 'all', 'firebase', 'bullnabi'
+
         async function loadUsers() {
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;"><div class="loading"></div></td></tr>';
 
             try {
-                const snapshot = await db.collection('users').orderBy('createdAt', 'desc').limit(100).get();
-                allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                allUsers = [];
 
+                // 1. Firebase Auth 사용자 (users 컬렉션)
+                if (userSource === 'all' || userSource === 'firebase') {
+                    const firebaseSnapshot = await db.collection('users').orderBy('createdAt', 'desc').limit(500).get();
+                    const firebaseUsers = firebaseSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data(),
+                        source: 'firebase'  // 출처 표시
+                    }));
+                    allUsers = allUsers.concat(firebaseUsers);
+                }
+
+                // 2. 불나비 마이그레이션 사용자 (bullnabi_users 컬렉션)
+                if (userSource === 'all' || userSource === 'bullnabi') {
+                    const bullnabiSnapshot = await db.collection('bullnabi_users').orderBy('createdAt', 'desc').limit(500).get();
+                    const bullnabiUsers = bullnabiSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data(),
+                        source: 'bullnabi',  // 출처 표시
+                        // 필드명 매핑 (불나비 → 헤어게이터)
+                        displayName: doc.data().name || doc.data().displayName || doc.data().userName,
+                        email: doc.data().email || doc.data().userId,
+                        phone: doc.data().phone || doc.data().phoneNumber,
+                        plan: doc.data().plan || 'free',
+                        tokenBalance: doc.data().tokenBalance || 0
+                    }));
+                    allUsers = allUsers.concat(bullnabiUsers);
+                }
+
+                // 이메일 기준 중복 제거 (Firebase 우선)
+                const emailMap = new Map();
+                allUsers.forEach(user => {
+                    const email = (user.email || '').toLowerCase();
+                    if (email && emailMap.has(email)) {
+                        // Firebase 사용자 우선
+                        if (user.source === 'firebase') {
+                            emailMap.set(email, user);
+                        }
+                    } else if (email) {
+                        emailMap.set(email, user);
+                    } else {
+                        // 이메일 없는 사용자는 그대로 추가
+                        emailMap.set(user.id, user);
+                    }
+                });
+                allUsers = Array.from(emailMap.values());
+
+                // 정렬 (최신순)
+                allUsers.sort((a, b) => {
+                    const aTime = a.createdAt?.toDate?.() || new Date(0);
+                    const bTime = b.createdAt?.toDate?.() || new Date(0);
+                    return bTime - aTime;
+                });
+
+                // 총 사용자 수 표시
+                updateUserCount();
                 renderUsers(allUsers);
             } catch (error) {
                 console.error('사용자 로드 실패:', error);
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger);">로드 실패</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger);">로드 실패: ' + error.message + '</td></tr>';
             }
+        }
+
+        function updateUserCount() {
+            const firebaseCount = allUsers.filter(u => u.source === 'firebase').length;
+            const bullnabiCount = allUsers.filter(u => u.source === 'bullnabi').length;
+            const countEl = document.getElementById('userTotalCount');
+            if (countEl) {
+                countEl.textContent = `총 ${allUsers.length}명 (Firebase: ${firebaseCount}, 불나비: ${bullnabiCount})`;
+            }
+        }
+
+        function setUserSource(source) {
+            userSource = source;
+            document.querySelectorAll('.source-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-source="${source}"]`)?.classList.add('active');
+            loadUsers();
         }
 
         function renderUsers(users) {
@@ -2745,38 +2828,47 @@
 
             tbody.innerHTML = users.map(user => {
                 const createdAt = user.createdAt?.toDate ? user.createdAt.toDate().toLocaleDateString('ko-KR') : '-';
-                const lastLogin = user.lastLoginAt?.toDate ? user.lastLoginAt.toDate().toLocaleString('ko-KR') : '-';
                 const plan = user.plan || 'free';
                 const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' }[plan];
-
-                // 본인인증 뱃지
-                const verifiedBadge = user.identityVerified
-                    ? '<span style="background: #10B981; color: white; font-size: 9px; padding: 1px 4px; border-radius: 3px; margin-left: 4px;" title="본인인증 완료">✓</span>'
-                    : '';
 
                 // 실명 표시 (본인인증 시)
                 const displayName = user.identityVerified && user.verifiedName
                     ? user.verifiedName
-                    : (user.displayName || '이름 없음');
+                    : (user.displayName || user.name || '이름 없음');
+
+                // 출처 뱃지 (Firebase/불나비)
+                const sourceBadge = user.source === 'bullnabi'
+                    ? '<span style="background: #F59E0B; color: white; font-size: 9px; padding: 2px 5px; border-radius: 3px;">불나비</span>'
+                    : '<span style="background: #3B82F6; color: white; font-size: 9px; padding: 2px 5px; border-radius: 3px;">Firebase</span>';
+
+                // 본인인증 상태
+                const verifiedStatus = user.identityVerified
+                    ? '<span style="background: #10B981; color: white; font-size: 9px; padding: 2px 5px; border-radius: 3px;">인증</span>'
+                    : '<span style="background: #6B7280; color: white; font-size: 9px; padding: 2px 5px; border-radius: 3px;">미인증</span>';
 
                 return `
                     <tr>
                         <td>
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 600;">
-                                    ${displayName[0].toUpperCase()}
+                                    ${(displayName || 'U')[0].toUpperCase()}
                                 </div>
                                 <div>
-                                    <div style="font-weight: 500;">${displayName}${verifiedBadge}</div>
+                                    <div style="font-weight: 500;">${displayName}</div>
                                     <div style="font-size: 11px; color: var(--text-muted);">${user.email || user.id}</div>
-                                    ${user.verifiedPhone ? `<div style="font-size: 10px; color: #10B981;">${user.verifiedPhone}</div>` : ''}
+                                    ${user.verifiedPhone ? `<div style="font-size: 10px; color: #10B981;">📞 ${user.verifiedPhone}</div>` : (user.phone ? `<div style="font-size: 10px; color: var(--text-muted);">📞 ${user.phone}</div>` : '')}
                                 </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                ${sourceBadge}
+                                ${verifiedStatus}
                             </div>
                         </td>
                         <td><span class="badge ${planBadges[plan]}">${planName}</span></td>
                         <td style="color: var(--success); font-weight: 500;">${(user.tokenBalance || 0).toLocaleString()}</td>
                         <td style="font-size: 12px; color: var(--text-muted);">${createdAt}</td>
-                        <td style="font-size: 12px; color: var(--text-muted);">${lastLogin}</td>
                         <td>
                             <button class="btn btn-sm btn-secondary" onclick="viewUserDetail('${user.id}')">상세</button>
                             <button class="btn btn-sm btn-primary" onclick="quickEditUser('${user.id}')">수정</button>
