@@ -1335,11 +1335,40 @@
                 <h2 class="page-title">결제 내역</h2>
             </div>
 
+            <!-- 결제 합계 카드 -->
+            <div class="stats-grid" style="margin-bottom: 20px;">
+                <div class="stat-card">
+                    <div class="stat-value" id="paymentTotalAmount">₩0</div>
+                    <div class="stat-label">총 결제금액</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="paymentTotalCount">0건</div>
+                    <div class="stat-label">결제 건수</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="paymentTotalTokens">0</div>
+                    <div class="stat-label">충전 토큰</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="paymentCancelledCount">0건</div>
+                    <div class="stat-label">취소 건수</div>
+                </div>
+            </div>
+
             <div class="card">
-                <div class="search-bar">
-                    <input type="text" class="form-input search-input" id="paymentSearchInput"
-                           placeholder="주문번호, 사용자 ID로 검색...">
-                    <button class="btn btn-secondary" onclick="loadPayments()">🔍 검색</button>
+                <!-- 기간 필터 + 검색 -->
+                <div class="search-bar" style="flex-wrap: wrap; gap: 10px;">
+                    <div class="btn-group" style="display: flex; gap: 5px;">
+                        <button class="btn btn-secondary payment-filter-btn active" data-filter="all" onclick="setPaymentFilter('all')">전체</button>
+                        <button class="btn btn-secondary payment-filter-btn" data-filter="today" onclick="setPaymentFilter('today')">오늘</button>
+                        <button class="btn btn-secondary payment-filter-btn" data-filter="week" onclick="setPaymentFilter('week')">이번주</button>
+                        <button class="btn btn-secondary payment-filter-btn" data-filter="month" onclick="setPaymentFilter('month')">이번달</button>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex: 1;">
+                        <input type="text" class="form-input search-input" id="paymentSearchInput"
+                               placeholder="주문번호, 사용자 ID로 검색..." style="flex: 1;">
+                        <button class="btn btn-secondary" onclick="loadPayments()">🔍 검색</button>
+                    </div>
                 </div>
 
                 <div class="table-container">
@@ -3268,9 +3297,20 @@
 
         // 결제 내역 로드 (실시간)
         let paymentsUnsubscribe = null;
+        let currentPaymentFilter = 'all';
+
+        function setPaymentFilter(filter) {
+            currentPaymentFilter = filter;
+            // 버튼 active 상태 변경
+            document.querySelectorAll('.payment-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            loadPayments();
+        }
 
         function loadPayments() {
             const tbody = document.getElementById('paymentsTableBody');
+            const searchText = document.getElementById('paymentSearchInput')?.value?.toLowerCase() || '';
             tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;"><div class="loading"></div></td></tr>';
 
             // 기존 리스너 해제
@@ -3281,14 +3321,50 @@
             // 실시간 리스너 설정
             paymentsUnsubscribe = db.collection('payments')
                 .orderBy('createdAt', 'desc')
-                .limit(50)
+                .limit(200)
                 .onSnapshot(snapshot => {
                     if (snapshot.empty) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">결제 내역이 없습니다</td></tr>';
+                        updatePaymentStats([]);
+                        return;
+                    }
+
+                    // 기간 필터 적용
+                    const now = new Date();
+                    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    const weekStart = new Date(todayStart);
+                    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+                    let filteredDocs = snapshot.docs.filter(doc => {
+                        const p = doc.data();
+                        const paymentDate = p.createdAt?.toDate ? p.createdAt.toDate() : null;
+
+                        // 기간 필터
+                        if (currentPaymentFilter !== 'all' && paymentDate) {
+                            if (currentPaymentFilter === 'today' && paymentDate < todayStart) return false;
+                            if (currentPaymentFilter === 'week' && paymentDate < weekStart) return false;
+                            if (currentPaymentFilter === 'month' && paymentDate < monthStart) return false;
+                        }
+
+                        // 검색 필터
+                        if (searchText) {
+                            const searchTarget = `${p.paymentId || ''} ${p.userId || ''} ${p.userName || ''}`.toLowerCase();
+                            if (!searchTarget.includes(searchText)) return false;
+                        }
+
+                        return true;
+                    });
+
+                    // 통계 업데이트
+                    updatePaymentStats(filteredDocs.map(doc => doc.data()));
+
+                    if (filteredDocs.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">결제 내역이 없습니다</td></tr>';
                         return;
                     }
 
-                    tbody.innerHTML = snapshot.docs.map(doc => {
+                    tbody.innerHTML = filteredDocs.map(doc => {
                         const p = doc.data();
                         const date = p.createdAt?.toDate ? p.createdAt.toDate().toLocaleString('ko-KR') : '-';
 
@@ -3296,22 +3372,28 @@
                         const planNames = { basic: '베이직', pro: '프로', business: '비즈니스', tokens_5000: '토큰 5000' };
                         const productName = planNames[p.planKey] || p.planKey || '-';
 
-                        // 상태 매핑 (completed = 완료)
+                        // 상태 매핑
                         const isCompleted = p.status === 'completed' || p.status === 'paid';
                         const isCancelled = p.status === 'cancelled' || p.status === 'refunded';
                         const statusBadge = isCompleted ? 'badge-success' : (isCancelled ? 'badge-danger' : 'badge-warning');
-                        const statusText = isCompleted ? '완료' : (isCancelled ? '취소' : p.status || '-');
+                        const statusText = isCompleted ? '완료' : (isCancelled ? '결제취소' : p.status || '-');
+
+                        // 취소 버튼 (완료 상태일 때만 표시)
+                        const cancelBtn = isCompleted
+                            ? `<button class="btn btn-sm btn-danger" onclick="cancelPayment('${doc.id}', '${p.userId}', ${p.tokens || 0})" style="margin-left: 5px;">취소</button>`
+                            : '';
 
                         return `
-                            <tr>
+                            <tr style="${isCancelled ? 'opacity: 0.6;' : ''}">
                                 <td style="font-size: 11px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${p.paymentId || doc.id}</td>
                                 <td style="font-size: 12px;">${p.userName || p.userId || '-'}</td>
                                 <td>${productName} <span style="color: var(--text-muted); font-size: 11px;">(${(p.tokens || 0).toLocaleString()}토큰)</span></td>
-                                <td style="font-weight: 500;">₩${(p.amount || 0).toLocaleString()}</td>
+                                <td style="font-weight: 500; ${isCancelled ? 'text-decoration: line-through;' : ''}">₩${(p.amount || 0).toLocaleString()}</td>
                                 <td><span class="badge ${statusBadge}">${statusText}</span></td>
                                 <td style="font-size: 12px; color: var(--text-muted);">${date}</td>
                                 <td>
                                     <button class="btn btn-sm btn-secondary" onclick="showPaymentDetail('${doc.id}')">상세</button>
+                                    ${cancelBtn}
                                 </td>
                             </tr>
                         `;
@@ -3321,14 +3403,71 @@
                 });
         }
 
+        // 결제 통계 업데이트
+        function updatePaymentStats(payments) {
+            const completed = payments.filter(p => p.status === 'completed' || p.status === 'paid');
+            const cancelled = payments.filter(p => p.status === 'cancelled' || p.status === 'refunded');
+
+            const totalAmount = completed.reduce((sum, p) => sum + (p.amount || 0), 0);
+            const totalTokens = completed.reduce((sum, p) => sum + (p.tokens || 0), 0);
+
+            document.getElementById('paymentTotalAmount').textContent = `₩${totalAmount.toLocaleString()}`;
+            document.getElementById('paymentTotalCount').textContent = `${completed.length}건`;
+            document.getElementById('paymentTotalTokens').textContent = totalTokens.toLocaleString();
+            document.getElementById('paymentCancelledCount').textContent = `${cancelled.length}건`;
+        }
+
         // 결제 상세 보기
         function showPaymentDetail(paymentId) {
             db.collection('payments').doc(paymentId).get().then(doc => {
                 if (doc.exists) {
                     const p = doc.data();
-                    alert(`결제 상세\n\n주문번호: ${p.paymentId}\n사용자: ${p.userName || p.userId}\n상품: ${p.planKey}\n금액: ₩${(p.amount || 0).toLocaleString()}\n토큰: ${(p.tokens || 0).toLocaleString()}\n상태: ${p.status}`);
+                    const planNames = { basic: '베이직', pro: '프로', business: '비즈니스', tokens_5000: '토큰 5000' };
+                    alert(`결제 상세\n\n주문번호: ${p.paymentId}\n사용자: ${p.userName || p.userId}\n상품: ${planNames[p.planKey] || p.planKey}\n금액: ₩${(p.amount || 0).toLocaleString()}\n토큰: ${(p.tokens || 0).toLocaleString()}\n상태: ${p.status}\n결제일: ${p.createdAt?.toDate ? p.createdAt.toDate().toLocaleString('ko-KR') : '-'}`);
                 }
             });
+        }
+
+        // 결제 취소 (상태만 변경, 토큰 차감)
+        async function cancelPayment(docId, userId, tokens) {
+            if (!confirm(`이 결제를 취소하시겠습니까?\n\n사용자의 토큰 ${tokens.toLocaleString()}개가 차감됩니다.`)) {
+                return;
+            }
+
+            try {
+                // 1. 결제 상태 변경
+                await db.collection('payments').doc(docId).update({
+                    status: 'cancelled',
+                    cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // 2. 사용자 토큰 차감
+                const userRef = db.collection('users').doc(userId);
+                const userDoc = await userRef.get();
+                if (userDoc.exists) {
+                    const currentTokens = userDoc.data().tokenBalance || 0;
+                    const newTokens = Math.max(0, currentTokens - tokens);
+                    await userRef.update({
+                        tokenBalance: newTokens
+                    });
+
+                    // 3. 로그 기록
+                    await db.collection('token_logs').add({
+                        userId: userId,
+                        action: 'payment_cancelled',
+                        tokensDeducted: tokens,
+                        previousBalance: currentTokens,
+                        newBalance: newTokens,
+                        paymentDocId: docId,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+
+                showToast('결제가 취소되었습니다.', 'success');
+            } catch (error) {
+                console.error('결제 취소 오류:', error);
+                showToast('결제 취소 중 오류가 발생했습니다.', 'error');
+            }
         }
 
         // 설정 저장
