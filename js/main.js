@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadTheme();
         checkAuthStatus();
         setupSidebar();
+        setupHashRouting(); // 해시 라우팅 설정
 
         if (backBtn) {
             backBtn.style.display = 'none';
@@ -34,6 +35,149 @@ document.addEventListener('DOMContentLoaded', function() {
 
         console.log('✅ HAIRGATOR 초기화 완료');
     }
+
+    // ========== 해시 라우팅 시스템 ==========
+    function setupHashRouting() {
+        // 초기 해시 확인
+        handleHashChange();
+
+        // 해시 변경 이벤트 리스너
+        window.addEventListener('hashchange', handleHashChange);
+    }
+
+    function handleHashChange() {
+        const hash = window.location.hash.replace('#', '');
+        console.log('📍 해시 변경:', hash || '(메인)');
+
+        // 모든 페이지 숨기기
+        const productsPage = document.getElementById('productsPage');
+        const mypagePage = document.getElementById('mypagePage');
+        const genderSelection = document.getElementById('genderSelection');
+        const menuContainer = document.getElementById('menuContainer');
+
+        if (productsPage) productsPage.style.display = 'none';
+        if (mypagePage) mypagePage.style.display = 'none';
+
+        switch (hash) {
+            case 'products':
+                if (productsPage) {
+                    productsPage.style.display = 'block';
+                    console.log('📦 상품 페이지 표시');
+                }
+                break;
+            case 'mypage':
+                if (mypagePage) {
+                    mypagePage.style.display = 'block';
+                    updateMypageInfo(); // 마이페이지 정보 업데이트
+                    console.log('👤 마이페이지 표시');
+                }
+                break;
+            default:
+                // 메인 페이지 (해시 없음)
+                console.log('🏠 메인 페이지');
+                break;
+        }
+    }
+
+    // 해시 네비게이션 함수 (전역으로 노출)
+    window.navigateToHash = function(hash) {
+        if (hash) {
+            window.location.hash = hash;
+        } else {
+            // 해시 제거하고 메인으로
+            history.pushState('', document.title, window.location.pathname + window.location.search);
+            handleHashChange();
+        }
+    };
+
+    // 마이페이지 정보 업데이트
+    async function updateMypageInfo() {
+        const nameEl = document.getElementById('mypageName');
+        const emailEl = document.getElementById('mypageEmail');
+        const avatarEl = document.getElementById('mypageAvatar');
+        const planEl = document.getElementById('mypagePlan');
+        const tokensEl = document.getElementById('mypageTokens');
+        const themeIconEl = document.getElementById('mypageThemeIcon');
+        const themeTextEl = document.getElementById('mypageThemeText');
+
+        // 테마 상태 업데이트
+        const isLightTheme = document.body.classList.contains('light-theme');
+        if (themeIconEl) themeIconEl.textContent = isLightTheme ? '☀️' : '🌙';
+        if (themeTextEl) themeTextEl.textContent = isLightTheme ? '라이트 모드' : '다크 모드';
+
+        // Firebase Auth 사용자 정보
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+            const user = firebase.auth().currentUser;
+            if (user) {
+                if (nameEl) nameEl.textContent = user.displayName || '사용자';
+                if (emailEl) emailEl.textContent = user.email || '';
+                if (avatarEl && user.photoURL) {
+                    avatarEl.innerHTML = `<img src="${user.photoURL}" alt="프로필">`;
+                }
+            } else {
+                if (nameEl) nameEl.textContent = '로그인 필요';
+                if (emailEl) emailEl.textContent = '-';
+            }
+        }
+
+        // 토큰/플랜 정보 (FirebaseBridge 사용)
+        if (typeof window.FirebaseBridge !== 'undefined') {
+            try {
+                const tokenData = await window.FirebaseBridge.getTokenBalance();
+                if (tokenData) {
+                    if (tokensEl) tokensEl.textContent = (tokenData.tokenBalance || 0).toLocaleString();
+                    if (planEl) {
+                        const planNames = {
+                            'free': '무료',
+                            'basic': '베이직',
+                            'pro': '프로',
+                            'business': '비즈니스'
+                        };
+                        planEl.textContent = planNames[tokenData.plan] || '무료';
+                    }
+                }
+            } catch (e) {
+                console.error('토큰 정보 로드 실패:', e);
+            }
+        }
+    }
+
+    // 플랜 선택 및 결제 (전역 함수)
+    window.selectPlanAndPay = async function(planType) {
+        console.log('💳 플랜 선택:', planType);
+
+        // 로그인 확인
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                alert('로그인이 필요합니다.');
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+
+        // 결제 처리 (payment.js 사용)
+        if (typeof window.HAIRGATOR_PAYMENT !== 'undefined') {
+            try {
+                await window.HAIRGATOR_PAYMENT.purchasePlan(planType);
+            } catch (e) {
+                console.error('결제 오류:', e);
+                alert('결제 처리 중 오류가 발생했습니다.');
+            }
+        } else {
+            alert('결제 시스템을 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+        }
+    };
+
+    // 언어 선택 모달 열기 (전역 함수)
+    window.openLanguageSelector = function() {
+        // 기존 언어 선택 기능이 있으면 호출
+        if (typeof window.showLanguageModal === 'function') {
+            window.showLanguageModal();
+        } else {
+            alert('언어 설정 기능 준비 중입니다.');
+        }
+    };
 
     // URL 파라미터 확인 후 스타일 모달/기능 열기
     async function checkUrlForStyleModal() {
