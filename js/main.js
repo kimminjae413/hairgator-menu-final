@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const userDoc = await firebase.firestore().collection('users').doc(docId).get();
                         if (userDoc.exists) {
                         const userData = userDoc.data();
-                        displayName = userData.name || userData.verifiedName || userData.displayName || displayName;
+                        displayName = userData.verifiedName || userData.name || userData.displayName || displayName;
                             console.log('📋 Firestore 사용자 정보:', { docId, name: userData.name, verifiedName: userData.verifiedName, displayName: userData.displayName });
                         }
                     }
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // fallback: window.currentDesigner
                 if (!displayName && window.currentDesigner) {
-                    displayName = window.currentDesigner.name || window.currentDesigner.displayName;
+                    displayName = window.currentDesigner.verifiedName || window.currentDesigner.name || window.currentDesigner.displayName;
                 }
 
                 if (nameEl) nameEl.textContent = displayName || user.email?.split('@')[0] || '사용자';
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (window.currentDesigner) {
                 // Firebase Auth는 없지만 window.currentDesigner가 있는 경우
                 const designer = window.currentDesigner;
-                if (nameEl) nameEl.textContent = designer.name || designer.displayName || designer.email?.split('@')[0] || '사용자';
+                if (nameEl) nameEl.textContent = designer.verifiedName || designer.name || designer.displayName || designer.email?.split('@')[0] || '사용자';
                 if (emailEl) emailEl.textContent = designer.email || '';
                 if (avatarEl && designer.photoURL) {
                     avatarEl.innerHTML = `<img src="${designer.photoURL}" alt="프로필">`;
