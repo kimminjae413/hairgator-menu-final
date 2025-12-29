@@ -2169,6 +2169,45 @@
         </div>
     </div>
 
+    <!-- 결제 취소 모달 -->
+    <div class="modal-overlay" id="cancelPaymentModal">
+        <div class="modal" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3 class="modal-title">결제취소</h3>
+                <button class="modal-close" onclick="closeModal('cancelPaymentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 12px;">
+                        <strong id="cancelPaymentUserName">사용자</strong>님의 결제를 취소합니다.
+                    </p>
+                    <p style="font-size: 13px; color: var(--danger); margin-bottom: 16px;">
+                        ⚠️ 취소 시 <strong id="cancelPaymentTokens">0</strong>개 토큰이 차감됩니다.
+                    </p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">취소 사유 <span style="color: var(--danger);">*</span></label>
+                    <textarea class="form-input" id="cancelPaymentReason" placeholder="취소 사유를 입력하세요" rows="3" style="resize: vertical;"></textarea>
+                </div>
+                <div id="cancelPaymentConfirmSection" style="display: none; margin-top: 20px; padding: 16px; background: #FEE2E2; border-radius: 8px; text-align: center;">
+                    <p style="font-size: 15px; font-weight: 600; color: #DC2626; margin-bottom: 12px;">
+                        정말로 취소하시겠습니까?
+                    </p>
+                    <p style="font-size: 13px; color: #7F1D1D; margin-bottom: 16px;">
+                        이 작업은 되돌릴 수 없습니다.
+                    </p>
+                    <button class="btn btn-danger" onclick="confirmCancelPayment()" style="padding: 12px 32px; font-weight: 600;">
+                        결제취소
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer" id="cancelPaymentFooter">
+                <button class="btn btn-secondary" onclick="closeModal('cancelPaymentModal')">닫기</button>
+                <button class="btn btn-danger" onclick="showCancelConfirmation()">다음</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 토스트 컨테이너 -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -3380,7 +3419,7 @@
 
                         // 취소 버튼 (완료 상태일 때만 표시)
                         const cancelBtn = isCompleted
-                            ? `<button class="btn btn-sm btn-danger" onclick="cancelPayment('${doc.id}', '${p.userId}', ${p.tokens || 0})" style="margin-left: 5px;">취소</button>`
+                            ? `<button class="btn btn-sm btn-danger" onclick="openCancelPaymentModal('${doc.id}', '${p.userId}', ${p.tokens || 0}, '${p.userName || p.userId}')" style="margin-left: 5px;">결제취소</button>`
                             : '';
 
                         return `
@@ -3428,17 +3467,50 @@
             });
         }
 
-        // 결제 취소 (상태만 변경, 토큰 차감)
-        async function cancelPayment(docId, userId, tokens) {
-            if (!confirm(`이 결제를 취소하시겠습니까?\n\n사용자의 토큰 ${tokens.toLocaleString()}개가 차감됩니다.`)) {
+        // 결제 취소 모달 관련 변수
+        let cancelPaymentData = {
+            docId: null,
+            userId: null,
+            tokens: 0,
+            userName: ''
+        };
+
+        // 결제 취소 모달 열기
+        function openCancelPaymentModal(docId, userId, tokens, userName) {
+            cancelPaymentData = { docId, userId, tokens, userName };
+
+            document.getElementById('cancelPaymentUserName').textContent = userName;
+            document.getElementById('cancelPaymentTokens').textContent = tokens.toLocaleString();
+            document.getElementById('cancelPaymentReason').value = '';
+            document.getElementById('cancelPaymentConfirmSection').style.display = 'none';
+            document.getElementById('cancelPaymentFooter').style.display = 'flex';
+
+            openModal('cancelPaymentModal');
+        }
+
+        // 취소 확인 섹션 표시
+        function showCancelConfirmation() {
+            const reason = document.getElementById('cancelPaymentReason').value.trim();
+            if (!reason) {
+                showToast('취소 사유를 입력해주세요.', 'error');
                 return;
             }
 
+            document.getElementById('cancelPaymentConfirmSection').style.display = 'block';
+            document.getElementById('cancelPaymentFooter').style.display = 'none';
+        }
+
+        // 최종 결제 취소 실행
+        async function confirmCancelPayment() {
+            const { docId, userId, tokens } = cancelPaymentData;
+            const reason = document.getElementById('cancelPaymentReason').value.trim();
+
             try {
-                // 1. 결제 상태 변경
+                // 1. 결제 상태 변경 + 취소 사유 저장
                 await db.collection('payments').doc(docId).update({
                     status: 'cancelled',
-                    cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+                    cancelledAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    cancelReason: reason
                 });
 
                 // 2. 사용자 토큰 차감
@@ -3459,10 +3531,12 @@
                         previousBalance: currentTokens,
                         newBalance: newTokens,
                         paymentDocId: docId,
+                        cancelReason: reason,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 }
 
+                closeModal('cancelPaymentModal');
                 showToast('결제가 취소되었습니다.', 'success');
             } catch (error) {
                 console.error('결제 취소 오류:', error);
