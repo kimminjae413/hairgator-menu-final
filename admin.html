@@ -1045,198 +1045,7 @@
             <div class="nav-item" onclick="showPage('inquiries')">
                 <span class="nav-item-icon">?��</span>
                 <span>1:1 문의</span>
-                <span class="nav-item-badge inquiry-badge" id="inquiryCountBadge" style="display: none; background: #EF4444;">NEW</span>
-            </div>
-        </nav>
-
-        <nav class="nav-section">
-            <div class="nav-section-title">콘텐�?/div>
-            <div class="nav-item" onclick="showPage('styles')">
-                <span class="nav-item-icon">?��</span>
-                <span>?�어?��????�로??/span>
-            </div>
-        </nav>
-
-        <nav class="nav-section">
-            <div class="nav-section-title">AI ?�성</div>
-            <div class="nav-item" onclick="showPage('cardNews')">
-                <span class="nav-item-icon">?��</span>
-                <span>카드?�스 ?�성</span>
-            </div>
-            <div class="nav-item" onclick="showPage('videoGen')">
-                <span class="nav-item-icon">?��</span>
-                <span>?�상 ?�성</span>
-            </div>
-        </nav>
-
-        <nav class="nav-section">
-            <div class="nav-section-title">?�정</div>
-            <div class="nav-item" onclick="showPage('appTabs')">
-                <span class="nav-item-icon">?��</span>
-                <span>??메뉴 관�?/span>
-            </div>
-            <div class="nav-item" onclick="showPage('settings')">
-                <span class="nav-item-icon">?�️</span>
-                <span>?�스???�정</span>
-            </div>
-        </nav>
-
-        <!-- 로그?�웃 ?�션 -->
-        <div class="logout-section">
-            <div class="admin-info">
-                <div class="admin-avatar" id="adminAvatar">A</div>
-                <div>
-                    <div class="admin-name" id="adminName">관리자</div>
-                    <div class="admin-email" id="adminEmail">admin@example.com</div>
-                </div>
-            </div>
-            <button class="logout-btn" onclick="handleAdminLogout()">?�� 로그?�웃</button>
-        </div>
-    </aside>
-
-    <!-- 메인 컨텐�?-->
-    <main class="main-content">
-        <!-- ?�?�보???�이지 -->
-        <div id="page-dashboard" class="page active">
-            <div class="page-header">
-                <h2 class="page-title">?�?�보??<span id="dashboardDate"></span></h2>
-                <button class="btn btn-secondary" onclick="refreshDashboard()">
-                    ?�� ?�로고침
-                </button>
-            </div>
-
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-card-header">
-                        <div>
-                            <div class="stat-value" id="statTotalUsers">-</div>
-                            <div class="stat-label">?�체 ?�용??/div>
-                        </div>
-                        <div class="stat-icon users">?��</div>
-                    </div>
-                    <div class="stat-change up" id="statUsersChange">-</div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-card-header">
-                        <div>
-                            <div class="stat-value" id="statTotalTokens">-</div>
-                            <div class="stat-label">�??�큰 보유??/div>
-                        </div>
-                        <div class="stat-icon tokens">?��</div>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-card-header">
-                        <div>
-                            <div class="stat-value" id="statPaidUsers">-</div>
-                            <div class="stat-label">?�료 ?�용??/div>
-                        </div>
-                        <div class="stat-icon paid">�?/div>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-card-header">
-                        <div>
-                            <div class="stat-value" id="statTodayActive">-</div>
-                            <div class="stat-label">?�늘 ?�성 ?�용??/div>
-                        </div>
-                        <div class="stat-icon active">?��</div>
-                    </div>
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">?�� ?�별 ?�용??/div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="usageChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">?�� ?�랜 분포</div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="planChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">?�� 최근 ?�동</div>
-                    <button class="btn btn-sm btn-secondary" onclick="showPage('logs')">?�체보기</button>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>?�간</th>
-                                <th>?�용??/th>
-                                <th>?�동</th>
-                                <th>?�세</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recentActivityTable">
-                            <tr><td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                                <div class="loading"></div>
-                            </td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ?�용??관�??�이지 -->
-        <div id="page-users" class="page">
-            <div class="page-header">
-                <h2 class="page-title">?�용??관�?/h2>
-                <button class="btn btn-primary" onclick="openAddUserModal()">
-                    ???�용??추�?
-                </button>
-            </div>
-
-            <div class="card">
-                <div class="search-bar">
-                    <input type="text" class="form-input search-input" id="userSearchInput"
-                           placeholder="?�름, ?�메?? ID�?검??.." oninput="searchUsers()">
-                    <button class="btn btn-secondary" onclick="loadUsers()">?��</button>
-                </div>
-
-                <!-- ?�이??출처 ?�터 -->
-                <div class="filters" style="margin-bottom: 8px;">
-                    <span style="font-size: 12px; color: var(--text-muted); margin-right: 8px;">출처:</span>
-                    <button class="filter-btn source-btn active" data-source="all" onclick="setUserSource('all')">?�체</button>
-                    <button class="filter-btn source-btn" data-source="firebase" onclick="setUserSource('firebase')">Firebase</button>
-                    <button class="filter-btn source-btn" data-source="bullnabi" onclick="setUserSource('bullnabi')">불나�?/button>
-                    <span id="userTotalCount" style="margin-left: auto; font-size: 12px; color: var(--text-muted);"></span>
-                </div>
-
-                <!-- ?�랜 ?�터 -->
-                <div class="filters">
-                    <span style="font-size: 12px; color: var(--text-muted); margin-right: 8px;">?�랜:</span>
-                    <button class="filter-btn active" onclick="filterUsers('all', this)">?�체</button>
-                    <button class="filter-btn" onclick="filterUsers('free', this)">무료</button>
-                    <button class="filter-btn" onclick="filterUsers('basic', this)">베이�?/button>
-                    <button class="filter-btn" onclick="filterUsers('pro', this)">?�로</button>
-                    <button class="filter-btn" onclick="filterUsers('business', this)">비즈?�스</button>
-                </div>
-
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>?�용??/th>
-                                <th>?�태</th>
-                                <th>?�랜</th>
-                                <th>?�큰</th>
-                                <th>가?�일</th>
+                <span class="nav-item-badge inquiry-badge" id="inquiryCountBadge" style="display: none; background: #헤어스타일</th>
                                 <th>?�션</th>
                             </tr>
                         </thead>
@@ -1815,66 +1624,7 @@
                         </div>
                     </div>
                     <div style="background: var(--bg-hover); border-radius: 12px; padding: 20px;">
-                        <h4 style="margin-bottom: 12px; color: #FF1493;">?�� ?�성 카테고리</h4>
-                        <div style="height: 200px;">
-                            <canvas id="femaleBarChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 카드?�스 ?�성 ?�이지 -->
-        <div id="page-cardNews" class="page">
-            <div class="page-header">
-                <h2 class="page-title">?�� AI 카드?�스 ?�성�?/h2>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">카드?�스 ?�작</div>
-                </div>
-                <div style="padding: 20px;">
-                    <p style="color: var(--text-muted); margin-bottom: 20px;">
-                        ?�롬?�트�??�력?�면 AI가 ?�스?�그램??카드?�스 ?��?지�??�성?�니??
-                    </p>
-
-                    <!-- ?�목 ?�력 -->
-                    <div class="form-group">
-                        <label>?�� 카드?�스 ?�목</label>
-                        <input type="text" id="cardNewsTitle" placeholder="?? 2025 �??�즌 ?�어 ?�렌??>
-                    </div>
-
-                    <!-- �??�별 ?�용 -->
-                    <div class="form-group" style="margin-top: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <label>?�� �??�별 ?�용</label>
-                            <span id="cardNewsPageCount" style="color: var(--primary); font-size: 13px;">1??/span>
-                        </div>
-                        <div id="cardNewsPagesContainer">
-                            <!-- ?�적 ?�성 -->
-                        </div>
-                        <div style="display: flex; gap: 10px; margin-top: 12px;">
-                            <button onclick="addCardNewsPage()" class="btn" style="flex: 1;">????추�?</button>
-                            <button onclick="removeCardNewsPage()" id="removePageBtn" class="btn btn-secondary" style="flex: 1; display: none;">??????��</button>
-                        </div>
-                    </div>
-
-                    <!-- ?�션 ?�택 -->
-                    <div class="form-group" style="margin-top: 20px;">
-                        <label>?��?지 비율</label>
-                        <select id="cardNewsRatio">
-                            <option value="1:1" selected>?�사각형 (1:1)</option>
-                            <option value="4:5">?�로??(4:5) - ?�드 추천</option>
-                            <option value="9:16">?�토�?릴스 (9:16)</option>
-                        </select>
-                    </div>
-
-                    <!-- 브랜???��????�내 -->
-                    <div style="margin-top: 16px; padding: 12px 16px; background: rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.3); border-radius: 8px;">
-                        <p style="color: var(--primary); font-size: 13px; margin: 0;">
-                            <strong>?�� HAIRGATOR 브랜???��????�용</strong><br>
-                            <span style="color: var(--text-muted);">?�이??바탕 + ?�크(#E91E63) ?�인??컬러 | ?��? ?�어?�자?�너</span>
+                        <h4 style="margin-bottom: 12px; color: #헤어트렌드#헤어디자이너</span>
                         </p>
                     </div>
 
@@ -1907,318 +1657,12 @@
                 <!-- 추천 ?�시?�그 -->
                 <div id="cardNewsKeywordsSection" style="margin: 0 20px 20px; padding: 16px; background: rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.3); border-radius: 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <h4 style="color: var(--primary); font-size: 14px; margin: 0;">#️⃣ 추천 ?�시?�그</h4>
-                        <button onclick="copyKeywords()" class="btn btn-sm">?�� 복사</button>
-                    </div>
-                    <div id="cardNewsKeywords" style="color: var(--text); font-size: 13px; line-height: 1.8;"></div>
-                </div>
-            </div>
-
-            <!-- ?�스?�리 -->
-            <div class="card" style="margin-top: 20px;">
-                <div class="card-header">
-                    <div class="card-title">?�� ?�성 ?�스?�리</div>
-                    <button onclick="clearCardNewsHistory()" class="btn btn-sm btn-danger">?���??�체 ??��</button>
-                </div>
-                <div id="cardNewsHistoryList" style="padding: 20px;">
-                    <p style="color: var(--text-muted); text-align: center;">?�스?�리가 ?�습?�다</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- ?�상 ?�성 ?�이지 -->
-        <div id="page-videoGen" class="page">
-            <div class="page-header">
-                <h2 class="page-title">?�� AI ?�폼 ?�상 ?�성�?/h2>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">Veo 3.1 ?�상 ?�성</div>
-                </div>
-                <div style="padding: 20px;">
-                    <p style="color: var(--text-muted); margin-bottom: 20px;">
-                        Veo 3.1 모델???�용???�튜�??�스?�그램 ?�폼 ?�상???�성?�니??
-                    </p>
-
-                    <!-- ?�상 ?�롬?�트 ?�력 -->
-                    <div class="form-group">
-                        <label>?�상 ?�명 (?�롬?�트)</label>
-                        <textarea id="videoPrompt" placeholder="?? 미용?�에???�이?�드�??�술?�는 ?�면, 가?�로 머리카락???�르???�로즈업..." style="min-height: 100px;"></textarea>
-                    </div>
-
-                    <!-- �??�레???��?지 -->
-                    <div class="form-group" style="margin-top: 20px;">
-                        <label>?�� �??�레???��?지 (?�작) <span style="color: var(--success); font-size: 12px;">???��?지?�서 ?�상???�작?�니??/span></label>
-                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
-                            <label id="videoInputImageAddBtn" style="cursor: pointer; background: rgba(76, 175, 80, 0.1); border: 2px dashed var(--success); padding: 14px 24px; border-radius: 10px; color: var(--success); font-size: 14px; font-weight: 600;">
-                                ?���?�??�레???�택
-                                <input type="file" id="videoInputImageFile" accept="image/*" style="display: none;" onchange="setVideoInputImage(event)">
-                            </label>
-                            <div id="videoInputImagePreview" style="display: none;"></div>
-                        </div>
-                    </div>
-
-                    <!-- 마�?�??�레???��?지 -->
-                    <div class="form-group" style="margin-top: 20px;">
-                        <label>?�� 마�?�??�레???��?지 (?? <span style="color: var(--info); font-size: 12px;">?�택 - �??�레?�과 ?�께 ?�용?�면 보간 ?�상 ?�성</span></label>
-                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
-                            <label id="videoLastFrameAddBtn" style="cursor: pointer; background: rgba(59, 130, 246, 0.1); border: 2px dashed var(--info); padding: 14px 24px; border-radius: 10px; color: var(--info); font-size: 14px; font-weight: 600;">
-                                ?���?마�?�??�레???�택
-                                <input type="file" id="videoLastFrameFile" accept="image/*" style="display: none;" onchange="setVideoLastFrame(event)">
-                            </label>
-                            <div id="videoLastFramePreview" style="display: none;"></div>
-                        </div>
-                        <p style="color: var(--text-muted); font-size: 11px; margin-top: 8px;">�??�레????마�?�??�레???�이�??�연?�럽�??�결?�는 ?�상???�성?�니??/p>
-                    </div>
-
-                    <!-- ?�션 ?�택 -->
-                    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
-                        <div class="form-group" style="flex: 1; min-width: 140px;">
-                            <label>?�상 길이</label>
-                            <select id="videoDuration">
-                                <option value="5">5�?/option>
-                                <option value="8" selected>8�?/option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="flex: 1; min-width: 160px;">
-                            <label>?�면 비율</label>
-                            <select id="videoAspectRatio">
-                                <option value="9:16" selected>?�로??9:16 (릴스/?�츠)</option>
-                                <option value="16:9">가로형 16:9 (?�튜�?</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- 브랜???�내 -->
-                    <div style="margin-top: 20px; padding: 12px 16px; background: rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.3); border-radius: 8px;">
-                        <p style="color: var(--primary); font-size: 13px; margin: 0;">
-                            <strong>?�� HAIRGATOR 브랜???��???/strong><br>
-                            <span style="color: var(--text-muted);">?�어?�자?�너 ?��?| ?�문?�이�??�련??미용??분위�?/span>
+                        <h4 style="color: var(--primary); font-size: 14px; margin: 0;">#헤어디자이너 ?��?| ?�문?�이�??�련??미용??분위�?/span>
                         </p>
                     </div>
 
                     <!-- ?�성 버튼 -->
-                    <button id="generateVideoBtn" onclick="generateVideo()" class="btn" style="width: 100%; margin-top: 24px; padding: 16px; font-size: 16px; background: linear-gradient(135deg, #9c27b0, #673ab7);">
-                        ?�� ?�상 ?�성?�기
-                    </button>
-                </div>
-            </div>
-
-            <!-- ?�성???�상 결과 -->
-            <div id="videoResultSection" class="card" style="margin-top: 20px; display: none;">
-                <div class="card-header">
-                    <div class="card-title">?�� ?�성???�상</div>
-                </div>
-                <div id="videoResultContainer" style="padding: 20px;">
-                    <!-- ?�적 ?�성 -->
-                </div>
-            </div>
-
-            <!-- ?�스?�리 -->
-            <div class="card" style="margin-top: 20px;">
-                <div class="card-header">
-                    <div class="card-title">?�� ?�성 ?�스?�리</div>
-                    <button onclick="clearVideoHistory()" class="btn btn-sm btn-danger">?���??�체 ??��</button>
-                </div>
-                <div id="videoHistoryList" style="padding: 20px;">
-                    <p style="color: var(--text-muted); text-align: center;">?�스?�리가 ?�습?�다</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- ?�정 ?�이지 -->
-        <div id="page-settings" class="page">
-            <div class="page-header">
-                <h2 class="page-title">?�스???�정</h2>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">?�� ?�큰 비용 ?�정</div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">챗봇 (1??</label>
-                        <input type="number" class="form-input" id="costChatbot" value="10">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">룩북 (1??</label>
-                        <input type="number" class="form-input" id="costLookbook" value="200">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">?�어체험 (1??</label>
-                        <input type="number" class="form-input" id="costHairTry" value="350">
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="saveTokenCosts()">?�??/button>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">?�� ?�랜�??�큰</div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">무료</label>
-                        <input type="number" class="form-input" id="planFreeTokens" value="200">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">베이�?/label>
-                        <input type="number" class="form-input" id="planBasicTokens" value="10000">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">?�로</label>
-                        <input type="number" class="form-input" id="planProTokens" value="18000">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">비즈?�스</label>
-                        <input type="number" class="form-input" id="planBusinessTokens" value="25000">
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="savePlanTokens()">?�??/button>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">?�� 관리자 계정</div>
-                    <button class="btn btn-primary btn-sm" onclick="openAddAdminModal()">+ 관리자 추�?</button>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>?�메??/th>
-                                <th>?�름</th>
-                                <th>?�록??/th>
-                                <th>?�션</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminTableBody">
-                            <tr><td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                                로딩 �?..
-                            </td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- 관리자 추�? 모달 -->
-    <div class="modal-overlay" id="addAdminModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">관리자 추�?</h3>
-                <button class="modal-close" onclick="closeModal('addAdminModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">?�름</label>
-                    <input type="text" class="form-input" id="newAdminName" placeholder="관리자 ?�름">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">?�메??/label>
-                    <input type="email" class="form-input" id="newAdminEmail" placeholder="admin@example.com">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">비�?번호 (?�자 6?�리)</label>
-                    <input type="text" class="form-input" id="newAdminPassword" placeholder="123456" maxlength="6" pattern="\d{6}" inputmode="numeric">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('addAdminModal')">취소</button>
-                <button class="btn btn-primary" onclick="addNewAdmin()">추�?</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 비�?번호 변�?모달 -->
-    <div class="modal-overlay" id="changePasswordModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">비�?번호 변�?/h3>
-                <button class="modal-close" onclick="closeModal('changePasswordModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">?�재 비�?번호</label>
-                    <input type="text" class="form-input" id="currentPassword" placeholder="?�재 비�?번호" maxlength="6" inputmode="numeric">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">??비�?번호 (?�자 6?�리)</label>
-                    <input type="text" class="form-input" id="newPassword" placeholder="??비�?번호" maxlength="6" inputmode="numeric">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">??비�?번호 ?�인</label>
-                    <input type="text" class="form-input" id="confirmPassword" placeholder="??비�?번호 ?�인" maxlength="6" inputmode="numeric">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('changePasswordModal')">취소</button>
-                <button class="btn btn-primary" onclick="changePassword()">변�?/button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ?��???추�? 모달 -->
-    <div class="modal-overlay" id="addStyleModal">
-        <div class="modal" style="max-width: 700px;">
-            <div class="modal-header">
-                <h3 class="modal-title" id="addStyleModalTitle">???��???추�?</h3>
-                <button class="modal-close" onclick="closeModal('addStyleModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">?��???ID</label>
-                        <input type="text" class="form-input" id="newStyleId" placeholder="비워?�면 ?�동?�성" style="text-transform: uppercase;">
-                        <small style="color: var(--text-muted); font-size: 11px;">?�� 비워?�면 ?�동 ?�성?�니??/small>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">?��????�름 *</label>
-                        <input type="text" class="form-input" id="newStyleName" placeholder="?? 글?�웨?�브">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">?�별 *</label>
-                        <select class="form-input" id="newStyleGender">
-                            <option value="">?�택</option>
-                            <option value="male">?�성</option>
-                            <option value="female">?�성</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">?�분류 *</label>
-                        <select class="form-input" id="newStyleCategory">
-                            <option value="">?�별 먼�? ?�택</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">중분�?(?�머�?</label>
-                        <select class="form-input" id="newStyleSubCategory">
-                            <option value="">?�택</option>
-                            <option value="None">None</option>
-                            <option value="Fore Head">Fore Head</option>
-                            <option value="Eye Brow">Eye Brow</option>
-                            <option value="Eye">Eye</option>
-                            <option value="Cheekbone">Cheekbone</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- ?�중 ?��?지 ?�로??-->
-                <div class="form-group">
-                    <label class="form-label">?��?지 ?�로??(최�? 5??</label>
-                    <div class="upload-area" id="uploadArea">
-                        <input type="file" id="imageInput" accept="image/*" multiple>
-                        <label for="imageInput" style="cursor: pointer; display: block;">
-                            <div class="upload-icon">?��</div>
-                            <div class="upload-text">?�릭?�거???�래그하???��?지 ?�로??/div>
-                            <div class="upload-text" style="font-size: 11px; margin-top: 5px;">JPG, PNG, WebP / �??�일 최�? 5MB</div>
+                    <button id="generateVideoBtn" onclick="generateVideo()" class="btn" style="width: 100%; margin-top: 24px; padding: 16px; font-size: 16px; background: linear-gradient(135deg, #9c27b0, #헤어스타일 최�? 5MB</div>
                         </label>
                     </div>
                     <div class="image-preview-grid" id="imagePreviewGrid" style="display: none;"></div>
@@ -2330,7 +1774,7 @@
                 const adminDoc = await db.collection('admin_users').doc(email.replace(/[@.]/g, '_')).get();
 
                 if (!adminDoc.exists) {
-                    errorDiv.textContent = '?�록?��? ?��? 관리자?�니??';
+                    errorDiv.textContent = '등록되지 않은 관리자입니다';
                     errorDiv.classList.add('show');
                     return;
                 }
@@ -2339,7 +1783,7 @@
 
                 // 비�?번호 ?�인 (간단???�시 비교)
                 if (adminData.password !== simpleHash(password)) {
-                    errorDiv.textContent = '비�?번호가 ?�치?��? ?�습?�다.';
+                    errorDiv.textContent = '비밀번호가 일치하지 않습니다';
                     errorDiv.classList.add('show');
                     return;
                 }
@@ -2356,11 +1800,11 @@
                 updateAdminUI();
                 document.getElementById('loginOverlay').classList.add('hidden');
 
-                showToast('로그???�공', 'success');
+                showToast('로그인 성공', 'success');
 
             } catch (error) {
-                console.error('로그???�류:', error);
-                errorDiv.textContent = '로그??�??�류가 발생?�습?�다.';
+                console.error('로그인 오류:', error);
+                errorDiv.textContent = '로그인 중 오류가 발생했습니다';
                 errorDiv.classList.add('show');
             }
         }
@@ -2370,7 +1814,7 @@
             localStorage.removeItem('hairgator_admin');
             currentAdmin = null;
             document.getElementById('loginOverlay').classList.remove('hidden');
-            showToast('로그?�웃 ?�었?�니??', 'success');
+            showToast('로그아웃 되었습니다', 'success');
         }
 
         // 간단???�시 ?�수 (?�제 ?�로?�션?�서??bcrypt ???�용)
@@ -2410,7 +1854,7 @@
                     await createDefaultAdmin();
                 }
             } catch (error) {
-                console.error('관리자 ?�인 ?�패:', error);
+                console.error('관리자 처리 실패:', error);
             }
 
             return false;
@@ -2430,9 +1874,9 @@
                     password: simpleHash(defaultPassword),
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                console.log('기본 관리자 ?�성 ?�료:', defaultEmail);
+                console.log('기본 관리자 생성 완료:', defaultEmail);
             } catch (error) {
-                console.error('기본 관리자 ?�성 ?�패:', error);
+                console.error('기본 관리자 생성 실패:', error);
             }
         }
 
@@ -2471,7 +1915,7 @@
                 }).join('');
 
             } catch (error) {
-                console.error('관리자 목록 로드 ?�패:', error);
+                console.error('관리자 처리 실패:', error);
                 tbody.innerHTML = `<tr><td colspan="4" style="color: var(--danger);">?�류: ${error.message}</td></tr>`;
             }
         }
@@ -2496,7 +1940,7 @@
             }
 
             if (!/^\d{6}$/.test(password)) {
-                showToast('비�?번호???�자 6?�리?�야 ?�니??', 'error');
+                showToast('비밀번호는 숫자 6자리여야 합니다', 'error');
                 return;
             }
 
@@ -2506,7 +1950,7 @@
                 // 중복 ?�인
                 const existing = await db.collection('admin_users').doc(docId).get();
                 if (existing.exists) {
-                    showToast('?��? ?�록???�메?�입?�다.', 'error');
+                    showToast('이미 등록된 이메일입니다', 'error');
                     return;
                 }
 
@@ -2519,11 +1963,11 @@
 
                 closeModal('addAdminModal');
                 loadAdminList();
-                showToast('관리자가 추�??�었?�니??', 'success');
+                showToast('관리자가 삭제되었습니다', 'success');
 
             } catch (error) {
-                console.error('관리자 추�? ?�패:', error);
-                showToast('관리자 추�? �??�류가 발생?�습?�다.', 'error');
+                console.error('관리자 처리 실패:', error);
+                showToast('관리자 처리 중 오류가 발생했습니다', 'error');
             }
         }
 
@@ -2531,7 +1975,7 @@
         async function deleteAdmin(docId, email) {
             // 본인 ??�� 방�?
             if (currentAdmin && currentAdmin.email === email) {
-                showToast('본인 계정?� ??��?????�습?�다.', 'error');
+                showToast('본인 계정은 삭제할 수 없습니다', 'error');
                 return;
             }
 
@@ -2542,10 +1986,10 @@
             try {
                 await db.collection('admin_users').doc(docId).delete();
                 loadAdminList();
-                showToast('관리자가 ??��?�었?�니??', 'success');
+                showToast('관리자가 삭제되었습니다', 'success');
             } catch (error) {
-                console.error('관리자 ??�� ?�패:', error);
-                showToast('관리자 ??�� �??�류가 발생?�습?�다.', 'error');
+                console.error('관리자 처리 실패:', error);
+                showToast('관리자 처리 중 오류가 발생했습니다', 'error');
             }
         }
 
@@ -2583,7 +2027,7 @@
                 const adminDoc = await db.collection('admin_users').doc(docId).get();
 
                 if (!adminDoc.exists) {
-                    showToast('계정??찾을 ???�습?�다.', 'error');
+                    showToast('계정을 찾을 수 없습니다', 'error');
                     return;
                 }
 
@@ -2591,7 +2035,7 @@
 
                 // ?�재 비�?번호 ?�인
                 if (adminData.password !== simpleHash(currentPw)) {
-                    showToast('?�재 비�?번호가 ?�치?��? ?�습?�다.', 'error');
+                    showToast('현재 비밀번호가 일치하지 않습니다', 'error');
                     return;
                 }
 
@@ -2601,11 +2045,11 @@
                 });
 
                 closeModal('changePasswordModal');
-                showToast('비�?번호가 변경되?�습?�다.', 'success');
+                showToast('비밀번호가 변경되었습니다', 'success');
 
             } catch (error) {
-                console.error('비�?번호 변�??�패:', error);
-                showToast('비�?번호 변�?�??�류가 발생?�습?�다.', 'error');
+                console.error('비밀번호 변경 실패:', error);
+                showToast('비밀번호 변경 중 오류가 발생했습니다', 'error');
             }
         }
 
@@ -2677,7 +2121,7 @@
                 planChart = new Chart(document.getElementById('planChart'), {
                     type: 'doughnut',
                     data: {
-                        labels: ['무료', '베이�?, '?�로', '비즈?�스'],
+                        labels: ['무료', '베이직', '프로', '비즈니스'],
                         datasets: [{
                             data: [planCounts.free, planCounts.basic, planCounts.pro, planCounts.business],
                             backgroundColor: ['#666', '#22c55e', '#3b82f6', '#a855f7']
@@ -2702,14 +2146,14 @@
                 loadUsageChart();
 
             } catch (error) {
-                console.error('?�?�보??로드 ?�패:', error);
-                showToast('?�?�보??로드 ?�패', 'error');
+                console.error('정보 로드 실패:', error);
+                showToast('정보 로드 실패', 'error');
             }
         }
 
         function refreshDashboard() {
             loadDashboard();
-            showToast('?�로고침 ?�료', 'success');
+            showToast('새로고침 완료', 'success');
         }
 
         // 최근 ?�동 로드
@@ -2722,7 +2166,7 @@
                     .get();
 
                 if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">?�동 ?�음</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">활동 없음</td></tr>';
                     return;
                 }
 
@@ -2742,7 +2186,7 @@
                     `;
                 }).join('');
             } catch (error) {
-                console.error('?�동 로드 ?�패:', error);
+                console.error('활동 로드 실패:', error);
             }
         }
 
@@ -2798,7 +2242,7 @@
                     }
                 });
             } catch (error) {
-                console.error('차트 로드 ?�패:', error);
+                console.error('차트 로드 실패:', error);
             }
         }
 
@@ -2869,8 +2313,8 @@
                 updateUserCount();
                 renderUsers(allUsers);
             } catch (error) {
-                console.error('?�용??로드 ?�패:', error);
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger);">로드 ?�패: ' + error.message + '</td></tr>';
+                console.error('사용자 로드 실패:', error);
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger);">로드 실패: ' + error.message + '</td></tr>';
             }
         }
 
@@ -2894,7 +2338,7 @@
             const tbody = document.getElementById('usersTableBody');
 
             if (users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">?�용???�음</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">사용자 없음</td></tr>';
                 return;
             }
 
@@ -2908,12 +2352,12 @@
             tbody.innerHTML = users.map(user => {
                 const createdAt = user.createdAt?.toDate ? user.createdAt.toDate().toLocaleDateString('ko-KR') : '-';
                 const plan = user.plan || 'free';
-                const planName = { free: '무료', basic: '베이�?, pro: '?�로', business: '비즈?�스' }[plan];
+                const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' }[plan];
 
                 // ?�명 ?�시 (본인?�증 ??
                 const displayName = user.identityVerified && user.verifiedName
                     ? user.verifiedName
-                    : (user.displayName || user.name || '?�름 ?�음');
+                    : (user.displayName || user.name || '이름 없음');
 
                 // 출처 뱃�? (Firebase/불나�?
                 const sourceBadge = user.source === 'bullnabi'
@@ -2984,7 +2428,7 @@
             const user = allUsers.find(u => u.id === userId);
             if (!user) return;
 
-            const planName = { free: '무료', basic: '베이�?, pro: '?�로', business: '비즈?�스' }[user.plan || 'free'];
+            const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' }[user.plan || 'free'];
 
             // 본인?�증 ?�보 ?�시
             const verifiedBadge = user.identityVerified
@@ -3012,7 +2456,7 @@
                 <div class="user-detail-header">
                     <div class="user-avatar">${(user.displayName || 'U')[0].toUpperCase()}</div>
                     <div class="user-info">
-                        <h3>${user.displayName || '?�름 ?�음'}${verifiedBadge}</h3>
+                        <h3>${user.displayName || '이름 없음'}${verifiedBadge}</h3>
                         <p>${user.email || '-'}</p>
                     </div>
                 </div>
@@ -3075,11 +2519,11 @@
 
                 if (doc.exists) {
                     const data = doc.data();
-                    const planName = { free: '무료', basic: '베이�?, pro: '?�로', business: '비즈?�스' }[data.plan || 'free'];
+                    const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' }[data.plan || 'free'];
 
                     resultDiv.innerHTML = `
                         <div style="background: var(--bg-dark); border-radius: 8px; padding: 16px;">
-                            <div style="font-size: 18px; font-weight: 600; margin-bottom: 12px;">${data.displayName || '?�름 ?�음'}</div>
+                            <div style="font-size: 18px; font-weight: 600; margin-bottom: 12px;">${data.displayName || '이름 없음'}</div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                 <div>
                                     <div style="color: var(--text-muted); font-size: 11px;">?�랜</div>
@@ -3145,7 +2589,7 @@
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                const planName = { free: '무료', basic: '베이�?, pro: '?�로', business: '비즈?�스' };
+                const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' };
                 resultDiv.innerHTML = `
                     <div style="color: var(--success);">???�정 ?�료</div>
                     <div style="font-size: 13px; margin-top: 8px;">
@@ -3344,7 +2788,7 @@
                 featureUsageChart = new Chart(document.getElementById('featureUsageChart'), {
                     type: 'bar',
                     data: {
-                        labels: ['챗봇', '룩북', '?�어체험'],
+                        labels: ['챗봇', '룩북', '헤어체험'],
                         datasets: [{
                             label: '?�용 ?�수',
                             data: [chatbotCount, lookbookCount, hairTryCount],
@@ -3359,85 +2803,7 @@
                         },
                         scales: {
                             x: { grid: { color: '#E5E8EB' }, ticks: { color: '#6B7280' } },
-                            y: { grid: { color: '#E5E8EB' }, ticks: { color: '#6B7280' } }
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error('?�용 ?�계 로드 ?�패:', error);
-            }
-        }
-
-        // ?�어?��????�계 로드
-        async function loadHairstyleStats() {
-            try {
-                console.log('?�� ?�어?��????�계 로드 ?�작...');
-
-                const snapshot = await db.collection('hairstyles').get();
-                const totalStyles = snapshot.size;
-
-                // ?�성/?�성 카테고리 ?�의
-                const MALE_CATEGORIES = ['SIDE FRINGE', 'SIDE PART', 'FRINGE UP', 'PUSHED BACK', 'BUZZ', 'CROP', 'MOHICAN'];
-                const FEMALE_CATEGORIES = ['A Length', 'B Length', 'C Length', 'D Length', 'E Length', 'F Length', 'G Length', 'H Length'];
-
-                // ?�계 집계
-                const stats = {
-                    male: {},
-                    female: {}
-                };
-
-                MALE_CATEGORIES.forEach(cat => { stats.male[cat] = 0; });
-                FEMALE_CATEGORIES.forEach(cat => { stats.female[cat] = 0; });
-
-                let maleCount = 0;
-                let femaleCount = 0;
-
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const gender = data.gender;
-                    const mainCategory = data.mainCategory;
-
-                    if (gender === 'male') {
-                        maleCount++;
-                        if (stats.male[mainCategory] !== undefined) {
-                            stats.male[mainCategory]++;
-                        }
-                    } else if (gender === 'female') {
-                        femaleCount++;
-                        if (stats.female[mainCategory] !== undefined) {
-                            stats.female[mainCategory]++;
-                        }
-                    }
-                });
-
-                // ?�계 ?�자 ?�데?�트
-                document.getElementById('totalStyles').textContent = totalStyles.toLocaleString();
-                document.getElementById('totalMale').textContent = maleCount.toLocaleString();
-                document.getElementById('totalFemale').textContent = femaleCount.toLocaleString();
-
-                // 차트 ?�더�?                renderGenderPieChart(maleCount, femaleCount);
-                renderMaleBarChart(stats.male, MALE_CATEGORIES);
-                renderFemaleBarChart(stats.female, FEMALE_CATEGORIES);
-
-                console.log('???�어?��????�계 로드 ?�료:', { total: totalStyles, male: maleCount, female: femaleCount });
-
-            } catch (error) {
-                console.error('???�어?��????�계 로드 ?�패:', error);
-            }
-        }
-
-        // ?�별 비율 ?�넛 차트
-        function renderGenderPieChart(maleCount, femaleCount) {
-            const canvas = document.getElementById('genderPieChart');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-
-            if (genderPieChart) genderPieChart.destroy();
-
-            genderPieChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['?�� ?�성', '?�� ?�성'],
+                            y: { grid: { color: '#E5E8EB' }, ticks: { color: '#헤어스타일'],
                     datasets: [{
                         data: [maleCount, femaleCount],
                         backgroundColor: ['#4A90D9', '#FF1493'],
@@ -3710,424 +3076,7 @@
             const reason = document.getElementById('cancelPaymentReason').value.trim();
 
             // 버튼 비활?�화
-            const confirmBtn = document.querySelector('#cancelPaymentConfirmSection button');
-            const originalText = confirmBtn.textContent;
-            confirmBtn.disabled = true;
-            confirmBtn.textContent = '처리�?..';
-
-            try {
-                // 1. ?�트???�제 결제 취소 API ?�출
-                if (!paymentId) {
-                    throw new Error('결제 ID가 ?�습?�다.');
-                }
-
-                const cancelResponse = await fetch('/.netlify/functions/payment-cancel', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        paymentId: paymentId,
-                        reason: reason
-                    })
-                });
-
-                const cancelResult = await cancelResponse.json();
-                console.log('?�트??취소 결과:', cancelResult);
-
-                if (!cancelResponse.ok || !cancelResult.success) {
-                    throw new Error(cancelResult.error || '?�트??결제 취소 ?�패');
-                }
-
-                // 2. Firestore 결제 ?�태 변�?+ 취소 ?�유 ?�??                await db.collection('payments').doc(docId).update({
-                    status: 'cancelled',
-                    cancelledAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    cancelReason: reason,
-                    portioneCancellation: cancelResult.cancellation || null
-                });
-
-                // 3. ?�용???�큰 차감
-                const userRef = db.collection('users').doc(userId);
-                const userDoc = await userRef.get();
-                if (userDoc.exists) {
-                    const currentTokens = userDoc.data().tokenBalance || 0;
-                    const newTokens = Math.max(0, currentTokens - tokens);
-                    await userRef.update({
-                        tokenBalance: newTokens
-                    });
-
-                    // 4. 로그 기록
-                    await db.collection('token_logs').add({
-                        userId: userId,
-                        action: 'payment_cancelled',
-                        tokensDeducted: tokens,
-                        previousBalance: currentTokens,
-                        newBalance: newTokens,
-                        paymentDocId: docId,
-                        cancelReason: reason,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-
-                closeModal('cancelPaymentModal');
-                showToast('결제가 취소?�었?�니?? (?�불 ?�료)', 'success');
-            } catch (error) {
-                console.error('결제 취소 ?�류:', error);
-                showToast('결제 취소 ?�패: ' + error.message, 'error');
-                // 버튼 복구
-                confirmBtn.disabled = false;
-                confirmBtn.textContent = originalText;
-            }
-        }
-
-        // ?�정 ?�??        function saveTokenCosts() {
-            showToast('?�큰 비용 ?�정???�?�되?�습?�다', 'success');
-        }
-
-        function savePlanTokens() {
-            showToast('?�랜�??�큰 ?�정???�?�되?�습?�다', 'success');
-        }
-
-        function saveAdminEmails() {
-            showToast('관리자 계정???�?�되?�습?�다', 'success');
-        }
-
-        // ========== ????관�?==========
-        async function loadAppTabs() {
-            try {
-                const doc = await db.collection('app_config').doc('tabs').get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    for (let i = 1; i <= 4; i++) {
-                        const tab = data[`tab${i}`];
-                        if (tab) {
-                            document.getElementById(`tab${i}Enabled`).checked = tab.enabled !== false;
-                            document.getElementById(`tab${i}Icon`).value = tab.icon || '';
-                            document.getElementById(`tab${i}Label`).value = tab.label || '';
-                            document.getElementById(`tab${i}Url`).value = tab.url || '';
-                        }
-                    }
-                    console.log('???????�정 로드??);
-                }
-            } catch (error) {
-                console.error('????로드 ?�류:', error);
-            }
-        }
-
-        async function saveAppTabs() {
-            try {
-                const tabsConfig = {};
-                for (let i = 1; i <= 4; i++) {
-                    tabsConfig[`tab${i}`] = {
-                        enabled: document.getElementById(`tab${i}Enabled`).checked,
-                        icon: document.getElementById(`tab${i}Icon`).value,
-                        label: document.getElementById(`tab${i}Label`).value,
-                        url: document.getElementById(`tab${i}Url`).value,
-                        order: i
-                    };
-                }
-
-                await db.collection('app_config').doc('tabs').set({
-                    ...tabsConfig,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedBy: currentAdmin?.email || 'admin'
-                }, { merge: true });
-
-                showToast('?????�정???�?�되?�습?�다', 'success');
-                console.log('???????�정 ?�?�됨:', tabsConfig);
-            } catch (error) {
-                console.error('?????�???�류:', error);
-                showToast('?�???�패: ' + error.message, 'error');
-            }
-        }
-
-        // MongoDB ?�프?�서 추출?????�이??        const MONGODB_TABS_DATA = {
-            tab1: {
-                enabled: true,
-                icon: '?��',
-                label: 'Style Menu',
-                url: 'https://lovely-lebkuchen-4017ca.netlify.app/?userId=${userInfo._id.oid}',
-                meta: 'styleMenuTab',
-                module: 'ohmyMultiLego',
-                iconSet: {
-                    light: 'https://drylink.ohmyapp.io/assets/users/_menu/2025/09/16/ea76c909-46ff-41d7-9615-35fd34dd042a_freeiconportfolio4365933zl8moqkx.png',
-                    light_selected: 'https://drylink.ohmyapp.io/assets/users/_menu/2025/09/16/1ec555db-739f-4508-936a-f65025a7ad42_freeiconportfolio4365945umiumame.png'
-                }
-            },
-            tab2: {
-                enabled: false,
-                icon: '?��',
-                label: 'AI Face&Video Swap',
-                url: 'https://hgfaceswap.netlify.app/?userId=${userInfo._id.oid}',
-                meta: '',
-                module: 'webView',
-                iconSet: {
-                    light: 'https://drylink.ohmyapp.io/assets/users/_menu/2025/09/16/4938efd2-9612-47ee-bb04-18e4ef151798_20250916183314coklro0o.png',
-                    light_selected: 'https://drylink.ohmyapp.io/assets/users/_menu/2025/09/16/36091d81-cabc-4a75-8eab-66e665d500b9_20250916183416ap03g8rr.png'
-                }
-            },
-            tab3: {
-                enabled: true,
-                icon: '?��',
-                label: '?�품',
-                url: '',
-                meta: 'pkg_iamportPayment_productMulti',
-                module: 'ohmyMultiLego',
-                iconSet: {
-                    light: 'https://ohmyapp.ohmyapp.io/assets/users/iconUpload/2025/08/27/d7d63fb7-e19c-4900-914b-a625bb5ec70e_iconcardoffwvc4fqbs.png',
-                    light_selected: 'https://ohmyapp.ohmyapp.io/assets/users/iconUpload/2025/08/27/699d8c5c-7be8-4f0a-a4ef-9cb9236cb21d_iconcard0kpkg141.png'
-                }
-            },
-            tab4: {
-                enabled: true,
-                icon: '?��',
-                label: 'My',
-                url: '',
-                meta: 'myPage',
-                module: 'ohmyMultiLego',
-                iconSet: {
-                    light: 'https://ohmyapp.ohmyapp.io/assets/users/ooIcon/2022/11/11/c85b69ff-b97a-4918-b401-286f149d0a2d_iconSettingOff@3x.png',
-                    light_selected: 'https://ohmyapp.ohmyapp.io/assets/users/ooIcon/2022/11/11/1daeb767-5e76-4a4c-b8b2-1222245ca3f3_iconSettingOn@3x.png'
-                }
-            }
-        };
-
-        async function importMongoDBTabs() {
-            if (!confirm('MongoDB ?�프 ?�이?�로 ???�정????��?�시겠습?�까?')) return;
-
-            try {
-                // UI??�?채우�?                for (let i = 1; i <= 4; i++) {
-                    const tab = MONGODB_TABS_DATA[`tab${i}`];
-                    if (tab) {
-                        document.getElementById(`tab${i}Enabled`).checked = tab.enabled;
-                        document.getElementById(`tab${i}Icon`).value = tab.icon || '';
-                        document.getElementById(`tab${i}Label`).value = tab.label || '';
-                        document.getElementById(`tab${i}Url`).value = tab.url || '';
-                    }
-                }
-
-                // Firestore???�??                await db.collection('app_config').doc('tabs').set({
-                    ...MONGODB_TABS_DATA,
-                    source: 'mongodb_dump',
-                    importedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedBy: currentAdmin?.email || 'admin'
-                });
-
-                showToast('MongoDB ?�이?��? 가?��? ?�?�했?�니??, 'success');
-                console.log('??MongoDB ???�이???�포???�료');
-            } catch (error) {
-                console.error('MongoDB ???�포???�류:', error);
-                showToast('?�포???�패: ' + error.message, 'error');
-            }
-        }
-
-        // ==================== ?�어?��????�로??====================
-        // Firestore hairstyles 컬렉?�의 ?�제 카테고리�?(mainCategory, subCategory ?�드�?
-        const STYLE_SUBCATEGORIES = ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'];
-        const STYLE_CATEGORIES = {
-            male: {
-                'SIDE FRINGE': STYLE_SUBCATEGORIES,
-                'SIDE PART': STYLE_SUBCATEGORIES,
-                'FRINGE UP': STYLE_SUBCATEGORIES,
-                'PUSHED BACK': STYLE_SUBCATEGORIES,
-                'BUZZ': STYLE_SUBCATEGORIES,
-                'CROP': STYLE_SUBCATEGORIES,
-                'MOHICAN': STYLE_SUBCATEGORIES
-            },
-            female: {
-                'A Length': STYLE_SUBCATEGORIES,
-                'B Length': STYLE_SUBCATEGORIES,
-                'C Length': STYLE_SUBCATEGORIES,
-                'D Length': STYLE_SUBCATEGORIES,
-                'E Length': STYLE_SUBCATEGORIES,
-                'F Length': STYLE_SUBCATEGORIES,
-                'G Length': STYLE_SUBCATEGORIES,
-                'H Length': STYLE_SUBCATEGORIES
-            }
-        };
-
-        function loadStyleCategories() {
-            const gender = document.getElementById('styleGenderSelect').value;
-            const categorySelect = document.getElementById('styleCategorySelect');
-            const subcategorySelect = document.getElementById('styleSubcategorySelect');
-
-            categorySelect.innerHTML = '<option value="">?�분류 ?�택</option>';
-            subcategorySelect.innerHTML = '<option value="">중분�??�택</option>';
-            document.getElementById('stylesGrid').innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">카테고리�??�택?�세??/p>';
-
-            if (!gender) return;
-
-            const categories = Object.keys(STYLE_CATEGORIES[gender] || {});
-            categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.textContent = cat;
-                categorySelect.appendChild(option);
-            });
-        }
-
-        function loadStyleSubcategories() {
-            const gender = document.getElementById('styleGenderSelect').value;
-            const category = document.getElementById('styleCategorySelect').value;
-            const subcategorySelect = document.getElementById('styleSubcategorySelect');
-
-            subcategorySelect.innerHTML = '<option value="">중분�??�택</option>';
-
-            if (!gender || !category) return;
-
-            const subcategories = STYLE_CATEGORIES[gender][category] || [];
-            subcategories.forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub;
-                option.textContent = sub;
-                subcategorySelect.appendChild(option);
-            });
-        }
-
-        async function loadStylesList() {
-            const gender = document.getElementById('styleGenderSelect').value;
-            const category = document.getElementById('styleCategorySelect').value;
-            const subcategory = document.getElementById('styleSubcategorySelect').value;
-            const grid = document.getElementById('stylesGrid');
-
-            if (!gender || !category || !subcategory) {
-                grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">카테고리�??�택?�세??/p>';
-                return;
-            }
-
-            grid.innerHTML = '<div class="loading" style="grid-column: 1/-1;"></div>';
-
-            try {
-                // hairstyles 컬렉???�용 (메인 메뉴?�과 ?�일)
-                const snapshot = await db.collection('hairstyles')
-                    .where('gender', '==', gender)
-                    .where('mainCategory', '==', category)
-                    .where('subCategory', '==', subcategory)
-                    .get();
-
-                if (snapshot.empty) {
-                    grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">?�록???��??�이 ?�습?�다</p>';
-                    document.getElementById('stylesCountBadge').textContent = '0�?;
-                    return;
-                }
-
-                document.getElementById('stylesCountBadge').textContent = `${snapshot.size}�?;
-
-                grid.innerHTML = snapshot.docs.map(doc => {
-                    const data = doc.data();
-                    const thumbnail = data.thumbnailUrl || data.resultImage || 'https://via.placeholder.com/180x220?text=No+Image';
-                    const escapedData = encodeURIComponent(JSON.stringify(data));
-                    return `
-                        <div class="style-card" style="background: var(--bg-hover); border-radius: 12px; overflow: hidden; position: relative;">
-                            <img src="${thumbnail}" style="width: 100%; height: 140px; object-fit: cover; cursor: pointer;" onclick="openStyleDetail('${doc.id}', '${gender}')" onerror="this.src='https://via.placeholder.com/180x140?text=Error'">
-                            <div style="padding: 12px;">
-                                <div style="font-weight: 600; font-size: 13px;">${data.styleId || doc.id}</div>
-                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${data.styleName || ''}</div>
-                                <div style="display: flex; gap: 6px; margin-top: 10px;">
-                                    <button onclick="editStyle('${doc.id}', '${escapedData}')" style="flex: 1; padding: 6px; font-size: 11px; background: var(--info); color: white; border: none; border-radius: 6px; cursor: pointer;">?�정</button>
-                                    <button onclick="downloadStyleImage('${thumbnail}', '${data.styleId || doc.id}')" style="flex: 1; padding: 6px; font-size: 11px; background: var(--success); color: white; border: none; border-radius: 6px; cursor: pointer;">?�운</button>
-                                    <button onclick="deleteStyle('${doc.id}', '${data.styleId || doc.id}')" style="flex: 1; padding: 6px; font-size: 11px; background: var(--danger); color: white; border: none; border-radius: 6px; cursor: pointer;">??��</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-            } catch (error) {
-                console.error('?��???로드 ?�류:', error);
-                grid.innerHTML = `<p style="color: var(--danger); grid-column: 1/-1; text-align: center;">?�류: ${error.message}</p>`;
-            }
-        }
-
-        function openStyleDetail(styleId, gender) {
-            // 메인 ?�이?�의 ?��????�세 ?�이지�??�동
-            window.open(`https://hairgator.kr/?styleId=${styleId}&gender=${gender}`, '_blank');
-        }
-
-        // ==================== ?��????�로???�스??====================
-        let selectedImages = [];
-        let mainImageIndex = 0;
-        let videoUrl = '';
-        let videoData = null;
-        let isEditMode = false;
-        let currentEditingStyleId = null;
-        let existingImageUrls = [];
-
-        function openAddStyleModal() {
-            // ??초기??            isEditMode = false;
-            currentEditingStyleId = null;
-            document.getElementById('newStyleId').value = '';
-            document.getElementById('newStyleId').readOnly = false;
-            document.getElementById('newStyleName').value = '';
-            document.getElementById('newStyleGender').value = '';
-            document.getElementById('newStyleCategory').innerHTML = '<option value="">?�별 먼�? ?�택</option>';
-            document.getElementById('newStyleSubCategory').value = '';
-            document.getElementById('newStyleTextRecipe').value = '';
-            document.getElementById('videoUrlInput').value = '';
-            document.getElementById('videoPreview').style.display = 'none';
-            document.getElementById('addStyleModalTitle').textContent = '???��???추�?';
-
-            // ?��?지 초기??            selectedImages = [];
-            mainImageIndex = 0;
-            existingImageUrls = [];
-            document.getElementById('imagePreviewGrid').style.display = 'none';
-            document.getElementById('imagePreviewGrid').innerHTML = '';
-
-            // 모달 ?�기
-            document.getElementById('addStyleModal').classList.add('show');
-            setupDragAndDrop();
-        }
-
-        // ?�별 변�???카테고리 ?�션 ?�데?�트
-        document.getElementById('newStyleGender').addEventListener('change', function() {
-            updateCategoryOptions(this.value, 'newStyleCategory');
-        });
-
-        function updateCategoryOptions(gender, selectId) {
-            const categorySelect = document.getElementById(selectId);
-            if (gender === 'female') {
-                categorySelect.innerHTML = `
-                    <option value="">?�택</option>
-                    <option value="A Length">A Length</option>
-                    <option value="B Length">B Length</option>
-                    <option value="C Length">C Length</option>
-                    <option value="D Length">D Length</option>
-                    <option value="E Length">E Length</option>
-                    <option value="F Length">F Length</option>
-                    <option value="G Length">G Length</option>
-                    <option value="H Length">H Length</option>
-                `;
-            } else if (gender === 'male') {
-                categorySelect.innerHTML = `
-                    <option value="">?�택</option>
-                    <option value="SIDE FRINGE">Side Fringe</option>
-                    <option value="SIDE PART">Side Part</option>
-                    <option value="FRINGE UP">Fringe Up</option>
-                    <option value="PUSHED BACK">Pushed Back</option>
-                    <option value="BUZZ">Buzz</option>
-                    <option value="CROP">Crop</option>
-                    <option value="MOHICAN">Mohican</option>
-                `;
-            } else {
-                categorySelect.innerHTML = '<option value="">?�별 먼�? ?�택</option>';
-            }
-        }
-
-        // ?��?지 ?�택 처리
-        document.getElementById('imageInput').addEventListener('change', function(e) {
-            handleImageSelect(e.target.files);
-        });
-
-        function handleImageSelect(files) {
-            const maxImages = 5;
-            const currentCount = selectedImages.length + existingImageUrls.length;
-
-            for (let i = 0; i < files.length && currentCount + i < maxImages; i++) {
-                const file = files[i];
-                if (file.size > 5 * 1024 * 1024) {
-                    showToast(`${file.name}: 5MB 초과`, 'error');
-                    continue;
-                }
-                if (!file.type.startsWith('image/')) {
-                    showToast(`${file.name}: ?��?지 ?�일�?가??, 'error');
+            const confirmBtn = document.querySelector('#헤어스타일�?가??, 'error');
                     continue;
                 }
                 selectedImages.push(file);
@@ -4791,8 +3740,8 @@
                 </div>
             `).join('');
 
-            document.getElementById('cardNewsCaption').textContent = `??${document.getElementById('cardNewsTitle').value || '?�로???�식'}\n\n?�세???�용?� ?�로??링크?�서 ?�인?�세??\n\n#?�어?��???#미용??#HAIRGATOR`;
-            document.getElementById('cardNewsKeywords').textContent = '#?�어?��???#?�어?�자?�너 #미용??#?�어?�렌??#HAIRGATOR #뷰티 #?�어�?#??#?�색';
+            document.getElementById('cardNewsCaption').textContent = `??${document.getElementById('cardNewsTitle').value || '?�로???�식'}\n\n?�세???�용?� ?�로??링크?�서 ?�인?�세??\n\n#?�어?��???#미용사#HAIRGATOR`;
+            document.getElementById('cardNewsKeywords').textContent = '#?�어?��???#헤어디자이너 #미용사#헤어트렌드#HAIRGATOR #뷰티 #?�어�?#??#?�색';
         }
 
         function downloadCardNews(index) {
@@ -5127,7 +4076,7 @@
                 renderInquiries(allInquiries);
             } catch (error) {
                 console.error('문의 로드 ?�패:', error);
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger);">로드 ?�패: ' + error.message + '</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger);">로드 실패: ' + error.message + '</td></tr>';
             }
         }
 
