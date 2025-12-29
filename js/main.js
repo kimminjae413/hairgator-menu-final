@@ -124,7 +124,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         const userDoc = await firebase.firestore().collection('users').doc(docId).get();
                         if (userDoc.exists) {
                         const userData = userDoc.data();
-                        displayName = userData.name || userData.displayName || displayName;
+                        displayName = userData.name || userData.verifiedName || userData.displayName || displayName;
+                            console.log('📋 Firestore 사용자 정보:', { docId, name: userData.name, verifiedName: userData.verifiedName, displayName: userData.displayName });
                         }
                     }
                 } catch (e) {
