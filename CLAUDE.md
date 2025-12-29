@@ -510,6 +510,37 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 로그인 시 이메일 매칭으로 `users`로 복사
 
 ## 최근 작업 이력
+- 2025-12-29: 마이페이지/상품페이지 UI 개선 + admin 통계 필터
+
+  ### 마이페이지 이름 표시 버그 수정
+  - **문제**: 로그인 후 마이페이지에서 "사용자"로 표시됨
+  - **원인**: Firebase Auth 완료 전에 마이페이지 렌더링
+  - **해결**: auth.js에서 로그인 완료 후 `window.updateMypageInfo()` 호출
+  - **수정 파일**: js/auth.js, js/main.js
+
+  ### 상품 페이지(#products) UI 전면 개편
+  - **5개 요금제 카드**: 무료, 베이직, 프로, 비즈니스, AI얼굴변환&영상변환
+  - **가로 스크롤 레이아웃**: `.pricing-cards-horizontal`
+  - **현재 플랜 동적 표시**: `updateProductsPagePlan()` 함수 추가
+    - `data-plan` 속성으로 카드 식별
+    - `FirebaseBridge.getTokenBalance()`로 현재 플랜 조회
+    - 현재 플랜 카드는 "현재 플랜" 버튼 비활성화
+  - **실제 결제 연동**: `selectPlanAndPay()` 함수 유지
+
+  ### admin.html 사용 통계 기간 필터 추가
+  - **기간 필터 버튼**: 일/주/월/년 선택
+    - 일: 오늘 00:00 ~ 현재
+    - 주: 7일 전 ~ 현재
+    - 월: 이번 달 1일 ~ 현재
+    - 년: 올해 1월 1일 ~ 현재
+  - **신규 가입자 수 카드**: `users.createdAt` 기준 필터
+  - **접속자 수 카드**: `users.lastLoginAt` 기준 필터
+  - **함수**: `changeStatsPeriod()`, `getStartDateForPeriod()`, `loadUsageStats()` 수정
+  - **CSS**: `.period-filter-group`, `.period-btn`, `.stat-card-highlight`
+
+  ### 커밋
+  - `c16a95e`: feat: admin 사용 통계에 신규 가입자/접속자 + 기간 필터 추가
+
 - 2025-12-29: admin.html 헤어스타일 관리 + 통계 Firebase 연동
 
   ### 헤어스타일 관리 Firebase 연결 수정
