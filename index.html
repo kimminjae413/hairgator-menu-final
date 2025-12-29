@@ -600,6 +600,299 @@
         body.light-theme .no-cards-message {
             color: rgba(0,0,0,0.4);
         }
+
+        /* NEW 뱃지 */
+        .new-badge {
+            background: #EF4444;
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* 1:1 문의 섹션 */
+        .inquiry-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        body.light-theme .inquiry-section {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .inquiry-section .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .inquiry-section h3 {
+            margin: 0;
+            font-size: 14px;
+            color: #fff;
+        }
+        body.light-theme .inquiry-section h3 {
+            color: #1a1a1a;
+        }
+        .add-inquiry-btn {
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #E91E63 0%, #F06292 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .inquiry-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .inquiry-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        body.light-theme .inquiry-item {
+            background: #f8f9fa;
+        }
+        .inquiry-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        body.light-theme .inquiry-item:hover {
+            background: #eef0f2;
+        }
+        .inquiry-item-left {
+            flex: 1;
+            min-width: 0;
+        }
+        .inquiry-subject {
+            font-size: 14px;
+            font-weight: 500;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        body.light-theme .inquiry-subject {
+            color: #1a1a1a;
+        }
+        .inquiry-date {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
+        }
+        body.light-theme .inquiry-date {
+            color: rgba(0,0,0,0.5);
+        }
+        .inquiry-status {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .inquiry-status.pending {
+            background: #F59E0B;
+            color: white;
+        }
+        .inquiry-status.answered {
+            background: #10B981;
+            color: white;
+        }
+        .inquiry-status.new-reply {
+            background: #EF4444;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        .no-inquiry-message {
+            text-align: center;
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+            padding: 20px;
+        }
+        body.light-theme .no-inquiry-message {
+            color: rgba(0,0,0,0.4);
+        }
+
+        /* 문의 모달 */
+        .inquiry-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+        .inquiry-modal {
+            background: #1a1a1a;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        body.light-theme .inquiry-modal {
+            background: #fff;
+        }
+        .inquiry-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        body.light-theme .inquiry-modal-header {
+            border-bottom-color: rgba(0,0,0,0.1);
+        }
+        .inquiry-modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #fff;
+        }
+        body.light-theme .inquiry-modal-header h3 {
+            color: #1a1a1a;
+        }
+        .modal-close-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            font-size: 24px;
+            cursor: pointer;
+        }
+        body.light-theme .modal-close-btn {
+            color: rgba(0,0,0,0.5);
+        }
+        .inquiry-modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .inquiry-modal-body .form-group {
+            margin-bottom: 16px;
+        }
+        .inquiry-modal-body label {
+            display: block;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 6px;
+        }
+        body.light-theme .inquiry-modal-body label {
+            color: rgba(0,0,0,0.7);
+        }
+        .inquiry-input, .inquiry-textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        body.light-theme .inquiry-input, body.light-theme .inquiry-textarea {
+            background: #f8f9fa;
+            border-color: #ddd;
+            color: #1a1a1a;
+        }
+        .inquiry-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        .inquiry-modal-footer {
+            display: flex;
+            gap: 12px;
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        body.light-theme .inquiry-modal-footer {
+            border-top-color: rgba(0,0,0,0.1);
+        }
+        .btn-cancel, .btn-submit {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-cancel {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        body.light-theme .btn-cancel {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #E91E63 0%, #F06292 100%);
+            color: white;
+        }
+
+        /* 문의 상세 - 대화 형식 */
+        .inquiry-detail-modal {
+            max-height: 90vh;
+        }
+        .inquiry-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .inquiry-message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .inquiry-message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #E91E63 0%, #F06292 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .inquiry-message.admin {
+            align-self: flex-start;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-bottom-left-radius: 4px;
+        }
+        body.light-theme .inquiry-message.admin {
+            background: #f0f0f0;
+            color: #1a1a1a;
+        }
+        .message-time {
+            font-size: 10px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
+        }
+        body.light-theme .message-time {
+            color: rgba(0,0,0,0.5);
+        }
+        .inquiry-message.user .message-time {
+            color: rgba(255,255,255,0.7);
+        }
     </style>
 
     <!-- External JavaScript -->
@@ -1615,6 +1908,12 @@
                 <span class="menu-text">언어 설정</span>
                 <span class="menu-arrow">→</span>
             </div>
+            <div class="menu-item" onclick="toggleInquirySection()">
+                <span class="menu-icon">💬</span>
+                <span class="menu-text">1:1 문의</span>
+                <span class="menu-arrow" id="inquiryArrow">→</span>
+                <span class="new-badge" id="inquiryNewBadge" style="display: none;">NEW</span>
+            </div>
         </div>
 
         <!-- 저장된 카드 섹션 (토글) -->
@@ -1629,9 +1928,60 @@
             </div>
         </div>
 
+        <!-- 1:1 문의 섹션 (토글) -->
+        <div id="inquirySection" class="inquiry-section" style="display: none;">
+            <div class="section-header">
+                <h3>1:1 문의</h3>
+                <button class="add-inquiry-btn" onclick="openNewInquiryModal()">+ 문의하기</button>
+            </div>
+            <div id="inquiryList" class="inquiry-list">
+                <div class="no-inquiry-message">문의 내역이 없습니다.</div>
+            </div>
+        </div>
+
         <!-- 로그아웃 -->
         <div class="mypage-footer">
             <button class="logout-btn-full" onclick="logout()">로그아웃</button>
+        </div>
+    </div>
+</div>
+
+<!-- 1:1 문의 작성 모달 -->
+<div id="newInquiryModal" class="inquiry-modal-overlay" style="display: none;">
+    <div class="inquiry-modal">
+        <div class="inquiry-modal-header">
+            <h3>1:1 문의하기</h3>
+            <button class="modal-close-btn" onclick="closeNewInquiryModal()">×</button>
+        </div>
+        <div class="inquiry-modal-body">
+            <div class="form-group">
+                <label>제목</label>
+                <input type="text" id="inquirySubject" class="inquiry-input" placeholder="문의 제목을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label>내용</label>
+                <textarea id="inquiryMessage" class="inquiry-textarea" placeholder="문의 내용을 자세히 적어주세요" rows="6"></textarea>
+            </div>
+        </div>
+        <div class="inquiry-modal-footer">
+            <button class="btn-cancel" onclick="closeNewInquiryModal()">취소</button>
+            <button class="btn-submit" onclick="submitInquiry()">문의 보내기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 문의 상세 보기 모달 -->
+<div id="inquiryDetailModal" class="inquiry-modal-overlay" style="display: none;">
+    <div class="inquiry-modal inquiry-detail-modal">
+        <div class="inquiry-modal-header">
+            <h3 id="inquiryDetailTitle">문의 상세</h3>
+            <button class="modal-close-btn" onclick="closeInquiryDetailModal()">×</button>
+        </div>
+        <div class="inquiry-modal-body" id="inquiryDetailContent">
+            <!-- 동적으로 채워짐 -->
+        </div>
+        <div class="inquiry-modal-footer" id="inquiryDetailFooter">
+            <button class="btn-cancel" onclick="closeInquiryDetailModal()">닫기</button>
         </div>
     </div>
 </div>

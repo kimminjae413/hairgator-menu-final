@@ -2497,3 +2497,276 @@ window.deleteCardFromMypage = async function(billingKey) {
         alert(error.message || '카드 삭제에 실패했습니다.');
     }
 };
+
+// ========== 1:1 문의 기능 ==========
+
+/**
+ * 문의 섹션 토글
+ */
+window.toggleInquirySection = async function() {
+    const section = document.getElementById('inquirySection');
+    const arrow = document.getElementById('inquiryArrow');
+
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        arrow.textContent = '↓';
+        await loadInquiries();
+    } else {
+        section.style.display = 'none';
+        arrow.textContent = '→';
+    }
+};
+
+/**
+ * 문의 목록 로드
+ */
+async function loadInquiries() {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const listEl = document.getElementById('inquiryList');
+    listEl.innerHTML = '<div class="loading-text" style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5);">로딩 중...</div>';
+
+    try {
+        const snapshot = await firebase.firestore()
+            .collection('inquiries')
+            .where('userId', '==', user.uid)
+            .orderBy('createdAt', 'desc')
+            .limit(20)
+            .get();
+
+        if (snapshot.empty) {
+            listEl.innerHTML = '<div class="no-inquiry-message">문의 내역이 없습니다.</div>';
+            return;
+        }
+
+        let hasNewReply = false;
+        let html = '';
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const createdAt = data.createdAt?.toDate?.() || new Date();
+            const dateStr = createdAt.toLocaleDateString('ko-KR');
+
+            // 상태 결정
+            let statusClass = 'pending';
+            let statusText = '답변 대기';
+
+            if (data.status === 'answered') {
+                if (!data.userRead) {
+                    statusClass = 'new-reply';
+                    statusText = '새 답변';
+                    hasNewReply = true;
+                } else {
+                    statusClass = 'answered';
+                    statusText = '답변 완료';
+                }
+            }
+
+            html += `
+                <div class="inquiry-item" onclick="openInquiryDetail('${doc.id}')">
+                    <div class="inquiry-item-left">
+                        <div class="inquiry-subject">${escapeHtml(data.subject)}</div>
+                        <div class="inquiry-date">${dateStr}</div>
+                    </div>
+                    <span class="inquiry-status ${statusClass}">${statusText}</span>
+                </div>
+            `;
+        });
+
+        listEl.innerHTML = html;
+
+        // NEW 뱃지 업데이트
+        const badge = document.getElementById('inquiryNewBadge');
+        if (badge) {
+            badge.style.display = hasNewReply ? 'inline' : 'none';
+        }
+
+    } catch (error) {
+        console.error('문의 목록 로드 실패:', error);
+        listEl.innerHTML = '<div class="no-inquiry-message">로드 실패</div>';
+    }
+}
+
+/**
+ * 새 문의 모달 열기
+ */
+window.openNewInquiryModal = function() {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        alert('로그인이 필요합니다.');
+        return;
+    }
+    document.getElementById('inquirySubject').value = '';
+    document.getElementById('inquiryMessage').value = '';
+    document.getElementById('newInquiryModal').style.display = 'flex';
+};
+
+/**
+ * 새 문의 모달 닫기
+ */
+window.closeNewInquiryModal = function() {
+    document.getElementById('newInquiryModal').style.display = 'none';
+};
+
+/**
+ * 문의 제출
+ */
+window.submitInquiry = async function() {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        alert('로그인이 필요합니다.');
+        return;
+    }
+
+    const subject = document.getElementById('inquirySubject').value.trim();
+    const message = document.getElementById('inquiryMessage').value.trim();
+
+    if (!subject) {
+        alert('제목을 입력해주세요.');
+        return;
+    }
+    if (!message) {
+        alert('내용을 입력해주세요.');
+        return;
+    }
+
+    try {
+        // 사용자 정보 가져오기
+        const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+        const userData = userDoc.exists ? userDoc.data() : {};
+
+        await firebase.firestore().collection('inquiries').add({
+            userId: user.uid,
+            userEmail: user.email || '',
+            userName: userData.verifiedName || userData.name || userData.displayName || user.displayName || '',
+            userPhone: userData.verifiedPhone || userData.phone || '',
+            subject: subject,
+            message: message,
+            status: 'pending',  // pending, answered, closed
+            adminRead: false,   // 관리자가 읽었는지
+            userRead: true,     // 사용자가 읽었는지 (답변 후)
+            replies: [],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert('문의가 접수되었습니다.');
+        closeNewInquiryModal();
+        await loadInquiries();
+
+    } catch (error) {
+        console.error('문의 제출 실패:', error);
+        alert('문의 제출에 실패했습니다.');
+    }
+};
+
+/**
+ * 문의 상세 보기
+ */
+window.openInquiryDetail = async function(inquiryId) {
+    try {
+        const doc = await firebase.firestore().collection('inquiries').doc(inquiryId).get();
+        if (!doc.exists) {
+            alert('문의를 찾을 수 없습니다.');
+            return;
+        }
+
+        const data = doc.data();
+
+        // userRead를 true로 업데이트 (새 답변 읽음 처리)
+        if (!data.userRead) {
+            await firebase.firestore().collection('inquiries').doc(inquiryId).update({
+                userRead: true
+            });
+            // NEW 뱃지 업데이트
+            await loadInquiries();
+        }
+
+        // 메시지 HTML 구성
+        const createdAt = data.createdAt?.toDate?.() || new Date();
+        let messagesHtml = `
+            <div class="inquiry-message user">
+                <div class="message-content">${escapeHtml(data.message)}</div>
+                <div class="message-time">${createdAt.toLocaleString('ko-KR')}</div>
+            </div>
+        `;
+
+        // 답변들 표시
+        if (data.replies && data.replies.length > 0) {
+            data.replies.forEach(reply => {
+                const replyTime = reply.createdAt?.toDate?.() || new Date();
+                const isAdmin = reply.from === 'admin';
+                messagesHtml += `
+                    <div class="inquiry-message ${isAdmin ? 'admin' : 'user'}">
+                        <div class="message-content">${escapeHtml(reply.message)}</div>
+                        <div class="message-time">${isAdmin ? '관리자 · ' : ''}${replyTime.toLocaleString('ko-KR')}</div>
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById('inquiryDetailTitle').textContent = data.subject;
+        document.getElementById('inquiryDetailContent').innerHTML = `
+            <div class="inquiry-messages">${messagesHtml}</div>
+        `;
+
+        document.getElementById('inquiryDetailModal').style.display = 'flex';
+
+    } catch (error) {
+        console.error('문의 상세 로드 실패:', error);
+        alert('문의를 불러오는데 실패했습니다.');
+    }
+};
+
+/**
+ * 문의 상세 모달 닫기
+ */
+window.closeInquiryDetailModal = function() {
+    document.getElementById('inquiryDetailModal').style.display = 'none';
+};
+
+/**
+ * HTML 이스케이프
+ */
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+/**
+ * 새 답변 알림 체크 (마이페이지 진입 시)
+ */
+async function checkNewInquiryReplies() {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    try {
+        const snapshot = await firebase.firestore()
+            .collection('inquiries')
+            .where('userId', '==', user.uid)
+            .where('status', '==', 'answered')
+            .where('userRead', '==', false)
+            .limit(1)
+            .get();
+
+        const badge = document.getElementById('inquiryNewBadge');
+        if (badge) {
+            badge.style.display = snapshot.empty ? 'none' : 'inline';
+        }
+    } catch (error) {
+        console.error('새 답변 체크 실패:', error);
+    }
+}
+
+// 마이페이지 로드 시 새 답변 체크
+document.addEventListener('DOMContentLoaded', () => {
+    // 해시 변경 시 마이페이지면 체크
+    window.addEventListener('hashchange', () => {
+        if (window.location.hash === '#mypage') {
+            setTimeout(checkNewInquiryReplies, 500);
+        }
+    });
+});

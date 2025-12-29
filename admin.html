@@ -1041,6 +1041,15 @@
         </nav>
 
         <nav class="nav-section">
+            <div class="nav-section-title">고객 지원</div>
+            <div class="nav-item" onclick="showPage('inquiries')">
+                <span class="nav-item-icon">💬</span>
+                <span>1:1 문의</span>
+                <span class="nav-item-badge inquiry-badge" id="inquiryCountBadge" style="display: none; background: #EF4444;">NEW</span>
+            </div>
+        </nav>
+
+        <nav class="nav-section">
             <div class="nav-section-title">콘텐츠</div>
             <div class="nav-item" onclick="showPage('styles')">
                 <span class="nav-item-icon">💇</span>
@@ -1499,6 +1508,78 @@
                             </td></tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1:1 문의 관리 페이지 -->
+        <div id="page-inquiries" class="page">
+            <div class="page-header">
+                <h2 class="page-title">💬 1:1 문의 관리</h2>
+                <button class="btn btn-secondary" onclick="loadInquiries()">🔄 새로고침</button>
+            </div>
+
+            <div class="card">
+                <!-- 필터 -->
+                <div class="filters" style="margin-bottom: 16px;">
+                    <button class="filter-btn inquiry-filter-btn active" data-filter="all" onclick="filterInquiries('all')">전체</button>
+                    <button class="filter-btn inquiry-filter-btn" data-filter="pending" onclick="filterInquiries('pending')">답변 대기</button>
+                    <button class="filter-btn inquiry-filter-btn" data-filter="answered" onclick="filterInquiries('answered')">답변 완료</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"></th>
+                                <th>사용자</th>
+                                <th>제목</th>
+                                <th>상태</th>
+                                <th>날짜</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inquiriesTableBody">
+                            <tr><td colspan="6" style="text-align: center; padding: 40px;">
+                                <div class="loading"></div>
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 문의 답변 모달 -->
+        <div class="modal-overlay" id="inquiryReplyModal">
+            <div class="modal" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="inquiryReplyTitle">문의 답변</h3>
+                    <button class="modal-close" onclick="closeModal('inquiryReplyModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- 사용자 정보 -->
+                    <div style="background: var(--bg-dark); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                        <div style="display: flex; gap: 16px; font-size: 13px;">
+                            <div><span style="color: var(--text-muted);">이름:</span> <span id="inquiryUserName">-</span></div>
+                            <div><span style="color: var(--text-muted);">이메일:</span> <span id="inquiryUserEmail">-</span></div>
+                            <div><span style="color: var(--text-muted);">전화:</span> <span id="inquiryUserPhone">-</span></div>
+                        </div>
+                    </div>
+
+                    <!-- 대화 내역 -->
+                    <div id="inquiryConversation" style="max-height: 300px; overflow-y: auto; margin-bottom: 16px;">
+                        <!-- 동적으로 채워짐 -->
+                    </div>
+
+                    <!-- 답변 입력 -->
+                    <div class="form-group">
+                        <label class="form-label">답변 작성</label>
+                        <textarea id="inquiryReplyText" class="form-input" rows="4" placeholder="답변을 입력하세요..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('inquiryReplyModal')">닫기</button>
+                    <button class="btn btn-primary" onclick="sendInquiryReply()">답변 보내기</button>
                 </div>
             </div>
         </div>
@@ -2560,6 +2641,7 @@
             if (pageName === 'appTabs') loadAppTabs();
             if (pageName === 'styles') loadHairstyleStats();
             if (pageName === 'settings') loadAdminList();
+            if (pageName === 'inquiries') loadInquiries();
         }
 
         // 대시보드 로드
@@ -5045,6 +5127,222 @@
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
         }
+
+        // ==================== 1:1 문의 관리 ====================
+
+        let allInquiries = [];
+        let currentInquiryFilter = 'all';
+        let currentInquiryId = null;
+
+        // 문의 목록 로드
+        async function loadInquiries() {
+            const tbody = document.getElementById('inquiriesTableBody');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;"><div class="loading"></div></td></tr>';
+
+            try {
+                let query = db.collection('inquiries').orderBy('createdAt', 'desc').limit(100);
+
+                const snapshot = await query.get();
+                allInquiries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // 읽지 않은 문의 개수 체크
+                const unreadCount = allInquiries.filter(i => !i.adminRead).length;
+                updateInquiryBadge(unreadCount);
+
+                renderInquiries(allInquiries);
+            } catch (error) {
+                console.error('문의 로드 실패:', error);
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger);">로드 실패: ' + error.message + '</td></tr>';
+            }
+        }
+
+        // 문의 뱃지 업데이트
+        function updateInquiryBadge(count) {
+            const badge = document.getElementById('inquiryCountBadge');
+            if (badge) {
+                badge.style.display = count > 0 ? 'inline' : 'none';
+                badge.textContent = count > 99 ? '99+' : count.toString();
+            }
+        }
+
+        // 문의 필터링
+        function filterInquiries(filter) {
+            currentInquiryFilter = filter;
+            document.querySelectorAll('.inquiry-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+
+            let filtered = allInquiries;
+            if (filter !== 'all') {
+                filtered = allInquiries.filter(i => i.status === filter);
+            }
+            renderInquiries(filtered);
+        }
+
+        // 문의 목록 렌더링
+        function renderInquiries(inquiries) {
+            const tbody = document.getElementById('inquiriesTableBody');
+
+            if (inquiries.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">문의 없음</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = inquiries.map(inquiry => {
+                const createdAt = inquiry.createdAt?.toDate ? inquiry.createdAt.toDate().toLocaleString('ko-KR') : '-';
+
+                // 상태 뱃지
+                let statusBadge = '';
+                if (inquiry.status === 'pending') {
+                    statusBadge = '<span class="badge" style="background: #F59E0B;">답변 대기</span>';
+                } else if (inquiry.status === 'answered') {
+                    statusBadge = '<span class="badge" style="background: #10B981;">답변 완료</span>';
+                } else {
+                    statusBadge = '<span class="badge" style="background: #6B7280;">종료</span>';
+                }
+
+                // 읽음 여부
+                const unreadDot = !inquiry.adminRead
+                    ? '<span style="display: inline-block; width: 8px; height: 8px; background: #EF4444; border-radius: 50%;"></span>'
+                    : '';
+
+                return `
+                    <tr>
+                        <td style="text-align: center;">${unreadDot}</td>
+                        <td>
+                            <div style="font-weight: 500;">${inquiry.userName || '익명'}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">${inquiry.userEmail || '-'}</div>
+                            ${inquiry.userPhone ? `<div style="font-size: 10px; color: #10B981;">${inquiry.userPhone}</div>` : ''}
+                        </td>
+                        <td>
+                            <div style="font-weight: 500; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                ${escapeHtml(inquiry.subject)}
+                            </div>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td style="font-size: 12px; color: var(--text-muted);">${createdAt}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="openInquiryReply('${inquiry.id}')">
+                                ${inquiry.status === 'pending' ? '답변하기' : '보기'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // HTML 이스케이프 (admin용)
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 문의 답변 모달 열기
+        async function openInquiryReply(inquiryId) {
+            currentInquiryId = inquiryId;
+            const inquiry = allInquiries.find(i => i.id === inquiryId);
+            if (!inquiry) return;
+
+            // adminRead를 true로 업데이트
+            if (!inquiry.adminRead) {
+                await db.collection('inquiries').doc(inquiryId).update({ adminRead: true });
+                inquiry.adminRead = true;
+                const unreadCount = allInquiries.filter(i => !i.adminRead).length;
+                updateInquiryBadge(unreadCount);
+                renderInquiries(currentInquiryFilter === 'all' ? allInquiries : allInquiries.filter(i => i.status === currentInquiryFilter));
+            }
+
+            // 모달 채우기
+            document.getElementById('inquiryReplyTitle').textContent = inquiry.subject;
+            document.getElementById('inquiryUserName').textContent = inquiry.userName || '-';
+            document.getElementById('inquiryUserEmail').textContent = inquiry.userEmail || '-';
+            document.getElementById('inquiryUserPhone').textContent = inquiry.userPhone || '-';
+
+            // 대화 내역 구성
+            const createdAt = inquiry.createdAt?.toDate ? inquiry.createdAt.toDate().toLocaleString('ko-KR') : '-';
+            let conversationHtml = `
+                <div style="padding: 12px; background: linear-gradient(135deg, #E91E63 0%, #F06292 100%); border-radius: 12px; color: white; margin-bottom: 8px;">
+                    <div style="font-size: 13px;">${escapeHtml(inquiry.message)}</div>
+                    <div style="font-size: 10px; opacity: 0.8; margin-top: 6px;">사용자 · ${createdAt}</div>
+                </div>
+            `;
+
+            // 답변들
+            if (inquiry.replies && inquiry.replies.length > 0) {
+                inquiry.replies.forEach(reply => {
+                    const replyTime = reply.createdAt?.toDate ? reply.createdAt.toDate().toLocaleString('ko-KR') : '-';
+                    const isAdmin = reply.from === 'admin';
+                    conversationHtml += `
+                        <div style="padding: 12px; background: ${isAdmin ? 'var(--bg-dark)' : 'linear-gradient(135deg, #E91E63 0%, #F06292 100%)'}; border-radius: 12px; ${isAdmin ? 'color: var(--text-primary);' : 'color: white;'} margin-bottom: 8px; ${isAdmin ? '' : 'margin-left: auto; max-width: 85%;'}">
+                            <div style="font-size: 13px;">${escapeHtml(reply.message)}</div>
+                            <div style="font-size: 10px; ${isAdmin ? 'color: var(--text-muted);' : 'opacity: 0.8;'} margin-top: 6px;">${isAdmin ? '관리자' : '사용자'} · ${replyTime}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('inquiryConversation').innerHTML = conversationHtml;
+            document.getElementById('inquiryReplyText').value = '';
+
+            openModal('inquiryReplyModal');
+        }
+
+        // 답변 보내기
+        async function sendInquiryReply() {
+            if (!currentInquiryId) return;
+
+            const replyText = document.getElementById('inquiryReplyText').value.trim();
+            if (!replyText) {
+                showToast('답변 내용을 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                const inquiry = allInquiries.find(i => i.id === currentInquiryId);
+                const currentReplies = inquiry?.replies || [];
+
+                await db.collection('inquiries').doc(currentInquiryId).update({
+                    status: 'answered',
+                    userRead: false,  // 사용자가 아직 읽지 않음
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    replies: [...currentReplies, {
+                        from: 'admin',
+                        message: replyText,
+                        createdAt: firebase.firestore.Timestamp.now()
+                    }]
+                });
+
+                showToast('답변이 전송되었습니다.', 'success');
+                closeModal('inquiryReplyModal');
+                await loadInquiries();
+
+            } catch (error) {
+                console.error('답변 전송 실패:', error);
+                showToast('답변 전송에 실패했습니다.', 'error');
+            }
+        }
+
+        // 초기 로드 시 읽지 않은 문의 개수 체크
+        async function checkUnreadInquiries() {
+            try {
+                const snapshot = await db.collection('inquiries')
+                    .where('adminRead', '==', false)
+                    .limit(100)
+                    .get();
+                updateInquiryBadge(snapshot.size);
+            } catch (error) {
+                console.error('읽지 않은 문의 체크 실패:', error);
+            }
+        }
+
+        // 로그인 후 문의 체크
+        firebase.auth().onAuthStateChanged(user => {
+            if (user && currentAdmin) {
+                setTimeout(checkUnreadInquiries, 1000);
+            }
+        });
     </script>
 </body>
 </html>
