@@ -14,20 +14,32 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --primary: #FF1493;
-            --primary-dark: #c41170;
-            --bg-dark: #0a0a0f;
-            --bg-card: #12121a;
-            --bg-hover: #1a1a25;
-            --border: #2a2a35;
-            --text: #ffffff;
-            --text-muted: #888899;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --info: #3b82f6;
+            --primary: #E91E63;
+            --primary-light: #FCE4EC;
+            --primary-dark: #C2185B;
+            --bg-body: #F5F7FA;
+            --bg-card: #FFFFFF;
+            --bg-hover: #F0F2F5;
+            --bg-sidebar: #FFFFFF;
+            --border: #E5E8EB;
+            --border-light: #F0F2F5;
+            --text: #1A1D21;
+            --text-muted: #6B7280;
+            --text-light: #9CA3AF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --info: #3B82F6;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
         }
 
         * {
@@ -37,22 +49,24 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-dark);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-body);
             color: var(--text);
             min-height: 100vh;
             display: flex;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* 사이드바 */
         .sidebar {
             width: 260px;
-            background: var(--bg-card);
+            background: var(--bg-sidebar);
             border-right: 1px solid var(--border);
             padding: 20px 0;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
+            box-shadow: var(--shadow-sm);
         }
 
         .sidebar-logo {
@@ -163,9 +177,10 @@
         .card {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 24px;
             margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
         }
 
         .card-header {
@@ -196,8 +211,15 @@
         .stat-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 20px;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
         }
 
         .stat-card-header {
@@ -280,14 +302,14 @@
             font-weight: 600;
         }
 
-        .badge-free { background: #333; color: #888; }
-        .badge-basic { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-        .badge-pro { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
-        .badge-business { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+        .badge-free { background: #F3F4F6; color: #6B7280; }
+        .badge-basic { background: #D1FAE5; color: #059669; }
+        .badge-pro { background: #DBEAFE; color: #2563EB; }
+        .badge-business { background: #EDE9FE; color: #7C3AED; }
 
-        .badge-success { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-        .badge-warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .badge-success { background: #D1FAE5; color: #059669; }
+        .badge-warning { background: #FEF3C7; color: #D97706; }
+        .badge-danger { background: #FEE2E2; color: #DC2626; }
 
         /* 버튼 */
         .btn {
@@ -313,13 +335,14 @@
         }
 
         .btn-secondary {
-            background: var(--bg-hover);
+            background: var(--bg-card);
             color: var(--text);
             border: 1px solid var(--border);
         }
 
         .btn-secondary:hover {
-            background: #25252f;
+            background: var(--bg-hover);
+            border-color: var(--text-muted);
         }
 
         .btn-success { background: var(--success); color: white; }
@@ -352,16 +375,22 @@
         .form-input {
             width: 100%;
             padding: 10px 14px;
-            background: var(--bg-dark);
+            background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 10px;
             color: var(--text);
             font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .form-input:focus {
             outline: none;
             border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-light);
         }
 
         .form-row {
@@ -414,7 +443,8 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
             display: none;
             align-items: center;
             justify-content: center;
@@ -427,12 +457,13 @@
 
         .modal {
             background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
+            border: none;
+            border-radius: 20px;
             width: 90%;
             max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
+            box-shadow: var(--shadow-lg);
         }
 
         .modal-header {
@@ -542,8 +573,8 @@
         }
 
         .user-stat {
-            background: var(--bg-dark);
-            border-radius: 10px;
+            background: var(--bg-body);
+            border-radius: 12px;
             padding: 16px;
             text-align: center;
         }
@@ -581,7 +612,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(10, 10, 15, 0.8);
+            background: rgba(255, 255, 255, 0.85);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -597,14 +628,14 @@
 
         .toast {
             background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
+            border: none;
+            border-radius: 12px;
             padding: 14px 20px;
             margin-top: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-lg);
             animation: slideIn 0.3s ease;
         }
 
@@ -643,11 +674,11 @@
             right: 0;
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 10px;
             min-width: 160px;
             display: none;
             z-index: 100;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-lg);
         }
 
         .action-dropdown.show {
@@ -1122,65 +1153,6 @@
                     <canvas id="featureUsageChart"></canvas>
                 </div>
             </div>
-
-            <!-- 헤어스타일 통계 -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">💇 헤어스타일 통계</div>
-                    <button class="btn btn-secondary" onclick="loadHairstyleStats()">🔄 새로고침</button>
-                </div>
-
-                <div class="stats-grid" style="margin-bottom: 20px;">
-                    <div class="stat-card">
-                        <div class="stat-card-header">
-                            <div>
-                                <div class="stat-value" id="totalStyles">-</div>
-                                <div class="stat-label">전체 스타일</div>
-                            </div>
-                            <div class="stat-icon" style="background: rgba(255, 20, 147, 0.2);">💇</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-card-header">
-                            <div>
-                                <div class="stat-value" id="totalMale">-</div>
-                                <div class="stat-label">남성 스타일</div>
-                            </div>
-                            <div class="stat-icon" style="background: rgba(74, 144, 217, 0.2);">👨</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-card-header">
-                            <div>
-                                <div class="stat-value" id="totalFemale">-</div>
-                                <div class="stat-label">여성 스타일</div>
-                            </div>
-                            <div class="stat-icon" style="background: rgba(255, 20, 147, 0.2);">👩</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
-                    <div style="background: var(--bg-hover); border-radius: 12px; padding: 20px;">
-                        <h4 style="margin-bottom: 12px; color: var(--text-muted);">성별 비율</h4>
-                        <div style="height: 200px;">
-                            <canvas id="genderPieChart"></canvas>
-                        </div>
-                    </div>
-                    <div style="background: var(--bg-hover); border-radius: 12px; padding: 20px;">
-                        <h4 style="margin-bottom: 12px; color: #4A90D9;">👨 남성 카테고리</h4>
-                        <div style="height: 200px;">
-                            <canvas id="maleBarChart"></canvas>
-                        </div>
-                    </div>
-                    <div style="background: var(--bg-hover); border-radius: 12px; padding: 20px;">
-                        <h4 style="margin-bottom: 12px; color: #FF1493;">👩 여성 카테고리</h4>
-                        <div style="height: 200px;">
-                            <canvas id="femaleBarChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- 활동 로그 페이지 -->
@@ -1404,6 +1376,65 @@
                 </div>
                 <div id="stylesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; padding: 20px;">
                     <p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">카테고리를 선택하세요</p>
+                </div>
+            </div>
+
+            <!-- 헤어스타일 통계 -->
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <div class="card-title">📊 스타일 통계</div>
+                    <button class="btn btn-secondary" onclick="loadHairstyleStats()">🔄 새로고침</button>
+                </div>
+
+                <div class="stats-grid" style="margin-bottom: 20px;">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-value" id="totalStyles">-</div>
+                                <div class="stat-label">전체 스타일</div>
+                            </div>
+                            <div class="stat-icon" style="background: rgba(255, 20, 147, 0.2);">💇</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-value" id="totalMale">-</div>
+                                <div class="stat-label">남성 스타일</div>
+                            </div>
+                            <div class="stat-icon" style="background: rgba(74, 144, 217, 0.2);">👨</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-value" id="totalFemale">-</div>
+                                <div class="stat-label">여성 스타일</div>
+                            </div>
+                            <div class="stat-icon" style="background: rgba(255, 20, 147, 0.2);">👩</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                    <div style="background: var(--bg-hover); border-radius: 12px; padding: 20px;">
+                        <h4 style="margin-bottom: 12px; color: var(--text-muted);">성별 비율</h4>
+                        <div style="height: 200px;">
+                            <canvas id="genderPieChart"></canvas>
+                        </div>
+                    </div>
+                    <div style="background: var(--bg-hover); border-radius: 12px; padding: 20px;">
+                        <h4 style="margin-bottom: 12px; color: #4A90D9;">👨 남성 카테고리</h4>
+                        <div style="height: 200px;">
+                            <canvas id="maleBarChart"></canvas>
+                        </div>
+                    </div>
+                    <div style="background: var(--bg-hover); border-radius: 12px; padding: 20px;">
+                        <h4 style="margin-bottom: 12px; color: #FF1493;">👩 여성 카테고리</h4>
+                        <div style="height: 200px;">
+                            <canvas id="femaleBarChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1730,6 +1761,7 @@
             if (pageName === 'users') loadUsers();
             if (pageName === 'usage') loadUsageStats();
             if (pageName === 'appTabs') loadAppTabs();
+            if (pageName === 'styles') loadHairstyleStats();
         }
 
         // 대시보드 로드
@@ -1780,7 +1812,7 @@
                         plugins: {
                             legend: {
                                 position: 'bottom',
-                                labels: { color: '#888' }
+                                labels: { color: '#6B7280' }
                             }
                         }
                     }
@@ -1883,8 +1915,8 @@
                             legend: { display: false }
                         },
                         scales: {
-                            x: { grid: { color: '#2a2a35' }, ticks: { color: '#888' } },
-                            y: { grid: { color: '#2a2a35' }, ticks: { color: '#888' } }
+                            x: { grid: { color: '#E5E8EB' }, ticks: { color: '#6B7280' } },
+                            y: { grid: { color: '#E5E8EB' }, ticks: { color: '#6B7280' } }
                         }
                     }
                 });
@@ -2333,17 +2365,14 @@
                             legend: { display: false }
                         },
                         scales: {
-                            x: { grid: { color: '#2a2a35' }, ticks: { color: '#888' } },
-                            y: { grid: { color: '#2a2a35' }, ticks: { color: '#888' } }
+                            x: { grid: { color: '#E5E8EB' }, ticks: { color: '#6B7280' } },
+                            y: { grid: { color: '#E5E8EB' }, ticks: { color: '#6B7280' } }
                         }
                     }
                 });
             } catch (error) {
                 console.error('사용 통계 로드 실패:', error);
             }
-
-            // 헤어스타일 통계도 함께 로드
-            loadHairstyleStats();
         }
 
         // 헤어스타일 통계 로드
@@ -2476,7 +2505,7 @@
                     indexAxis: 'y',
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { beginAtZero: true, grid: { color: '#2a2a35' }, ticks: { color: '#888' } },
+                        x: { beginAtZero: true, grid: { color: '#E5E8EB' }, ticks: { color: '#6B7280' } },
                         y: { grid: { display: false }, ticks: { color: '#4A90D9', font: { size: 10 } } }
                     }
                 }
@@ -2511,7 +2540,7 @@
                     indexAxis: 'y',
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { beginAtZero: true, grid: { color: '#2a2a35' }, ticks: { color: '#888' } },
+                        x: { beginAtZero: true, grid: { color: '#E5E8EB' }, ticks: { color: '#6B7280' } },
                         y: { grid: { display: false }, ticks: { color: '#FF1493', font: { size: 10 } } }
                     }
                 }
