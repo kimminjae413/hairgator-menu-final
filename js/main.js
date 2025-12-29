@@ -157,7 +157,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // 결제 처리 (payment.js 사용)
-        if (typeof window.HAIRGATOR_PAYMENT !== 'undefined') {
+        // showPaymentOptions: 저장된 카드가 있으면 선택 UI 표시, 없으면 일반 결제
+        if (typeof window.showPaymentOptions === 'function') {
+            try {
+                await window.showPaymentOptions(planType);
+            } catch (e) {
+                console.error('결제 오류:', e);
+                alert('결제 처리 중 오류가 발생했습니다.');
+            }
+        } else if (typeof window.HAIRGATOR_PAYMENT !== 'undefined') {
+            // fallback: 빌링키 기능 없으면 기존 방식
             try {
                 await window.HAIRGATOR_PAYMENT.purchasePlan(planType);
             } catch (e) {
@@ -2347,3 +2356,117 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 100);
 });
+
+// ========== 마이페이지 저장된 카드 관리 ==========
+
+/**
+ * 저장된 카드 섹션 토글
+ */
+window.toggleSavedCardsSection = async function() {
+    const section = document.getElementById('savedCardsSection');
+    const arrow = document.getElementById('savedCardsArrow');
+
+    if (!section) return;
+
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        arrow.textContent = '↓';
+        await loadSavedCardsForMypage();
+    } else {
+        section.style.display = 'none';
+        arrow.textContent = '→';
+    }
+};
+
+/**
+ * 마이페이지용 저장된 카드 로드
+ */
+async function loadSavedCardsForMypage() {
+    const listEl = document.getElementById('savedCardsList');
+    if (!listEl) return;
+
+    const userId = window.HAIRGATOR_PAYMENT?.getUserId?.();
+    if (!userId) {
+        listEl.innerHTML = '<div class="no-cards-message">로그인이 필요합니다.</div>';
+        return;
+    }
+
+    try {
+        // 저장된 카드 조회
+        const cards = await window.getSavedCards(userId);
+        const defaultBillingKey = await window.getDefaultCard(userId);
+
+        if (cards.length === 0) {
+            listEl.innerHTML = '<div class="no-cards-message">저장된 카드가 없습니다.</div>';
+            return;
+        }
+
+        // 카드 목록 렌더링
+        listEl.innerHTML = cards.map(card => {
+            const isDefault = card.billingKey === defaultBillingKey;
+            return `
+                <div class="saved-card-item">
+                    <div class="card-icon">💳</div>
+                    <div class="card-info">
+                        <span class="card-name">${card.displayName || card.cardBrand + ' ****' + card.lastFour}</span>
+                        ${isDefault ? '<span class="default-badge">기본</span>' : ''}
+                    </div>
+                    <button class="delete-card-btn" onclick="deleteCardFromMypage('${card.billingKey}')">삭제</button>
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error('카드 로드 오류:', error);
+        listEl.innerHTML = '<div class="no-cards-message">카드 정보를 불러올 수 없습니다.</div>';
+    }
+}
+
+/**
+ * 새 카드 등록
+ */
+window.registerNewCard = async function() {
+    const userId = window.HAIRGATOR_PAYMENT?.getUserId?.();
+    if (!userId) {
+        alert('로그인이 필요합니다.');
+        return;
+    }
+
+    const userEmail = window.currentDesigner?.email || '';
+    const userName = window.currentDesigner?.name || '';
+
+    try {
+        const result = await window.issueBillingKey(userId, userEmail, userName);
+
+        if (result.cancelled) {
+            return;
+        }
+
+        if (result.success) {
+            alert('카드가 등록되었습니다!');
+            await loadSavedCardsForMypage();
+        }
+    } catch (error) {
+        alert(error.message || '카드 등록에 실패했습니다.');
+    }
+};
+
+/**
+ * 마이페이지에서 카드 삭제
+ */
+window.deleteCardFromMypage = async function(billingKey) {
+    if (!confirm('이 카드를 삭제하시겠습니까?')) {
+        return;
+    }
+
+    const userId = window.HAIRGATOR_PAYMENT?.getUserId?.();
+    if (!userId) return;
+
+    try {
+        await window.deleteSavedCard(billingKey, userId);
+        alert('카드가 삭제되었습니다.');
+        await loadSavedCardsForMypage();
+    } catch (error) {
+        alert(error.message || '카드 삭제에 실패했습니다.');
+    }
+};

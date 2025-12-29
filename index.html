@@ -493,6 +493,113 @@
         .logout-btn-full:active {
             background: rgba(255,59,48,0.2);
         }
+
+        /* 저장된 카드 섹션 */
+        .saved-cards-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        body.light-theme .saved-cards-section {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .saved-cards-section .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .saved-cards-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            margin: 0;
+        }
+        body.light-theme .saved-cards-section h3 {
+            color: #1a1a1a;
+        }
+
+        .add-card-btn {
+            padding: 8px 14px;
+            background: rgba(233,30,99,0.1);
+            border: 1px solid rgba(233,30,99,0.3);
+            border-radius: 8px;
+            color: #E91E63;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .add-card-btn:hover {
+            background: rgba(233,30,99,0.2);
+        }
+
+        .saved-cards-section .saved-card-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+        body.light-theme .saved-cards-section .saved-card-item {
+            background: #f8f8f8;
+        }
+
+        .saved-cards-section .card-icon {
+            font-size: 24px;
+        }
+
+        .saved-cards-section .card-info {
+            flex: 1;
+        }
+
+        .saved-cards-section .card-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #fff;
+        }
+        body.light-theme .saved-cards-section .card-name {
+            color: #333;
+        }
+
+        .saved-cards-section .default-badge {
+            display: inline-block;
+            font-size: 10px;
+            background: #E91E63;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+
+        .saved-cards-section .delete-card-btn {
+            padding: 6px 12px;
+            background: rgba(255,59,48,0.1);
+            border: none;
+            border-radius: 6px;
+            color: #FF3B30;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .saved-cards-section .delete-card-btn:hover {
+            background: rgba(255,59,48,0.2);
+        }
+
+        .no-cards-message {
+            text-align: center;
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+            padding: 20px;
+        }
+        body.light-theme .no-cards-message {
+            color: rgba(0,0,0,0.4);
+        }
     </style>
 
     <!-- External JavaScript -->
@@ -1493,6 +1600,11 @@
                 <span class="menu-text">토큰 충전</span>
                 <span class="menu-arrow">→</span>
             </div>
+            <div class="menu-item" onclick="toggleSavedCardsSection()">
+                <span class="menu-icon">💳</span>
+                <span class="menu-text">결제 수단 관리</span>
+                <span class="menu-arrow" id="savedCardsArrow">→</span>
+            </div>
             <div class="menu-item" onclick="toggleTheme()">
                 <span class="menu-icon" id="mypageThemeIcon">🌙</span>
                 <span class="menu-text" id="mypageThemeText">다크 모드</span>
@@ -1502,6 +1614,18 @@
                 <span class="menu-icon">🌐</span>
                 <span class="menu-text">언어 설정</span>
                 <span class="menu-arrow">→</span>
+            </div>
+        </div>
+
+        <!-- 저장된 카드 섹션 (토글) -->
+        <div id="savedCardsSection" class="saved-cards-section" style="display: none;">
+            <div class="section-header">
+                <h3>저장된 결제 수단</h3>
+                <button class="add-card-btn" onclick="registerNewCard()">+ 카드 등록</button>
+            </div>
+            <div id="savedCardsList" class="saved-cards-list">
+                <!-- 동적으로 생성됨 -->
+                <div class="no-cards-message">저장된 카드가 없습니다.</div>
             </div>
         </div>
 
