@@ -2005,6 +2005,63 @@
         </div>
     </div>
 
+    <!-- 스타일 수정 모달 -->
+    <div class="modal-overlay" id="editStyleModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">스타일 수정</h3>
+                <button class="modal-close" onclick="closeModal('editStyleModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">스타일 ID (읽기전용)</label>
+                        <input type="text" class="form-input" id="editStyleId" readonly style="background: var(--bg-hover);">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">성별 *</label>
+                        <select class="form-input" id="editStyleGender">
+                            <option value="">선택</option>
+                            <option value="male">남성</option>
+                            <option value="female">여성</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">대분류 *</label>
+                        <select class="form-input" id="editStyleCategory">
+                            <option value="">성별 먼저 선택</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">중분류 (앞머리)</label>
+                        <select class="form-input" id="editStyleSubCategory">
+                            <option value="">선택</option>
+                            <option value="None">None</option>
+                            <option value="Fore Head">Fore Head</option>
+                            <option value="Eye Brow">Eye Brow</option>
+                            <option value="Eye">Eye</option>
+                            <option value="Cheekbone">Cheekbone</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">결과 이미지 URL</label>
+                    <input type="text" class="form-input" id="editStyleResultImage" placeholder="https://storage.googleapis.com/...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">레시피 텍스트</label>
+                    <textarea class="form-input" id="editStyleTextRecipe" rows="4" placeholder="스타일 레시피 내용..." style="resize: vertical;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('editStyleModal')">취소</button>
+                <button class="btn btn-primary" onclick="saveEditStyle()">저장</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 사용자 상세 모달 -->
     <div class="modal-overlay" id="userDetailModal">
         <div class="modal" style="max-width: 600px;">
@@ -3424,12 +3481,18 @@
                 grid.innerHTML = snapshot.docs.map(doc => {
                     const data = doc.data();
                     const thumbnail = data.thumbnailUrl || data.resultImage || 'https://via.placeholder.com/180x220?text=No+Image';
+                    const escapedData = encodeURIComponent(JSON.stringify(data));
                     return `
-                        <div class="style-card" style="background: var(--bg-hover); border-radius: 12px; overflow: hidden; cursor: pointer;" onclick="openStyleDetail('${doc.id}', '${gender}')">
-                            <img src="${thumbnail}" style="width: 100%; height: 140px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/180x140?text=Error'">
+                        <div class="style-card" style="background: var(--bg-hover); border-radius: 12px; overflow: hidden; position: relative;">
+                            <img src="${thumbnail}" style="width: 100%; height: 140px; object-fit: cover; cursor: pointer;" onclick="openStyleDetail('${doc.id}', '${gender}')" onerror="this.src='https://via.placeholder.com/180x140?text=Error'">
                             <div style="padding: 12px;">
                                 <div style="font-weight: 600; font-size: 13px;">${data.styleId || doc.id}</div>
                                 <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${data.styleName || ''}</div>
+                                <div style="display: flex; gap: 6px; margin-top: 10px;">
+                                    <button onclick="editStyle('${doc.id}', '${escapedData}')" style="flex: 1; padding: 6px; font-size: 11px; background: var(--info); color: white; border: none; border-radius: 6px; cursor: pointer;">수정</button>
+                                    <button onclick="downloadStyleImage('${thumbnail}', '${data.styleId || doc.id}')" style="flex: 1; padding: 6px; font-size: 11px; background: var(--success); color: white; border: none; border-radius: 6px; cursor: pointer;">다운</button>
+                                    <button onclick="deleteStyle('${doc.id}', '${data.styleId || doc.id}')" style="flex: 1; padding: 6px; font-size: 11px; background: var(--danger); color: white; border: none; border-radius: 6px; cursor: pointer;">삭제</button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -3456,7 +3519,7 @@
             document.getElementById('newStyleTextRecipe').value = '';
 
             // 모달 열기
-            document.getElementById('addStyleModal').classList.add('active');
+            document.getElementById('addStyleModal').classList.add('show');
         }
 
         // 성별 변경 시 카테고리 옵션 업데이트
@@ -3565,6 +3628,152 @@
             } catch (err) {
                 console.error('스타일 추가 에러:', err);
                 showToast('스타일 추가 실패: ' + err.message, 'error');
+            }
+        }
+
+        // 스타일 수정
+        let currentEditDocId = null;
+
+        function editStyle(docId, encodedData) {
+            try {
+                const data = JSON.parse(decodeURIComponent(encodedData));
+                currentEditDocId = docId;
+
+                // 폼에 데이터 채우기
+                document.getElementById('editStyleId').value = data.styleId || docId;
+                document.getElementById('editStyleGender').value = data.gender || '';
+
+                // 카테고리 옵션 설정
+                updateEditCategoryOptions(data.gender);
+                setTimeout(() => {
+                    document.getElementById('editStyleCategory').value = data.mainCategory || data.category || '';
+                    document.getElementById('editStyleSubCategory').value = data.subCategory || '';
+                }, 50);
+
+                document.getElementById('editStyleResultImage').value = data.resultImage || data.thumbnailUrl || '';
+                document.getElementById('editStyleTextRecipe').value = data.textRecipe || '';
+
+                document.getElementById('editStyleModal').classList.add('show');
+            } catch (e) {
+                console.error('수정 데이터 파싱 오류:', e);
+                showToast('스타일 데이터를 불러올 수 없습니다', 'error');
+            }
+        }
+
+        function updateEditCategoryOptions(gender) {
+            const categorySelect = document.getElementById('editStyleCategory');
+            if (gender === 'female') {
+                categorySelect.innerHTML = `
+                    <option value="">선택</option>
+                    <option value="A Length">A Length</option>
+                    <option value="B Length">B Length</option>
+                    <option value="C Length">C Length</option>
+                    <option value="D Length">D Length</option>
+                    <option value="E Length">E Length</option>
+                    <option value="F Length">F Length</option>
+                    <option value="G Length">G Length</option>
+                    <option value="H Length">H Length</option>
+                `;
+            } else if (gender === 'male') {
+                categorySelect.innerHTML = `
+                    <option value="">선택</option>
+                    <option value="SIDE FRINGE">Side Fringe</option>
+                    <option value="SIDE PART">Side Part</option>
+                    <option value="FRINGE UP">Fringe Up</option>
+                    <option value="PUSHED BACK">Pushed Back</option>
+                    <option value="BUZZ">Buzz</option>
+                    <option value="CROP">Crop</option>
+                    <option value="MOHICAN">Mohican</option>
+                `;
+            }
+        }
+
+        document.getElementById('editStyleGender').addEventListener('change', function() {
+            updateEditCategoryOptions(this.value);
+        });
+
+        async function saveEditStyle() {
+            if (!currentEditDocId) return;
+
+            const gender = document.getElementById('editStyleGender').value;
+            const category = document.getElementById('editStyleCategory').value;
+            const subCategory = document.getElementById('editStyleSubCategory').value;
+            const resultImage = document.getElementById('editStyleResultImage').value.trim();
+            const textRecipe = document.getElementById('editStyleTextRecipe').value.trim();
+
+            const updateData = {
+                fields: {
+                    gender: { stringValue: gender },
+                    mainCategory: { stringValue: category },
+                    updatedAt: { timestampValue: new Date().toISOString() }
+                }
+            };
+
+            if (subCategory) updateData.fields.subCategory = { stringValue: subCategory };
+            if (resultImage) updateData.fields.resultImage = { stringValue: resultImage };
+            if (textRecipe) updateData.fields.textRecipe = { stringValue: textRecipe };
+
+            try {
+                const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/hairstyles/${currentEditDocId}?updateMask.fieldPaths=gender&updateMask.fieldPaths=mainCategory&updateMask.fieldPaths=subCategory&updateMask.fieldPaths=resultImage&updateMask.fieldPaths=textRecipe&updateMask.fieldPaths=updatedAt`;
+                const res = await fetch(url, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (res.ok) {
+                    showToast('스타일이 수정되었습니다', 'success');
+                    closeModal('editStyleModal');
+                    loadHairstyles();
+                } else {
+                    throw new Error('수정 실패');
+                }
+            } catch (err) {
+                console.error('스타일 수정 에러:', err);
+                showToast('스타일 수정 실패', 'error');
+            }
+        }
+
+        // 스타일 삭제
+        async function deleteStyle(docId, styleId) {
+            if (!confirm(`"${styleId}" 스타일을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
+
+            try {
+                const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/hairstyles/${docId}`;
+                const res = await fetch(url, { method: 'DELETE' });
+
+                if (res.ok) {
+                    showToast('스타일이 삭제되었습니다', 'success');
+                    loadHairstyles();
+                } else {
+                    throw new Error('삭제 실패');
+                }
+            } catch (err) {
+                console.error('스타일 삭제 에러:', err);
+                showToast('스타일 삭제 실패', 'error');
+            }
+        }
+
+        // 이미지 다운로드
+        async function downloadStyleImage(imageUrl, styleId) {
+            try {
+                showToast('이미지 다운로드 중...', 'info');
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${styleId}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                showToast('다운로드 완료', 'success');
+            } catch (err) {
+                console.error('다운로드 에러:', err);
+                // CORS 문제 시 새 탭에서 열기
+                window.open(imageUrl, '_blank');
+                showToast('새 탭에서 이미지를 열었습니다. 우클릭으로 저장하세요.', 'info');
             }
         }
 
