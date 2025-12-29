@@ -408,6 +408,7 @@ async function issueBillingKey(userId, userEmail = '', userName = '') {
       storeId: HAIRGATOR_PAYMENT.storeId,
       channelKey: HAIRGATOR_PAYMENT.channelKey,
       billingKeyMethod: 'CARD',
+      issueName: 'HAIRGATOR 카드 등록',  // 필수 파라미터
       customer: {
         customerId: userId,
         email: userEmail || undefined,
