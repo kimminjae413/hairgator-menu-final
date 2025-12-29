@@ -2476,6 +2476,7 @@
             // 페이지별 데이터 로드
             if (pageName === 'dashboard') loadDashboard();
             if (pageName === 'users') loadUsers();
+            if (pageName === 'payments') loadPayments();
             if (pageName === 'usage') loadUsageStats();
             if (pageName === 'appTabs') loadAppTabs();
             if (pageName === 'styles') loadHairstyleStats();
@@ -3265,41 +3266,69 @@
             });
         }
 
-        // 결제 내역 로드
-        async function loadPayments() {
+        // 결제 내역 로드 (실시간)
+        let paymentsUnsubscribe = null;
+
+        function loadPayments() {
             const tbody = document.getElementById('paymentsTableBody');
             tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;"><div class="loading"></div></td></tr>';
 
-            try {
-                const snapshot = await db.collection('payments').orderBy('createdAt', 'desc').limit(50).get();
-
-                if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">결제 내역이 없습니다</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = snapshot.docs.map(doc => {
-                    const p = doc.data();
-                    const date = p.createdAt?.toDate ? p.createdAt.toDate().toLocaleString('ko-KR') : '-';
-                    const statusBadge = p.status === 'paid' ? 'badge-success' : (p.status === 'cancelled' ? 'badge-danger' : 'badge-warning');
-
-                    return `
-                        <tr>
-                            <td style="font-size: 12px;">${p.paymentId || doc.id}</td>
-                            <td style="font-size: 12px;">${p.userId || '-'}</td>
-                            <td>${p.productName || '-'}</td>
-                            <td style="font-weight: 500;">₩${(p.amount || 0).toLocaleString()}</td>
-                            <td><span class="badge ${statusBadge}">${p.status || '-'}</span></td>
-                            <td style="font-size: 12px; color: var(--text-muted);">${date}</td>
-                            <td>
-                                <button class="btn btn-sm btn-secondary">상세</button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="7" style="color: var(--danger);">오류: ${error.message}</td></tr>`;
+            // 기존 리스너 해제
+            if (paymentsUnsubscribe) {
+                paymentsUnsubscribe();
             }
+
+            // 실시간 리스너 설정
+            paymentsUnsubscribe = db.collection('payments')
+                .orderBy('createdAt', 'desc')
+                .limit(50)
+                .onSnapshot(snapshot => {
+                    if (snapshot.empty) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">결제 내역이 없습니다</td></tr>';
+                        return;
+                    }
+
+                    tbody.innerHTML = snapshot.docs.map(doc => {
+                        const p = doc.data();
+                        const date = p.createdAt?.toDate ? p.createdAt.toDate().toLocaleString('ko-KR') : '-';
+
+                        // 플랜명 매핑
+                        const planNames = { basic: '베이직', pro: '프로', business: '비즈니스', tokens_5000: '토큰 5000' };
+                        const productName = planNames[p.planKey] || p.planKey || '-';
+
+                        // 상태 매핑 (completed = 완료)
+                        const isCompleted = p.status === 'completed' || p.status === 'paid';
+                        const isCancelled = p.status === 'cancelled' || p.status === 'refunded';
+                        const statusBadge = isCompleted ? 'badge-success' : (isCancelled ? 'badge-danger' : 'badge-warning');
+                        const statusText = isCompleted ? '완료' : (isCancelled ? '취소' : p.status || '-');
+
+                        return `
+                            <tr>
+                                <td style="font-size: 11px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${p.paymentId || doc.id}</td>
+                                <td style="font-size: 12px;">${p.userName || p.userId || '-'}</td>
+                                <td>${productName} <span style="color: var(--text-muted); font-size: 11px;">(${(p.tokens || 0).toLocaleString()}토큰)</span></td>
+                                <td style="font-weight: 500;">₩${(p.amount || 0).toLocaleString()}</td>
+                                <td><span class="badge ${statusBadge}">${statusText}</span></td>
+                                <td style="font-size: 12px; color: var(--text-muted);">${date}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary" onclick="showPaymentDetail('${doc.id}')">상세</button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }, error => {
+                    tbody.innerHTML = `<tr><td colspan="7" style="color: var(--danger);">오류: ${error.message}</td></tr>`;
+                });
+        }
+
+        // 결제 상세 보기
+        function showPaymentDetail(paymentId) {
+            db.collection('payments').doc(paymentId).get().then(doc => {
+                if (doc.exists) {
+                    const p = doc.data();
+                    alert(`결제 상세\n\n주문번호: ${p.paymentId}\n사용자: ${p.userName || p.userId}\n상품: ${p.planKey}\n금액: ₩${(p.amount || 0).toLocaleString()}\n토큰: ${(p.tokens || 0).toLocaleString()}\n상태: ${p.status}`);
+                }
+            });
         }
 
         // 설정 저장
