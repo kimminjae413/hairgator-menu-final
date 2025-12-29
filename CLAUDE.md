@@ -1,5 +1,25 @@
 # HAIRGATOR 챗봇 - Claude 작업 가이드
 
+## 🚨 재시작 후 해야 할 일 (2025-12-29)
+
+### 1. 결제 시스템 원격 테스트
+- Chrome DevTools MCP 추가됨 (`claude mcp add chrome-devtools`)
+- Chrome 디버그 모드 실행 필요:
+  ```
+  "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="D:\chrome-debug" https://hairgator.kr
+  ```
+- hairgator.kr 접속 → 로그인 → 결제 테스트
+- 테스트 카드: `4242424242424242` (유효기간/CVC 아무거나)
+- **스냅샷 저장 위치: D드라이브** (C드라이브 용량 없음)
+- **스냅샷은 그때그때 삭제** (저장해두지 말 것)
+
+### 2. admin.html 라이트 테마 전환
+- 현재: 다크 테마
+- 목표: 밝은 화이트/라이트 테마, 깔끔하고 모던한 느낌
+- frontend-design 스킬 사용
+
+---
+
 ## ⚠️ 절대 다시 묻지 말 것 (2025-12-28 확정)
 
 ### OhMyApp/불나비/MongoDB 완전 독립 완료
