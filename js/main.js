@@ -142,6 +142,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (avatarEl && user.photoURL) {
                     avatarEl.innerHTML = `<img src="${user.photoURL}" alt="프로필">`;
                 }
+            } else if (window.currentDesigner) {
+                // Firebase Auth는 없지만 window.currentDesigner가 있는 경우
+                const designer = window.currentDesigner;
+                if (nameEl) nameEl.textContent = designer.name || designer.displayName || designer.email?.split('@')[0] || '사용자';
+                if (emailEl) emailEl.textContent = designer.email || '';
+                if (avatarEl && designer.photoURL) {
+                    avatarEl.innerHTML = `<img src="${designer.photoURL}" alt="프로필">`;
+                }
             } else {
                 if (nameEl) nameEl.textContent = '로그인 필요';
                 if (emailEl) emailEl.textContent = '-';
