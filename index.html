@@ -1823,10 +1823,9 @@
     <div class="page-content">
         <p class="products-subtitle">프리미엄 기능을 잠금 해제하세요</p>
 
-        <div class="pricing-cards-horizontal">
+        <div class="pricing-cards-horizontal" id="pricingCardsContainer">
             <!-- 무료 플랜 -->
-            <div class="plan-card plan-card-free">
-                <span class="plan-badge plan-badge-current">현재</span>
+            <div class="plan-card plan-card-free" data-plan="free">
                 <h3 class="plan-name">무료</h3>
                 <div class="plan-price">₩0<span class="plan-period">/월</span></div>
                 <div class="plan-credits">300 크레딧</div>
@@ -1838,11 +1837,11 @@
                     <li class="locked"><span class="icon-x">✗</span> 룩북</li>
                     <li class="locked"><span class="icon-x">✗</span> 헤어체험</li>
                 </ul>
-                <button class="plan-btn plan-btn-disabled" disabled>현재 플랜</button>
+                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('free')">선택하기</button>
             </div>
 
             <!-- 베이직 플랜 -->
-            <div class="plan-card plan-card-basic">
+            <div class="plan-card plan-card-basic" data-plan="basic">
                 <h3 class="plan-name">베이직</h3>
                 <div class="plan-price">₩22,000<span class="plan-period">/월</span></div>
                 <div class="plan-credits">10,000 크레딧</div>
@@ -1858,7 +1857,7 @@
             </div>
 
             <!-- 프로 플랜 (추천) -->
-            <div class="plan-card plan-card-pro plan-card-recommended">
+            <div class="plan-card plan-card-pro" data-plan="pro">
                 <span class="plan-badge plan-badge-recommended">추천</span>
                 <h3 class="plan-name">프로</h3>
                 <div class="plan-price">₩38,000<span class="plan-period">/월</span></div>
@@ -1872,7 +1871,7 @@
             </div>
 
             <!-- 비즈니스 플랜 -->
-            <div class="plan-card plan-card-business">
+            <div class="plan-card plan-card-business" data-plan="business">
                 <h3 class="plan-name">비즈니스</h3>
                 <div class="plan-price">₩50,000<span class="plan-period">/월</span></div>
                 <div class="plan-credits">25,000 크레딧</div>

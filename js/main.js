@@ -62,6 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'products':
                 if (productsPage) {
                     productsPage.style.display = 'block';
+                    updateProductsPagePlan(); // 현재 플랜 표시 업데이트
                     console.log('📦 상품 페이지 표시');
                 }
                 break;
@@ -2790,3 +2791,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// ========== 상품 페이지 현재 플랜 표시 ==========
+async function updateProductsPagePlan() {
+    try {
+        // 현재 플랜 가져오기
+        let currentPlan = 'free';
+        
+        if (typeof window.FirebaseBridge !== 'undefined') {
+            const tokenData = await window.FirebaseBridge.getTokenBalance();
+            if (tokenData && tokenData.plan) {
+                currentPlan = tokenData.plan;
+            }
+        }
+        
+        console.log('📋 현재 플랜:', currentPlan);
+        
+        // 모든 카드 리셋
+        const allCards = document.querySelectorAll('.plan-card[data-plan]');
+        allCards.forEach(card => {
+            const badge = card.querySelector('.plan-badge-current');
+            const btn = card.querySelector('.plan-btn');
+            const plan = card.getAttribute('data-plan');
+            
+            if (badge) badge.style.display = 'none';
+            
+            if (btn) {
+                if (plan === currentPlan) {
+                    // 현재 플랜 카드
+                    if (badge) badge.style.display = 'block';
+                    btn.className = 'plan-btn plan-btn-disabled';
+                    btn.disabled = true;
+                    btn.textContent = '현재 플랜';
+                    btn.onclick = null;
+                } else {
+                    // 다른 플랜 카드
+                    btn.className = 'plan-btn plan-btn-primary';
+                    btn.disabled = false;
+                    btn.textContent = '선택하기';
+                    btn.onclick = () => selectPlanAndPay(plan);
+                }
+            }
+        });
+        
+    } catch (e) {
+        console.error('플랜 정보 로드 실패:', e);
+    }
+}
+
+// 전역 함수로 노출
+window.updateProductsPagePlan = updateProductsPagePlan;
+
