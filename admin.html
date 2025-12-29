@@ -1920,6 +1920,34 @@
         </div>
     </div>
 
+    <!-- 비밀번호 변경 모달 -->
+    <div class="modal-overlay" id="changePasswordModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">비밀번호 변경</h3>
+                <button class="modal-close" onclick="closeModal('changePasswordModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">현재 비밀번호</label>
+                    <input type="text" class="form-input" id="currentPassword" placeholder="현재 비밀번호" maxlength="6" inputmode="numeric">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">새 비밀번호 (숫자 6자리)</label>
+                    <input type="text" class="form-input" id="newPassword" placeholder="새 비밀번호" maxlength="6" inputmode="numeric">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">새 비밀번호 확인</label>
+                    <input type="text" class="form-input" id="confirmPassword" placeholder="새 비밀번호 확인" maxlength="6" inputmode="numeric">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('changePasswordModal')">취소</button>
+                <button class="btn btn-primary" onclick="changePassword()">변경</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 사용자 상세 모달 -->
     <div class="modal-overlay" id="userDetailModal">
         <div class="modal" style="max-width: 600px;">
@@ -2095,13 +2123,15 @@
                 tbody.innerHTML = snapshot.docs.map(doc => {
                     const admin = doc.data();
                     const createdAt = admin.createdAt?.toDate ? admin.createdAt.toDate().toLocaleDateString('ko-KR') : '-';
+                    const isMe = currentAdmin && currentAdmin.email === admin.email;
 
                     return `
                         <tr>
-                            <td>${admin.email}</td>
+                            <td>${admin.email} ${isMe ? '<span class="badge badge-pro" style="margin-left: 8px;">나</span>' : ''}</td>
                             <td>${admin.name || '-'}</td>
                             <td style="color: var(--text-muted);">${createdAt}</td>
                             <td>
+                                ${isMe ? `<button class="btn btn-sm btn-secondary" onclick="openChangePasswordModal()" style="margin-right: 6px;">비밀번호 변경</button>` : ''}
                                 <button class="btn btn-sm btn-danger" onclick="deleteAdmin('${doc.id}', '${admin.email}')">삭제</button>
                             </td>
                         </tr>
@@ -2184,6 +2214,66 @@
             } catch (error) {
                 console.error('관리자 삭제 실패:', error);
                 showToast('관리자 삭제 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 비밀번호 변경 모달 열기
+        function openChangePasswordModal() {
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            document.getElementById('changePasswordModal').classList.add('show');
+        }
+
+        // 비밀번호 변경
+        async function changePassword() {
+            const currentPw = document.getElementById('currentPassword').value;
+            const newPw = document.getElementById('newPassword').value;
+            const confirmPw = document.getElementById('confirmPassword').value;
+
+            if (!currentPw || !newPw || !confirmPw) {
+                showToast('모든 필드를 입력하세요.', 'error');
+                return;
+            }
+
+            if (!/^\d{6}$/.test(newPw)) {
+                showToast('새 비밀번호는 숫자 6자리여야 합니다.', 'error');
+                return;
+            }
+
+            if (newPw !== confirmPw) {
+                showToast('새 비밀번호가 일치하지 않습니다.', 'error');
+                return;
+            }
+
+            try {
+                const docId = currentAdmin.email.replace(/[@.]/g, '_');
+                const adminDoc = await db.collection('admin_users').doc(docId).get();
+
+                if (!adminDoc.exists) {
+                    showToast('계정을 찾을 수 없습니다.', 'error');
+                    return;
+                }
+
+                const adminData = adminDoc.data();
+
+                // 현재 비밀번호 확인
+                if (adminData.password !== simpleHash(currentPw)) {
+                    showToast('현재 비밀번호가 일치하지 않습니다.', 'error');
+                    return;
+                }
+
+                // 비밀번호 업데이트
+                await db.collection('admin_users').doc(docId).update({
+                    password: simpleHash(newPw)
+                });
+
+                closeModal('changePasswordModal');
+                showToast('비밀번호가 변경되었습니다.', 'success');
+
+            } catch (error) {
+                console.error('비밀번호 변경 실패:', error);
+                showToast('비밀번호 변경 중 오류가 발생했습니다.', 'error');
             }
         }
 
