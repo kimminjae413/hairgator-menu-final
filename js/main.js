@@ -178,6 +178,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // 마이페이지 정보 업데이트 함수 전역 노출
+    window.updateMypageInfo = updateMypageInfo;
+
     // 플랜 선택 및 결제 (전역 함수)
     window.selectPlanAndPay = async function(planType) {
         console.log('💳 플랜 선택:', planType);

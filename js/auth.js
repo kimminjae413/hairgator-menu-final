@@ -349,6 +349,12 @@ function updateUIAfterLogin(userData) {
         updateUserInfo();
     }
 
+    // 마이페이지 정보 업데이트 (해시가 #mypage인 경우)
+    if (window.location.hash === '#mypage' && typeof window.updateMypageInfo === 'function') {
+        console.log('📋 로그인 완료 후 마이페이지 정보 업데이트');
+        window.updateMypageInfo();
+    }
+
     // 환영 메시지
     if (typeof showToast === 'function') {
         showToast(`${userData.displayName}님 환영합니다!`, 'success');
