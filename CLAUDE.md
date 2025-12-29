@@ -32,43 +32,90 @@
 
 ---
 
-## Flutter 앱 빌드 (2025-12-28 진행 중)
+## Google Play Console 계정 (앱 출시용)
+- **이메일**: drylink.info@gmail.com
+- **비밀번호**: alswo1206!@
+- **URL**: https://play.google.com/console
 
-### 현재 상태 (2025-12-28 저녁)
-- ✅ **APK 빌드 성공**: `C:\hairgator_flutter_app\build\app\outputs\flutter-apk\app-release.apk` (19.4MB)
-- ✅ **로그인 화면 태블릿 레이아웃 수정 완료**:
-  - 태블릿(600px 이상)에서 카드 형태 UI로 변경
-  - maxWidth 380px, 둥근 모서리, 그림자 효과
-  - 그라데이션 배경 추가
-- ✅ **로고 교체 완료**: `로고.png` → `assets/logo.png`
-- ✅ **디버그 APK 빌드 완료**: `app-debug.apk`
-- ⏳ **에뮬레이터 테스트 필요**: 좀비 프로세스 문제로 재부팅 후 진행
-- ⏳ Firebase 설정 필요 (google-services.json)
-- ⏳ 앱스토어 심사 (서명 키 생성 후)
+---
 
-### 재부팅 후 할 일
-1. 태블릿 에뮬레이터 실행: `Pixel_Tablet_API_36`
-2. 디버그 APK 설치: `adb install C:/hairgator_flutter_app/build/app/outputs/flutter-apk/app-debug.apk`
-3. 로그인 화면 태블릿 레이아웃 확인
-4. 로고 표시 확인
+## 앱스토어 배포 정보 (2025-12-29)
 
-### 디스크 공간 정리 기록
-- Medium_Phone 에뮬레이터 스냅샷 삭제: **2.1GB 확보**
-- 현재 C드라이브 여유 공간: ~2.5GB
+### 공통 정보
+- **앱 이름**: HAIRGATOR (헤어게이터)
+- **Bundle ID / Package Name**: `com.hairgator`
+- **GitHub 저장소**: https://github.com/kimminjae413/hairgator-flutter-app
 
-### 프로젝트 경로 (한글 경로 문제로 C:\ 루트에 위치)
-- **Flutter 프로젝트**: `C:\hairgator_flutter_app\`
-- **Flutter SDK**: `C:\flutter\`
-- **Android SDK**: `C:\Android\Sdk\`
-- **Gradle 캐시**: `C:\gradle_home\` (GRADLE_USER_HOME)
+### Android (Google Play)
+- **패키지명**: `com.hairgator`
+- **상태**: 심사 제출 완료 (2025-12-29)
+- **키스토어**: `upload-keystore.jks`
+  - storePassword: `hairgator2025`
+  - keyPassword: `hairgator2025`
+  - keyAlias: `upload`
+- **google-services.json**: Firebase 프로젝트 `hairgatormenu-4a43e` 연결
+- **개인정보처리방침**: https://hairgator.kr/privacy-policy.html
+- **계정삭제**: https://hairgator.kr/delete-account.html
 
-### 빌드 명령어 (필수 환경변수 포함)
+### iOS (App Store) - Codemagic CI/CD 사용
+- **Bundle ID**: `com.hairgator`
+- **빌드 서비스**: Codemagic (https://codemagic.io)
+  - 무료 플랜 (월 500분 빌드)
+  - macOS M2 인스턴스 사용
+- **App Store Connect API Key**:
+  - Key Name: `Codemagic`
+  - Key ID: `2VF386FHLB`
+  - .p8 파일: Codemagic에 업로드됨
+- **Apple Developer Account**:
+  - 계정: Min Jae Kim / AIW
+  - 만료일: 2026년 3월
+- **상태**: 빌드 진행 중 (2025-12-29)
+
+### Codemagic 설정
+- **Workflow**: Default Workflow
+- **플랫폼**: Android + iOS 둘 다 체크
+- **iOS Code Signing**: Automatic
+- **Provisioning Profile**: App Store (배포용)
+- **App Store Connect Publishing**: 활성화 (TestFlight 자동 업로드)
+
+---
+
+## Flutter 앱 빌드 (2025-12-29 D드라이브 이전)
+
+### 현재 상태 (2025-12-29 빌드 완료)
+- ✅ **App Bundle 빌드 성공**: `D:\hairgator_dev\...\app-release.aab` (24.9MB) - Play Store 제출용
+- ✅ **APK 빌드 성공**: `D:\hairgator_dev\...\app-release.apk` (24.2MB) - 테스트용
+- ✅ **서명 키 생성 완료**: `upload-keystore.jks` (비밀번호: hairgator2025)
+- ✅ **D드라이브 이전 완료**: C드라이브 18GB+ 확보
+- ⏳ **Play Store 심사 제출 대기**
+
+### 키스토어 정보 (중요! 백업 필수!)
+- **파일**: `D:\hairgator_dev\hairgator_flutter_app\android\app\upload-keystore.jks`
+- **storePassword**: hairgator2025
+- **keyPassword**: hairgator2025
+- **keyAlias**: upload
+- **유효기간**: 10,000일 (~27년)
+- ⚠️ **이 파일 분실하면 앱 업데이트 불가!** 반드시 클라우드에 백업
+
+### 디스크 공간 정리 기록 (2025-12-29)
+- Flutter/Android SDK D드라이브 이전: **12.5GB 확보**
+- 현재 C드라이브 여유 공간: ~18GB
+
+### 프로젝트 경로 (2025-12-29 D드라이브로 이전 완료)
+- **Flutter 프로젝트**: `D:\hairgator_dev\hairgator_flutter_app\`
+- **Flutter SDK**: `D:\hairgator_dev\flutter\`
+- **Android SDK**: `D:\hairgator_dev\Android\Sdk\`
+- **Gradle 캐시**: `D:\hairgator_dev\gradle_home\`
+- **Pub 캐시**: `D:\hairgator_dev\pub_cache\` (한글 경로 문제 해결용)
+
+### 빌드 명령어 (D드라이브 경로)
 ```bash
-export GRADLE_USER_HOME="C:/gradle_home"
+export GRADLE_USER_HOME="D:/hairgator_dev/gradle_home"
+export PUB_CACHE="D:/hairgator_dev/pub_cache"
 export JAVA_HOME="C:/Program Files/Android/Android Studio/jbr"
 export JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
-cd /c/hairgator_flutter_app
-C:/flutter/bin/flutter.bat build apk --release
+cd /d/hairgator_dev/hairgator_flutter_app
+D:/hairgator_dev/flutter/bin/flutter.bat build apk --release
 ```
 
 ### 버전 정보 (호환성 문제 해결됨)
