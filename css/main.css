@@ -3816,3 +3816,126 @@ body.light-theme .sidebar-payment-btn {
 body.light-theme .sidebar-payment-btn:hover {
     background: linear-gradient(135deg, rgba(233, 30, 99, 0.15), rgba(74, 144, 226, 0.15)) !important;
 }
+
+/* ========== 요금제 모달 신규 스타일 (2025-12-29) ========== */
+
+/* 새 버튼 스타일 - 비활성 버튼 */
+.pricing-btn-disabled {
+    width: 100%;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    background: #e0e0e0;
+    color: #999;
+    cursor: not-allowed;
+}
+
+body.light-theme .pricing-btn-disabled {
+    background: #f0f0f0;
+    color: #aaa;
+}
+
+/* 선택하기 버튼 - 핑크 그라데이션 */
+.pricing-btn-primary {
+    width: 100%;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #E91E63, #AD1457);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pricing-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(233, 30, 99, 0.4);
+}
+
+/* 현재 배지 */
+.pricing-badge-current {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #f0f0f0;
+    color: #666;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+body.light-theme .pricing-badge-current {
+    background: #e8e8e8;
+    color: #555;
+}
+
+/* 크레딧 강조 */
+.pricing-credits-highlight {
+    color: #E91E63;
+    font-weight: 700;
+}
+
+/* 원당 효율 증가 텍스트 */
+.pricing-efficiency {
+    font-size: 12px;
+    color: #E91E63;
+    margin-top: 4px;
+}
+
+/* 애드온 안내 메시지 */
+.pricing-addon-notice {
+    font-size: 11px;
+    color: #888;
+    text-align: center;
+    padding: 10px;
+    margin-top: auto;
+    line-height: 1.4;
+}
+
+body.light-theme .pricing-addon-notice {
+    color: #666;
+}
+
+/* 애드온 카드 제목 핑크색 */
+.pricing-plan-name-addon {
+    color: #E91E63 !important;
+    font-size: 14px !important;
+}
+
+/* 애드온 크레딧 핑크색 */
+.pricing-credits-addon {
+    color: #E91E63;
+    font-weight: 700;
+}
+
+/* 체크 아이콘 색상 */
+.feature-check {
+    color: #4CAF50;
+}
+
+.feature-partial {
+    color: #FFC107;
+}
+
+.feature-x {
+    color: #ccc;
+}
+
+body.light-theme .feature-x {
+    color: #999;
+}
+
+/* 애드온 카드 노란색 배경 */
+.pricing-card-addon {
+    background: linear-gradient(145deg, #FFF8E1, #FFECB3) !important;
+    border: 1px solid rgba(255, 193, 7, 0.3) !important;
+}
+
+body.light-theme .pricing-card-addon {
+    background: linear-gradient(145deg, #FFF8E1, #FFECB3) !important;
+}
+
