@@ -75,23 +75,160 @@
             margin-bottom: 20px;
         }
 
-        .sidebar-logo h1 {
-            color: var(--primary);
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .sidebar-logo h1::before {
-            content: '🦎';
-            font-size: 24px;
+        .sidebar-logo-img {
+            height: 32px;
+            width: auto;
+            margin-bottom: 4px;
         }
 
         .sidebar-logo p {
             color: var(--text-muted);
             font-size: 12px;
             margin-top: 4px;
+        }
+
+        /* 로그인 화면 */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #F5F7FA 0%, #E8ECF1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .login-overlay.hidden {
+            display: none;
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 48px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+
+        .login-logo {
+            height: 48px;
+            margin-bottom: 12px;
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        .login-form .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .login-form .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .login-form .form-input {
+            padding: 14px 16px;
+            font-size: 15px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+
+        .login-error {
+            background: #FEE2E2;
+            color: #DC2626;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+
+        /* 로그아웃 버튼 */
+        .logout-section {
+            margin-top: auto;
+            padding: 16px 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+        }
+
+        .admin-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .admin-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .admin-email {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #FEE2E2;
+            border-color: #DC2626;
+            color: #DC2626;
         }
 
         .nav-section {
@@ -708,7 +845,7 @@
                 width: 80px;
                 padding: 16px 0;
             }
-            .sidebar-logo h1 span,
+            .sidebar-logo-img,
             .sidebar-logo p,
             .nav-section-title,
             .nav-item span:not(.nav-item-icon) {
@@ -743,10 +880,33 @@
     </style>
 </head>
 <body>
+    <!-- 로그인 오버레이 -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-card">
+            <img src="로고.png" alt="HAIRGATOR" class="login-logo">
+            <h1 class="login-title">Admin Console</h1>
+            <p class="login-subtitle">관리자 계정으로 로그인하세요</p>
+
+            <div id="loginError" class="login-error"></div>
+
+            <form class="login-form" onsubmit="handleAdminLogin(event)">
+                <div class="form-group">
+                    <label>이메일</label>
+                    <input type="email" id="loginEmail" class="form-input" placeholder="admin@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>비밀번호 (숫자 6자리)</label>
+                    <input type="text" id="loginPassword" class="form-input" placeholder="123456" maxlength="6" inputmode="numeric" required>
+                </div>
+                <button type="submit" class="btn btn-primary login-btn">로그인</button>
+            </form>
+        </div>
+    </div>
+
     <!-- 사이드바 -->
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <h1><span>HAIRGATOR</span></h1>
+            <img src="로고.png" alt="HAIRGATOR" class="sidebar-logo-img">
             <p>Admin Console</p>
         </div>
 
@@ -791,7 +951,7 @@
             <div class="nav-section-title">콘텐츠</div>
             <div class="nav-item" onclick="showPage('styles')">
                 <span class="nav-item-icon">💇</span>
-                <span>헤어스타일 관리</span>
+                <span>헤어스타일 업로드</span>
             </div>
         </nav>
 
@@ -818,6 +978,18 @@
                 <span>시스템 설정</span>
             </div>
         </nav>
+
+        <!-- 로그아웃 섹션 -->
+        <div class="logout-section">
+            <div class="admin-info">
+                <div class="admin-avatar" id="adminAvatar">A</div>
+                <div>
+                    <div class="admin-name" id="adminName">관리자</div>
+                    <div class="admin-email" id="adminEmail">admin@example.com</div>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="handleAdminLogout()">🚪 로그아웃</button>
+        </div>
     </aside>
 
     <!-- 메인 컨텐츠 -->
@@ -1334,10 +1506,10 @@
             </div>
         </div>
 
-        <!-- 헤어스타일 관리 페이지 -->
+        <!-- 헤어스타일 업로드 페이지 -->
         <div id="page-styles" class="page">
             <div class="page-header">
-                <h2 class="page-title">💇 헤어스타일 관리</h2>
+                <h2 class="page-title">💇 헤어스타일 업로드</h2>
                 <button class="btn" onclick="openAddStyleModal()">+ 새 스타일 추가</button>
             </div>
 
@@ -1697,15 +1869,56 @@
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">🔐 관리자 계정</div>
+                    <button class="btn btn-primary btn-sm" onclick="openAddAdminModal()">+ 관리자 추가</button>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">관리자 이메일 목록 (줄바꿈으로 구분)</label>
-                    <textarea class="form-input" id="adminEmails" rows="4" style="resize: vertical;"></textarea>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>이메일</th>
+                                <th>이름</th>
+                                <th>등록일</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody">
+                            <tr><td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                로딩 중...
+                            </td></tr>
+                        </tbody>
+                    </table>
                 </div>
-                <button class="btn btn-primary" onclick="saveAdminEmails()">저장</button>
             </div>
         </div>
     </main>
+
+    <!-- 관리자 추가 모달 -->
+    <div class="modal-overlay" id="addAdminModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">관리자 추가</h3>
+                <button class="modal-close" onclick="closeModal('addAdminModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">이름</label>
+                    <input type="text" class="form-input" id="newAdminName" placeholder="관리자 이름">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">이메일</label>
+                    <input type="email" class="form-input" id="newAdminEmail" placeholder="admin@example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">비밀번호 (숫자 6자리)</label>
+                    <input type="text" class="form-input" id="newAdminPassword" placeholder="123456" maxlength="6" pattern="\d{6}" inputmode="numeric">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addAdminModal')">취소</button>
+                <button class="btn btn-primary" onclick="addNewAdmin()">추가</button>
+            </div>
+        </div>
+    </div>
 
     <!-- 사용자 상세 모달 -->
     <div class="modal-overlay" id="userDetailModal">
@@ -1737,9 +1950,248 @@
         let genderPieChart = null;
         let maleBarChart = null;
         let femaleBarChart = null;
+        let currentAdmin = null;
+
+        // ==================== 로그인/로그아웃 ====================
+
+        // 로그인 처리
+        async function handleAdminLogin(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+
+            errorDiv.classList.remove('show');
+
+            try {
+                // Firestore에서 관리자 확인
+                const adminDoc = await db.collection('admin_users').doc(email.replace(/[@.]/g, '_')).get();
+
+                if (!adminDoc.exists) {
+                    errorDiv.textContent = '등록되지 않은 관리자입니다.';
+                    errorDiv.classList.add('show');
+                    return;
+                }
+
+                const adminData = adminDoc.data();
+
+                // 비밀번호 확인 (간단한 해시 비교)
+                if (adminData.password !== simpleHash(password)) {
+                    errorDiv.textContent = '비밀번호가 일치하지 않습니다.';
+                    errorDiv.classList.add('show');
+                    return;
+                }
+
+                // 로그인 성공
+                currentAdmin = {
+                    email: adminData.email,
+                    name: adminData.name || '관리자'
+                };
+
+                // 로컬 스토리지에 저장
+                localStorage.setItem('hairgator_admin', JSON.stringify(currentAdmin));
+
+                // UI 업데이트
+                updateAdminUI();
+                document.getElementById('loginOverlay').classList.add('hidden');
+
+                showToast('로그인 성공', 'success');
+
+            } catch (error) {
+                console.error('로그인 오류:', error);
+                errorDiv.textContent = '로그인 중 오류가 발생했습니다.';
+                errorDiv.classList.add('show');
+            }
+        }
+
+        // 로그아웃 처리
+        function handleAdminLogout() {
+            localStorage.removeItem('hairgator_admin');
+            currentAdmin = null;
+            document.getElementById('loginOverlay').classList.remove('hidden');
+            showToast('로그아웃 되었습니다.', 'success');
+        }
+
+        // 간단한 해시 함수 (실제 프로덕션에서는 bcrypt 등 사용)
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString(16);
+        }
+
+        // 관리자 UI 업데이트
+        function updateAdminUI() {
+            if (currentAdmin) {
+                document.getElementById('adminName').textContent = currentAdmin.name;
+                document.getElementById('adminEmail').textContent = currentAdmin.email;
+                document.getElementById('adminAvatar').textContent = currentAdmin.name.charAt(0).toUpperCase();
+            }
+        }
+
+        // 로그인 상태 확인
+        async function checkAdminAuth() {
+            const saved = localStorage.getItem('hairgator_admin');
+            if (saved) {
+                currentAdmin = JSON.parse(saved);
+                updateAdminUI();
+                document.getElementById('loginOverlay').classList.add('hidden');
+                return true;
+            }
+
+            // 기본 관리자 자동 생성 (없으면)
+            try {
+                const snapshot = await db.collection('admin_users').get();
+                if (snapshot.empty) {
+                    await createDefaultAdmin();
+                }
+            } catch (error) {
+                console.error('관리자 확인 실패:', error);
+            }
+
+            return false;
+        }
+
+        // 기본 관리자 자동 생성
+        async function createDefaultAdmin() {
+            const defaultEmail = 'eric708@naver.com';
+            const defaultPassword = '123123';
+            const defaultName = '김민재';
+            const docId = defaultEmail.replace(/[@.]/g, '_');
+
+            try {
+                await db.collection('admin_users').doc(docId).set({
+                    email: defaultEmail,
+                    name: defaultName,
+                    password: simpleHash(defaultPassword),
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log('기본 관리자 생성 완료:', defaultEmail);
+            } catch (error) {
+                console.error('기본 관리자 생성 실패:', error);
+            }
+        }
+
+        // ==================== 관리자 계정 관리 ====================
+
+        // 관리자 목록 로드
+        async function loadAdminList() {
+            const tbody = document.getElementById('adminTableBody');
+
+            try {
+                const snapshot = await db.collection('admin_users').get();
+
+                if (snapshot.empty) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        등록된 관리자가 없습니다. 첫 번째 관리자를 추가하세요.
+                    </td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = snapshot.docs.map(doc => {
+                    const admin = doc.data();
+                    const createdAt = admin.createdAt?.toDate ? admin.createdAt.toDate().toLocaleDateString('ko-KR') : '-';
+
+                    return `
+                        <tr>
+                            <td>${admin.email}</td>
+                            <td>${admin.name || '-'}</td>
+                            <td style="color: var(--text-muted);">${createdAt}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteAdmin('${doc.id}', '${admin.email}')">삭제</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('관리자 목록 로드 실패:', error);
+                tbody.innerHTML = `<tr><td colspan="4" style="color: var(--danger);">오류: ${error.message}</td></tr>`;
+            }
+        }
+
+        // 관리자 추가 모달 열기
+        function openAddAdminModal() {
+            document.getElementById('newAdminName').value = '';
+            document.getElementById('newAdminEmail').value = '';
+            document.getElementById('newAdminPassword').value = '';
+            document.getElementById('addAdminModal').classList.add('show');
+        }
+
+        // 새 관리자 추가
+        async function addNewAdmin() {
+            const name = document.getElementById('newAdminName').value.trim();
+            const email = document.getElementById('newAdminEmail').value.trim();
+            const password = document.getElementById('newAdminPassword').value;
+
+            if (!name || !email || !password) {
+                showToast('모든 필드를 입력하세요.', 'error');
+                return;
+            }
+
+            if (!/^\d{6}$/.test(password)) {
+                showToast('비밀번호는 숫자 6자리여야 합니다.', 'error');
+                return;
+            }
+
+            try {
+                const docId = email.replace(/[@.]/g, '_');
+
+                // 중복 확인
+                const existing = await db.collection('admin_users').doc(docId).get();
+                if (existing.exists) {
+                    showToast('이미 등록된 이메일입니다.', 'error');
+                    return;
+                }
+
+                await db.collection('admin_users').doc(docId).set({
+                    email: email,
+                    name: name,
+                    password: simpleHash(password),
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                closeModal('addAdminModal');
+                loadAdminList();
+                showToast('관리자가 추가되었습니다.', 'success');
+
+            } catch (error) {
+                console.error('관리자 추가 실패:', error);
+                showToast('관리자 추가 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 관리자 삭제
+        async function deleteAdmin(docId, email) {
+            // 본인 삭제 방지
+            if (currentAdmin && currentAdmin.email === email) {
+                showToast('본인 계정은 삭제할 수 없습니다.', 'error');
+                return;
+            }
+
+            if (!confirm(`정말 ${email} 관리자를 삭제하시겠습니까?`)) {
+                return;
+            }
+
+            try {
+                await db.collection('admin_users').doc(docId).delete();
+                loadAdminList();
+                showToast('관리자가 삭제되었습니다.', 'success');
+            } catch (error) {
+                console.error('관리자 삭제 실패:', error);
+                showToast('관리자 삭제 중 오류가 발생했습니다.', 'error');
+            }
+        }
 
         // 초기화
         document.addEventListener('DOMContentLoaded', () => {
+            // 로그인 상태 확인
+            checkAdminAuth();
+
             document.getElementById('dashboardDate').textContent = new Date().toLocaleDateString('ko-KR', {
                 year: 'numeric', month: 'long', day: 'numeric'
             });
@@ -1762,6 +2214,7 @@
             if (pageName === 'usage') loadUsageStats();
             if (pageName === 'appTabs') loadAppTabs();
             if (pageName === 'styles') loadHairstyleStats();
+            if (pageName === 'settings') loadAdminList();
         }
 
         // 대시보드 로드
@@ -2729,7 +3182,7 @@
             }
         }
 
-        // ==================== 헤어스타일 관리 ====================
+        // ==================== 헤어스타일 업로드 ====================
         // Firestore hairstyles 컬렉션의 실제 카테고리명 (mainCategory, subCategory 필드값)
         const STYLE_SUBCATEGORIES = ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'];
         const STYLE_CATEGORIES = {
