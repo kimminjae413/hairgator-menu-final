@@ -1948,6 +1948,63 @@
         </div>
     </div>
 
+    <!-- 스타일 추가 모달 -->
+    <div class="modal-overlay" id="addStyleModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">새 스타일 추가</h3>
+                <button class="modal-close" onclick="closeModal('addStyleModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">스타일 ID *</label>
+                        <input type="text" class="form-input" id="newStyleId" placeholder="예: FAL0001, SF1001">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">성별 *</label>
+                        <select class="form-input" id="newStyleGender">
+                            <option value="">선택</option>
+                            <option value="male">남성</option>
+                            <option value="female">여성</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">대분류 *</label>
+                        <select class="form-input" id="newStyleCategory">
+                            <option value="">성별 먼저 선택</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">중분류 (앞머리)</label>
+                        <select class="form-input" id="newStyleSubCategory">
+                            <option value="">선택</option>
+                            <option value="None">None</option>
+                            <option value="Fore Head">Fore Head</option>
+                            <option value="Eye Brow">Eye Brow</option>
+                            <option value="Eye">Eye</option>
+                            <option value="Cheekbone">Cheekbone</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">결과 이미지 URL</label>
+                    <input type="text" class="form-input" id="newStyleResultImage" placeholder="https://storage.googleapis.com/...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">레시피 텍스트</label>
+                    <textarea class="form-input" id="newStyleTextRecipe" rows="4" placeholder="스타일 레시피 내용..." style="resize: vertical;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addStyleModal')">취소</button>
+                <button class="btn btn-primary" onclick="saveNewStyle()">저장</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 사용자 상세 모달 -->
     <div class="modal-overlay" id="userDetailModal">
         <div class="modal" style="max-width: 600px;">
@@ -3390,7 +3447,125 @@
         }
 
         function openAddStyleModal() {
-            showToast('스타일 추가 기능은 준비 중입니다', 'warning');
+            // 폼 초기화
+            document.getElementById('newStyleId').value = '';
+            document.getElementById('newStyleGender').value = '';
+            document.getElementById('newStyleCategory').innerHTML = '<option value="">성별 먼저 선택</option>';
+            document.getElementById('newStyleSubCategory').value = '';
+            document.getElementById('newStyleResultImage').value = '';
+            document.getElementById('newStyleTextRecipe').value = '';
+
+            // 모달 열기
+            document.getElementById('addStyleModal').classList.add('active');
+        }
+
+        // 성별 변경 시 카테고리 옵션 업데이트
+        document.getElementById('newStyleGender').addEventListener('change', function() {
+            const gender = this.value;
+            const categorySelect = document.getElementById('newStyleCategory');
+
+            if (gender === 'female') {
+                categorySelect.innerHTML = `
+                    <option value="">선택</option>
+                    <option value="A Length">A Length</option>
+                    <option value="B Length">B Length</option>
+                    <option value="C Length">C Length</option>
+                    <option value="D Length">D Length</option>
+                    <option value="E Length">E Length</option>
+                    <option value="F Length">F Length</option>
+                    <option value="G Length">G Length</option>
+                    <option value="H Length">H Length</option>
+                `;
+            } else if (gender === 'male') {
+                categorySelect.innerHTML = `
+                    <option value="">선택</option>
+                    <option value="SIDE FRINGE">Side Fringe</option>
+                    <option value="SIDE PART">Side Part</option>
+                    <option value="FRINGE UP">Fringe Up</option>
+                    <option value="PUSHED BACK">Pushed Back</option>
+                    <option value="BUZZ">Buzz</option>
+                    <option value="CROP">Crop</option>
+                    <option value="MOHICAN">Mohican</option>
+                `;
+            } else {
+                categorySelect.innerHTML = '<option value="">성별 먼저 선택</option>';
+            }
+        });
+
+        async function saveNewStyle() {
+            const styleId = document.getElementById('newStyleId').value.trim();
+            const gender = document.getElementById('newStyleGender').value;
+            const category = document.getElementById('newStyleCategory').value;
+            const subCategory = document.getElementById('newStyleSubCategory').value;
+            const resultImage = document.getElementById('newStyleResultImage').value.trim();
+            const textRecipe = document.getElementById('newStyleTextRecipe').value.trim();
+
+            // 필수 필드 검증
+            if (!styleId) {
+                showToast('스타일 ID를 입력해주세요', 'error');
+                return;
+            }
+            if (!gender) {
+                showToast('성별을 선택해주세요', 'error');
+                return;
+            }
+            if (!category) {
+                showToast('대분류를 선택해주세요', 'error');
+                return;
+            }
+
+            // 중복 확인
+            try {
+                const checkUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/hairstyles/${styleId}`;
+                const checkRes = await fetch(checkUrl);
+                if (checkRes.ok) {
+                    showToast('이미 존재하는 스타일 ID입니다', 'error');
+                    return;
+                }
+            } catch (e) {
+                // 문서가 없으면 404 에러 -> 진행
+            }
+
+            // Firestore에 저장
+            const docData = {
+                fields: {
+                    styleId: { stringValue: styleId },
+                    gender: { stringValue: gender },
+                    category: { stringValue: category },
+                    createdAt: { timestampValue: new Date().toISOString() }
+                }
+            };
+
+            if (subCategory) {
+                docData.fields.subCategory = { stringValue: subCategory };
+            }
+            if (resultImage) {
+                docData.fields.resultImage = { stringValue: resultImage };
+            }
+            if (textRecipe) {
+                docData.fields.textRecipe = { stringValue: textRecipe };
+            }
+
+            try {
+                const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/hairstyles?documentId=${styleId}`;
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(docData)
+                });
+
+                if (res.ok) {
+                    showToast('새 스타일이 추가되었습니다', 'success');
+                    closeModal('addStyleModal');
+                    loadHairstyles(); // 목록 새로고침
+                } else {
+                    const errData = await res.json();
+                    throw new Error(errData.error?.message || '저장 실패');
+                }
+            } catch (err) {
+                console.error('스타일 추가 에러:', err);
+                showToast('스타일 추가 실패: ' + err.message, 'error');
+            }
         }
 
         // ==================== 카드뉴스 생성 ====================
