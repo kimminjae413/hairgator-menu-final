@@ -59,6 +59,7 @@
 
 ### iOS (App Store) - Codemagic CI/CD 사용
 - **Bundle ID**: `com.hairgator`
+- **App ID**: 6751260003
 - **빌드 서비스**: Codemagic (https://codemagic.io)
   - 무료 플랜 (월 500분 빌드)
   - macOS M2 인스턴스 사용
@@ -69,7 +70,15 @@
 - **Apple Developer Account**:
   - 계정: Min Jae Kim / AIW
   - 만료일: 2026년 3월
-- **상태**: 빌드 진행 중 (2025-12-29)
+- **상태**: ✅ 심사 제출 완료 (2025-12-29, 빌드 3)
+- **TestFlight 테스트 정보**: https://appstoreconnect.apple.com/apps/6751260003/testflight/test-info
+
+### App Store 심사용 테스트 계정
+- **이메일**: `appstore-review@hairgator.kr`
+- **비밀번호**: `Review2025!`
+- **토큰**: 50,000
+- **플랜**: Business
+- **Firestore 문서**: `users/appstore-review_hairgator_kr`
 
 ### Codemagic 설정
 - **Workflow**: Default Workflow
@@ -587,11 +596,28 @@ Then: [동작] (예: 기존 데이터를 수정)
   - `getBullnabiUser()` 함수 유지 (Firebase 형식으로 변환)
   - `window.currentDesigner` 구조 유지
 
-  ### Netlify 환경변수 (필수)
-  - `FIREBASE_PROJECT_ID`: hairgatormenu-4a43e
-  - `FIREBASE_CLIENT_EMAIL`: firebase-adminsdk-xxx@xxx.iam.gserviceaccount.com
-  - `FIREBASE_PRIVATE_KEY`: -----BEGIN PRIVATE KEY-----...
-  - `KAKAO_REST_API_KEY`: e085ad4b34b316bdd26d67bf620b2ec9
+  ### Netlify 환경변수 (필수) - 2025-12-29 업데이트
+
+  **현재 설정됨 ✅:**
+  | 변수명 | 값 | 용도 |
+  |--------|-----|------|
+  | `FIREBASE_PROJECT_ID` | `hairgatormenu-4a43e` | Firebase 프로젝트 |
+  | `FIREBASE_CLIENT_EMAIL` | `firebase-adminsdk-fbsvi@hairgatormenu-4a43e.iam.gserviceaccount.com` | Firebase Admin |
+  | `FIREBASE_PRIVATE_KEY` | (비공개) | Firebase Admin 인증 |
+  | `GEMINI_API_KEY` | (비공개) | Gemini AI - 챗봇/RAG |
+  | `GEMINI_API_KEY_ADMIN` | (비공개) | Gemini AI - 어드민용 |
+
+  **추가 필요 (2025-12-29 확인됨):**
+  | 변수명 | 값 | 용도 |
+  |--------|-----|------|
+  | `KAKAO_REST_API_KEY` | `e085ad4b34b316bdd26d67bf620b2ec9` | 카카오 로그인 |
+  | `VMODEL_API_KEY` | `Zqo2gbuOlkQW1hO7LezeOPboIutgLi6pjwXmB0NBRMQh1jAJ-au4f1H0OMcfvWAvwPR-xcKdCfMwsSIyueVu0A==` | 헤어체험 AI 합성 |
+  | `PORTONE_API_SECRET` | `JEf3Ux7c+ixp74j1j4VxbMX12ww+zZYTUBx4GMCS6WHm/aNiVJbyHhUmTj7psIMI5u2nRE40meIkoh8ln6KS5w==` | 결제 검증 |
+
+  **API 키 확인 위치:**
+  - **KAKAO_REST_API_KEY**: https://developers.kakao.com → 앱 설정 → 앱 키 (앱 ID: 1298589)
+  - **VMODEL_API_KEY**: https://www.vmodel.ai → Dashboard → API Keys
+  - **PORTONE_API_SECRET**: https://admin.portone.io → 결제연동 → API 키 → V2 API Secret (이름: hairgator_pay)
 
   ### ⚠️ TODO: 불나비 사용자 일괄 마이그레이션 (1주일 내 실행 필요!)
 
