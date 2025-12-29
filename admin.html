@@ -3419,7 +3419,7 @@
 
                         // 취소 버튼 (완료 상태일 때만 표시)
                         const cancelBtn = isCompleted
-                            ? `<button class="btn btn-sm btn-danger" onclick="openCancelPaymentModal('${doc.id}', '${p.userId}', ${p.tokens || 0}, '${p.userName || p.userId}')" style="margin-left: 5px;">결제취소</button>`
+                            ? `<button class="btn btn-sm btn-danger" onclick="openCancelPaymentModal('${doc.id}', '${p.paymentId || ''}', '${p.userId}', ${p.tokens || 0}, '${p.userName || p.userId}')" style="margin-left: 5px;">결제취소</button>`
                             : '';
 
                         return `
@@ -3470,14 +3470,15 @@
         // 결제 취소 모달 관련 변수
         let cancelPaymentData = {
             docId: null,
+            paymentId: null,
             userId: null,
             tokens: 0,
             userName: ''
         };
 
         // 결제 취소 모달 열기
-        function openCancelPaymentModal(docId, userId, tokens, userName) {
-            cancelPaymentData = { docId, userId, tokens, userName };
+        function openCancelPaymentModal(docId, paymentId, userId, tokens, userName) {
+            cancelPaymentData = { docId, paymentId, userId, tokens, userName };
 
             document.getElementById('cancelPaymentUserName').textContent = userName;
             document.getElementById('cancelPaymentTokens').textContent = tokens.toLocaleString();
@@ -3502,18 +3503,46 @@
 
         // 최종 결제 취소 실행
         async function confirmCancelPayment() {
-            const { docId, userId, tokens } = cancelPaymentData;
+            const { docId, paymentId, userId, tokens } = cancelPaymentData;
             const reason = document.getElementById('cancelPaymentReason').value.trim();
 
+            // 버튼 비활성화
+            const confirmBtn = document.querySelector('#cancelPaymentConfirmSection button');
+            const originalText = confirmBtn.textContent;
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = '처리중...';
+
             try {
-                // 1. 결제 상태 변경 + 취소 사유 저장
+                // 1. 포트원 실제 결제 취소 API 호출
+                if (!paymentId) {
+                    throw new Error('결제 ID가 없습니다.');
+                }
+
+                const cancelResponse = await fetch('/.netlify/functions/payment-cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paymentId: paymentId,
+                        reason: reason
+                    })
+                });
+
+                const cancelResult = await cancelResponse.json();
+                console.log('포트원 취소 결과:', cancelResult);
+
+                if (!cancelResponse.ok || !cancelResult.success) {
+                    throw new Error(cancelResult.error || '포트원 결제 취소 실패');
+                }
+
+                // 2. Firestore 결제 상태 변경 + 취소 사유 저장
                 await db.collection('payments').doc(docId).update({
                     status: 'cancelled',
                     cancelledAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    cancelReason: reason
+                    cancelReason: reason,
+                    portioneCancellation: cancelResult.cancellation || null
                 });
 
-                // 2. 사용자 토큰 차감
+                // 3. 사용자 토큰 차감
                 const userRef = db.collection('users').doc(userId);
                 const userDoc = await userRef.get();
                 if (userDoc.exists) {
@@ -3523,7 +3552,7 @@
                         tokenBalance: newTokens
                     });
 
-                    // 3. 로그 기록
+                    // 4. 로그 기록
                     await db.collection('token_logs').add({
                         userId: userId,
                         action: 'payment_cancelled',
@@ -3537,10 +3566,13 @@
                 }
 
                 closeModal('cancelPaymentModal');
-                showToast('결제가 취소되었습니다.', 'success');
+                showToast('결제가 취소되었습니다. (환불 완료)', 'success');
             } catch (error) {
                 console.error('결제 취소 오류:', error);
-                showToast('결제 취소 중 오류가 발생했습니다.', 'error');
+                showToast('결제 취소 실패: ' + error.message, 'error');
+                // 버튼 복구
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = originalText;
             }
         }
 
