@@ -403,12 +403,16 @@ async function issueBillingKey(userId, userEmail = '', userName = '') {
   console.log('💳 빌링키 발급 시작:', userId);
 
   try {
+    // 고유 발급 ID 생성
+    const issueId = `HG_BK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
     // 포트원 빌링키 발급 요청
     const response = await PortOne.requestIssueBillingKey({
       storeId: HAIRGATOR_PAYMENT.storeId,
       channelKey: HAIRGATOR_PAYMENT.channelKey,
       billingKeyMethod: 'CARD',
       issueName: 'HAIRGATOR 카드 등록',  // 필수 파라미터
+      issueId: issueId,  // 나이스페이 V2 필수: 주문번호
       customer: {
         customerId: userId,
         email: userEmail || undefined,

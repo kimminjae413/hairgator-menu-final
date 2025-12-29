@@ -109,7 +109,26 @@ document.addEventListener('DOMContentLoaded', function() {
         if (typeof firebase !== 'undefined' && firebase.auth) {
             const user = firebase.auth().currentUser;
             if (user) {
-                if (nameEl) nameEl.textContent = user.displayName || '사용자';
+                // displayName 우선순위: Firestore > window.currentDesigner > Auth > 기본값
+                let displayName = user.displayName;
+
+                // Firestore에서 사용자 정보 가져오기
+                try {
+                    const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        displayName = userData.name || userData.displayName || displayName;
+                    }
+                } catch (e) {
+                    console.log('Firestore 사용자 정보 조회 실패:', e);
+                }
+
+                // fallback: window.currentDesigner
+                if (!displayName && window.currentDesigner) {
+                    displayName = window.currentDesigner.name || window.currentDesigner.displayName;
+                }
+
+                if (nameEl) nameEl.textContent = displayName || user.email?.split('@')[0] || '사용자';
                 if (emailEl) emailEl.textContent = user.email || '';
                 if (avatarEl && user.photoURL) {
                     avatarEl.innerHTML = `<img src="${user.photoURL}" alt="프로필">`;
