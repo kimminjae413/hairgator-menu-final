@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 테마 상태 업데이트
         const isLightTheme = document.body.classList.contains('light-theme');
         if (themeIconEl) themeIconEl.textContent = isLightTheme ? '☀️' : '🌙';
-        if (themeTextEl) themeTextEl.textContent = isLightTheme ? '라이트 모드' : '다크 모드';
+        if (themeTextEl) themeTextEl.textContent = isLightTheme ? (t('ui.lightMode') || 'Light Mode') : (t('ui.darkMode') || 'Dark Mode');
 
         // Firebase Auth 사용자 정보
         if (typeof firebase !== 'undefined' && firebase.auth) {
@@ -2942,7 +2942,7 @@ async function loadUserNotices() {
             .slice(0, 20);
 
         if (activeDocs.length === 0) {
-            body.innerHTML = '<div class="notice-empty">등록된 공지사항이 없습니다.</div>';
+            body.innerHTML = `<div class="notice-empty">${t('ui.noticeEmpty') || 'No notices available.'}</div>`;
             return;
         }
 
@@ -2994,8 +2994,8 @@ async function loadUserNotices() {
         body.innerHTML = html;
 
     } catch (error) {
-        console.error('공지사항 로드 실패:', error);
-        body.innerHTML = '<div class="notice-empty">공지사항을 불러올 수 없습니다.</div>';
+        console.error('Notice load failed:', error);
+        body.innerHTML = `<div class="notice-empty">${t('ui.noticeLoadFailed') || 'Failed to load notices.'}</div>`;
     }
 }
 
@@ -3007,7 +3007,7 @@ async function showNoticeDetail(noticeId) {
     try {
         const doc = await firebase.firestore().collection('notices').doc(noticeId).get();
         if (!doc.exists) {
-            alert('공지사항을 찾을 수 없습니다.');
+            alert(t('ui.noticeNotFound') || 'Notice not found.');
             return;
         }
 
@@ -3029,13 +3029,16 @@ async function showNoticeDetail(noticeId) {
 
         // 이미지 HTML
         const imageHtml = notice.imageUrl
-            ? `<div class="notice-detail-image"><img src="${notice.imageUrl}" alt="공지 이미지" style="max-width: 100%; border-radius: 8px; margin-bottom: 16px;"></div>`
+            ? `<div class="notice-detail-image"><img src="${notice.imageUrl}" alt="Notice image" style="max-width: 100%; border-radius: 8px; margin-bottom: 16px;"></div>`
             : '';
+
+        const backText = t('ui.backToList') || '← Back to list';
+        const noTitleText = t('ui.noTitle') || 'No title';
 
         body.innerHTML = `
             <div class="notice-detail">
-                <button class="notice-detail-back" onclick="loadUserNotices()">← 목록으로</button>
-                <h2 class="notice-detail-title">${localized.title || '제목 없음'}</h2>
+                <button class="notice-detail-back" onclick="loadUserNotices()">${backText}</button>
+                <h2 class="notice-detail-title">${localized.title || noTitleText}</h2>
                 <div class="notice-detail-date">${dateStr}</div>
                 ${imageHtml}
                 <div class="notice-detail-content">${localized.content || ''}</div>
@@ -3046,8 +3049,8 @@ async function showNoticeDetail(noticeId) {
         checkNewNotices();
 
     } catch (error) {
-        console.error('공지사항 상세 로드 실패:', error);
-        alert('공지사항을 불러올 수 없습니다.');
+        console.error('Notice detail load failed:', error);
+        alert(t('ui.noticeLoadFailed') || 'Failed to load notice.');
     }
 }
 
@@ -3174,13 +3177,14 @@ async function loadMypageNotices() {
             .slice(0, 10);
 
         if (activeDocs.length === 0) {
-            listEl.innerHTML = '<div class="no-notice-message">공지사항이 없습니다.</div>';
+            listEl.innerHTML = `<div class="no-notice-message">${t('ui.noNotices') || 'No notices.'}</div>`;
             return;
         }
 
         // 현재 언어
         const lang = getNoticeLanguage();
         const readNotices = getReadNotices();
+        const noTitleText = t('ui.noTitle') || 'No title';
 
         let html = '';
         activeDocs.forEach(doc => {
@@ -3204,7 +3208,7 @@ async function loadMypageNotices() {
                 <div class="mypage-notice-item ${isNew ? 'new' : ''}" onclick="openNoticeFromMypage('${noticeId}')">
                     <div class="mypage-notice-title">
                         ${notice.isPinned ? '<span class="notice-pin">📌</span>' : ''}
-                        ${hasImage}${localized.title || '제목 없음'}
+                        ${hasImage}${localized.title || noTitleText}
                         ${isNew ? '<span class="notice-new-tag">NEW</span>' : ''}
                     </div>
                     <div class="mypage-notice-date">${dateStr}</div>
@@ -3215,8 +3219,8 @@ async function loadMypageNotices() {
         listEl.innerHTML = html;
 
     } catch (error) {
-        console.error('마이페이지 공지 로드 실패:', error);
-        listEl.innerHTML = '<div class="no-notice-message">공지사항을 불러올 수 없습니다.</div>';
+        console.error('Mypage notice load failed:', error);
+        listEl.innerHTML = `<div class="no-notice-message">${t('ui.noticeLoadFailed') || 'Failed to load notices.'}</div>`;
     }
 }
 
@@ -3250,7 +3254,7 @@ async function showNoticeDetailInline(noticeId) {
     try {
         const doc = await firebase.firestore().collection('notices').doc(noticeId).get();
         if (!doc.exists) {
-            alert('공지사항을 찾을 수 없습니다.');
+            alert(t('ui.noticeNotFound') || 'Notice not found.');
             return;
         }
 
@@ -3272,13 +3276,16 @@ async function showNoticeDetailInline(noticeId) {
 
         // 이미지 HTML
         const imageHtml = notice.imageUrl
-            ? `<img src="${notice.imageUrl}" alt="공지 이미지" style="max-width: 100%; border-radius: 8px; margin: 12px 0;">`
+            ? `<img src="${notice.imageUrl}" alt="Notice image" style="max-width: 100%; border-radius: 8px; margin: 12px 0;">`
             : '';
+
+        const backText = t('ui.backToList') || '← Back to list';
+        const noTitleText = t('ui.noTitle') || 'No title';
 
         listEl.innerHTML = `
             <div class="notice-detail-inline">
-                <button onclick="loadMypageNotices()" style="background: none; border: none; color: var(--primary-color, #E91E63); cursor: pointer; padding: 0 0 12px 0; font-size: 14px;">← 목록으로</button>
-                <h3 style="margin: 0 0 8px 0; font-size: 16px; color: var(--text-primary);">${localized.title || '제목 없음'}</h3>
+                <button onclick="loadMypageNotices()" style="background: none; border: none; color: var(--primary-color, #E91E63); cursor: pointer; padding: 0 0 12px 0; font-size: 14px;">${backText}</button>
+                <h3 style="margin: 0 0 8px 0; font-size: 16px; color: var(--text-primary);">${localized.title || noTitleText}</h3>
                 <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">${dateStr}</div>
                 ${imageHtml}
                 <div style="font-size: 14px; line-height: 1.6; color: var(--text-primary); white-space: pre-wrap;">${localized.content || ''}</div>
@@ -3290,8 +3297,8 @@ async function showNoticeDetailInline(noticeId) {
         updateMypageNoticeBadge();
 
     } catch (error) {
-        console.error('공지 상세 로드 실패:', error);
-        alert('공지사항을 불러올 수 없습니다.');
+        console.error('Notice detail load failed:', error);
+        alert(t('ui.noticeLoadFailed') || 'Failed to load notice.');
     }
 }
 

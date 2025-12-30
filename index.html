@@ -912,7 +912,7 @@
 <script src="js/payment.js"></script>
 
 <!-- ⭐ 다국어 시스템 (Firebase 이후, 앱 로직 이전 로드) -->
-<script src="js/i18n.js?v=20251230-2"></script>
+<script src="js/i18n.js?v=20251230-3"></script>
 
 <!-- 나머지 기능들 -->
 <script src="js/menu.js?v=20251230"></script>
@@ -923,7 +923,7 @@
 <script src="js/auth.js?v=20251230"></script>
 
 <!-- ⭐ main.js - 사이드바를 동적으로 생성 -->
-<script src="js/main.js?v=20251230-4"></script>
+<script src="js/main.js?v=20251230-5"></script>
 
 
 <!-- 다중 미디어 시스템 (새로 추가) -->
@@ -2188,10 +2188,10 @@
     const themeButton = document.getElementById('themeToggle');
     
     if (themeIcon) themeIcon.textContent = isLight ? '☀️' : '🌙';
-    if (themeText) themeText.textContent = isLight ? '라이트 모드' : '다크 모드';
+    if (themeText) themeText.textContent = isLight ? (t('ui.lightMode') || 'Light Mode') : (t('ui.darkMode') || 'Dark Mode');
     if (themeButton) {
         themeButton.textContent = isLight ? '☀️' : '🌙';
-        themeButton.title = isLight ? '다크 모드로 변경' : '라이트 모드로 변경';
+        themeButton.title = isLight ? (t('ui.switchToDark') || 'Switch to Dark Mode') : (t('ui.switchToLight') || 'Switch to Light Mode');
     }
     
     localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
@@ -4114,7 +4114,7 @@ body.light-theme .notice-modal {
 /* 마이페이지 공지사항 섹션 */
 .mypage-toggle-section {
     margin: 0 16px 16px;
-    background: var(--bg-secondary, #f5f5f5);
+    background: #1a1a1a;
     border-radius: 12px;
     padding: 16px;
 }
@@ -4128,20 +4128,24 @@ body.light-theme .mypage-toggle-section {
     margin: 0 0 12px 0;
     font-size: 14px;
     font-weight: 600;
-    color: var(--text-primary, #333);
+    color: #ffffff;
+}
+
+body.light-theme .mypage-toggle-section .section-header h3 {
+    color: #333333;
 }
 
 .mypage-notice-item {
     padding: 12px;
     border-radius: 8px;
-    background: rgba(255,255,255,0.05);
+    background: #2a2a2a;
     margin-bottom: 8px;
     cursor: pointer;
     transition: background 0.2s;
 }
 
 .mypage-notice-item:hover {
-    background: rgba(255,255,255,0.1);
+    background: #3a3a3a;
 }
 
 body.light-theme .mypage-notice-item {
@@ -4157,21 +4161,25 @@ body.light-theme .mypage-notice-item:hover {
 }
 
 .mypage-notice-item.new {
-    background: rgba(233, 30, 99, 0.08);
+    background: rgba(233, 30, 99, 0.2);
 }
 
 body.light-theme .mypage-notice-item.new {
-    background: rgba(233, 30, 99, 0.05);
+    background: rgba(233, 30, 99, 0.08);
 }
 
 .mypage-notice-title {
     font-size: 14px;
     font-weight: 500;
-    color: var(--text-primary, #333);
+    color: #ffffff;
     margin-bottom: 4px;
     display: flex;
     align-items: center;
     gap: 6px;
+}
+
+body.light-theme .mypage-notice-title {
+    color: #333333;
 }
 
 .notice-pin {
@@ -4182,21 +4190,33 @@ body.light-theme .mypage-notice-item.new {
     font-size: 10px;
     font-weight: 600;
     color: #E91E63;
-    background: rgba(233, 30, 99, 0.15);
+    background: rgba(233, 30, 99, 0.3);
     padding: 2px 6px;
     border-radius: 4px;
 }
 
+body.light-theme .notice-new-tag {
+    background: rgba(233, 30, 99, 0.15);
+}
+
 .mypage-notice-date {
     font-size: 12px;
-    color: var(--text-secondary, #888);
+    color: #aaaaaa;
+}
+
+body.light-theme .mypage-notice-date {
+    color: #888888;
 }
 
 .no-notice-message {
     text-align: center;
-    color: var(--text-secondary, #888);
+    color: #aaaaaa;
     font-size: 14px;
     padding: 20px;
+}
+
+body.light-theme .no-notice-message {
+    color: #888888;
 }
 </style>
 

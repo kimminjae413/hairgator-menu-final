@@ -111,6 +111,15 @@ const HAIRGATOR_I18N = {
       noInquiries: '문의 내역이 없습니다.',
       newInquiry: '문의하기',
       savedPaymentMethods: '저장된 결제 수단',
+
+      // 공지사항
+      noticeMenu: '공지사항',
+      noNotices: '공지사항이 없습니다.',
+      noticeEmpty: '등록된 공지사항이 없습니다.',
+      noticeLoadFailed: '공지사항을 불러올 수 없습니다.',
+      noticeNotFound: '공지사항을 찾을 수 없습니다.',
+      backToList: '← 목록으로',
+      noTitle: '제목 없음',
       myPlan: '내 플랜',
       myTokens: '내 토큰',
       currentPlanLabel: '현재 플랜',
@@ -1198,6 +1207,16 @@ const HAIRGATOR_I18N = {
       noInquiries: 'No inquiries.',
       newInquiry: 'New Inquiry',
       savedPaymentMethods: 'Saved Payment Methods',
+
+      // Notices
+      noticeMenu: 'Notices',
+      noNotices: 'No notices.',
+      noticeEmpty: 'No notices available.',
+      noticeLoadFailed: 'Failed to load notices.',
+      noticeNotFound: 'Notice not found.',
+      backToList: '← Back to list',
+      noTitle: 'No title',
+
       myPlan: 'My Plan',
       myTokens: 'My Tokens',
       currentPlanLabel: 'Current Plan',
@@ -2250,6 +2269,16 @@ const HAIRGATOR_I18N = {
       noInquiries: 'お問い合わせ履歴がありません。',
       newInquiry: 'お問い合わせ',
       savedPaymentMethods: '保存された決済方法',
+
+      // お知らせ
+      noticeMenu: 'お知らせ',
+      noNotices: 'お知らせはありません。',
+      noticeEmpty: 'お知らせがありません。',
+      noticeLoadFailed: 'お知らせの読み込みに失敗しました。',
+      noticeNotFound: 'お知らせが見つかりません。',
+      backToList: '← リストに戻る',
+      noTitle: 'タイトルなし',
+
       myPlan: 'マイプラン',
       myTokens: 'マイトークン',
       currentPlanLabel: '現在のプラン',
@@ -3298,6 +3327,16 @@ const HAIRGATOR_I18N = {
       noInquiries: '没有咨询记录。',
       newInquiry: '新咨询',
       savedPaymentMethods: '已保存的支付方式',
+
+      // 公告
+      noticeMenu: '公告',
+      noNotices: '没有公告。',
+      noticeEmpty: '没有公告。',
+      noticeLoadFailed: '无法加载公告。',
+      noticeNotFound: '找不到公告。',
+      backToList: '← 返回列表',
+      noTitle: '无标题',
+
       myPlan: '我的方案',
       myTokens: '我的代币',
       currentPlanLabel: '当前套餐',
@@ -4349,6 +4388,16 @@ const HAIRGATOR_I18N = {
       noInquiries: 'Không có lịch sử liên hệ.',
       newInquiry: 'Liên hệ mới',
       savedPaymentMethods: 'Phương thức thanh toán đã lưu',
+
+      // Thông báo
+      noticeMenu: 'Thông báo',
+      noNotices: 'Không có thông báo.',
+      noticeEmpty: 'Không có thông báo.',
+      noticeLoadFailed: 'Không thể tải thông báo.',
+      noticeNotFound: 'Không tìm thấy thông báo.',
+      backToList: '← Quay lại danh sách',
+      noTitle: 'Không có tiêu đề',
+
       myPlan: 'Gói của tôi',
       myTokens: 'Token của tôi',
       currentPlanLabel: 'Gói hiện tại',
