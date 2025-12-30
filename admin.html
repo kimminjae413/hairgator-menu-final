@@ -3397,18 +3397,61 @@
             return map[action] || 'free';
         }
 
-        // 사용량 차트 로드
+        // 사용량 차트 로드 (실제 데이터)
         async function loadUsageChart() {
             try {
-                const days = 7;
+                const days = 14; // 최근 14일
                 const labels = [];
-                const data = [];
+                const uniqueUsersData = [];
+                const usageCountData = [];
 
-                for (let i = days - 1; i >= 0; i--) {
+                // 14일 전부터 오늘까지의 날짜 범위 설정
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() - (days - 1));
+                startDate.setHours(0, 0, 0, 0);
+
+                // credit_logs에서 최근 14일 데이터 조회
+                const logsSnapshot = await db.collection('credit_logs')
+                    .where('timestamp', '>=', startDate)
+                    .orderBy('timestamp', 'asc')
+                    .get();
+
+                // 일별로 데이터 그룹화
+                const dailyData = {};
+                for (let i = 0; i < days; i++) {
                     const date = new Date();
-                    date.setDate(date.getDate() - i);
+                    date.setDate(date.getDate() - (days - 1 - i));
+                    const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+                    dailyData[dateKey] = {
+                        users: new Set(),
+                        count: 0
+                    };
+                }
+
+                // 로그 데이터 집계
+                logsSnapshot.forEach(doc => {
+                    const log = doc.data();
+                    if (log.timestamp) {
+                        const logDate = log.timestamp.toDate();
+                        const dateKey = logDate.toISOString().split('T')[0];
+                        if (dailyData[dateKey]) {
+                            dailyData[dateKey].count++;
+                            if (log.userId) {
+                                dailyData[dateKey].users.add(log.userId);
+                            }
+                        }
+                    }
+                });
+
+                // 차트 데이터 생성
+                for (let i = 0; i < days; i++) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - (days - 1 - i));
+                    const dateKey = date.toISOString().split('T')[0];
+
                     labels.push(date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }));
-                    data.push(Math.floor(Math.random() * 100)); // TODO: 실제 데이터로 교체
+                    uniqueUsersData.push(dailyData[dateKey]?.users.size || 0);
+                    usageCountData.push(dailyData[dateKey]?.count || 0);
                 }
 
                 if (usageChart) usageChart.destroy();
@@ -3416,24 +3459,40 @@
                     type: 'line',
                     data: {
                         labels: labels,
-                        datasets: [{
-                            label: '사용량',
-                            data: data,
-                            borderColor: '#FF1493',
-                            backgroundColor: 'rgba(255, 20, 147, 0.1)',
-                            fill: true,
-                            tension: 0.4
-                        }]
+                        datasets: [
+                            {
+                                label: '고유 사용자',
+                                data: uniqueUsersData,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                fill: false,
+                                tension: 0.4,
+                                borderWidth: 2
+                            },
+                            {
+                                label: '사용 횟수',
+                                data: usageCountData,
+                                borderColor: '#FF1493',
+                                backgroundColor: 'rgba(255, 20, 147, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                                borderWidth: 2
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { display: false }
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: { color: '#6B7280', usePointStyle: true, padding: 15 }
+                            }
                         },
                         scales: {
                             x: { grid: { color: '#E5E8EB' }, ticks: { color: '#6B7280' } },
-                            y: { grid: { color: '#E5E8EB' }, ticks: { color: '#6B7280' } }
+                            y: { grid: { color: '#E5E8EB' }, ticks: { color: '#6B7280' }, beginAtZero: true }
                         }
                     }
                 });
