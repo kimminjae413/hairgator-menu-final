@@ -996,22 +996,243 @@
         }
 
         @media (max-width: 768px) {
-            .sidebar {
-                display: none;
+            /* 모바일 헤더 표시 */
+            .mobile-header {
+                display: flex !important;
             }
+
+            /* 사이드바 모바일 처리 */
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                width: 280px;
+                z-index: 1001;
+                transition: left 0.3s ease;
+                display: block !important;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1000;
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
             .main-content {
                 margin-left: 0;
+                padding: 16px;
+                padding-top: 70px;
             }
+
+            /* 통계 그리드 */
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
             }
+
+            .stat-card {
+                padding: 16px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            /* 플랜 그리드 */
             .plan-grid {
                 grid-template-columns: 1fr;
             }
+
+            /* 테이블 반응형 */
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .data-table {
+                min-width: 600px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 10px 8px;
+                font-size: 12px;
+            }
+
+            /* 페이지 헤더 */
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            /* 카드 */
+            .card {
+                padding: 16px;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            /* 버튼 그룹 */
+            .btn-group {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .btn {
+                padding: 10px 14px;
+                font-size: 13px;
+            }
+
+            /* 차트 컨테이너 */
+            .chart-container {
+                height: 250px !important;
+            }
+
+            /* 폼 */
+            .form-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .form-input, .form-select {
+                font-size: 16px; /* iOS 줌 방지 */
+            }
+
+            /* 모달 */
+            .modal-content {
+                width: 95%;
+                max-height: 90vh;
+                margin: 20px auto;
+            }
+
+            /* 검색바 */
+            .search-bar {
+                width: 100%;
+            }
+
+            /* 기간 필터 */
+            .period-filter-group {
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .period-btn {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+
+            /* 로그인 카드 */
+            .login-card {
+                margin: 16px;
+                padding: 32px 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card {
+                padding: 14px;
+            }
+
+            .page-title {
+                font-size: 18px;
+            }
+
+            .data-table {
+                min-width: 500px;
+            }
+        }
+
+        /* 모바일 헤더 */
+        .mobile-header {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 0 16px;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 999;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .mobile-menu-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .mobile-menu-btn span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: var(--text);
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .mobile-header-logo {
+            height: 28px;
+        }
+
+        .mobile-header-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
         }
     </style>
 </head>
 <body>
+    <!-- 모바일 헤더 -->
+    <header class="mobile-header">
+        <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <img src="로고.png" alt="HAIRGATOR" class="mobile-header-logo">
+        <span class="mobile-header-title">Admin</span>
+    </header>
+
+    <!-- 사이드바 오버레이 -->
+    <div class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
     <!-- 로그인 오버레이 -->
     <div id="loginOverlay" class="login-overlay">
         <div class="login-card">
@@ -2382,6 +2603,30 @@
         let femaleBarChart = null;
         let currentAdmin = null;
 
+        // ==================== 모바일 사이드바 ====================
+
+        function toggleMobileSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+
+        function closeMobileSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        }
+
+        // 네비게이션 클릭 시 모바일에서 사이드바 닫기
+        function handleNavClick(page) {
+            showPage(page);
+            if (window.innerWidth <= 768) {
+                closeMobileSidebar();
+            }
+        }
+
         // ==================== 로그인/로그아웃 ====================
 
         // 로그인 처리
@@ -2698,7 +2943,19 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
             document.getElementById('page-' + pageName).classList.add('active');
-            event.currentTarget.classList.add('active');
+
+            // 해당 nav-item에 active 클래스 추가
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                if (item.getAttribute('onclick')?.includes(pageName)) {
+                    item.classList.add('active');
+                }
+            });
+
+            // 모바일에서 사이드바 닫기
+            if (window.innerWidth <= 768) {
+                closeMobileSidebar();
+            }
 
             // 페이지별 데이터 로드
             if (pageName === 'dashboard') loadDashboard();
