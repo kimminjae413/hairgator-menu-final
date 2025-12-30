@@ -3366,7 +3366,8 @@
 
                 // 1. Firebase Auth 사용자 (users 컬렉션)
                 if (userSource === 'all' || userSource === 'firebase') {
-                    const firebaseSnapshot = await db.collection('users').orderBy('createdAt', 'desc').limit(500).get();
+                    const firebaseSnapshot = await db.collection('users').orderBy('createdAt', 'desc').limit(5000).get();
+                    console.log('users 조회 결과:', firebaseSnapshot.size, '명');
                     const firebaseUsers = firebaseSnapshot.docs.map(doc => ({
                         id: doc.id,
                         ...doc.data(),
@@ -3377,19 +3378,25 @@
 
                 // 2. 불나비 마이그레이션 사용자 (bullnabi_users 컬렉션)
                 if (userSource === 'all' || userSource === 'bullnabi') {
-                    const bullnabiSnapshot = await db.collection('bullnabi_users').orderBy('createdAt', 'desc').limit(500).get();
-                    const bullnabiUsers = bullnabiSnapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data(),
-                        source: 'bullnabi',  // 출처 표시
-                        // 필드명 매핑 (불나비 → 헤어게이터)
-                        displayName: doc.data().name || doc.data().displayName || doc.data().userName,
-                        email: doc.data().email || doc.data().userId,
-                        phone: doc.data().phone || doc.data().phoneNumber,
-                        plan: doc.data().plan || 'free',
-                        tokenBalance: doc.data().tokenBalance || 0
-                    }));
-                    allUsers = allUsers.concat(bullnabiUsers);
+                    try {
+                        // createdAt 필드가 없을 수 있으므로 orderBy 없이 조회
+                        const bullnabiSnapshot = await db.collection('bullnabi_users').limit(5000).get();
+                        console.log('bullnabi_users 조회 결과:', bullnabiSnapshot.size, '명');
+                        const bullnabiUsers = bullnabiSnapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data(),
+                            source: 'bullnabi',  // 출처 표시
+                            // 필드명 매핑 (불나비 → 헤어게이터)
+                            displayName: doc.data().name || doc.data().displayName || doc.data().userName,
+                            email: doc.data().email || doc.data().userId,
+                            phone: doc.data().phone || doc.data().phoneNumber,
+                            plan: doc.data().plan || 'free',
+                            tokenBalance: doc.data().tokenBalance || 0
+                        }));
+                        allUsers = allUsers.concat(bullnabiUsers);
+                    } catch (bullnabiError) {
+                        console.error('bullnabi_users 로드 실패:', bullnabiError);
+                    }
                 }
 
                 // 이메일 기준 중복 제거 (Firebase 우선)
