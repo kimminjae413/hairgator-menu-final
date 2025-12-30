@@ -174,9 +174,57 @@ const FACE_STYLE_COMBINATIONS = {
     'neutral_classic': '균형잡힌 인상(뉴트럴)에 클래식 스타일이 안정감'
 };
 
+// ========== 접근 제한 ==========
+const ALLOWED_EMAILS = [
+    '708eric@hanmail.net'
+];
+
+function isAllowedUser() {
+    // window.currentDesigner 확인
+    if (window.currentDesigner?.email) {
+        return ALLOWED_EMAILS.includes(window.currentDesigner.email.toLowerCase());
+    }
+    // parent의 currentDesigner 확인 (iframe인 경우)
+    try {
+        if (parent.window.currentDesigner?.email) {
+            return ALLOWED_EMAILS.includes(parent.window.currentDesigner.email.toLowerCase());
+        }
+    } catch (e) {}
+    // localStorage에서 확인
+    try {
+        const cached = localStorage.getItem('firebase_user');
+        if (cached) {
+            const user = JSON.parse(cached);
+            if (user.email) {
+                return ALLOWED_EMAILS.includes(user.email.toLowerCase());
+            }
+        }
+    } catch (e) {}
+    return false;
+}
+
+function showAccessDenied() {
+    document.body.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #1a1a2e; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 20px;">🔒</div>
+            <h1 style="font-size: 24px; margin-bottom: 12px;">아직 오픈 전입니다</h1>
+            <p style="color: #888; font-size: 14px;">AI 스타일 매칭 기능은 현재 테스트 중입니다.</p>
+            <button onclick="window.history.back()" style="margin-top: 24px; padding: 12px 24px; background: #E91E63; border: none; border-radius: 8px; color: #fff; font-size: 14px; cursor: pointer;">뒤로 가기</button>
+        </div>
+    `;
+}
+
 // ========== 초기화 ==========
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🎯 AI Style Match 초기화');
+
+    // 접근 제한 체크
+    if (!isAllowedUser()) {
+        console.log('❌ AI 스타일 매칭 접근 제한: 허용되지 않은 사용자');
+        showAccessDenied();
+        return;
+    }
+    console.log('✅ AI 스타일 매칭 접근 허용');
 
     // 테마 상속
     inheritTheme();
