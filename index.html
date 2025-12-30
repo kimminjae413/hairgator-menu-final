@@ -1817,82 +1817,82 @@
 <div id="productsPage" class="page-container" style="display: none;">
     <header class="page-header">
         <button class="back-btn" onclick="navigateToHash('')">←</button>
-        <h1 class="page-title">요금제 선택</h1>
+        <h1 class="page-title" data-i18n="payment.selectPlanTitle">요금제 선택</h1>
         <div style="width: 48px;"></div>
     </header>
     <div class="page-content">
-        <p class="products-subtitle">프리미엄 기능을 잠금 해제하세요</p>
+        <p class="products-subtitle" data-i18n="payment.unlockPremium">프리미엄 기능을 잠금 해제하세요</p>
 
         <div class="pricing-cards-horizontal" id="pricingCardsContainer">
             <!-- 무료 플랜 -->
             <div class="plan-card plan-card-free" data-plan="free">
-                <h3 class="plan-name">무료</h3>
-                <div class="plan-price">₩0<span class="plan-period">/월</span></div>
-                <div class="plan-credits">300 크레딧</div>
+                <h3 class="plan-name" data-i18n="payment.freePlan">무료</h3>
+                <div class="plan-price">₩0<span class="plan-period" data-i18n="payment.perMonth">/월</span></div>
+                <div class="plan-credits">300 <span data-i18n="payment.credits">크레딧</span></div>
                 <ul class="plan-features">
-                    <li><span class="icon-check">✓</span> 스타일 메뉴판</li>
-                    <li class="limited"><span class="icon-partial">○</span> 챗봇 (제한적)</li>
-                    <li class="locked"><span class="icon-x">✗</span> 퍼스널컬러 분석</li>
-                    <li class="locked"><span class="icon-x">✗</span> 드레이프 모드</li>
-                    <li class="locked"><span class="icon-x">✗</span> 룩북</li>
-                    <li class="locked"><span class="icon-x">✗</span> 헤어체험</li>
+                    <li><span class="icon-check">✓</span> <span data-i18n="payment.feature.styleMenu">스타일 메뉴판</span></li>
+                    <li class="limited"><span class="icon-partial">○</span> <span data-i18n="payment.feature.chatbotLimited">챗봇 (제한적)</span></li>
+                    <li class="locked"><span class="icon-x">✗</span> <span data-i18n="payment.feature.personalColor">퍼스널컬러 분석</span></li>
+                    <li class="locked"><span class="icon-x">✗</span> <span data-i18n="payment.feature.drapeMode">드레이프 모드</span></li>
+                    <li class="locked"><span class="icon-x">✗</span> <span data-i18n="payment.feature.lookbook">룩북</span></li>
+                    <li class="locked"><span class="icon-x">✗</span> <span data-i18n="payment.feature.hairTry">헤어체험</span></li>
                 </ul>
-                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('free')">선택하기</button>
+                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('free')" data-i18n="payment.selectPlan">선택하기</button>
             </div>
 
             <!-- 베이직 플랜 -->
             <div class="plan-card plan-card-basic" data-plan="basic">
-                <h3 class="plan-name">베이직</h3>
-                <div class="plan-price">₩22,000<span class="plan-period">/월</span></div>
-                <div class="plan-credits">10,000 크레딧</div>
+                <h3 class="plan-name" data-i18n="payment.basicPlan">베이직</h3>
+                <div class="plan-price">₩22,000<span class="plan-period" data-i18n="payment.perMonth">/월</span></div>
+                <div class="plan-credits">10,000 <span data-i18n="payment.credits">크레딧</span></div>
                 <ul class="plan-features">
-                    <li><span class="icon-check">✓</span> 스타일 메뉴판</li>
-                    <li><span class="icon-check">✓</span> 챗봇</li>
-                    <li><span class="icon-check">✓</span> 퍼스널컬러 분석</li>
-                    <li><span class="icon-check">✓</span> 드레이프 모드</li>
-                    <li><span class="icon-check">✓</span> 룩북</li>
-                    <li><span class="icon-check">✓</span> 헤어체험</li>
+                    <li><span class="icon-check">✓</span> <span data-i18n="payment.feature.styleMenu">스타일 메뉴판</span></li>
+                    <li><span class="icon-check">✓</span> <span data-i18n="payment.feature.chatbot">챗봇</span></li>
+                    <li><span class="icon-check">✓</span> <span data-i18n="payment.feature.personalColor">퍼스널컬러 분석</span></li>
+                    <li><span class="icon-check">✓</span> <span data-i18n="payment.feature.drapeMode">드레이프 모드</span></li>
+                    <li><span class="icon-check">✓</span> <span data-i18n="payment.feature.lookbook">룩북</span></li>
+                    <li><span class="icon-check">✓</span> <span data-i18n="payment.feature.hairTry">헤어체험</span></li>
                 </ul>
-                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('basic')">선택하기</button>
+                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('basic')" data-i18n="payment.selectPlan">선택하기</button>
             </div>
 
             <!-- 프로 플랜 (추천) -->
             <div class="plan-card plan-card-pro" data-plan="pro">
-                <span class="plan-badge plan-badge-recommended">추천</span>
-                <h3 class="plan-name">프로</h3>
-                <div class="plan-price">₩38,000<span class="plan-period">/월</span></div>
-                <div class="plan-credits">18,000 크레딧</div>
-                <div class="plan-efficiency">원당 4% 효율 증가</div>
+                <span class="plan-badge plan-badge-recommended" data-i18n="payment.recommended">추천</span>
+                <h3 class="plan-name" data-i18n="payment.proPlan">프로</h3>
+                <div class="plan-price">₩38,000<span class="plan-period" data-i18n="payment.perMonth">/월</span></div>
+                <div class="plan-credits">18,000 <span data-i18n="payment.credits">크레딧</span></div>
+                <div class="plan-efficiency" data-i18n="payment.efficiency4">원당 4% 효율 증가</div>
                 <ul class="plan-features">
-                    <li><span class="icon-check">✓</span> 베이직 플랜 모든 기능</li>
-                    <li><span class="icon-check">✓</span> 80% 더 많은 크레딧</li>
+                    <li><span class="icon-check">✓</span> <span data-i18n="payment.feature.allBasic">베이직 플랜 모든 기능</span></li>
+                    <li><span class="icon-check">✓</span> <span data-i18n="payment.feature.moreCredits">80% 더 많은 크레딧</span></li>
                 </ul>
-                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('pro')">선택하기</button>
+                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('pro')" data-i18n="payment.selectPlan">선택하기</button>
             </div>
 
             <!-- 비즈니스 플랜 -->
             <div class="plan-card plan-card-business" data-plan="business">
-                <h3 class="plan-name">비즈니스</h3>
-                <div class="plan-price">₩50,000<span class="plan-period">/월</span></div>
-                <div class="plan-credits">25,000 크레딧</div>
-                <div class="plan-efficiency">원당 11% 효율 증가</div>
+                <h3 class="plan-name" data-i18n="payment.businessPlan">비즈니스</h3>
+                <div class="plan-price">₩50,000<span class="plan-period" data-i18n="payment.perMonth">/월</span></div>
+                <div class="plan-credits">25,000 <span data-i18n="payment.credits">크레딧</span></div>
+                <div class="plan-efficiency" data-i18n="payment.efficiency11">원당 11% 효율 증가</div>
                 <ul class="plan-features">
-                    <li><span class="icon-check">✓</span> 베이직 플랜 모든 기능</li>
-                    <li><span class="icon-check">✓</span> 150% 더 많은 크레딧</li>
+                    <li><span class="icon-check">✓</span> <span data-i18n="payment.feature.allBasic">베이직 플랜 모든 기능</span></li>
+                    <li><span class="icon-check">✓</span> <span data-i18n="payment.feature.maxCredits">150% 더 많은 크레딧</span></li>
                 </ul>
-                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('business')">선택하기</button>
+                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('business')" data-i18n="payment.selectPlan">선택하기</button>
             </div>
 
             <!-- AI 얼굴변환&영상변환 -->
             <div class="plan-card plan-card-addon">
-                <h3 class="plan-name plan-name-addon">AI 얼굴변환&영상변환</h3>
+                <h3 class="plan-name plan-name-addon" data-i18n="payment.faceSwapPlan">AI 얼굴변환&영상변환</h3>
                 <div class="plan-price">₩15,000</div>
-                <div class="plan-credits plan-credits-addon">12회</div>
+                <div class="plan-credits plan-credits-addon">12<span data-i18n="payment.times">회</span></div>
                 <ul class="plan-features">
-                    <li><span class="icon-emoji">🖼️</span> AI 얼굴 변환</li>
-                    <li><span class="icon-emoji">🎬</span> AI 영상 변환</li>
+                    <li><span class="icon-emoji">🖼️</span> <span data-i18n="payment.feature.faceSwap">AI 얼굴 변환</span></li>
+                    <li><span class="icon-emoji">🎬</span> <span data-i18n="payment.feature.videoSwap">AI 영상 변환</span></li>
                 </ul>
-                <p class="plan-addon-notice">이 상품은 상품 탭에서만 결제가 가능합니다.</p>
+                <p class="plan-addon-notice" data-i18n="payment.addonNote">이 상품은 상품 탭에서만 결제가 가능합니다.</p>
             </div>
         </div>
     </div>
