@@ -58,6 +58,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (productsPage) productsPage.style.display = 'none';
         if (mypagePage) mypagePage.style.display = 'none';
 
+        // 탭 변경 시 현재 언어로 텍스트 업데이트
+        if (typeof updateAllTexts === 'function') {
+            updateAllTexts();
+        }
+
         switch (hash) {
             case 'products':
                 if (productsPage) {

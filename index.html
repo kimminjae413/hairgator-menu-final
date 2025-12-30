@@ -1938,22 +1938,22 @@
             </div>
             <div class="menu-item" onclick="toggleSavedCardsSection()">
                 <span class="menu-icon">💳</span>
-                <span class="menu-text">결제 수단 관리</span>
+                <span class="menu-text" data-i18n="ui.paymentManage">결제 수단 관리</span>
                 <span class="menu-arrow" id="savedCardsArrow">→</span>
             </div>
             <div class="menu-item" onclick="toggleTheme()">
                 <span class="menu-icon" id="mypageThemeIcon">🌙</span>
-                <span class="menu-text" id="mypageThemeText">다크 모드</span>
+                <span class="menu-text" id="mypageThemeText" data-i18n="ui.darkMode">다크 모드</span>
                 <span class="menu-arrow">→</span>
             </div>
             <div class="menu-item" onclick="openLanguageSelector()">
                 <span class="menu-icon">🌐</span>
-                <span class="menu-text">언어 설정</span>
+                <span class="menu-text" data-i18n="ui.languageSetting">언어 설정</span>
                 <span class="menu-arrow">→</span>
             </div>
             <div class="menu-item" onclick="toggleInquirySection()">
                 <span class="menu-icon">💬</span>
-                <span class="menu-text">1:1 문의</span>
+                <span class="menu-text" data-i18n="ui.inquiryMenu">1:1 문의</span>
                 <span class="menu-arrow" id="inquiryArrow">→</span>
                 <span class="new-badge" id="inquiryNewBadge" style="display: none;">NEW</span>
             </div>
@@ -1962,23 +1962,23 @@
         <!-- 저장된 카드 섹션 (토글) -->
         <div id="savedCardsSection" class="saved-cards-section" style="display: none;">
             <div class="section-header">
-                <h3>저장된 결제 수단</h3>
-                <button class="add-card-btn" onclick="registerNewCard()">+ 카드 등록</button>
+                <h3 data-i18n="ui.savedPaymentMethods">저장된 결제 수단</h3>
+                <button class="add-card-btn" onclick="registerNewCard()">+ <span data-i18n="ui.addCard">카드 등록</span></button>
             </div>
             <div id="savedCardsList" class="saved-cards-list">
                 <!-- 동적으로 생성됨 -->
-                <div class="no-cards-message">저장된 카드가 없습니다.</div>
+                <div class="no-cards-message" data-i18n="ui.noSavedCards">저장된 카드가 없습니다.</div>
             </div>
         </div>
 
         <!-- 1:1 문의 섹션 (토글) -->
         <div id="inquirySection" class="inquiry-section" style="display: none;">
             <div class="section-header">
-                <h3>1:1 문의</h3>
-                <button class="add-inquiry-btn" onclick="openNewInquiryModal()">+ 문의하기</button>
+                <h3 data-i18n="ui.inquiryMenu">1:1 문의</h3>
+                <button class="add-inquiry-btn" onclick="openNewInquiryModal()">+ <span data-i18n="ui.newInquiry">문의하기</span></button>
             </div>
             <div id="inquiryList" class="inquiry-list">
-                <div class="no-inquiry-message">문의 내역이 없습니다.</div>
+                <div class="no-inquiry-message" data-i18n="ui.noInquiries">문의 내역이 없습니다.</div>
             </div>
         </div>
 

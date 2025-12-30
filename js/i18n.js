@@ -102,6 +102,18 @@ const HAIRGATOR_I18N = {
       fontDancing: 'Dancing Script',
       fontBebas: 'Bebas Neue',
 
+      // 마이페이지 메뉴
+      paymentManage: '결제 수단 관리',
+      languageSetting: '언어 설정',
+      inquiryMenu: '1:1 문의',
+      noSavedCards: '저장된 카드가 없습니다.',
+      addCard: '카드 등록',
+      noInquiries: '문의 내역이 없습니다.',
+      newInquiry: '문의하기',
+      savedPaymentMethods: '저장된 결제 수단',
+      myPlan: '내 플랜',
+      myTokens: '내 토큰',
+
       // 프로필 사진
       profilePhoto: '📷 프로필 사진',
       profilePhotoHint: '프로필 사진은 스타일 상담 시 사용되며,',
@@ -1171,6 +1183,18 @@ const HAIRGATOR_I18N = {
       fontDancing: 'Dancing Script',
       fontBebas: 'Bebas Neue',
 
+      // Mypage menu
+      paymentManage: 'Payment Methods',
+      languageSetting: 'Language',
+      inquiryMenu: 'Contact Us',
+      noSavedCards: 'No saved cards.',
+      addCard: 'Add Card',
+      noInquiries: 'No inquiries.',
+      newInquiry: 'New Inquiry',
+      savedPaymentMethods: 'Saved Payment Methods',
+      myPlan: 'My Plan',
+      myTokens: 'My Tokens',
+
       // Profile photo
       profilePhoto: '📷 Profile Photo',
       profilePhotoHint: 'Your profile photo will be used for style consultations.',
@@ -2205,6 +2229,18 @@ const HAIRGATOR_I18N = {
       fontDancing: 'Dancing Script',
       fontBebas: 'Bebas Neue',
 
+      // マイページメニュー
+      paymentManage: '決済方法管理',
+      languageSetting: '言語設定',
+      inquiryMenu: 'お問い合わせ',
+      noSavedCards: '保存されたカードがありません。',
+      addCard: 'カード登録',
+      noInquiries: 'お問い合わせ履歴がありません。',
+      newInquiry: 'お問い合わせ',
+      savedPaymentMethods: '保存された決済方法',
+      myPlan: 'マイプラン',
+      myTokens: 'マイトークン',
+
       // プロフィール写真
       profilePhoto: '📷 プロフィール写真',
       profilePhotoHint: 'プロフィール写真はスタイル相談に使用されます。',
@@ -3234,6 +3270,18 @@ const HAIRGATOR_I18N = {
       fontPlayfair: 'Playfair',
       fontDancing: 'Dancing Script',
       fontBebas: 'Bebas Neue',
+
+      // 我的页面菜单
+      paymentManage: '支付方式管理',
+      languageSetting: '语言设置',
+      inquiryMenu: '1:1 咨询',
+      noSavedCards: '没有保存的卡片。',
+      addCard: '添加卡片',
+      noInquiries: '没有咨询记录。',
+      newInquiry: '新咨询',
+      savedPaymentMethods: '已保存的支付方式',
+      myPlan: '我的方案',
+      myTokens: '我的代币',
 
       // 个人照片
       profilePhoto: '📷 个人照片',
@@ -4267,6 +4315,18 @@ const HAIRGATOR_I18N = {
       fontPlayfair: 'Playfair',
       fontDancing: 'Dancing Script',
       fontBebas: 'Bebas Neue',
+
+      // Menu trang cá nhân
+      paymentManage: 'Quản lý thanh toán',
+      languageSetting: 'Cài đặt ngôn ngữ',
+      inquiryMenu: 'Liên hệ',
+      noSavedCards: 'Không có thẻ đã lưu.',
+      addCard: 'Thêm thẻ',
+      noInquiries: 'Không có lịch sử liên hệ.',
+      newInquiry: 'Liên hệ mới',
+      savedPaymentMethods: 'Phương thức thanh toán đã lưu',
+      myPlan: 'Gói của tôi',
+      myTokens: 'Token của tôi',
 
       // Ảnh hồ sơ
       profilePhoto: '📷 Ảnh hồ sơ',
