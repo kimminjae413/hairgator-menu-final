@@ -1028,6 +1028,9 @@ document.addEventListener('DOMContentLoaded', function() {
             window.HAIRGATOR_MENU.loadMenuForGender(window.currentGender);
         }
 
+        // ⭐ 사이드바 재생성 (동적 생성 텍스트 업데이트)
+        setupSidebar();
+
         // ⭐ 챗봇 언어도 동기화
         if (window.hairgatorChatbot) {
             window.hairgatorChatbot.currentLanguage = langCode;
