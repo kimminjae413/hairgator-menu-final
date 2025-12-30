@@ -2569,7 +2569,8 @@ function closeAllMypageSections(exceptSectionId = null) {
     const sections = [
         { section: 'savedCardsSection', arrow: 'savedCardsArrow' },
         { section: 'mypageNoticeSection', arrow: 'noticeArrow' },
-        { section: 'inquirySection', arrow: 'inquiryArrow' }
+        { section: 'inquirySection', arrow: 'inquiryArrow' },
+        { section: 'paymentHistorySection', arrow: 'paymentHistoryArrow' }
     ];
 
     sections.forEach(({ section, arrow }) => {
@@ -2724,6 +2725,138 @@ window.toggleInquirySection = async function() {
         section.style.display = 'none';
         arrow.textContent = '→';
     }
+};
+
+// ========== 결제 내역 섹션 ==========
+
+/**
+ * 결제 내역 섹션 토글
+ */
+window.togglePaymentHistorySection = async function() {
+    const section = document.getElementById('paymentHistorySection');
+    const arrow = document.getElementById('paymentHistoryArrow');
+
+    if (!section) return;
+
+    if (section.style.display === 'none' || !section.style.display) {
+        // 다른 섹션 모두 닫기
+        closeAllMypageSections('paymentHistorySection');
+        section.style.display = 'block';
+        if (arrow) arrow.textContent = '↓';
+        await loadPaymentHistory();
+    } else {
+        section.style.display = 'none';
+        if (arrow) arrow.textContent = '→';
+    }
+};
+
+/**
+ * 결제 내역 로드
+ */
+async function loadPaymentHistory() {
+    const listEl = document.getElementById('paymentHistoryList');
+    if (!listEl) return;
+
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        listEl.innerHTML = `<div class="no-payment-message">${t('ui.loginRequired') || '로그인이 필요합니다.'}</div>`;
+        return;
+    }
+
+    listEl.innerHTML = `<div class="loading-message">${t('ui.loading') || '로딩 중...'}</div>`;
+
+    try {
+        // 이메일 기반 userId (Firebase 형식)
+        const userId = user.email.replace(/[@.]/g, '_');
+
+        // Firestore에서 결제 내역 조회
+        const snapshot = await firebase.firestore()
+            .collection('payments')
+            .where('userId', '==', userId)
+            .orderBy('createdAt', 'desc')
+            .limit(50)
+            .get();
+
+        if (snapshot.empty) {
+            listEl.innerHTML = `<div class="no-payment-message">${t('ui.noPaymentHistory') || '결제 내역이 없습니다.'}</div>`;
+            return;
+        }
+
+        // 요금제명 매핑
+        const planNames = {
+            basic: t('ui.planBasic') || '베이직',
+            pro: t('ui.planPro') || '프로',
+            business: t('ui.planBusiness') || '비즈니스',
+            tokens_5000: t('ui.tokensAdditional') || '추가 토큰'
+        };
+
+        // 상태명 매핑
+        const statusNames = {
+            completed: t('ui.paymentCompleted') || '결제 완료',
+            cancelled: t('ui.paymentCancelled') || '결제 취소',
+            refunded: t('ui.paymentRefunded') || '환불 완료'
+        };
+
+        let html = '';
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const paymentId = data.paymentId || doc.id;
+            const planKey = data.planKey || 'unknown';
+            const planName = planNames[planKey] || planKey;
+            const amount = data.amount || 0;
+            const tokens = data.tokens || 0;
+            const status = data.status || 'completed';
+            const statusName = statusNames[status] || status;
+            const statusClass = `payment-status-${status}`;
+
+            // 날짜 포맷
+            let dateStr = '-';
+            if (data.createdAt) {
+                const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+                dateStr = date.toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                }) + ' ' + date.toLocaleTimeString('ko-KR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            // 영수증 URL 생성 (포트원 V2 영수증)
+            const receiptUrl = `https://service.portone.io/receipt/${paymentId}`;
+
+            html += `
+                <div class="payment-history-item" onclick="openPaymentReceipt('${paymentId}')">
+                    <div class="payment-item-left">
+                        <div class="payment-item-plan">${planName}</div>
+                        <div class="payment-item-date">${dateStr}</div>
+                        <span class="payment-status-badge ${statusClass}">${statusName}</span>
+                    </div>
+                    <div class="payment-item-right">
+                        <div class="payment-item-amount">${amount.toLocaleString()}${t('ui.currencyWon') || '원'}</div>
+                        <div class="payment-item-tokens">+${tokens.toLocaleString()} ${t('ui.tokens') || '토큰'}</div>
+                        <span class="payment-item-receipt">${t('ui.viewReceipt') || '영수증 보기'}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        listEl.innerHTML = html;
+
+    } catch (error) {
+        console.error('결제 내역 로드 실패:', error);
+        listEl.innerHTML = `<div class="no-payment-message">${t('ui.loadError') || '로딩 중 오류가 발생했습니다.'}</div>`;
+    }
+}
+
+/**
+ * 포트원 영수증 열기
+ */
+window.openPaymentReceipt = function(paymentId) {
+    const receiptUrl = `https://service.portone.io/receipt/${paymentId}`;
+    window.open(receiptUrl, '_blank');
 };
 
 // 문의 페이지네이션 설정

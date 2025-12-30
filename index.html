@@ -601,6 +601,112 @@
             color: rgba(0,0,0,0.4);
         }
 
+        /* 결제 내역 섹션 */
+        .payment-history-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 16px;
+            margin: 0 16px 16px;
+        }
+        body.light-theme .payment-history-section {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .payment-history-section .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .payment-history-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .payment-history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .payment-history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        body.light-theme .payment-history-item {
+            background: #f8f9fa;
+        }
+        .payment-history-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        body.light-theme .payment-history-item:hover {
+            background: #f0f0f0;
+        }
+        .payment-item-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .payment-item-plan {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .payment-item-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .payment-item-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+        .payment-item-amount {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .payment-item-receipt {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .payment-item-receipt:hover {
+            color: var(--primary-color);
+        }
+        .payment-status-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 4px;
+        }
+        .payment-status-completed {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        .payment-status-cancelled {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        .no-payment-message {
+            text-align: center;
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+            padding: 30px 20px;
+        }
+        body.light-theme .no-payment-message {
+            color: rgba(0,0,0,0.4);
+        }
+
         /* NEW 뱃지 */
         .new-badge {
             background: #EF4444;
@@ -2037,6 +2143,11 @@
                 <span class="menu-text" data-i18n="ui.paymentManage">결제 수단 관리</span>
                 <span class="menu-arrow" id="savedCardsArrow">→</span>
             </div>
+            <div class="menu-item" onclick="togglePaymentHistorySection()">
+                <span class="menu-icon">📋</span>
+                <span class="menu-text" data-i18n="ui.paymentHistory">결제 내역</span>
+                <span class="menu-arrow" id="paymentHistoryArrow">→</span>
+            </div>
             <div class="menu-item" onclick="toggleTheme()">
                 <span class="menu-icon" id="mypageThemeIcon">🌙</span>
                 <span class="menu-text" id="mypageThemeText" data-i18n="ui.darkMode">다크 모드</span>
@@ -2099,6 +2210,16 @@
             <div id="savedCardsList" class="saved-cards-list">
                 <!-- 동적으로 생성됨 -->
                 <div class="no-cards-message" data-i18n="ui.noSavedCards">저장된 카드가 없습니다.</div>
+            </div>
+        </div>
+
+        <!-- 결제 내역 섹션 (토글) -->
+        <div id="paymentHistorySection" class="payment-history-section mypage-toggle-section" style="display: none;">
+            <div class="section-header">
+                <h3 data-i18n="ui.paymentHistory">결제 내역</h3>
+            </div>
+            <div id="paymentHistoryList" class="payment-history-list">
+                <div class="loading-message" data-i18n="ui.loading">로딩 중...</div>
             </div>
         </div>
 
@@ -4423,7 +4544,7 @@ async function showLegalModal(docType) {
     modal.style.display = 'flex';
 
     try {
-        const docRef = db.collection('legal_documents').doc(docType);
+        const docRef = firebase.firestore().collection('legal_documents').doc(docType);
         const doc = await docRef.get();
 
         if (doc.exists) {
