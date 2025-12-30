@@ -4197,7 +4197,7 @@
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="font-size: 20px;">💳</span>
                         <div>
-                            <div style="font-weight: 600; color: #0284C7;">${user.savedCard.brand || '카드'}</div>
+                            <div style="font-weight: 600; color: #0284C7;">${getCardBrandName(user.savedCard.brand)}</div>
                             <div style="font-size: 11px; color: #0369A1;">**** **** **** ${user.savedCard.last4 || '****'}</div>
                         </div>
                     </div>
@@ -4207,6 +4207,29 @@
 
             document.getElementById('userDetailEditBtn').onclick = () => quickEditUser(userId);
             openModal('userDetailModal');
+        }
+
+        // 카드 브랜드명 한글 변환
+        function getCardBrandName(brand) {
+            if (!brand) return '카드';
+            const brandNames = {
+                'visa': 'VISA',
+                'mastercard': 'Mastercard',
+                'amex': 'American Express',
+                'jcb': 'JCB',
+                'unionpay': 'UnionPay',
+                'bc': 'BC카드',
+                'samsung': '삼성카드',
+                'hyundai': '현대카드',
+                'shinhan': '신한카드',
+                'lotte': '롯데카드',
+                'kb': 'KB국민카드',
+                'hana': '하나카드',
+                'woori': '우리카드',
+                'nh': 'NH농협카드',
+                'citi': '씨티카드'
+            };
+            return brandNames[brand.toLowerCase()] || brand;
         }
 
         // 플랜 만료 상태 계산
