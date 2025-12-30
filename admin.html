@@ -5447,15 +5447,9 @@
             if (!confirm(`"${styleId}" 스타일을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
 
             try {
-                const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/hairstyles/${docId}`;
-                const res = await fetch(url, { method: 'DELETE' });
-
-                if (res.ok) {
-                    showToast('스타일이 삭제되었습니다', 'success');
-                    loadHairstyles();
-                } else {
-                    throw new Error('삭제 실패');
-                }
+                await db.collection('hairstyles').doc(docId).delete();
+                showToast('스타일이 삭제되었습니다', 'success');
+                loadHairstyles();
             } catch (err) {
                 console.error('스타일 삭제 에러:', err);
                 showToast('스타일 삭제 실패', 'error');
