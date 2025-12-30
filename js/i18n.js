@@ -6832,6 +6832,8 @@ function setLanguage(lang) {
     currentLanguage = lang;
     localStorage.setItem('hairgator_language', lang);
     console.log(`✅ 언어 변경: ${lang}`);
+    // 모든 텍스트 즉시 업데이트
+    updateAllTexts(lang);
     window.dispatchEvent(new CustomEvent('languageChanged', { detail: lang }));
     return true;
   }
