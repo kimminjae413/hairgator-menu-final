@@ -71,7 +71,9 @@
       "Bash(D:/hairgator_dev/flutter/bin/flutter.bat clean:*)",
       "Bash(D:/hairgator_dev/flutter/bin/flutter.bat pub get:*)",
       "Bash(\"$JAVA_HOME/bin/keytool\":*)",
-      "Bash(claude mcp add chrome-devtools -- npx -y @anthropic/mcp-chrome-devtools)"
+      "Bash(claude mcp add chrome-devtools -- npx -y @anthropic/mcp-chrome-devtools)",
+      "Bash(claude mcp list:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []

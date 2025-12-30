@@ -58,10 +58,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (productsPage) productsPage.style.display = 'none';
         if (mypagePage) mypagePage.style.display = 'none';
 
-        // 탭 변경 시 현재 언어로 텍스트 업데이트
-        if (typeof updateAllTexts === 'function') {
-            updateAllTexts();
+        // 탭 변경 시 현재 언어로 텍스트 업데이트 (i18n.js)
+        if (typeof window.updateAllTexts === 'function') {
+            window.updateAllTexts();
         }
+        // 사이드바 업데이트 (main.js)
+        updateSidebarTexts();
 
         switch (hash) {
             case 'products':
@@ -1010,8 +1012,12 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`🌍 언어 변경: ${langCode}`);
         setLanguage(langCode);
 
-        // UI 텍스트 업데이트
-        updateAllTexts();
+        // UI 텍스트 업데이트 (i18n.js의 updateAllTexts - data-i18n 요소 업데이트)
+        if (typeof window.updateAllTexts === 'function') {
+            window.updateAllTexts(langCode);
+        }
+        // 사이드바/성별선택 업데이트 (main.js 전용)
+        updateSidebarTexts();
 
         // 국기 업데이트
         if (typeof updateLanguageFlag === 'function') {
@@ -1056,8 +1062,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateAllTexts() {
-        // 사이드바 텍스트 업데이트
+    function updateSidebarTexts() {
+        // 사이드바 텍스트 업데이트 (main.js 전용)
         const themeText = document.getElementById('themeText');
 
         const isLight = document.body.classList.contains('light-theme');
@@ -1230,7 +1236,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // ⭐ 전역 함수로 노출 (챗봇과 동기화를 위해)
     window.showToast = showToast;
     window.changeLanguage = changeLanguage;
-    window.updateAllTexts = updateAllTexts;
+    window.updateSidebarTexts = updateSidebarTexts;
+    // 주의: window.updateAllTexts는 i18n.js에서 정의됨 - 덮어쓰지 말 것!
 
     console.log('🚀 HAIRGATOR 메인 애플리케이션 준비 완료');
 });
