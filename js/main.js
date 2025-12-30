@@ -2875,3 +2875,348 @@ async function updateProductsPagePlan() {
 // 전역 함수로 노출
 window.updateProductsPagePlan = updateProductsPagePlan;
 
+// ========== 공지사항 시스템 ==========
+
+// 공지사항 모달 열기
+async function openNoticeModal() {
+    const overlay = document.getElementById('noticeModalOverlay');
+    if (overlay) {
+        overlay.classList.add('show');
+        await loadUserNotices();
+    }
+}
+
+// 공지사항 모달 닫기
+function closeNoticeModal(event) {
+    // event가 있고 target이 overlay가 아니면 무시 (버블링 방지)
+    if (event && event.target && !event.target.classList.contains('notice-modal-overlay')) {
+        return;
+    }
+    const overlay = document.getElementById('noticeModalOverlay');
+    if (overlay) {
+        overlay.classList.remove('show');
+    }
+}
+
+// 공지사항 목록 로드
+async function loadUserNotices() {
+    const body = document.getElementById('noticeModalBody');
+    if (!body) return;
+
+    body.innerHTML = '<div class="notice-loading">로딩 중...</div>';
+
+    try {
+        if (!firebase || !firebase.firestore) {
+            throw new Error('Firebase not initialized');
+        }
+
+        const snapshot = await firebase.firestore()
+            .collection('notices')
+            .where('isActive', '==', true)
+            .orderBy('isPinned', 'desc')
+            .orderBy('createdAt', 'desc')
+            .limit(20)
+            .get();
+
+        if (snapshot.empty) {
+            body.innerHTML = '<div class="notice-empty">등록된 공지사항이 없습니다.</div>';
+            return;
+        }
+
+        // 읽은 공지 ID 목록 가져오기
+        const readNotices = getReadNotices();
+
+        let html = '<div class="notice-list">';
+        snapshot.forEach(doc => {
+            const notice = doc.data();
+            const noticeId = doc.id;
+            const isRead = readNotices.includes(noticeId);
+            const isNew = !isRead;
+
+            // 날짜 포맷
+            let dateStr = '';
+            if (notice.createdAt) {
+                const date = notice.createdAt.toDate ? notice.createdAt.toDate() : new Date(notice.createdAt);
+                dateStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+            }
+
+            // 미리보기 텍스트 (100자 제한)
+            const preview = (notice.content || '').replace(/<[^>]*>/g, '').substring(0, 100);
+
+            html += `
+                <div class="notice-item ${isNew ? 'new' : ''}" onclick="showNoticeDetail('${noticeId}')">
+                    <div class="notice-item-header">
+                        <span class="notice-item-title">
+                            ${notice.isPinned ? '<span class="notice-item-pinned">📌</span>' : ''}
+                            ${notice.title || '제목 없음'}
+                        </span>
+                        ${isNew ? '<span class="notice-item-new">NEW</span>' : ''}
+                    </div>
+                    <div class="notice-item-preview">${preview}${preview.length >= 100 ? '...' : ''}</div>
+                    <div class="notice-item-date">${dateStr}</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        body.innerHTML = html;
+
+    } catch (error) {
+        console.error('공지사항 로드 실패:', error);
+        body.innerHTML = '<div class="notice-empty">공지사항을 불러올 수 없습니다.</div>';
+    }
+}
+
+// 공지사항 상세 보기
+async function showNoticeDetail(noticeId) {
+    const body = document.getElementById('noticeModalBody');
+    if (!body) return;
+
+    try {
+        const doc = await firebase.firestore().collection('notices').doc(noticeId).get();
+        if (!doc.exists) {
+            alert('공지사항을 찾을 수 없습니다.');
+            return;
+        }
+
+        const notice = doc.data();
+
+        // 읽음 처리
+        markNoticeAsRead(noticeId);
+
+        // 날짜 포맷
+        let dateStr = '';
+        if (notice.createdAt) {
+            const date = notice.createdAt.toDate ? notice.createdAt.toDate() : new Date(notice.createdAt);
+            dateStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        body.innerHTML = `
+            <div class="notice-detail">
+                <button class="notice-detail-back" onclick="loadUserNotices()">← 목록으로</button>
+                <h2 class="notice-detail-title">${notice.title || '제목 없음'}</h2>
+                <div class="notice-detail-date">${dateStr}</div>
+                <div class="notice-detail-content">${notice.content || ''}</div>
+            </div>
+        `;
+
+        // 뱃지 업데이트
+        checkNewNotices();
+
+    } catch (error) {
+        console.error('공지사항 상세 로드 실패:', error);
+        alert('공지사항을 불러올 수 없습니다.');
+    }
+}
+
+// 새 공지사항 확인 및 뱃지 업데이트
+async function checkNewNotices() {
+    const badge = document.getElementById('noticeBadge');
+    if (!badge) return;
+
+    try {
+        if (!firebase || !firebase.firestore) return;
+
+        const snapshot = await firebase.firestore()
+            .collection('notices')
+            .where('isActive', '==', true)
+            .orderBy('createdAt', 'desc')
+            .limit(20)
+            .get();
+
+        if (snapshot.empty) {
+            badge.style.display = 'none';
+            return;
+        }
+
+        // 읽은 공지 ID 목록
+        const readNotices = getReadNotices();
+
+        // 읽지 않은 공지 개수 계산
+        let unreadCount = 0;
+        snapshot.forEach(doc => {
+            if (!readNotices.includes(doc.id)) {
+                unreadCount++;
+            }
+        });
+
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+
+    } catch (error) {
+        console.error('새 공지 확인 실패:', error);
+        badge.style.display = 'none';
+    }
+}
+
+// 읽은 공지 ID 목록 가져오기
+function getReadNotices() {
+    try {
+        const stored = localStorage.getItem('hairgator_read_notices');
+        return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// 공지 읽음 표시
+function markNoticeAsRead(noticeId) {
+    try {
+        const readNotices = getReadNotices();
+        if (!readNotices.includes(noticeId)) {
+            readNotices.push(noticeId);
+            // 최대 100개까지만 저장 (오래된 것 삭제)
+            if (readNotices.length > 100) {
+                readNotices.splice(0, readNotices.length - 100);
+            }
+            localStorage.setItem('hairgator_read_notices', JSON.stringify(readNotices));
+        }
+    } catch (e) {
+        console.error('읽음 표시 저장 실패:', e);
+    }
+}
+
+// 마이페이지 공지사항 섹션 토글
+function toggleNoticeSection() {
+    const section = document.getElementById('mypageNoticeSection');
+    const arrow = document.getElementById('noticeArrow');
+
+    if (!section) return;
+
+    if (section.style.display === 'none' || !section.style.display) {
+        section.style.display = 'block';
+        if (arrow) arrow.textContent = '↓';
+        loadMypageNotices();
+    } else {
+        section.style.display = 'none';
+        if (arrow) arrow.textContent = '→';
+    }
+}
+
+// 마이페이지 공지사항 목록 로드
+async function loadMypageNotices() {
+    const listEl = document.getElementById('mypageNoticeList');
+    if (!listEl) return;
+
+    listEl.innerHTML = '<div class="notice-loading">로딩 중...</div>';
+
+    try {
+        if (!firebase || !firebase.firestore) {
+            throw new Error('Firebase not initialized');
+        }
+
+        const snapshot = await firebase.firestore()
+            .collection('notices')
+            .where('isActive', '==', true)
+            .orderBy('isPinned', 'desc')
+            .orderBy('createdAt', 'desc')
+            .limit(10)
+            .get();
+
+        if (snapshot.empty) {
+            listEl.innerHTML = '<div class="no-notice-message">공지사항이 없습니다.</div>';
+            return;
+        }
+
+        const readNotices = getReadNotices();
+
+        let html = '';
+        snapshot.forEach(doc => {
+            const notice = doc.data();
+            const noticeId = doc.id;
+            const isRead = readNotices.includes(noticeId);
+            const isNew = !isRead;
+
+            let dateStr = '';
+            if (notice.createdAt) {
+                const date = notice.createdAt.toDate ? notice.createdAt.toDate() : new Date(notice.createdAt);
+                dateStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+            }
+
+            html += `
+                <div class="mypage-notice-item ${isNew ? 'new' : ''}" onclick="openNoticeFromMypage('${noticeId}')">
+                    <div class="mypage-notice-title">
+                        ${notice.isPinned ? '<span class="notice-pin">📌</span>' : ''}
+                        ${notice.title || '제목 없음'}
+                        ${isNew ? '<span class="notice-new-tag">NEW</span>' : ''}
+                    </div>
+                    <div class="mypage-notice-date">${dateStr}</div>
+                </div>
+            `;
+        });
+
+        listEl.innerHTML = html;
+
+    } catch (error) {
+        console.error('마이페이지 공지 로드 실패:', error);
+        listEl.innerHTML = '<div class="no-notice-message">공지사항을 불러올 수 없습니다.</div>';
+    }
+}
+
+// 마이페이지에서 공지 클릭 시 모달 열기
+function openNoticeFromMypage(noticeId) {
+    openNoticeModal();
+    setTimeout(() => {
+        showNoticeDetail(noticeId);
+    }, 300);
+}
+
+// 마이페이지 새 공지 뱃지 업데이트
+async function updateMypageNoticeBadge() {
+    const badge = document.getElementById('mypageNoticeBadge');
+    if (!badge) return;
+
+    try {
+        if (!firebase || !firebase.firestore) return;
+
+        const snapshot = await firebase.firestore()
+            .collection('notices')
+            .where('isActive', '==', true)
+            .limit(20)
+            .get();
+
+        if (snapshot.empty) {
+            badge.style.display = 'none';
+            return;
+        }
+
+        const readNotices = getReadNotices();
+        let hasUnread = false;
+
+        snapshot.forEach(doc => {
+            if (!readNotices.includes(doc.id)) {
+                hasUnread = true;
+            }
+        });
+
+        badge.style.display = hasUnread ? 'inline' : 'none';
+
+    } catch (error) {
+        badge.style.display = 'none';
+    }
+}
+
+// 전역 함수로 노출
+window.openNoticeModal = openNoticeModal;
+window.closeNoticeModal = closeNoticeModal;
+window.loadUserNotices = loadUserNotices;
+window.showNoticeDetail = showNoticeDetail;
+window.checkNewNotices = checkNewNotices;
+window.toggleNoticeSection = toggleNoticeSection;
+window.loadMypageNotices = loadMypageNotices;
+window.openNoticeFromMypage = openNoticeFromMypage;
+window.updateMypageNoticeBadge = updateMypageNoticeBadge;
+
+// 페이지 로드 시 새 공지 확인
+document.addEventListener('DOMContentLoaded', () => {
+    // Firebase 로드 대기 후 체크
+    setTimeout(() => {
+        checkNewNotices();
+        updateMypageNoticeBadge();
+    }, 2000);
+});
+

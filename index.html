@@ -1773,11 +1773,17 @@
     <header class="header">
         <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
         <h1 class="logo">HAIRGATOR</h1>
-        <button class="menu-btn" id="menuBtn">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+        <div class="header-right">
+            <button class="notice-btn" id="noticeBtn" onclick="openNoticeModal()">
+                🔔
+                <span class="notice-badge" id="noticeBadge" style="display: none;"></span>
+            </button>
+            <button class="menu-btn" id="menuBtn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
     </header>
 
     <!-- A+B 영역: 태블릿에서 고정될 부분 -->
@@ -1951,11 +1957,27 @@
                 <span class="menu-text" data-i18n="ui.languageSetting">언어 설정</span>
                 <span class="menu-arrow">→</span>
             </div>
+            <div class="menu-item" onclick="toggleNoticeSection()">
+                <span class="menu-icon">📢</span>
+                <span class="menu-text" data-i18n="ui.noticeMenu">공지사항</span>
+                <span class="menu-arrow" id="noticeArrow">→</span>
+                <span class="new-badge" id="mypageNoticeBadge" style="display: none;">NEW</span>
+            </div>
             <div class="menu-item" onclick="toggleInquirySection()">
                 <span class="menu-icon">💬</span>
                 <span class="menu-text" data-i18n="ui.inquiryMenu">1:1 문의</span>
                 <span class="menu-arrow" id="inquiryArrow">→</span>
                 <span class="new-badge" id="inquiryNewBadge" style="display: none;">NEW</span>
+            </div>
+        </div>
+
+        <!-- 공지사항 섹션 (토글) -->
+        <div id="mypageNoticeSection" class="notice-section mypage-toggle-section" style="display: none;">
+            <div class="section-header">
+                <h3 data-i18n="ui.noticeMenu">공지사항</h3>
+            </div>
+            <div id="mypageNoticeList" class="notice-list">
+                <div class="no-notice-message" data-i18n="ui.noNotices">공지사항이 없습니다.</div>
             </div>
         </div>
 
@@ -3890,6 +3912,293 @@ function openAIStudio() {
     }
 })();
 </script>
+
+<!-- 공지사항 모달 -->
+<div class="notice-modal-overlay" id="noticeModalOverlay" onclick="closeNoticeModal(event)">
+    <div class="notice-modal" onclick="event.stopPropagation()">
+        <div class="notice-modal-header">
+            <h3>📢 공지사항</h3>
+            <button class="notice-modal-close" onclick="closeNoticeModal()">&times;</button>
+        </div>
+        <div class="notice-modal-body" id="noticeModalBody">
+            <div class="notice-loading">로딩 중...</div>
+        </div>
+    </div>
+</div>
+
+<style>
+.notice-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.notice-modal-overlay.show {
+    display: flex;
+}
+
+.notice-modal {
+    background: var(--bg-primary);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+body.light-theme .notice-modal {
+    background: #fff;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.notice-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(135deg, var(--female-color) 0%, #ff6b9d 100%);
+}
+
+.notice-modal-header h3 {
+    margin: 0;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.notice-modal-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.notice-modal-body {
+    padding: 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.notice-loading {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.notice-empty {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.notice-item {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.notice-item:hover {
+    background: var(--bg-secondary);
+}
+
+.notice-item:last-child {
+    border-bottom: none;
+}
+
+.notice-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.notice-item-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+.notice-item-pinned {
+    color: var(--female-color);
+    margin-right: 6px;
+}
+
+.notice-item-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    margin-left: 12px;
+}
+
+.notice-item-new {
+    background: #EF4444;
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+.notice-item-preview {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* 공지 상세 보기 */
+.notice-detail {
+    padding: 20px;
+}
+
+.notice-detail-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.notice-detail-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.notice-detail-content {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+}
+
+.notice-detail-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.notice-detail-back:hover {
+    background: var(--bg-secondary);
+}
+
+/* 마이페이지 공지사항 섹션 */
+.mypage-toggle-section {
+    margin: 0 16px 16px;
+    background: var(--bg-secondary, #f5f5f5);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+body.light-theme .mypage-toggle-section {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+}
+
+.mypage-toggle-section .section-header h3 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary, #333);
+}
+
+.mypage-notice-item {
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.mypage-notice-item:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+body.light-theme .mypage-notice-item {
+    background: #f8f8f8;
+}
+
+body.light-theme .mypage-notice-item:hover {
+    background: #f0f0f0;
+}
+
+.mypage-notice-item:last-child {
+    margin-bottom: 0;
+}
+
+.mypage-notice-item.new {
+    background: rgba(233, 30, 99, 0.08);
+}
+
+body.light-theme .mypage-notice-item.new {
+    background: rgba(233, 30, 99, 0.05);
+}
+
+.mypage-notice-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary, #333);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.notice-pin {
+    font-size: 12px;
+}
+
+.notice-new-tag {
+    font-size: 10px;
+    font-weight: 600;
+    color: #E91E63;
+    background: rgba(233, 30, 99, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.mypage-notice-date {
+    font-size: 12px;
+    color: var(--text-secondary, #888);
+}
+
+.no-notice-message {
+    text-align: center;
+    color: var(--text-secondary, #888);
+    font-size: 14px;
+    padding: 20px;
+}
+</style>
 
 </body>
 </html>

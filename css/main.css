@@ -198,9 +198,53 @@ body.light-theme .logo {
     color: #000000;
 }
 
-.menu-btn {
+.header-right {
     position: absolute;
     right: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.notice-btn {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s ease;
+}
+
+.notice-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.light-theme .notice-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.notice-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    background: #EF4444;
+    border-radius: 50%;
+    border: 2px solid var(--bg-primary);
+}
+
+body.light-theme .notice-badge {
+    border-color: #fff;
+}
+
+.menu-btn {
     width: 30px;
     height: 30px;
     background: none;

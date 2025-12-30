@@ -1364,6 +1364,10 @@
 
         <nav class="nav-section">
             <div class="nav-section-title">고객 지원</div>
+            <div class="nav-item" onclick="showPage('notices')">
+                <span class="nav-item-icon">📢</span>
+                <span>공지사항</span>
+            </div>
             <div class="nav-item" onclick="showPage('inquiries')">
                 <span class="nav-item-icon">💬</span>
                 <span>1:1 문의</span>
@@ -1858,6 +1862,74 @@
                             </td></tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 공지사항 관리 페이지 -->
+        <div id="page-notices" class="page">
+            <div class="page-header">
+                <h2 class="page-title">📢 공지사항 관리</h2>
+                <button class="btn btn-primary" onclick="openNoticeModal()">+ 새 공지 작성</button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">공지사항 목록</div>
+                    <button class="btn btn-secondary btn-sm" onclick="loadNotices()">🔄 새로고침</button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">상태</th>
+                                <th>제목</th>
+                                <th style="width: 100px;">작성일</th>
+                                <th style="width: 80px;">조회수</th>
+                                <th style="width: 120px;">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="noticesTableBody">
+                            <tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">로딩 중...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 공지사항 작성/수정 모달 -->
+        <div class="modal-overlay" id="noticeModal">
+            <div class="modal" style="max-width: 700px;">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="noticeModalTitle">새 공지 작성</h3>
+                    <button class="modal-close" onclick="closeModal('noticeModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="noticeEditId">
+                    <div class="form-group">
+                        <label class="form-label">제목 *</label>
+                        <input type="text" class="form-input" id="noticeTitle" placeholder="공지 제목을 입력하세요">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">내용 *</label>
+                        <textarea class="form-input" id="noticeContent" rows="10" placeholder="공지 내용을 입력하세요..." style="resize: vertical;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="noticePinned" style="margin-right: 8px;">
+                            상단 고정
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="noticeActive" checked style="margin-right: 8px;">
+                            활성화 (체크 해제 시 유저에게 표시되지 않음)
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('noticeModal')">취소</button>
+                    <button class="btn btn-primary" onclick="saveNotice()">저장</button>
                 </div>
             </div>
         </div>
@@ -3108,6 +3180,7 @@
             if (pageName === 'appTabs') loadAppTabs();
             if (pageName === 'styles') loadHairstyleStats();
             if (pageName === 'settings') loadAdminList();
+            if (pageName === 'notices') loadNotices();
             if (pageName === 'inquiries') loadInquiries();
         }
 
@@ -5940,6 +6013,144 @@
                 toast.style.animation = 'slideIn 0.3s ease reverse';
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
+        }
+
+        // ==================== 공지사항 관리 ====================
+
+        async function loadNotices() {
+            const tbody = document.getElementById('noticesTableBody');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;"><div class="loading"></div></td></tr>';
+
+            try {
+                const snapshot = await db.collection('notices')
+                    .orderBy('pinned', 'desc')
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">등록된 공지사항이 없습니다</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    const date = data.createdAt?.toDate?.() || new Date();
+                    const dateStr = date.toLocaleDateString('ko-KR');
+                    const statusBadge = data.active
+                        ? '<span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">활성</span>'
+                        : '<span style="background: var(--text-muted); color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">비활성</span>';
+                    const pinnedIcon = data.pinned ? '📌 ' : '';
+
+                    return `
+                        <tr>
+                            <td>${statusBadge}</td>
+                            <td style="font-weight: 500;">${pinnedIcon}${data.title || '(제목 없음)'}</td>
+                            <td>${dateStr}</td>
+                            <td>${data.viewCount || 0}</td>
+                            <td>
+                                <button onclick="editNotice('${doc.id}')" class="btn btn-sm" style="background: var(--info); color: white; margin-right: 4px;">수정</button>
+                                <button onclick="deleteNotice('${doc.id}')" class="btn btn-sm btn-danger">삭제</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('공지사항 로드 실패:', error);
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--danger);">로드 실패</td></tr>';
+            }
+        }
+
+        function openNoticeModal() {
+            document.getElementById('noticeEditId').value = '';
+            document.getElementById('noticeTitle').value = '';
+            document.getElementById('noticeContent').value = '';
+            document.getElementById('noticePinned').checked = false;
+            document.getElementById('noticeActive').checked = true;
+            document.getElementById('noticeModalTitle').textContent = '새 공지 작성';
+            document.getElementById('noticeModal').classList.add('show');
+        }
+
+        async function editNotice(docId) {
+            try {
+                const doc = await db.collection('notices').doc(docId).get();
+                if (!doc.exists) {
+                    showToast('공지사항을 찾을 수 없습니다', 'error');
+                    return;
+                }
+
+                const data = doc.data();
+                document.getElementById('noticeEditId').value = docId;
+                document.getElementById('noticeTitle').value = data.title || '';
+                document.getElementById('noticeContent').value = data.content || '';
+                document.getElementById('noticePinned').checked = data.pinned || false;
+                document.getElementById('noticeActive').checked = data.active !== false;
+                document.getElementById('noticeModalTitle').textContent = '공지 수정';
+                document.getElementById('noticeModal').classList.add('show');
+
+            } catch (error) {
+                console.error('공지 로드 실패:', error);
+                showToast('공지 로드 실패', 'error');
+            }
+        }
+
+        async function saveNotice() {
+            const editId = document.getElementById('noticeEditId').value;
+            const title = document.getElementById('noticeTitle').value.trim();
+            const content = document.getElementById('noticeContent').value.trim();
+            const pinned = document.getElementById('noticePinned').checked;
+            const active = document.getElementById('noticeActive').checked;
+
+            if (!title) {
+                showToast('제목을 입력해주세요', 'error');
+                return;
+            }
+            if (!content) {
+                showToast('내용을 입력해주세요', 'error');
+                return;
+            }
+
+            try {
+                const noticeData = {
+                    title,
+                    content,
+                    pinned,
+                    active,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                if (editId) {
+                    // 수정
+                    await db.collection('notices').doc(editId).update(noticeData);
+                    showToast('공지사항이 수정되었습니다', 'success');
+                } else {
+                    // 새로 작성
+                    noticeData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    noticeData.viewCount = 0;
+                    await db.collection('notices').add(noticeData);
+                    showToast('공지사항이 등록되었습니다', 'success');
+                }
+
+                closeModal('noticeModal');
+                loadNotices();
+
+            } catch (error) {
+                console.error('공지 저장 실패:', error);
+                showToast('저장 실패: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteNotice(docId) {
+            if (!confirm('이 공지사항을 삭제하시겠습니까?')) return;
+
+            try {
+                await db.collection('notices').doc(docId).delete();
+                showToast('공지사항이 삭제되었습니다', 'success');
+                loadNotices();
+            } catch (error) {
+                console.error('공지 삭제 실패:', error);
+                showToast('삭제 실패', 'error');
+            }
         }
 
         // ==================== 1:1 문의 관리 ====================
