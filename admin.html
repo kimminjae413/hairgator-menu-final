@@ -2707,138 +2707,115 @@
         <div id="page-legal" class="page">
             <div class="page-header">
                 <h2 class="page-title">약관 관리</h2>
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-secondary" onclick="initLegalDocuments()">🔄 초기 데이터 로드</button>
-                    <button class="btn btn-primary" onclick="saveLegalDocuments()">💾 모두 저장</button>
-                </div>
+                <button class="btn btn-secondary" onclick="initLegalDocuments()" id="legalInitBtn">🔄 초기 데이터 생성</button>
             </div>
 
-            <!-- 이용약관 -->
+            <!-- 약관 목록 테이블 -->
             <div class="card">
-                <div class="card-header">
-                    <div class="card-title">📋 이용약관</div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-secondary btn-sm" onclick="previewLegal('terms')">👁️ 미리보기</button>
-                        <a href="https://app.hairgator.kr/terms.html" target="_blank" class="btn btn-secondary btn-sm">🔗 현재 페이지</a>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">제목</label>
-                    <input type="text" class="form-input" id="legalTermsTitle" value="이용약관" placeholder="이용약관">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">내용 (HTML 지원)</label>
-                    <textarea class="form-input" id="legalTermsContent" rows="12" placeholder="이용약관 내용을 입력하세요..." style="font-family: monospace; font-size: 13px;"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">최종 수정일</label>
-                    <input type="text" class="form-input" id="legalTermsUpdated" readonly style="background: var(--bg-hover);">
-                </div>
-            </div>
-
-            <!-- 개인정보처리방침 -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">🔒 개인정보처리방침</div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-secondary btn-sm" onclick="previewLegal('privacy')">👁️ 미리보기</button>
-                        <a href="https://app.hairgator.kr/privacy-policy.html" target="_blank" class="btn btn-secondary btn-sm">🔗 현재 페이지</a>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">제목</label>
-                    <input type="text" class="form-input" id="legalPrivacyTitle" value="개인정보처리방침" placeholder="개인정보처리방침">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">내용 (HTML 지원)</label>
-                    <textarea class="form-input" id="legalPrivacyContent" rows="12" placeholder="개인정보처리방침 내용을 입력하세요..." style="font-family: monospace; font-size: 13px;"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">최종 수정일</label>
-                    <input type="text" class="form-input" id="legalPrivacyUpdated" readonly style="background: var(--bg-hover);">
-                </div>
-            </div>
-
-            <!-- 계정 삭제 안내 -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">🗑️ 계정 삭제 안내</div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-secondary btn-sm" onclick="previewLegal('deleteAccount')">👁️ 미리보기</button>
-                        <a href="https://app.hairgator.kr/delete-account.html" target="_blank" class="btn btn-secondary btn-sm">🔗 현재 페이지</a>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">제목</label>
-                    <input type="text" class="form-input" id="legalDeleteTitle" value="계정 삭제 안내" placeholder="계정 삭제 안내">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">내용 (HTML 지원)</label>
-                    <textarea class="form-input" id="legalDeleteContent" rows="12" placeholder="계정 삭제 안내 내용을 입력하세요..." style="font-family: monospace; font-size: 13px;"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">최종 수정일</label>
-                    <input type="text" class="form-input" id="legalDeleteUpdated" readonly style="background: var(--bg-hover);">
-                </div>
-            </div>
-
-            <!-- 마케팅 수신 동의 -->
-
-            <!-- 위치기반서비스 이용약관 -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">📍 위치기반서비스 이용약관</div>
-                    <button class="btn btn-secondary btn-sm" onclick="previewLegal('location')">👁️ 미리보기</button>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">제목</label>
-                    <input type="text" class="form-input" id="legalLocationTitle" value="위치기반서비스 이용약관" placeholder="위치기반서비스 이용약관">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">내용 (HTML 지원)</label>
-                    <textarea class="form-input" id="legalLocationContent" rows="8" placeholder="위치기반서비스 이용약관 내용을 입력하세요..." style="font-family: monospace; font-size: 13px;"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">최종 수정일</label>
-                    <input type="text" class="form-input" id="legalLocationUpdated" readonly style="background: var(--bg-hover);">
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">📣 마케팅 수신 동의</div>
-                    <button class="btn btn-secondary btn-sm" onclick="previewLegal('marketing')">👁️ 미리보기</button>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">제목</label>
-                    <input type="text" class="form-input" id="legalMarketingTitle" value="마케팅 수신 동의" placeholder="마케팅 수신 동의">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">내용 (HTML 지원)</label>
-                    <textarea class="form-input" id="legalMarketingContent" rows="8" placeholder="마케팅 수신 동의 내용을 입력하세요..." style="font-family: monospace; font-size: 13px;"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">최종 수정일</label>
-                    <input type="text" class="form-input" id="legalMarketingUpdated" readonly style="background: var(--bg-hover);">
-                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">문서명</th>
+                            <th style="width: 30%;">최종 수정일</th>
+                            <th style="width: 30%; text-align: right;">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="legalDocsTableBody">
+                        <tr>
+                            <td>
+                                <span style="font-size: 18px; margin-right: 8px;">📋</span>
+                                <strong>이용약관</strong>
+                            </td>
+                            <td id="legalTermsDate" style="color: var(--text-muted);">-</td>
+                            <td style="text-align: right;">
+                                <button class="btn btn-secondary btn-sm" onclick="openLegalEditModal('terms')">✏️ 수정하기</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span style="font-size: 18px; margin-right: 8px;">🔒</span>
+                                <strong>개인정보처리방침</strong>
+                            </td>
+                            <td id="legalPrivacyDate" style="color: var(--text-muted);">-</td>
+                            <td style="text-align: right;">
+                                <button class="btn btn-secondary btn-sm" onclick="openLegalEditModal('privacy')">✏️ 수정하기</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span style="font-size: 18px; margin-right: 8px;">🗑️</span>
+                                <strong>계정 삭제 안내</strong>
+                            </td>
+                            <td id="legalDeleteDate" style="color: var(--text-muted);">-</td>
+                            <td style="text-align: right;">
+                                <button class="btn btn-secondary btn-sm" onclick="openLegalEditModal('deleteAccount')">✏️ 수정하기</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span style="font-size: 18px; margin-right: 8px;">📍</span>
+                                <strong>위치기반서비스 이용약관</strong>
+                            </td>
+                            <td id="legalLocationDate" style="color: var(--text-muted);">-</td>
+                            <td style="text-align: right;">
+                                <button class="btn btn-secondary btn-sm" onclick="openLegalEditModal('location')">✏️ 수정하기</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span style="font-size: 18px; margin-right: 8px;">📣</span>
+                                <strong>마케팅 수신 동의</strong>
+                            </td>
+                            <td id="legalMarketingDate" style="color: var(--text-muted);">-</td>
+                            <td style="text-align: right;">
+                                <button class="btn btn-secondary btn-sm" onclick="openLegalEditModal('marketing')">✏️ 수정하기</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </main>
 
     <!-- 관리자 추가 모달 -->
 
-    <!-- 약관 미리보기 모달 -->
-    <div class="modal-overlay" id="legalPreviewModal">
-        <div class="modal" style="max-width: 800px; max-height: 90vh;">
+    <!-- 약관 편집 모달 -->
+    <div class="modal-overlay" id="legalEditModal">
+        <div class="modal" style="max-width: 900px; max-height: 95vh;">
             <div class="modal-header">
-                <h3 class="modal-title" id="legalPreviewTitle">미리보기</h3>
-                <button class="modal-close" onclick="closeModal('legalPreviewModal')">&times;</button>
+                <h3 class="modal-title" id="legalEditModalTitle">약관 수정</h3>
+                <button class="modal-close" onclick="closeModal('legalEditModal')">&times;</button>
             </div>
-            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                <div id="legalPreviewContent" style="padding: 20px; background: white; border-radius: 8px; line-height: 1.8;"></div>
+            <div class="modal-body" style="max-height: calc(95vh - 140px); overflow-y: auto;">
+                <input type="hidden" id="legalEditDocType">
+
+                <div class="form-group">
+                    <label class="form-label">제목</label>
+                    <input type="text" class="form-input" id="legalEditTitle" placeholder="문서 제목">
+                </div>
+
+                <!-- 탭 전환: 편집 / 미리보기 -->
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    <button class="btn btn-sm" id="legalTabEdit" onclick="switchLegalTab('edit')" style="background: var(--primary); color: white;">✏️ 편집</button>
+                    <button class="btn btn-secondary btn-sm" id="legalTabPreview" onclick="switchLegalTab('preview')">👁️ 미리보기</button>
+                </div>
+
+                <!-- 편집 영역 -->
+                <div id="legalEditArea">
+                    <div class="form-group">
+                        <label class="form-label">내용 (HTML)</label>
+                        <textarea class="form-input" id="legalEditContent" rows="20" placeholder="HTML 내용을 입력하세요..." style="font-family: 'Consolas', monospace; font-size: 13px; line-height: 1.5;"></textarea>
+                    </div>
+                </div>
+
+                <!-- 미리보기 영역 -->
+                <div id="legalPreviewArea" style="display: none;">
+                    <div id="legalPreviewContent" style="padding: 20px; background: white; border-radius: 8px; line-height: 1.8; border: 1px solid var(--border-color); min-height: 300px; color: #333;"></div>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('legalPreviewModal')">닫기</button>
+            <div class="modal-footer" style="display: flex; justify-content: space-between;">
+                <button class="btn btn-secondary" onclick="closeModal('legalEditModal')">취소</button>
+                <button class="btn btn-primary" onclick="saveSingleLegalDocument()">💾 저장하기</button>
             </div>
         </div>
     </div>
@@ -7029,163 +7006,161 @@
         // 로그인 후 문의 체크
 
         // ===== 약관 관리 =====
-        const LEGAL_ADMIN_EMAIL = 'eric708@naver.com';  // 법적 문서 수정 권한자
-        
+        const LEGAL_ADMIN_EMAIL = 'eric708@naver.com';
+        const LEGAL_DOC_NAMES = {
+            terms: '이용약관',
+            privacy: '개인정보처리방침',
+            deleteAccount: '계정 삭제 안내',
+            location: '위치기반서비스 이용약관',
+            marketing: '마케팅 수신 동의'
+        };
+
         function hasLegalEditPermission() {
             return currentAdmin?.email === LEGAL_ADMIN_EMAIL;
         }
 
+        // 약관 목록 로드 (테이블에 날짜만 표시)
         async function loadLegalDocuments() {
             try {
-                // 권한 체크 - UI 비활성화
                 const canEdit = hasLegalEditPermission();
-                const inputs = document.querySelectorAll('#page-legal input, #page-legal textarea');
-                const saveBtn = document.querySelector('#page-legal .btn-primary');
-                
-                inputs.forEach(input => {
-                    if (input.id && !input.id.includes('Updated')) {
-                        input.disabled = !canEdit;
-                        if (!canEdit) {
-                            input.style.opacity = '0.7';
-                            input.style.cursor = 'not-allowed';
-                        }
-                    }
-                });
-                
-                if (saveBtn) {
-                    saveBtn.disabled = !canEdit;
-                    if (!canEdit) {
-                        saveBtn.innerHTML = '🔒 수정 권한 없음';
-                        saveBtn.style.opacity = '0.5';
-                        saveBtn.style.cursor = 'not-allowed';
-                    } else {
-                        saveBtn.innerHTML = '💾 모두 저장';
-                        saveBtn.style.opacity = '1';
-                        saveBtn.style.cursor = 'pointer';
-                    }
-                }
 
-                // 권한 안내 메시지
-                let permNotice = document.getElementById('legalPermissionNotice');
-                if (!permNotice && !canEdit) {
-                    permNotice = document.createElement('div');
-                    permNotice.id = 'legalPermissionNotice';
-                    permNotice.style.cssText = 'background: #FEF3C7; color: #92400E; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;';
-                    permNotice.innerHTML = '⚠️ 법적 문서 수정 권한이 없습니다. 수정이 필요하시면 최고 관리자에게 문의하세요.';
-                    const pageHeader = document.querySelector('#page-legal .page-header');
-                    if (pageHeader) pageHeader.after(permNotice);
-                } else if (permNotice && canEdit) {
-                    permNotice.remove();
+                // 권한 없으면 버튼 비활성화
+                const editBtns = document.querySelectorAll('#page-legal .btn-secondary.btn-sm');
+                const initBtn = document.getElementById('legalInitBtn');
+
+                if (!canEdit) {
+                    editBtns.forEach(btn => {
+                        btn.disabled = true;
+                        btn.innerHTML = '🔒 권한 없음';
+                        btn.style.opacity = '0.5';
+                    });
+                    if (initBtn) {
+                        initBtn.disabled = true;
+                        initBtn.style.opacity = '0.5';
+                    }
                 }
 
                 const docTypes = ['terms', 'privacy', 'deleteAccount', 'location', 'marketing'];
-                
+
                 for (const docType of docTypes) {
                     const docRef = db.collection('legal_documents').doc(docType);
                     const doc = await docRef.get();
-                    
-                    if (doc.exists) {
-                        const data = doc.data();
-                        const prefix = docType === 'terms' ? 'legalTerms' :
-                                       docType === 'privacy' ? 'legalPrivacy' :
-                                       docType === 'deleteAccount' ? 'legalDelete' : docType === 'location' ? 'legalLocation' : 'legalMarketing';
-                        
-                        document.getElementById(prefix + 'Title').value = data.title || '';
-                        document.getElementById(prefix + 'Content').value = data.content || '';
-                        
-                        if (data.updatedAt) {
-                            const date = data.updatedAt.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt);
-                            document.getElementById(prefix + 'Updated').value = date.toLocaleString('ko-KR');
+
+                    const dateId = docType === 'terms' ? 'legalTermsDate' :
+                                   docType === 'privacy' ? 'legalPrivacyDate' :
+                                   docType === 'deleteAccount' ? 'legalDeleteDate' :
+                                   docType === 'location' ? 'legalLocationDate' : 'legalMarketingDate';
+
+                    const dateEl = document.getElementById(dateId);
+                    if (dateEl) {
+                        if (doc.exists && doc.data().updatedAt) {
+                            const date = doc.data().updatedAt.toDate ? doc.data().updatedAt.toDate() : new Date(doc.data().updatedAt);
+                            dateEl.textContent = date.toLocaleString('ko-KR');
+                            dateEl.style.color = 'var(--text-primary)';
+                        } else {
+                            dateEl.textContent = '데이터 없음';
+                            dateEl.style.color = 'var(--danger)';
                         }
                     }
                 }
-                
-                console.log('약관 문서 로드 완료');
+
+                console.log('약관 목록 로드 완료');
             } catch (error) {
                 console.error('약관 로드 실패:', error);
-                alert('약관 문서를 불러오는 중 오류가 발생했습니다.');
             }
         }
 
-        async function saveLegalDocuments() {
-            // 권한 체크
+        // 편집 모달 열기
+        async function openLegalEditModal(docType) {
             if (!hasLegalEditPermission()) {
-                alert('법적 문서 수정 권한이 없습니다.\n최고 관리자만 수정할 수 있습니다.');
+                alert('수정 권한이 없습니다.');
+                return;
+            }
+
+            document.getElementById('legalEditDocType').value = docType;
+            document.getElementById('legalEditModalTitle').textContent = LEGAL_DOC_NAMES[docType] + ' 수정';
+
+            // 편집 탭으로 초기화
+            switchLegalTab('edit');
+
+            try {
+                const docRef = db.collection('legal_documents').doc(docType);
+                const doc = await docRef.get();
+
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById('legalEditTitle').value = data.title || '';
+                    document.getElementById('legalEditContent').value = data.content || '';
+                } else {
+                    document.getElementById('legalEditTitle').value = LEGAL_DOC_NAMES[docType];
+                    document.getElementById('legalEditContent').value = '';
+                }
+
+                document.getElementById('legalEditModal').classList.add('show');
+            } catch (error) {
+                console.error('문서 로드 실패:', error);
+                alert('문서를 불러오지 못했습니다.');
+            }
+        }
+
+        // 개별 문서 저장
+        async function saveSingleLegalDocument() {
+            const docType = document.getElementById('legalEditDocType').value;
+            const title = document.getElementById('legalEditTitle').value;
+            const content = document.getElementById('legalEditContent').value;
+
+            if (!title.trim()) {
+                alert('제목을 입력하세요.');
                 return;
             }
 
             try {
-                const docs = [
-                    { 
-                        id: 'terms', 
-                        title: document.getElementById('legalTermsTitle').value,
-                        content: document.getElementById('legalTermsContent').value
-                    },
-                    { 
-                        id: 'privacy', 
-                        title: document.getElementById('legalPrivacyTitle').value,
-                        content: document.getElementById('legalPrivacyContent').value
-                    },
-                    { 
-                        id: 'deleteAccount', 
-                        title: document.getElementById('legalDeleteTitle').value,
-                        content: document.getElementById('legalDeleteContent').value
-                    },
-                    { 
-                        id: 'location', 
-                        title: document.getElementById('legalLocationTitle').value,
-                        content: document.getElementById('legalLocationContent').value
-                    },
-                    { 
-                        id: 'marketing', 
-                        title: document.getElementById('legalMarketingTitle').value,
-                        content: document.getElementById('legalMarketingContent').value
-                    }
-                ];
+                await db.collection('legal_documents').doc(docType).set({
+                    title: title,
+                    content: content,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: currentAdmin?.email || 'unknown'
+                });
 
-                const batch = db.batch();
-                const now = firebase.firestore.FieldValue.serverTimestamp();
-
-                for (const doc of docs) {
-                    const docRef = db.collection('legal_documents').doc(doc.id);
-                    batch.set(docRef, {
-                        title: doc.title,
-                        content: doc.content,
-                        updatedAt: now,
-                        updatedBy: currentAdmin?.email || 'unknown'
-                    }, { merge: true });
-                }
-
-                await batch.commit();
-                
-                // 수정일 업데이트
-                const nowStr = new Date().toLocaleString('ko-KR');
-                document.getElementById('legalTermsUpdated').value = nowStr;
-                document.getElementById('legalPrivacyUpdated').value = nowStr;
-                document.getElementById('legalDeleteUpdated').value = nowStr;
-                document.getElementById('legalLocationUpdated').value = nowStr;
-                document.getElementById('legalMarketingUpdated').value = nowStr;
-                
-                alert('모든 약관이 저장되었습니다.');
+                alert('저장되었습니다.');
+                closeModal('legalEditModal');
+                loadLegalDocuments(); // 목록 새로고침
             } catch (error) {
-                console.error('약관 저장 실패:', error);
-                alert('저장 중 오류가 발생했습니다: ' + error.message);
+                console.error('저장 실패:', error);
+                alert('저장 실패: ' + error.message);
             }
         }
 
-        function previewLegal(docType) {
-            const prefix = docType === 'terms' ? 'legalTerms' :
-                           docType === 'privacy' ? 'legalPrivacy' :
-                           docType === 'deleteAccount' ? 'legalDelete' :
-                           docType === 'location' ? 'legalLocation' : 'legalMarketing';
+        // 편집/미리보기 탭 전환
+        function switchLegalTab(tab) {
+            const editBtn = document.getElementById('legalTabEdit');
+            const previewBtn = document.getElementById('legalTabPreview');
+            const editArea = document.getElementById('legalEditArea');
+            const previewArea = document.getElementById('legalPreviewArea');
 
-            const title = document.getElementById(prefix + 'Title').value;
-            const content = document.getElementById(prefix + 'Content').value;
+            if (tab === 'edit') {
+                editBtn.style.background = 'var(--primary)';
+                editBtn.style.color = 'white';
+                editBtn.classList.remove('btn-secondary');
+                previewBtn.classList.add('btn-secondary');
+                previewBtn.style.background = '';
+                previewBtn.style.color = '';
+                editArea.style.display = 'block';
+                previewArea.style.display = 'none';
+            } else {
+                previewBtn.style.background = 'var(--primary)';
+                previewBtn.style.color = 'white';
+                previewBtn.classList.remove('btn-secondary');
+                editBtn.classList.add('btn-secondary');
+                editBtn.style.background = '';
+                editBtn.style.color = '';
+                editArea.style.display = 'none';
+                previewArea.style.display = 'block';
 
-            document.getElementById('legalPreviewTitle').textContent = title || '미리보기';
-            document.getElementById('legalPreviewContent').innerHTML = content || '<p style="color: #999;">내용이 없습니다.</p>';
-
-            document.getElementById('legalPreviewModal').classList.add('show');
+                // 미리보기 내용 업데이트
+                const content = document.getElementById('legalEditContent').value;
+                document.getElementById('legalPreviewContent').innerHTML = content || '<p style="color: #999;">내용이 없습니다.</p>';
+            }
         }
 
         // 법적 문서 초기 데이터 설정
