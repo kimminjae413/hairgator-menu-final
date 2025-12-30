@@ -186,25 +186,22 @@
 
         // ========== 토큰 관리 함수들 ==========
 
-        // 사용자 문서 ID 가져오기 (이메일 기반 우선)
+        // 사용자 문서 ID 가져오기 (Firebase Auth 이메일 기반 - 항상 서버에서!)
         async getUserDocId() {
-            // 1. window.currentDesigner에서 가져오기
-            if (window.currentDesigner?.id) {
-                return window.currentDesigner.id;
-            }
-            // 2. Firebase Auth 사용자 이메일로 생성
+            // Firebase Auth에서 현재 사용자 이메일 가져오기 (가장 신뢰할 수 있는 소스)
             const firebaseUser = typeof auth !== 'undefined' ? auth.currentUser : null;
             if (firebaseUser?.email) {
-                return firebaseUser.email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_');
+                const docId = firebaseUser.email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_');
+                console.log('🔑 getUserDocId: Firebase Auth email =', docId);
+                return docId;
             }
-            // 3. localStorage에서 복구
-            try {
-                const saved = localStorage.getItem('firebase_user');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    if (parsed.id) return parsed.id;
-                }
-            } catch (e) {}
+            // Firebase Auth 미초기화 시 window.currentDesigner 폴백 (로그인 직후)
+            if (window.currentDesigner?.email) {
+                const docId = window.currentDesigner.email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_');
+                console.log('🔑 getUserDocId: currentDesigner.email =', docId);
+                return docId;
+            }
+            console.warn('⚠️ getUserDocId: Firebase Auth 또는 currentDesigner 이메일 없음');
             return null;
         },
 
@@ -215,6 +212,8 @@
                     docId = await this.getUserDocId();
                 }
 
+                console.log('🔍 getTokenBalance 조회 시작, docId:', docId);
+
                 if (!docId) {
                     console.error('❌ 사용자 문서 ID가 없습니다');
                     return { success: false, error: 'User doc ID required', tokenBalance: 0 };
@@ -224,6 +223,11 @@
 
                 if (userDoc.exists) {
                     const userData = userDoc.data();
+                    console.log('✅ getTokenBalance 결과:', {
+                        docId: docId,
+                        tokenBalance: userData.tokenBalance,
+                        plan: userData.plan
+                    });
                     return {
                         success: true,
                         tokenBalance: userData.tokenBalance || 0,
@@ -231,6 +235,7 @@
                     };
                 }
 
+                console.warn('⚠️ getTokenBalance: 문서 없음, docId:', docId);
                 return { success: false, error: 'User not found', tokenBalance: 0 };
             } catch (error) {
                 console.error('❌ 토큰 잔액 조회 실패:', error);
