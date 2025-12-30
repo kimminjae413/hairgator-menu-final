@@ -1,22 +1,26 @@
 # HAIRGATOR 챗봇 - Claude 작업 가이드
 
-## 🚨 재시작 후 해야 할 일 (2025-12-29)
+## 🚨 재시작 후 해야 할 일 (2025-12-30)
 
 ### 1. 결제 시스템 원격 테스트
 - Chrome DevTools MCP 추가됨 (`claude mcp add chrome-devtools`)
 - Chrome 디버그 모드 실행 필요:
   ```
-  "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="D:\chrome-debug" https://hairgator.kr
+  "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="D:\chrome-debug" https://app.hairgator.kr
   ```
-- hairgator.kr 접속 → 로그인 → 결제 테스트
+- **app.hairgator.kr** 접속 → 로그인 → 결제 테스트 (URL 변경됨!)
 - 테스트 카드: `4242424242424242` (유효기간/CVC 아무거나)
 - **스냅샷 저장 위치: D드라이브** (C드라이브 용량 없음)
 - **스냅샷은 그때그때 삭제** (저장해두지 말 것)
 
-### 2. admin.html 라이트 테마 전환
-- 현재: 다크 테마
-- 목표: 밝은 화이트/라이트 테마, 깔끔하고 모던한 느낌
-- frontend-design 스킬 사용
+### 2. admin.html 라이트 테마 전환 ✅ 완료
+- 라이트 테마로 변경됨
+
+### 3. 서브도메인 마이그레이션 ✅ 완료 (2025-12-30)
+- hairgator.kr → 홈페이지
+- app.hairgator.kr → 앱 서비스
+- 카카오 로그인 Redirect URI 추가 완료
+- 네이버 서치어드바이저 등록 완료
 
 ---
 
@@ -510,6 +514,50 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 로그인 시 이메일 매칭으로 `users`로 복사
 
 ## 최근 작업 이력
+- 2025-12-30: 서브도메인 마이그레이션 + 네이버 서치어드바이저 등록
+
+  ### 서브도메인 구조 변경
+  - **hairgator.kr** → 홈페이지 (hairgatorHP 레포)
+  - **app.hairgator.kr** → 앱 서비스 (Hairgator_chatbot 레포)
+  - **변경 이유**: hairgator.kr은 브랜드 대표 URL로, 앱은 서브도메인으로 분리
+
+  ### DNS/Netlify 설정
+  - **가비아 DNS**: app.hairgator.kr CNAME → lovely-lebkuchen-4017ca.netlify.app
+  - **Netlify**: app.hairgator.kr 도메인 추가 (lovely-lebkuchen 사이트)
+  - **hairgator.kr**: hairgatorHP Netlify 사이트로 연결
+
+  ### Firestore 탭 URL 업데이트 (app_config/tabs)
+  - tab1: `https://app.hairgator.kr/#stylemenu` (Style Menu)
+  - tab2: `https://app.hairgator.kr/#products` (상품)
+  - tab3: `https://app.hairgator.kr/#mypage` (My)
+  - tab4: 비활성화
+  - 스크립트: `scripts/update-app-tab-url.py`
+
+  ### 카카오 로그인 Redirect URI 추가
+  - **KOE006 에러 해결**: 로그인 리다이렉트 URI 미등록
+  - **설정 위치**: 카카오 개발자 > 앱 > 플랫폼 키 > REST API 키 > 로그인 리다이렉트 URI
+  - **추가한 URI**: `https://app.hairgator.kr/.netlify/functions/kakao-callback`
+
+  ### 네이버 서치어드바이저 등록
+  - **사이트 등록**: hairgator.kr
+  - **소유권 확인**: HTML 파일 업로드 방식
+  - **sitemap/rss URL 업데이트**: hairgatorhp.netlify.app → hairgator.kr
+  - **제출 완료**: sitemap.xml, rss.xml
+
+  ### admin.html 기본 탭 URL 수정
+  - tab1~4 기본값을 app.hairgator.kr 서브도메인으로 변경
+  - 스타일 상세 링크도 app.hairgator.kr로 변경
+
+  ### 주요 URL 정리
+  | URL | 용도 |
+  |-----|------|
+  | `https://hairgator.kr` | 홈페이지 (브랜드 랜딩) |
+  | `https://app.hairgator.kr` | 앱 서비스 (메인 기능) |
+  | `https://app.hairgator.kr/admin.html` | 관리자 페이지 |
+  | `https://app.hairgator.kr/#stylemenu` | 스타일 메뉴 |
+  | `https://app.hairgator.kr/#products` | 상품/결제 |
+  | `https://app.hairgator.kr/#mypage` | 마이페이지 |
+
 - 2025-12-29: 마이페이지/상품페이지 UI 개선 + admin 통계 필터
 
   ### 마이페이지 이름 표시 버그 수정
