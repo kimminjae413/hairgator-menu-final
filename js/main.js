@@ -2618,9 +2618,19 @@ async function loadSavedCardsForMypage() {
     const listEl = document.getElementById('savedCardsList');
     if (!listEl) return;
 
-    const userId = window.HAIRGATOR_PAYMENT?.getUserId?.();
+    // userId 가져오기 (여러 소스에서 시도)
+    let userId = window.HAIRGATOR_PAYMENT?.getUserId?.();
+
+    if (!userId && window.FirebaseBridge) {
+        userId = window.FirebaseBridge.getUserDocId();
+    }
+
+    if (!userId && window.currentDesigner?.email) {
+        userId = window.currentDesigner.email.replace(/[@.]/g, '_');
+    }
+
     if (!userId) {
-        listEl.innerHTML = '<div class="no-cards-message">로그인이 필요합니다.</div>';
+        listEl.innerHTML = `<div class="no-cards-message">${t('ui.loginRequired') || '로그인이 필요합니다.'}</div>`;
         return;
     }
 
@@ -2659,14 +2669,24 @@ async function loadSavedCardsForMypage() {
  * 새 카드 등록
  */
 window.registerNewCard = async function() {
-    const userId = window.HAIRGATOR_PAYMENT?.getUserId?.();
+    // userId 가져오기 (여러 소스에서 시도)
+    let userId = window.HAIRGATOR_PAYMENT?.getUserId?.();
+
+    if (!userId && window.FirebaseBridge) {
+        userId = window.FirebaseBridge.getUserDocId();
+    }
+
+    if (!userId && window.currentDesigner?.email) {
+        userId = window.currentDesigner.email.replace(/[@.]/g, '_');
+    }
+
     if (!userId) {
-        alert('로그인이 필요합니다.');
+        alert(t('ui.loginRequired') || '로그인이 필요합니다.');
         return;
     }
 
     const userEmail = window.currentDesigner?.email || '';
-    const userName = window.currentDesigner?.name || '';
+    const userName = window.currentDesigner?.name || window.currentDesigner?.displayName || '';
 
     try {
         const result = await window.issueBillingKey(userId, userEmail, userName);
