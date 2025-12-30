@@ -3586,13 +3586,17 @@
                     ? '<span style="background: #10B981; color: white; font-size: 9px; padding: 2px 5px; border-radius: 3px;">인증</span>'
                     : '<span style="background: #6B7280; color: white; font-size: 9px; padding: 2px 5px; border-radius: 3px;">미인증</span>';
 
+                // 프로필 사진 또는 이니셜
+                const avatarHtml = user.photoURL
+                    ? `<img src="${user.photoURL}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                       <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); display: none; align-items: center; justify-content: center; font-weight: 600;">${(displayName || 'U')[0].toUpperCase()}</div>`
+                    : `<div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 600;">${(displayName || 'U')[0].toUpperCase()}</div>`;
+
                 return `
                     <tr>
                         <td>
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 600;">
-                                    ${(displayName || 'U')[0].toUpperCase()}
-                                </div>
+                                ${avatarHtml}
                                 <div>
                                     <div style="font-weight: 500;">${displayName}</div>
                                     <div style="font-size: 11px; color: var(--text-muted);">${user.email || user.id}</div>
@@ -3721,9 +3725,14 @@
                    </div>`
                 : '';
 
+            // 상세 모달용 프로필 사진 또는 이니셜
+            const detailAvatarHtml = user.photoURL
+                ? `<img src="${user.photoURL}" class="user-avatar" style="object-fit: cover;" onerror="this.outerHTML='<div class=\\'user-avatar\\'>${(user.displayName || 'U')[0].toUpperCase()}</div>'">`
+                : `<div class="user-avatar">${(user.displayName || 'U')[0].toUpperCase()}</div>`;
+
             document.getElementById('userDetailContent').innerHTML = `
                 <div class="user-detail-header">
-                    <div class="user-avatar">${(user.displayName || 'U')[0].toUpperCase()}</div>
+                    ${detailAvatarHtml}
                     <div class="user-info">
                         <h3>${user.displayName || '이름 없음'}${verifiedBadge}</h3>
                         <p>${user.email || '-'}</p>
