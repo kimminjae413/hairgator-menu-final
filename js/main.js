@@ -2757,8 +2757,28 @@ async function loadPaymentHistory() {
     const listEl = document.getElementById('paymentHistoryList');
     if (!listEl) return;
 
-    const user = firebase.auth().currentUser;
-    if (!user) {
+    // 사용자 ID 가져오기 (FirebaseBridge 또는 currentDesigner에서)
+    let userId = null;
+
+    // 1. FirebaseBridge에서 시도
+    if (window.FirebaseBridge && typeof window.FirebaseBridge.getUserDocId === 'function') {
+        userId = window.FirebaseBridge.getUserDocId();
+    }
+
+    // 2. currentDesigner에서 시도
+    if (!userId && window.currentDesigner && window.currentDesigner.email) {
+        userId = window.currentDesigner.email.replace(/[@.]/g, '_');
+    }
+
+    // 3. Firebase Auth에서 직접 시도
+    if (!userId) {
+        const user = firebase.auth().currentUser;
+        if (user && user.email) {
+            userId = user.email.replace(/[@.]/g, '_');
+        }
+    }
+
+    if (!userId) {
         listEl.innerHTML = `<div class="no-payment-message">${t('ui.loginRequired') || '로그인이 필요합니다.'}</div>`;
         return;
     }
@@ -2766,8 +2786,6 @@ async function loadPaymentHistory() {
     listEl.innerHTML = `<div class="loading-message">${t('ui.loading') || '로딩 중...'}</div>`;
 
     try {
-        // 이메일 기반 userId (Firebase 형식)
-        const userId = user.email.replace(/[@.]/g, '_');
 
         // Firestore에서 결제 내역 조회
         const snapshot = await firebase.firestore()
