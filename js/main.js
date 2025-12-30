@@ -122,6 +122,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 let displayName = user.displayName;
 
                 // Firestore에서 사용자 정보 가져오기 (이메일 기반 문서 ID 사용)
+                let photoURL = user.photoURL;
+                let userEmail = user.email;
+
                 try {
                     // 이메일 기반 문서 ID 생성
                     const emailDocId = user.email ? user.email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_') : null;
@@ -132,9 +135,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (docId) {
                         const userDoc = await firebase.firestore().collection('users').doc(docId).get();
                         if (userDoc.exists) {
-                        const userData = userDoc.data();
-                        displayName = userData.verifiedName || userData.name || userData.displayName || displayName;
-                            console.log('📋 Firestore 사용자 정보:', { docId, name: userData.name, verifiedName: userData.verifiedName, displayName: userData.displayName });
+                            const userData = userDoc.data();
+                            displayName = userData.verifiedName || userData.name || userData.displayName || displayName;
+                            photoURL = userData.photoURL || photoURL;
+                            userEmail = userData.email || userEmail;
+                            console.log('📋 Firestore 사용자 정보:', { docId, name: userData.name, photoURL: userData.photoURL });
                         }
                     }
                 } catch (e) {
@@ -145,11 +150,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!displayName && window.currentDesigner) {
                     displayName = window.currentDesigner.verifiedName || window.currentDesigner.name || window.currentDesigner.displayName;
                 }
+                if (!photoURL && window.currentDesigner?.photoURL) {
+                    photoURL = window.currentDesigner.photoURL;
+                }
 
-                if (nameEl) nameEl.textContent = displayName || user.email?.split('@')[0] || '사용자';
-                if (emailEl) emailEl.textContent = user.email || '';
-                if (avatarEl && user.photoURL) {
-                    avatarEl.innerHTML = `<img src="${user.photoURL}" alt="프로필">`;
+                if (nameEl) nameEl.textContent = displayName || userEmail?.split('@')[0] || '사용자';
+                if (emailEl) emailEl.textContent = userEmail || '';
+                if (avatarEl && photoURL) {
+                    avatarEl.innerHTML = `<img src="${photoURL}" alt="프로필" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
                 }
             } else if (window.currentDesigner) {
                 // Firebase Auth는 없지만 window.currentDesigner가 있는 경우
