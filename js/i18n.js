@@ -113,6 +113,9 @@ const HAIRGATOR_I18N = {
       savedPaymentMethods: '저장된 결제 수단',
       myPlan: '내 플랜',
       myTokens: '내 토큰',
+      currentPlanLabel: '현재 플랜',
+      tokenBalanceLabel: '토큰 잔액',
+      chargeTokens: '토큰 충전',
 
       // 프로필 사진
       profilePhoto: '📷 프로필 사진',
@@ -1197,6 +1200,9 @@ const HAIRGATOR_I18N = {
       savedPaymentMethods: 'Saved Payment Methods',
       myPlan: 'My Plan',
       myTokens: 'My Tokens',
+      currentPlanLabel: 'Current Plan',
+      tokenBalanceLabel: 'Token Balance',
+      chargeTokens: 'Charge Tokens',
 
       // Profile photo
       profilePhoto: '📷 Profile Photo',
@@ -2246,6 +2252,9 @@ const HAIRGATOR_I18N = {
       savedPaymentMethods: '保存された決済方法',
       myPlan: 'マイプラン',
       myTokens: 'マイトークン',
+      currentPlanLabel: '現在のプラン',
+      tokenBalanceLabel: 'トークン残高',
+      chargeTokens: 'トークンチャージ',
 
       // プロフィール写真
       profilePhoto: '📷 プロフィール写真',
@@ -3291,6 +3300,9 @@ const HAIRGATOR_I18N = {
       savedPaymentMethods: '已保存的支付方式',
       myPlan: '我的方案',
       myTokens: '我的代币',
+      currentPlanLabel: '当前套餐',
+      tokenBalanceLabel: '代币余额',
+      chargeTokens: '充值代币',
 
       // 个人照片
       profilePhoto: '📷 个人照片',
@@ -4339,6 +4351,9 @@ const HAIRGATOR_I18N = {
       savedPaymentMethods: 'Phương thức thanh toán đã lưu',
       myPlan: 'Gói của tôi',
       myTokens: 'Token của tôi',
+      currentPlanLabel: 'Gói hiện tại',
+      tokenBalanceLabel: 'Số dư token',
+      chargeTokens: 'Nạp token',
 
       // Ảnh hồ sơ
       profilePhoto: '📷 Ảnh hồ sơ',
@@ -5364,6 +5379,21 @@ const HAIRGATOR_I18N = {
       fontDancing: 'Dancing Script',
       fontBebas: 'Bebas Neue',
 
+      // Menu Halaman Saya
+      paymentManage: 'Kelola Pembayaran',
+      languageSetting: 'Pengaturan Bahasa',
+      inquiryMenu: 'Hubungi Kami',
+      noSavedCards: 'Tidak ada kartu tersimpan.',
+      addCard: 'Tambah Kartu',
+      noInquiries: 'Tidak ada pertanyaan.',
+      newInquiry: 'Pertanyaan Baru',
+      savedPaymentMethods: 'Metode Pembayaran Tersimpan',
+      myPlan: 'Paket Saya',
+      myTokens: 'Token Saya',
+      currentPlanLabel: 'Paket Saat Ini',
+      tokenBalanceLabel: 'Saldo Token',
+      chargeTokens: 'Isi Token',
+
       // Foto profil
       profilePhoto: '📷 Foto Profil',
       profilePhotoHint: 'Foto profil akan digunakan untuk konsultasi gaya rambut.',
@@ -6279,6 +6309,21 @@ const HAIRGATOR_I18N = {
       fontPlayfair: 'Playfair',
       fontDancing: 'Dancing Script',
       fontBebas: 'Bebas Neue',
+
+      // Menú Mi Página
+      paymentManage: 'Gestionar Pagos',
+      languageSetting: 'Configuración de Idioma',
+      inquiryMenu: 'Contáctanos',
+      noSavedCards: 'No hay tarjetas guardadas.',
+      addCard: 'Agregar Tarjeta',
+      noInquiries: 'No hay consultas.',
+      newInquiry: 'Nueva Consulta',
+      savedPaymentMethods: 'Métodos de Pago Guardados',
+      myPlan: 'Mi Plan',
+      myTokens: 'Mis Tokens',
+      currentPlanLabel: 'Plan Actual',
+      tokenBalanceLabel: 'Saldo de Tokens',
+      chargeTokens: 'Cargar Tokens',
 
       profilePhoto: '📷 Foto de Perfil',
       profilePhotoHint: 'La foto de perfil se usará para consultas de estilo.',
