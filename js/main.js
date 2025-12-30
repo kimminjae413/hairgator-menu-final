@@ -281,17 +281,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 저장된 카드 섹션 토글
-    window.toggleSavedCardsSection = function() {
-        const section = document.getElementById('mypageSavedCardSection');
-        const arrow = document.getElementById('savedCardsArrow');
-
-        if (section) {
-            const isVisible = section.style.display !== 'none';
-            section.style.display = isVisible ? 'none' : 'block';
-            if (arrow) arrow.textContent = isVisible ? '→' : '↓';
-        }
-    };
+    // 저장된 카드 섹션 토글 - 전역 함수(파일 하단)가 savedCardsSection 사용
+    // 중복 정의 제거됨 (2025-12-30)
 
     // 저장된 카드 삭제
     window.deleteSavedCard = async function() {
