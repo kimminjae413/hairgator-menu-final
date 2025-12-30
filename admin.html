@@ -7174,6 +7174,19 @@
         }
 
         function previewLegal(docType) {
+            const prefix = docType === 'terms' ? 'legalTerms' :
+                           docType === 'privacy' ? 'legalPrivacy' :
+                           docType === 'deleteAccount' ? 'legalDelete' :
+                           docType === 'location' ? 'legalLocation' : 'legalMarketing';
+
+            const title = document.getElementById(prefix + 'Title').value;
+            const content = document.getElementById(prefix + 'Content').value;
+
+            document.getElementById('legalPreviewTitle').textContent = title || '미리보기';
+            document.getElementById('legalPreviewContent').innerHTML = content || '<p style="color: #999;">내용이 없습니다.</p>';
+
+            document.getElementById('legalPreviewModal').classList.add('show');
+        }
 
         // 법적 문서 초기 데이터 설정
         async function initLegalDocuments() {
@@ -7367,19 +7380,6 @@
                 console.error('초기화 실패:', error);
                 alert('초기화 실패: ' + error.message);
             }
-        }
-
-            const prefix = docType === 'terms' ? 'legalTerms' :
-                           docType === 'privacy' ? 'legalPrivacy' :
-                           docType === 'deleteAccount' ? 'legalDelete' : docType === 'location' ? 'legalLocation' : 'legalMarketing';
-            
-            const title = document.getElementById(prefix + 'Title').value;
-            const content = document.getElementById(prefix + 'Content').value;
-            
-            document.getElementById('legalPreviewTitle').textContent = title || '미리보기';
-            document.getElementById('legalPreviewContent').innerHTML = content || '<p style="color: #999;">내용이 없습니다.</p>';
-            
-            document.getElementById('legalPreviewModal').classList.add('show');
         }
 
         firebase.auth().onAuthStateChanged(user => {
