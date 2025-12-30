@@ -783,36 +783,7 @@
             }
         }
 
-        async function showTermsModal(type) {
-            const overlay = document.getElementById('termsModalOverlay');
-            const title = document.getElementById('termsModalTitle');
-            const content = document.getElementById('termsModalContent');
-
-            const titles = {
-                service: '서비스 이용약관',
-                privacy: '개인정보처리방침',
-                location: '위치기반서비스 이용약관'
-            };
-
-            const files = {
-                service: '/terms/서비스_이용약관.txt',
-                privacy: '/terms/개인정보_처리방침.txt',
-                location: '/terms/위치기반서비스_이용약관.txt'
-            };
-
-            title.textContent = titles[type] || '약관';
-            content.textContent = '로딩중...';
-            overlay.classList.add('active');
-
-            try {
-                const response = await fetch(files[type]);
-                const text = await response.text();
-                content.textContent = text;
-            } catch (error) {
-                console.error('약관 로드 실패:', error);
-                content.textContent = '약관을 불러오지 못했습니다.';
-            }
-        }
+        async function showTermsModal(type) {            const overlay = document.getElementById('termsModalOverlay');            const title = document.getElementById('termsModalTitle');            const content = document.getElementById('termsModalContent');            // Firestore 문서 ID 매핑            const firestoreDocIds = {                service: 'terms',      // 서비스 이용약관                privacy: 'privacy',    // 개인정보처리방침                location: 'location'   // 위치기반서비스 이용약관            };            const defaultTitles = {                service: '서비스 이용약관',                privacy: '개인정보처리방침',                location: '위치기반서비스 이용약관'            };            // 정적 파일 폴백 (Firestore 실패 시)            const fallbackFiles = {                service: '/terms/서비스_이용약관.txt',                privacy: '/terms/개인정보_처리방침.txt',                location: '/terms/위치기반서비스_이용약관.txt'            };            title.textContent = defaultTitles[type] || '약관';            content.innerHTML = '<p style="text-align: center; color: #666;">로딩중...</p>';            overlay.classList.add('active');            try {                // Firestore에서 약관 로드 시도                const docId = firestoreDocIds[type];                const docRef = db.collection('legal_documents').doc(docId);                const doc = await docRef.get();                if (doc.exists) {                    const data = doc.data();                    title.textContent = data.title || defaultTitles[type];                    content.innerHTML = data.content || '내용이 없습니다.';                    console.log('Firestore에서 약관 로드:', docId);                } else {                    // Firestore에 없으면 정적 파일 폴백                    console.log('Firestore에 없음, 정적 파일 로드:', type);                    const response = await fetch(fallbackFiles[type]);                    const text = await response.text();                    content.innerHTML = '<pre style="white-space: pre-wrap; font-family: inherit;">' + text + '</pre>';                }            } catch (error) {                console.error('약관 로드 실패:', error);                // 에러 시 정적 파일 폴백 시도                try {                    const response = await fetch(fallbackFiles[type]);                    const text = await response.text();                    content.innerHTML = '<pre style="white-space: pre-wrap; font-family: inherit;">' + text + '</pre>';                } catch (fallbackError) {                    content.innerHTML = '<p style="color: #e53935;">약관을 불러오지 못했습니다.</p>';                }            }        }
 
         function closeTermsModal() {
             document.getElementById('termsModalOverlay').classList.remove('active');

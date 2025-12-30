@@ -2784,6 +2784,27 @@
             </div>
 
             <!-- 마케팅 수신 동의 -->
+
+            <!-- 위치기반서비스 이용약관 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📍 위치기반서비스 이용약관</div>
+                    <button class="btn btn-secondary btn-sm" onclick="previewLegal('location')">👁️ 미리보기</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">제목</label>
+                    <input type="text" class="form-input" id="legalLocationTitle" value="위치기반서비스 이용약관" placeholder="위치기반서비스 이용약관">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">내용 (HTML 지원)</label>
+                    <textarea class="form-input" id="legalLocationContent" rows="8" placeholder="위치기반서비스 이용약관 내용을 입력하세요..." style="font-family: monospace; font-size: 13px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">최종 수정일</label>
+                    <input type="text" class="form-input" id="legalLocationUpdated" readonly style="background: var(--bg-hover);">
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">📣 마케팅 수신 동의</div>
@@ -7057,7 +7078,7 @@
                     permNotice.remove();
                 }
 
-                const docTypes = ['terms', 'privacy', 'deleteAccount', 'marketing'];
+                const docTypes = ['terms', 'privacy', 'deleteAccount', 'location', 'marketing'];
                 
                 for (const docType of docTypes) {
                     const docRef = db.collection('legal_documents').doc(docType);
@@ -7067,7 +7088,7 @@
                         const data = doc.data();
                         const prefix = docType === 'terms' ? 'legalTerms' :
                                        docType === 'privacy' ? 'legalPrivacy' :
-                                       docType === 'deleteAccount' ? 'legalDelete' : 'legalMarketing';
+                                       docType === 'deleteAccount' ? 'legalDelete' : docType === 'location' ? 'legalLocation' : 'legalMarketing';
                         
                         document.getElementById(prefix + 'Title').value = data.title || '';
                         document.getElementById(prefix + 'Content').value = data.content || '';
@@ -7111,6 +7132,11 @@
                         content: document.getElementById('legalDeleteContent').value
                     },
                     { 
+                        id: 'location', 
+                        title: document.getElementById('legalLocationTitle').value,
+                        content: document.getElementById('legalLocationContent').value
+                    },
+                    { 
                         id: 'marketing', 
                         title: document.getElementById('legalMarketingTitle').value,
                         content: document.getElementById('legalMarketingContent').value
@@ -7137,6 +7163,7 @@
                 document.getElementById('legalTermsUpdated').value = nowStr;
                 document.getElementById('legalPrivacyUpdated').value = nowStr;
                 document.getElementById('legalDeleteUpdated').value = nowStr;
+                document.getElementById('legalLocationUpdated').value = nowStr;
                 document.getElementById('legalMarketingUpdated').value = nowStr;
                 
                 alert('모든 약관이 저장되었습니다.');
@@ -7266,6 +7293,56 @@
 <h3>동의 철회</h3>
 <p>앱 내 설정 → 알림 설정에서 언제든지 변경 가능합니다.</p>
 <p style="color: #666; font-size: 14px;">※ 마케팅 수신 동의는 선택사항입니다.</p>`
+                },
+                location: {
+                    title: '위치기반서비스 이용약관',
+                    content: `<h2>위치기반서비스 이용약관</h2>
+<p class="updated">최종 업데이트: 2025년 12월 30일</p>
+
+<h3>제1장 총칙</h3>
+
+<h4>제1조 (목적)</h4>
+<p>본 약관은 회원이 주식회사 에이아이더블유(이하 "회사")가 제공하는 HAIRGATOR 서비스(이하 "서비스")를 이용함에 있어 회사와 회원의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+
+<h4>제2조 (이용약관의 효력 및 변경)</h4>
+<ul>
+<li>본 약관은 서비스를 신청한 고객이 본 약관에 동의하고 회사가 정한 절차에 따라 등록함으로써 효력이 발생합니다.</li>
+<li>회사는 관련법령을 위배하지 않는 범위에서 본 약관을 개정할 수 있습니다.</li>
+</ul>
+
+<h4>제3조 (서비스 이용요금)</h4>
+<ul>
+<li>회사가 제공하는 서비스는 기본적으로 무료입니다.</li>
+<li>유료 서비스의 경우 해당 서비스에 명시된 요금을 지불하여야 합니다.</li>
+<li>무선 서비스 이용 시 발생하는 데이터 통신료는 별도입니다.</li>
+</ul>
+
+<h4>제4조 (개인위치정보의 이용 또는 제공)</h4>
+<ul>
+<li>회사는 개인위치정보를 이용하여 서비스를 제공하고자 하는 경우 미리 동의를 얻어야 합니다.</li>
+<li>회사는 위치정보 이용·제공 사실 확인자료를 6개월간 보관합니다.</li>
+</ul>
+
+<h4>제5조 (개인위치정보주체의 권리)</h4>
+<ul>
+<li>회원은 언제든지 개인위치정보 이용에 대한 동의를 철회할 수 있습니다.</li>
+<li>회원은 개인위치정보의 수집, 이용 또는 제공의 일시적인 중지를 요구할 수 있습니다.</li>
+<li>회원은 위치정보 수집, 이용, 제공사실 확인자료에 대한 열람 또는 고지를 요구할 수 있습니다.</li>
+</ul>
+
+<h4>제6조 (손해배상)</h4>
+<p>회사가 위치정보의 보호 및 이용 등에 관한 법률을 위반한 행위로 회원에게 손해가 발생한 경우 손해배상 청구를 할 수 있습니다.</p>
+
+<h4>제7조 (회사 연락처)</h4>
+<ul>
+<li><strong>상호:</strong> ㈜에이아이더블유</li>
+<li><strong>대표자:</strong> 김민재</li>
+<li><strong>주소:</strong> 서울시 중구 서소문로 89 순화빌딩 17층</li>
+<li><strong>이메일:</strong> drylink.info@gmail.com</li>
+</ul>
+
+<h3>부칙</h3>
+<p>이 약관은 2025년 12월 30일부터 시행합니다.</p>`
                 }
             };
 
@@ -7294,7 +7371,7 @@
 
             const prefix = docType === 'terms' ? 'legalTerms' :
                            docType === 'privacy' ? 'legalPrivacy' :
-                           docType === 'deleteAccount' ? 'legalDelete' : 'legalMarketing';
+                           docType === 'deleteAccount' ? 'legalDelete' : docType === 'location' ? 'legalLocation' : 'legalMarketing';
             
             const title = document.getElementById(prefix + 'Title').value;
             const content = document.getElementById(prefix + 'Content').value;

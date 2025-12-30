@@ -2061,6 +2061,25 @@
             </div>
         </div>
 
+        <!-- 약관 및 정책 메뉴 -->
+        <div class="mypage-menu" style="margin-bottom: 16px;">
+            <div class="menu-item" onclick="showLegalModal('terms')">
+                <span class="menu-icon">📄</span>
+                <span class="menu-text" data-i18n="ui.termsOfService">이용약관</span>
+                <span class="menu-arrow">→</span>
+            </div>
+            <div class="menu-item" onclick="showLegalModal('privacy')">
+                <span class="menu-icon">🔒</span>
+                <span class="menu-text" data-i18n="ui.privacyPolicy">개인정보처리방침</span>
+                <span class="menu-arrow">→</span>
+            </div>
+            <div class="menu-item" onclick="showLegalModal('location')">
+                <span class="menu-icon">📍</span>
+                <span class="menu-text" data-i18n="ui.locationTerms">위치기반서비스 이용약관</span>
+                <span class="menu-arrow">→</span>
+            </div>
+        </div>
+
         <!-- 공지사항 섹션 (토글) -->
         <div id="mypageNoticeSection" class="notice-section mypage-toggle-section" style="display: none;">
             <div class="section-header">
@@ -4372,6 +4391,71 @@ body.light-theme .page-btn:hover:not(.disabled):not(.active) {
     cursor: not-allowed;
 }
 </style>
+
+<!-- 약관 보기 모달 -->
+<div id="legalDocModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 600px; max-height: 85vh; display: flex; flex-direction: column;">
+        <div class="modal-header" style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <h2 id="legalDocTitle" style="margin: 0; font-size: 18px; font-weight: 600;">약관</h2>
+            <button onclick="closeLegalModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-primary);">&times;</button>
+        </div>
+        <div id="legalDocContent" style="padding: 20px; overflow-y: auto; flex: 1;">
+            <p style="text-align: center; color: var(--text-secondary);">로딩중...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// 마이페이지 약관 모달 함수
+async function showLegalModal(docType) {
+    const modal = document.getElementById('legalDocModal');
+    const title = document.getElementById('legalDocTitle');
+    const content = document.getElementById('legalDocContent');
+
+    const titles = {
+        terms: '이용약관',
+        privacy: '개인정보처리방침',
+        location: '위치기반서비스 이용약관'
+    };
+
+    title.textContent = titles[docType] || '약관';
+    content.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">로딩중...</p>';
+    modal.style.display = 'flex';
+
+    try {
+        const docRef = db.collection('legal_documents').doc(docType);
+        const doc = await docRef.get();
+
+        if (doc.exists) {
+            const data = doc.data();
+            title.textContent = data.title || titles[docType];
+            content.innerHTML = data.content || '내용이 없습니다.';
+        } else {
+            // Firestore에 없으면 정적 파일 폴백
+            const fallbackFiles = {
+                terms: '/terms/서비스_이용약관.txt',
+                privacy: '/terms/개인정보_처리방침.txt',
+                location: '/terms/위치기반서비스_이용약관.txt'
+            };
+            const response = await fetch(fallbackFiles[docType]);
+            const text = await response.text();
+            content.innerHTML = '<pre style="white-space: pre-wrap; font-family: inherit; line-height: 1.6;">' + text + '</pre>';
+        }
+    } catch (error) {
+        console.error('약관 로드 실패:', error);
+        content.innerHTML = '<p style="color: #e53935; text-align: center;">약관을 불러오지 못했습니다.</p>';
+    }
+}
+
+function closeLegalModal() {
+    document.getElementById('legalDocModal').style.display = 'none';
+}
+
+// 모달 외부 클릭 시 닫기
+document.getElementById('legalDocModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeLegalModal();
+});
+</script>
 
 </body>
 </html>
