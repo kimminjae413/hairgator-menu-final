@@ -7255,6 +7255,12 @@
                     document.getElementById('legalWysiwygEditor').innerHTML = data.content || '';
                     document.getElementById('legalSourceEditor').value = data.content || '';
 
+                    // 원본 데이터 저장 (변경 감지용)
+                    originalLegalData = {
+                        title: data.title || '',
+                        content: data.content || ''
+                    };
+
                     // 수정 이력 표시
                     if (data.updatedAt) {
                         const date = data.updatedAt.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt);
@@ -7268,6 +7274,12 @@
                     document.getElementById('legalWysiwygEditor').innerHTML = '';
                     document.getElementById('legalSourceEditor').value = '';
                     document.getElementById('legalEditHistory').textContent = '새 문서';
+
+                    // 원본 데이터 저장 (새 문서)
+                    originalLegalData = {
+                        title: LEGAL_DOC_NAMES[docType],
+                        content: ''
+                    };
                 }
 
                 document.getElementById('legalEditPanel').classList.add('show');
@@ -7277,9 +7289,29 @@
             }
         }
 
-        // 패널 닫기
-        function closeLegalPanel(event) {
+        // 원본 데이터 저장 (변경 감지용)
+        let originalLegalData = { title: '', content: '' };
+
+        // 변경 여부 확인
+        function isLegalDataChanged() {
+            const title = document.getElementById('legalEditTitle').value;
+            const content = isSourceMode
+                ? document.getElementById('legalSourceEditor').value
+                : document.getElementById('legalWysiwygEditor').innerHTML;
+            return title !== originalLegalData.title || content !== originalLegalData.content;
+        }
+
+        // 패널 닫기 (확인 절차 포함)
+        function closeLegalPanel(event, force = false) {
             if (event && event.target !== event.currentTarget) return;
+
+            // 강제 닫기가 아니고 변경사항이 있으면 확인
+            if (!force && isLegalDataChanged()) {
+                if (!confirm('변경사항이 있습니다. 정말 취소하시겠습니까?')) {
+                    return;
+                }
+            }
+
             document.getElementById('legalEditPanel').classList.remove('show');
         }
 
@@ -7301,7 +7333,13 @@
                 return;
             }
 
+            // 저장 확인
+            if (!confirm(`"${title}" 약관을 수정하시겠습니까?\n\n저장 후 사용자에게 수정 알림이 발송됩니다.`)) {
+                return;
+            }
+
             try {
+                // 약관 저장
                 await db.collection('legal_documents').doc(docType).set({
                     title: title,
                     content: content,
@@ -7309,12 +7347,46 @@
                     updatedBy: currentAdmin?.email || 'unknown'
                 });
 
-                alert('저장되었습니다.');
-                closeLegalPanel();
+                // 사용자 공지 생성
+                await createLegalUpdateNotice(docType, title);
+
+                alert('저장되었습니다.\n사용자에게 수정 알림이 발송되었습니다.');
+                closeLegalPanel(null, true); // 강제 닫기
                 loadLegalDocuments();
             } catch (error) {
                 console.error('저장 실패:', error);
                 alert('저장 실패: ' + error.message);
+            }
+        }
+
+        // 약관 수정 공지 생성
+        async function createLegalUpdateNotice(docType, title) {
+            const linkMap = {
+                terms: '#terms',
+                privacy: '#privacy',
+                location: '#location',
+                deleteAccount: '#delete-account',
+                marketing: '#marketing'
+            };
+
+            const noticeTitle = `${title} 업데이트 안내`;
+            const noticeContent = `${title}이(가) 수정되었습니다.\n\n변경된 내용을 확인해주세요.`;
+
+            try {
+                await db.collection('notices').add({
+                    title: noticeTitle,
+                    content: noticeContent,
+                    type: 'legal_update',
+                    legalDocType: docType,
+                    link: linkMap[docType] || '',
+                    isPinned: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdBy: currentAdmin?.email || 'system'
+                });
+                console.log('약관 수정 공지 생성 완료');
+            } catch (error) {
+                console.error('공지 생성 실패:', error);
+                // 공지 실패해도 약관 저장은 성공 처리
             }
         }
 
