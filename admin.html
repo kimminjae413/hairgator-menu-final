@@ -1915,6 +1915,15 @@
                         <textarea class="form-input" id="noticeContent" rows="10" placeholder="공지 내용을 입력하세요..." style="resize: vertical;"></textarea>
                     </div>
                     <div class="form-group">
+                        <label class="form-label">이미지 첨부 (선택)</label>
+                        <input type="file" class="form-input" id="noticeImage" accept="image/*" onchange="previewNoticeImage(this)">
+                        <div id="noticeImagePreview" style="margin-top: 10px; display: none;">
+                            <img id="noticeImagePreviewImg" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <button type="button" onclick="clearNoticeImage()" style="margin-top: 8px; background: var(--danger); color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer;">이미지 제거</button>
+                        </div>
+                        <input type="hidden" id="noticeImageUrl">
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">
                             <input type="checkbox" id="noticePinned" style="margin-right: 8px;">
                             상단 고정
@@ -6022,8 +6031,8 @@
             tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;"><div class="loading"></div></td></tr>';
 
             try {
+                // 단순 쿼리 (인덱스 불필요)
                 const snapshot = await db.collection('notices')
-                    .orderBy('pinned', 'desc')
                     .orderBy('createdAt', 'desc')
                     .get();
 
@@ -6032,19 +6041,29 @@
                     return;
                 }
 
-                tbody.innerHTML = snapshot.docs.map(doc => {
+                // 고정 공지를 먼저 표시하도록 클라이언트에서 정렬
+                const sortedDocs = snapshot.docs.sort((a, b) => {
+                    const aData = a.data();
+                    const bData = b.data();
+                    if (aData.isPinned && !bData.isPinned) return -1;
+                    if (!aData.isPinned && bData.isPinned) return 1;
+                    return 0;
+                });
+
+                tbody.innerHTML = sortedDocs.map(doc => {
                     const data = doc.data();
                     const date = data.createdAt?.toDate?.() || new Date();
                     const dateStr = date.toLocaleDateString('ko-KR');
-                    const statusBadge = data.active
+                    const statusBadge = data.isActive
                         ? '<span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">활성</span>'
                         : '<span style="background: var(--text-muted); color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">비활성</span>';
-                    const pinnedIcon = data.pinned ? '📌 ' : '';
+                    const pinnedIcon = data.isPinned ? '📌 ' : '';
+                    const hasImage = data.imageUrl ? '🖼️ ' : '';
 
                     return `
                         <tr>
                             <td>${statusBadge}</td>
-                            <td style="font-weight: 500;">${pinnedIcon}${data.title || '(제목 없음)'}</td>
+                            <td style="font-weight: 500;">${pinnedIcon}${hasImage}${data.title || '(제목 없음)'}</td>
                             <td>${dateStr}</td>
                             <td>${data.viewCount || 0}</td>
                             <td>
@@ -6067,6 +6086,9 @@
             document.getElementById('noticeContent').value = '';
             document.getElementById('noticePinned').checked = false;
             document.getElementById('noticeActive').checked = true;
+            document.getElementById('noticeImage').value = '';
+            document.getElementById('noticeImageUrl').value = '';
+            document.getElementById('noticeImagePreview').style.display = 'none';
             document.getElementById('noticeModalTitle').textContent = '새 공지 작성';
             document.getElementById('noticeModal').classList.add('show');
         }
@@ -6083,8 +6105,20 @@
                 document.getElementById('noticeEditId').value = docId;
                 document.getElementById('noticeTitle').value = data.title || '';
                 document.getElementById('noticeContent').value = data.content || '';
-                document.getElementById('noticePinned').checked = data.pinned || false;
-                document.getElementById('noticeActive').checked = data.active !== false;
+                document.getElementById('noticePinned').checked = data.isPinned || false;
+                document.getElementById('noticeActive').checked = data.isActive !== false;
+
+                // 이미지 처리
+                document.getElementById('noticeImage').value = '';
+                if (data.imageUrl) {
+                    document.getElementById('noticeImageUrl').value = data.imageUrl;
+                    document.getElementById('noticeImagePreviewImg').src = data.imageUrl;
+                    document.getElementById('noticeImagePreview').style.display = 'block';
+                } else {
+                    document.getElementById('noticeImageUrl').value = '';
+                    document.getElementById('noticeImagePreview').style.display = 'none';
+                }
+
                 document.getElementById('noticeModalTitle').textContent = '공지 수정';
                 document.getElementById('noticeModal').classList.add('show');
 
@@ -6092,6 +6126,35 @@
                 console.error('공지 로드 실패:', error);
                 showToast('공지 로드 실패', 'error');
             }
+        }
+
+        // 이미지 미리보기
+        function previewNoticeImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('noticeImagePreviewImg').src = e.target.result;
+                    document.getElementById('noticeImagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // 이미지 제거
+        function clearNoticeImage() {
+            document.getElementById('noticeImage').value = '';
+            document.getElementById('noticeImageUrl').value = '';
+            document.getElementById('noticeImagePreview').style.display = 'none';
+        }
+
+        // 이미지 업로드 함수
+        async function uploadNoticeImage(file) {
+            const storageRef = firebase.storage().ref();
+            const fileName = `notices/${Date.now()}_${file.name}`;
+            const fileRef = storageRef.child(fileName);
+
+            await fileRef.put(file);
+            return await fileRef.getDownloadURL();
         }
 
         async function saveNotice() {
@@ -6111,6 +6174,15 @@
             }
 
             try {
+                // 이미지 업로드 처리
+                const imageFile = document.getElementById('noticeImage').files[0];
+                let imageUrl = document.getElementById('noticeImageUrl').value; // 기존 이미지 URL
+
+                if (imageFile) {
+                    showToast('이미지 업로드 중...', 'info');
+                    imageUrl = await uploadNoticeImage(imageFile);
+                }
+
                 showToast('번역 중...', 'info');
 
                 // 번역 API 호출
@@ -6135,6 +6207,7 @@
                     content,
                     isPinned,
                     isActive,
+                    imageUrl: imageUrl || null,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
 

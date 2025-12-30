@@ -2961,11 +2961,14 @@ async function loadUserNotices() {
             // 미리보기 텍스트 (100자 제한)
             const preview = localized.content.replace(/<[^>]*>/g, '').substring(0, 100);
 
+            const hasImage = notice.imageUrl ? '<span class="notice-item-image">🖼️</span>' : '';
+
             html += `
                 <div class="notice-item ${isNew ? 'new' : ''}" onclick="showNoticeDetail('${noticeId}')">
                     <div class="notice-item-header">
                         <span class="notice-item-title">
                             ${notice.isPinned ? '<span class="notice-item-pinned">📌</span>' : ''}
+                            ${hasImage}
                             ${localized.title || '제목 없음'}
                         </span>
                         ${isNew ? '<span class="notice-item-new">NEW</span>' : ''}
@@ -3013,11 +3016,17 @@ async function showNoticeDetail(noticeId) {
             dateStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
         }
 
+        // 이미지 HTML
+        const imageHtml = notice.imageUrl
+            ? `<div class="notice-detail-image"><img src="${notice.imageUrl}" alt="공지 이미지" style="max-width: 100%; border-radius: 8px; margin-bottom: 16px;"></div>`
+            : '';
+
         body.innerHTML = `
             <div class="notice-detail">
                 <button class="notice-detail-back" onclick="loadUserNotices()">← 목록으로</button>
                 <h2 class="notice-detail-title">${localized.title || '제목 없음'}</h2>
                 <div class="notice-detail-date">${dateStr}</div>
+                ${imageHtml}
                 <div class="notice-detail-content">${localized.content || ''}</div>
             </div>
         `;
@@ -3164,11 +3173,13 @@ async function loadMypageNotices() {
                 dateStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
             }
 
+            const hasImage = notice.imageUrl ? '🖼️ ' : '';
+
             html += `
                 <div class="mypage-notice-item ${isNew ? 'new' : ''}" onclick="openNoticeFromMypage('${noticeId}')">
                     <div class="mypage-notice-title">
                         ${notice.isPinned ? '<span class="notice-pin">📌</span>' : ''}
-                        ${localized.title || '제목 없음'}
+                        ${hasImage}${localized.title || '제목 없음'}
                         ${isNew ? '<span class="notice-new-tag">NEW</span>' : ''}
                     </div>
                     <div class="mypage-notice-date">${dateStr}</div>
