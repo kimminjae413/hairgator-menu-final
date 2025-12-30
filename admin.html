@@ -488,6 +488,66 @@
         .badge-warning { background: #FEF3C7; color: #D97706; }
         .badge-danger { background: #FEE2E2; color: #DC2626; }
 
+        /* 페이지네이션 */
+        .pagination-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            border-radius: 0 0 12px 12px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .pagination-info {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .pagination-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .pagination-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .pagination-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .pagination-pages {
+            display: flex;
+            gap: 4px;
+        }
+        .pagination-size select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+        }
+
         /* 버튼 */
         .btn {
             display: inline-flex;
@@ -1572,6 +1632,28 @@
                             </td></tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- 페이지네이션 -->
+                <div class="pagination-container" id="userPagination">
+                    <div class="pagination-info">
+                        <span id="paginationInfo">0명 중 0-0</span>
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" onclick="goToUserPage(1)" id="btnFirst">«</button>
+                        <button class="pagination-btn" onclick="goToUserPage(currentUserPage - 1)" id="btnPrev">‹</button>
+                        <div class="pagination-pages" id="paginationPages"></div>
+                        <button class="pagination-btn" onclick="goToUserPage(currentUserPage + 1)" id="btnNext">›</button>
+                        <button class="pagination-btn" onclick="goToUserPage(totalUserPages)" id="btnLast">»</button>
+                    </div>
+                    <div class="pagination-size">
+                        <select id="pageSizeSelect" onchange="changePageSize(this.value)">
+                            <option value="50">50명</option>
+                            <option value="100" selected>100명</option>
+                            <option value="200">200명</option>
+                            <option value="500">500명</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2818,11 +2900,17 @@
     <script>
         // 전역 변수
         let allUsers = [];
+        let filteredUsers = [];  // 필터링된 사용자 목록
         let currentFilter = 'all';
         let usageChart = null;
         let planChart = null;
         let featureUsageChart = null;
         let genderPieChart = null;
+
+        // 페이지네이션 변수
+        let currentUserPage = 1;
+        let usersPerPage = 100;
+        let totalUserPages = 1;
         let maleBarChart = null;
         let femaleBarChart = null;
         let currentAdmin = null;
@@ -3450,12 +3538,26 @@
         }
 
         function renderUsers(users) {
+            // 필터링된 사용자 저장
+            filteredUsers = users;
+            currentUserPage = 1;
+            renderUsersPage();
+        }
+
+        function renderUsersPage() {
             const tbody = document.getElementById('usersTableBody');
 
-            if (users.length === 0) {
+            if (filteredUsers.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">사용자 없음</td></tr>';
+                updatePagination(0);
                 return;
             }
+
+            // 페이지네이션 계산
+            totalUserPages = Math.ceil(filteredUsers.length / usersPerPage);
+            const startIdx = (currentUserPage - 1) * usersPerPage;
+            const endIdx = Math.min(startIdx + usersPerPage, filteredUsers.length);
+            const pageUsers = filteredUsers.slice(startIdx, endIdx);
 
             const planBadges = {
                 'free': 'badge-free',
@@ -3464,7 +3566,7 @@
                 'business': 'badge-business'
             };
 
-            tbody.innerHTML = users.map(user => {
+            tbody.innerHTML = pageUsers.map(user => {
                 const createdAt = user.createdAt?.toDate ? user.createdAt.toDate().toLocaleDateString('ko-KR') : '-';
                 const plan = user.plan || 'free';
                 const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' }[plan];
@@ -3514,13 +3616,65 @@
                     </tr>
                 `;
             }).join('');
+
+            updatePagination(filteredUsers.length, startIdx + 1, endIdx);
+        }
+
+        // 페이지네이션 UI 업데이트
+        function updatePagination(total, start = 0, end = 0) {
+            // 정보 텍스트
+            document.getElementById('paginationInfo').textContent =
+                total === 0 ? '0명' : `${total.toLocaleString()}명 중 ${start}-${end}`;
+
+            // 버튼 활성화/비활성화
+            document.getElementById('btnFirst').disabled = currentUserPage === 1;
+            document.getElementById('btnPrev').disabled = currentUserPage === 1;
+            document.getElementById('btnNext').disabled = currentUserPage >= totalUserPages;
+            document.getElementById('btnLast').disabled = currentUserPage >= totalUserPages;
+
+            // 페이지 번호 버튼 생성
+            const pagesDiv = document.getElementById('paginationPages');
+            pagesDiv.innerHTML = '';
+
+            // 표시할 페이지 범위 계산 (최대 5개)
+            let startPage = Math.max(1, currentUserPage - 2);
+            let endPage = Math.min(totalUserPages, startPage + 4);
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'pagination-btn' + (i === currentUserPage ? ' active' : '');
+                btn.textContent = i;
+                btn.onclick = () => goToUserPage(i);
+                pagesDiv.appendChild(btn);
+            }
+        }
+
+        // 페이지 이동
+        function goToUserPage(page) {
+            if (page < 1 || page > totalUserPages) return;
+            currentUserPage = page;
+            renderUsersPage();
+            // 테이블 상단으로 스크롤
+            document.getElementById('usersTableBody').closest('.table-container').scrollTop = 0;
+        }
+
+        // 페이지당 사용자 수 변경
+        function changePageSize(size) {
+            usersPerPage = parseInt(size);
+            currentUserPage = 1;
+            renderUsersPage();
         }
 
         function searchUsers() {
             const query = document.getElementById('userSearchInput').value.toLowerCase();
             let filtered = allUsers.filter(u =>
                 (u.displayName || '').toLowerCase().includes(query) ||
+                (u.name || '').toLowerCase().includes(query) ||
                 (u.email || '').toLowerCase().includes(query) ||
+                (u.phone || '').toLowerCase().includes(query) ||
                 u.id.toLowerCase().includes(query)
             );
 
@@ -5365,7 +5519,8 @@
                 }
 
                 closeModal('addStyleModal');
-                loadHairstyles();
+                loadStylesList();
+                loadHairstyleStats();
 
             } catch (err) {
                 console.error('스타일 저장 에러:', err);
@@ -5449,7 +5604,8 @@
             try {
                 await db.collection('hairstyles').doc(docId).delete();
                 showToast('스타일이 삭제되었습니다', 'success');
-                loadHairstyles();
+                loadStylesList();
+                loadHairstyleStats();
             } catch (err) {
                 console.error('스타일 삭제 에러:', err);
                 showToast('스타일 삭제 실패', 'error');
