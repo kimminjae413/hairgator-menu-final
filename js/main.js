@@ -2560,6 +2560,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
 });
 
+// ========== 마이페이지 아코디언 (하나만 열리도록) ==========
+
+/**
+ * 마이페이지 모든 토글 섹션 닫기
+ */
+function closeAllMypageSections(exceptSectionId = null) {
+    const sections = [
+        { section: 'savedCardsSection', arrow: 'savedCardsArrow' },
+        { section: 'mypageNoticeSection', arrow: 'noticeArrow' },
+        { section: 'inquirySection', arrow: 'inquiryArrow' }
+    ];
+
+    sections.forEach(({ section, arrow }) => {
+        if (section === exceptSectionId) return;
+
+        const sectionEl = document.getElementById(section);
+        const arrowEl = document.getElementById(arrow);
+
+        if (sectionEl) {
+            sectionEl.style.display = 'none';
+        }
+        if (arrowEl) {
+            arrowEl.textContent = '→';
+        }
+    });
+}
+
 // ========== 마이페이지 저장된 카드 관리 ==========
 
 /**
@@ -2572,6 +2599,8 @@ window.toggleSavedCardsSection = async function() {
     if (!section) return;
 
     if (section.style.display === 'none') {
+        // 다른 섹션 모두 닫기
+        closeAllMypageSections('savedCardsSection');
         section.style.display = 'block';
         arrow.textContent = '↓';
         await loadSavedCardsForMypage();
@@ -2684,8 +2713,12 @@ window.toggleInquirySection = async function() {
     const arrow = document.getElementById('inquiryArrow');
 
     if (section.style.display === 'none') {
+        // 다른 섹션 모두 닫기
+        closeAllMypageSections('inquirySection');
         section.style.display = 'block';
         arrow.textContent = '↓';
+        // 페이지네이션 초기화
+        window.inquiryCurrentPage = 1;
         await loadInquiries();
     } else {
         section.style.display = 'none';
@@ -2693,8 +2726,13 @@ window.toggleInquirySection = async function() {
     }
 };
 
+// 문의 페이지네이션 설정
+const INQUIRY_PAGE_SIZE = 10;
+window.inquiryCurrentPage = 1;
+window.inquiryAllDocs = [];
+
 /**
- * 문의 목록 로드
+ * 문의 목록 로드 (페이지네이션 지원)
  */
 async function loadInquiries() {
     const user = firebase.auth().currentUser;
@@ -2704,22 +2742,33 @@ async function loadInquiries() {
     listEl.innerHTML = '<div class="loading-text" style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5);">로딩 중...</div>';
 
     try {
-        const snapshot = await firebase.firestore()
-            .collection('inquiries')
-            .where('userId', '==', user.uid)
-            .orderBy('createdAt', 'desc')
-            .limit(20)
-            .get();
+        // 전체 문의 조회 (캐시가 없거나 새로고침 시)
+        if (window.inquiryCurrentPage === 1 || window.inquiryAllDocs.length === 0) {
+            const snapshot = await firebase.firestore()
+                .collection('inquiries')
+                .where('userId', '==', user.uid)
+                .orderBy('createdAt', 'desc')
+                .limit(100)  // 최대 100개까지 조회
+                .get();
 
-        if (snapshot.empty) {
+            window.inquiryAllDocs = snapshot.docs;
+        }
+
+        if (window.inquiryAllDocs.length === 0) {
             listEl.innerHTML = '<div class="no-inquiry-message">문의 내역이 없습니다.</div>';
             return;
         }
 
+        // 페이지네이션 계산
+        const totalPages = Math.ceil(window.inquiryAllDocs.length / INQUIRY_PAGE_SIZE);
+        const startIdx = (window.inquiryCurrentPage - 1) * INQUIRY_PAGE_SIZE;
+        const endIdx = startIdx + INQUIRY_PAGE_SIZE;
+        const pageDocs = window.inquiryAllDocs.slice(startIdx, endIdx);
+
         let hasNewReply = false;
         let html = '';
 
-        snapshot.forEach(doc => {
+        pageDocs.forEach(doc => {
             const data = doc.data();
             const createdAt = data.createdAt?.toDate?.() || new Date();
             const dateStr = createdAt.toLocaleDateString('ko-KR');
@@ -2750,6 +2799,11 @@ async function loadInquiries() {
             `;
         });
 
+        // 페이지네이션 컨트롤 추가
+        if (totalPages > 1) {
+            html += renderPaginationControls('inquiry', window.inquiryCurrentPage, totalPages);
+        }
+
         listEl.innerHTML = html;
 
         // NEW 뱃지 업데이트
@@ -2762,6 +2816,56 @@ async function loadInquiries() {
         console.error('문의 목록 로드 실패:', error);
         listEl.innerHTML = '<div class="no-inquiry-message">로드 실패</div>';
     }
+}
+
+/**
+ * 문의 페이지 변경
+ */
+window.changeInquiryPage = function(page) {
+    window.inquiryCurrentPage = page;
+    loadInquiries();
+    // 스크롤 위치 조정
+    const section = document.getElementById('inquirySection');
+    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+/**
+ * 페이지네이션 컨트롤 렌더링
+ */
+function renderPaginationControls(type, currentPage, totalPages) {
+    let html = `<div class="pagination-controls">`;
+
+    // 이전 버튼
+    if (currentPage > 1) {
+        html += `<button class="page-btn" onclick="change${type.charAt(0).toUpperCase() + type.slice(1)}Page(${currentPage - 1})">◀</button>`;
+    } else {
+        html += `<button class="page-btn disabled" disabled>◀</button>`;
+    }
+
+    // 페이지 번호 (최대 5개 표시)
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        if (i === currentPage) {
+            html += `<button class="page-btn active">${i}</button>`;
+        } else {
+            html += `<button class="page-btn" onclick="change${type.charAt(0).toUpperCase() + type.slice(1)}Page(${i})">${i}</button>`;
+        }
+    }
+
+    // 다음 버튼
+    if (currentPage < totalPages) {
+        html += `<button class="page-btn" onclick="change${type.charAt(0).toUpperCase() + type.slice(1)}Page(${currentPage + 1})">▶</button>`;
+    } else {
+        html += `<button class="page-btn disabled" disabled>▶</button>`;
+    }
+
+    html += `</div>`;
+    return html;
 }
 
 /**
@@ -3346,8 +3450,12 @@ function toggleNoticeSection() {
     if (!section) return;
 
     if (section.style.display === 'none' || !section.style.display) {
+        // 다른 섹션 모두 닫기
+        closeAllMypageSections('mypageNoticeSection');
         section.style.display = 'block';
         if (arrow) arrow.textContent = '↓';
+        // 페이지네이션 초기화
+        window.noticeCurrentPage = 1;
         loadMypageNotices();
     } else {
         section.style.display = 'none';
@@ -3355,7 +3463,12 @@ function toggleNoticeSection() {
     }
 }
 
-// 마이페이지 공지사항 목록 로드
+// 공지사항 페이지네이션 설정
+const NOTICE_PAGE_SIZE = 10;
+window.noticeCurrentPage = 1;
+window.noticeAllDocs = [];
+
+// 마이페이지 공지사항 목록 로드 (페이지네이션 지원)
 async function loadMypageNotices() {
     const listEl = document.getElementById('mypageNoticeList');
     if (!listEl) return;
@@ -3367,29 +3480,36 @@ async function loadMypageNotices() {
             throw new Error('Firebase not initialized');
         }
 
-        // 단순 쿼리 + 클라이언트 필터/정렬
-        const snapshot = await firebase.firestore()
-            .collection('notices')
-            .orderBy('createdAt', 'desc')
-            .limit(30)
-            .get();
+        // 전체 공지 조회 (첫 페이지거나 캐시 없을 때)
+        if (window.noticeCurrentPage === 1 || window.noticeAllDocs.length === 0) {
+            const snapshot = await firebase.firestore()
+                .collection('notices')
+                .orderBy('createdAt', 'desc')
+                .limit(100)  // 최대 100개까지 조회
+                .get();
 
-        // 클라이언트에서 isActive 필터 + isPinned 정렬
-        const activeDocs = snapshot.docs
-            .filter(doc => doc.data().isActive === true)
-            .sort((a, b) => {
-                const aData = a.data();
-                const bData = b.data();
-                if (aData.isPinned && !bData.isPinned) return -1;
-                if (!aData.isPinned && bData.isPinned) return 1;
-                return 0;
-            })
-            .slice(0, 10);
+            // 클라이언트에서 isActive 필터 + isPinned 정렬
+            window.noticeAllDocs = snapshot.docs
+                .filter(doc => doc.data().isActive === true)
+                .sort((a, b) => {
+                    const aData = a.data();
+                    const bData = b.data();
+                    if (aData.isPinned && !bData.isPinned) return -1;
+                    if (!aData.isPinned && bData.isPinned) return 1;
+                    return 0;
+                });
+        }
 
-        if (activeDocs.length === 0) {
+        if (window.noticeAllDocs.length === 0) {
             listEl.innerHTML = `<div class="no-notice-message">${t('ui.noNotices') || 'No notices.'}</div>`;
             return;
         }
+
+        // 페이지네이션 계산
+        const totalPages = Math.ceil(window.noticeAllDocs.length / NOTICE_PAGE_SIZE);
+        const startIdx = (window.noticeCurrentPage - 1) * NOTICE_PAGE_SIZE;
+        const endIdx = startIdx + NOTICE_PAGE_SIZE;
+        const pageDocs = window.noticeAllDocs.slice(startIdx, endIdx);
 
         // 현재 언어
         const lang = getNoticeLanguage();
@@ -3397,7 +3517,7 @@ async function loadMypageNotices() {
         const noTitleText = t('ui.noTitle') || 'No title';
 
         let html = '';
-        activeDocs.forEach(doc => {
+        pageDocs.forEach(doc => {
             const notice = doc.data();
             const noticeId = doc.id;
             const isRead = readNotices.includes(noticeId);
@@ -3426,6 +3546,11 @@ async function loadMypageNotices() {
             `;
         });
 
+        // 페이지네이션 컨트롤 추가
+        if (totalPages > 1) {
+            html += renderPaginationControls('notice', window.noticeCurrentPage, totalPages);
+        }
+
         listEl.innerHTML = html;
 
     } catch (error) {
@@ -3433,6 +3558,17 @@ async function loadMypageNotices() {
         listEl.innerHTML = `<div class="no-notice-message">${t('ui.noticeLoadFailed') || 'Failed to load notices.'}</div>`;
     }
 }
+
+/**
+ * 공지사항 페이지 변경
+ */
+window.changeNoticePage = function(page) {
+    window.noticeCurrentPage = page;
+    loadMypageNotices();
+    // 스크롤 위치 조정
+    const section = document.getElementById('mypageNoticeSection');
+    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
 
 // 종 버튼 클릭 시 마이페이지 공지사항으로 이동
 function goToNotices() {

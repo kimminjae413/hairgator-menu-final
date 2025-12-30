@@ -4319,6 +4319,58 @@ body.light-theme .mypage-notice-date {
 body.light-theme .no-notice-message {
     color: #888888;
 }
+
+/* 페이지네이션 컨트롤 */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    padding: 16px 0 8px;
+    margin-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+body.light-theme .pagination-controls {
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.page-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.1);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+body.light-theme .page-btn {
+    background: #e8e8e8;
+    color: #333333;
+}
+
+.page-btn:hover:not(.disabled):not(.active) {
+    background: rgba(255,255,255,0.2);
+}
+
+body.light-theme .page-btn:hover:not(.disabled):not(.active) {
+    background: #d0d0d0;
+}
+
+.page-btn.active {
+    background: #E91E63;
+    color: #ffffff;
+}
+
+.page-btn.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
 </style>
 
 </body>
