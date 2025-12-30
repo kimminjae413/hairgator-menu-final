@@ -282,23 +282,8 @@ exports.handler = async (event, context) => {
             console.log('📝 카카오 사용자 정보 업데이트:', emailDocId);
         }
 
-        // 5. UID 기반 문서에도 이메일 저장 (auth.js에서 연결용)
-        if (kakaoEmail) {
-            const uidDocRef = db.collection('users').doc(firebaseUid);
-            const uidDoc = await uidDocRef.get();
-            if (uidDoc.exists) {
-                await uidDocRef.update({ email: kakaoEmail });
-            } else {
-                await uidDocRef.set({
-                    email: kakaoEmail,
-                    displayName: userData.properties?.nickname || '',
-                    createdAt: admin.firestore.FieldValue.serverTimestamp()
-                });
-            }
-            console.log('📧 UID 문서에 이메일 저장:', firebaseUid, '->', kakaoEmail);
-        }
-
-        // 6. 로그인 페이지로 리다이렉트 (토큰 전달)
+        // 5. 로그인 페이지로 리다이렉트 (토큰 전달)
+        // 참고: UID 기반 문서(kakao_xxx)는 더 이상 생성하지 않음 - 이메일 기반으로 통합
         return {
             statusCode: 302,
             headers: {

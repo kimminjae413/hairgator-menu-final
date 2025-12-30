@@ -240,15 +240,12 @@ async function handleUserLogin(user) {
 
 /**
  * 이메일 없는 경우 UID 기반 폴백 로그인 처리
- * 핵심: UID 문서에서 email을 찾아 이메일 기반 문서 조회
+ * 핵심: Firebase Token claims 또는 UID 문서에서 email을 찾아 이메일 기반 문서 조회
  */
 async function handleUserLoginByUid(user) {
     try {
         const db = firebase.firestore();
         const providerName = getProviderName(user.providerData[0]?.providerId);
-
-        // 1. UID 기반 문서 조회
-        const uidDoc = await db.collection('users').doc(user.uid).get();
 
         let userEmail = null;
         let emailDocId = null;
@@ -261,11 +258,25 @@ async function handleUserLoginByUid(user) {
             plan: 'free'
         };
 
-        // 2. UID 문서에서 이메일 찾기
-        if (uidDoc.exists) {
-            const uidData = uidDoc.data();
-            userEmail = uidData.email;
-            console.log('🔍 UID 문서에서 이메일 찾음:', userEmail);
+        // 1. Firebase Token claims에서 이메일 찾기 (카카오 Custom Token)
+        try {
+            const tokenResult = await user.getIdTokenResult();
+            if (tokenResult.claims.email) {
+                userEmail = tokenResult.claims.email;
+                console.log('🔍 Token claims에서 이메일 찾음:', userEmail);
+            }
+        } catch (e) {
+            console.log('⚠️ Token claims 조회 실패:', e.message);
+        }
+
+        // 2. claims에 이메일 없으면 UID 문서 조회 (폴백)
+        if (!userEmail) {
+            const uidDoc = await db.collection('users').doc(user.uid).get();
+            if (uidDoc.exists) {
+                const uidData = uidDoc.data();
+                userEmail = uidData.email;
+                console.log('🔍 UID 문서에서 이메일 찾음:', userEmail);
+            }
         }
 
         // 3. 이메일이 있으면 이메일 기반 문서 조회 (진짜 데이터!)
