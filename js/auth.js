@@ -213,6 +213,15 @@ async function handleUserLogin(user) {
             window.FirebaseBridge.updateTokenDisplay(userData.tokenBalance, userData.plan);
         }
 
+        // 현재 페이지가 products면 플랜 표시 업데이트
+        if (window.location.hash === '#products' && typeof window.updateProductsPagePlan === 'function') {
+            window.updateProductsPagePlan();
+        }
+        // 현재 페이지가 mypage면 마이페이지 정보 업데이트
+        if (window.location.hash === '#mypage' && typeof window.updateMypageInfo === 'function') {
+            window.updateMypageInfo();
+        }
+
         // 사용자 설정 로드 (테마, 언어)
         if (typeof window.loadUserSettingsFromFirebase === 'function') {
             window.loadUserSettingsFromFirebase().then(settings => {
@@ -326,6 +335,15 @@ async function handleUserLoginByUid(user) {
 
         if (window.FirebaseBridge) {
             window.FirebaseBridge.updateTokenDisplay(userData.tokenBalance, userData.plan);
+        }
+
+        // 현재 페이지가 products면 플랜 표시 업데이트
+        if (window.location.hash === '#products' && typeof window.updateProductsPagePlan === 'function') {
+            window.updateProductsPagePlan();
+        }
+        // 현재 페이지가 mypage면 마이페이지 정보 업데이트
+        if (window.location.hash === '#mypage' && typeof window.updateMypageInfo === 'function') {
+            window.updateMypageInfo();
         }
 
         console.log('✅ 사용자 로그인 처리 완료:', userData.displayName, '플랜:', userData.plan, 'docId:', finalDocId);
