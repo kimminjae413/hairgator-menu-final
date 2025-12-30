@@ -1093,6 +1093,16 @@
                 gap: 12px;
             }
 
+            /* 스타일 페이지 2컬럼 → 1컬럼 */
+            #page-styles > div:first-of-type {
+                grid-template-columns: 1fr !important;
+            }
+
+            #page-styles .card[style*="sticky"] {
+                position: static !important;
+                margin-top: 20px;
+            }
+
             /* 버튼 그룹 */
             .btn-group {
                 flex-wrap: wrap;
@@ -2012,44 +2022,125 @@
         <div id="page-styles" class="page">
             <div class="page-header">
                 <h2 class="page-title">💇 헤어스타일 업로드</h2>
-                <button class="btn" onclick="openAddStyleModal()">+ 새 스타일 추가</button>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">카테고리 선택</div>
-                </div>
-                <div style="display: flex; gap: 16px; flex-wrap: wrap; padding: 20px;">
-                    <div class="form-group" style="flex: 1; min-width: 150px;">
-                        <label>성별</label>
-                        <select id="styleGenderSelect" onchange="loadStyleCategories()">
-                            <option value="">성별 선택</option>
-                            <option value="male">남성</option>
-                            <option value="female">여성</option>
-                        </select>
+            <!-- 2컬럼 레이아웃: 왼쪽 스타일 목록 + 오른쪽 추가 폼 -->
+            <div style="display: grid; grid-template-columns: 1fr 400px; gap: 20px;">
+                <!-- 왼쪽: 기존 스타일 목록 -->
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">카테고리 선택</div>
+                        </div>
+                        <div style="display: flex; gap: 16px; flex-wrap: wrap; padding: 20px;">
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label>성별</label>
+                                <select id="styleGenderSelect" onchange="loadStyleCategories()">
+                                    <option value="">성별 선택</option>
+                                    <option value="male">남성</option>
+                                    <option value="female">여성</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label>대분류</label>
+                                <select id="styleCategorySelect" onchange="loadStyleSubcategories()">
+                                    <option value="">대분류 선택</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label>중분류 (앞머리 길이)</label>
+                                <select id="styleSubcategorySelect" onchange="loadStylesList()">
+                                    <option value="">중분류 선택</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group" style="flex: 1; min-width: 150px;">
-                        <label>대분류</label>
-                        <select id="styleCategorySelect" onchange="loadStyleSubcategories()">
-                            <option value="">대분류 선택</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="flex: 1; min-width: 150px;">
-                        <label>중분류 (앞머리 길이)</label>
-                        <select id="styleSubcategorySelect" onchange="loadStylesList()">
-                            <option value="">중분류 선택</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
 
-            <div class="card" style="margin-top: 20px;">
-                <div class="card-header">
-                    <div class="card-title">등록된 스타일</div>
-                    <span id="stylesCountBadge" style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px;">0개</span>
+                    <div class="card" style="margin-top: 20px;">
+                        <div class="card-header">
+                            <div class="card-title">등록된 스타일</div>
+                            <span id="stylesCountBadge" style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px;">0개</span>
+                        </div>
+                        <div id="stylesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; padding: 20px; max-height: 600px; overflow-y: auto;">
+                            <p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">카테고리를 선택하세요</p>
+                        </div>
+                    </div>
                 </div>
-                <div id="stylesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; padding: 20px;">
-                    <p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">카테고리를 선택하세요</p>
+
+                <!-- 오른쪽: 새 스타일 추가 폼 (고정) -->
+                <div class="card" style="position: sticky; top: 20px; height: fit-content;">
+                    <div class="card-header">
+                        <div class="card-title" id="inlineAddStyleTitle">➕ 새 스타일 추가</div>
+                        <button class="btn btn-sm btn-secondary" onclick="resetInlineStyleForm()">🔄 초기화</button>
+                    </div>
+                    <div style="padding: 20px; max-height: calc(100vh - 200px); overflow-y: auto;">
+                        <div class="form-group">
+                            <label class="form-label">스타일 ID</label>
+                            <input type="text" class="form-input" id="inlineStyleId" placeholder="비워두면 자동생성" style="text-transform: uppercase;">
+                            <small style="color: var(--text-muted); font-size: 11px;">💡 비워두면 자동 생성됩니다</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">스타일 이름 *</label>
+                            <input type="text" class="form-input" id="inlineStyleName" placeholder="예: 글램웨이브">
+                        </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div class="form-group">
+                                <label class="form-label">성별 *</label>
+                                <select class="form-input" id="inlineStyleGender" onchange="updateInlineCategories()">
+                                    <option value="">선택</option>
+                                    <option value="male">남성</option>
+                                    <option value="female">여성</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">대분류 *</label>
+                                <select class="form-input" id="inlineStyleCategory">
+                                    <option value="">성별 먼저 선택</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">중분류 (앞머리)</label>
+                            <select class="form-input" id="inlineStyleSubCategory">
+                                <option value="">선택</option>
+                                <option value="None">None</option>
+                                <option value="Fore Head">Fore Head</option>
+                                <option value="Eye Brow">Eye Brow</option>
+                                <option value="Eye">Eye</option>
+                                <option value="Cheekbone">Cheekbone</option>
+                            </select>
+                        </div>
+
+                        <!-- 이미지 업로드 -->
+                        <div class="form-group">
+                            <label class="form-label">이미지 업로드 (최대 5장)</label>
+                            <div class="upload-area" id="inlineUploadArea" style="padding: 20px; border: 2px dashed var(--border); border-radius: 8px; text-align: center; cursor: pointer;">
+                                <input type="file" id="inlineImageInput" accept="image/*" multiple style="display: none;">
+                                <label for="inlineImageInput" style="cursor: pointer; display: block;">
+                                    <div style="font-size: 32px;">📷</div>
+                                    <div style="font-size: 13px; color: var(--text-muted);">클릭하여 이미지 업로드</div>
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">JPG, PNG, WebP / 각 5MB</div>
+                                </label>
+                            </div>
+                            <div class="image-preview-grid" id="inlineImagePreviewGrid" style="display: none; margin-top: 10px;"></div>
+                        </div>
+
+                        <!-- 동영상 URL -->
+                        <div class="form-group">
+                            <label class="form-label">동영상 URL</label>
+                            <input type="url" class="form-input" id="inlineVideoUrl" placeholder="YouTube/Vimeo URL">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">레시피 텍스트</label>
+                            <textarea class="form-input" id="inlineTextRecipe" rows="3" placeholder="스타일 레시피 내용..." style="resize: vertical;"></textarea>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="saveInlineStyle()" id="inlineSaveBtn" style="width: 100%; margin-top: 10px;">
+                            💾 스타일 저장
+                        </button>
+                        <div id="inlineSaveResult" style="margin-top: 10px; display: none;"></div>
+                    </div>
                 </div>
             </div>
 
@@ -4443,6 +4534,259 @@
         let isEditMode = false;
         let currentEditingStyleId = null;
         let existingImageUrls = [];
+
+        // 인라인 폼용 변수
+        let inlineSelectedImages = [];
+        let inlineMainImageIndex = 0;
+
+        // 인라인 폼 초기화
+        function resetInlineStyleForm() {
+            document.getElementById('inlineStyleId').value = '';
+            document.getElementById('inlineStyleName').value = '';
+            document.getElementById('inlineStyleGender').value = '';
+            document.getElementById('inlineStyleCategory').innerHTML = '<option value="">성별 먼저 선택</option>';
+            document.getElementById('inlineStyleSubCategory').value = '';
+            document.getElementById('inlineVideoUrl').value = '';
+            document.getElementById('inlineTextRecipe').value = '';
+            document.getElementById('inlineAddStyleTitle').textContent = '➕ 새 스타일 추가';
+
+            inlineSelectedImages = [];
+            inlineMainImageIndex = 0;
+            document.getElementById('inlineImagePreviewGrid').style.display = 'none';
+            document.getElementById('inlineImagePreviewGrid').innerHTML = '';
+            document.getElementById('inlineSaveResult').style.display = 'none';
+
+            showToast('폼이 초기화되었습니다', 'info');
+        }
+
+        // 인라인 폼 성별 변경 시 카테고리 업데이트
+        function updateInlineCategories() {
+            const gender = document.getElementById('inlineStyleGender').value;
+            updateCategoryOptions(gender, 'inlineStyleCategory');
+        }
+
+        // 인라인 이미지 입력 이벤트 (DOMContentLoaded 후 설정)
+        document.addEventListener('DOMContentLoaded', function() {
+            const inlineImageInput = document.getElementById('inlineImageInput');
+            if (inlineImageInput) {
+                inlineImageInput.addEventListener('change', function(e) {
+                    const files = Array.from(e.target.files);
+                    if (files.length + inlineSelectedImages.length > 5) {
+                        showToast('최대 5장까지 업로드 가능합니다', 'error');
+                        return;
+                    }
+
+                    files.forEach(file => {
+                        if (file.size > 5 * 1024 * 1024) {
+                            showToast(`${file.name}은 5MB를 초과합니다`, 'error');
+                            return;
+                        }
+                        inlineSelectedImages.push(file);
+                    });
+
+                    renderInlineImagePreviews();
+                });
+            }
+        });
+
+        // 인라인 이미지 프리뷰 렌더링
+        function renderInlineImagePreviews() {
+            const grid = document.getElementById('inlineImagePreviewGrid');
+            if (inlineSelectedImages.length === 0) {
+                grid.style.display = 'none';
+                grid.innerHTML = '';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(80px, 1fr))';
+            grid.style.gap = '8px';
+            grid.innerHTML = '';
+
+            inlineSelectedImages.forEach((file, index) => {
+                const div = document.createElement('div');
+                div.style.cssText = 'position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 2px solid ' + (index === inlineMainImageIndex ? 'var(--primary)' : 'var(--border)');
+
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+                img.onclick = () => {
+                    inlineMainImageIndex = index;
+                    renderInlineImagePreviews();
+                };
+
+                const removeBtn = document.createElement('button');
+                removeBtn.innerHTML = '×';
+                removeBtn.style.cssText = 'position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1;';
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    inlineSelectedImages.splice(index, 1);
+                    if (inlineMainImageIndex >= inlineSelectedImages.length) {
+                        inlineMainImageIndex = Math.max(0, inlineSelectedImages.length - 1);
+                    }
+                    renderInlineImagePreviews();
+                };
+
+                div.appendChild(img);
+                div.appendChild(removeBtn);
+
+                if (index === inlineMainImageIndex) {
+                    const badge = document.createElement('div');
+                    badge.textContent = '대표';
+                    badge.style.cssText = 'position: absolute; bottom: 2px; left: 2px; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;';
+                    div.appendChild(badge);
+                }
+
+                grid.appendChild(div);
+            });
+        }
+
+        // 인라인 스타일 저장
+        async function saveInlineStyle() {
+            const styleIdInput = document.getElementById('inlineStyleId').value.trim().toUpperCase();
+            const styleName = document.getElementById('inlineStyleName').value.trim();
+            const gender = document.getElementById('inlineStyleGender').value;
+            const category = document.getElementById('inlineStyleCategory').value;
+            const subCategory = document.getElementById('inlineStyleSubCategory').value;
+            const videoUrlVal = document.getElementById('inlineVideoUrl').value.trim();
+            const textRecipe = document.getElementById('inlineTextRecipe').value.trim();
+
+            // 필수 필드 검증
+            if (!styleName) {
+                showToast('스타일 이름을 입력해주세요', 'error');
+                return;
+            }
+            if (!gender) {
+                showToast('성별을 선택해주세요', 'error');
+                return;
+            }
+            if (!category) {
+                showToast('대분류를 선택해주세요', 'error');
+                return;
+            }
+
+            // 스타일 ID 자동 생성 또는 사용자 입력 사용
+            const styleId = styleIdInput || generateStyleId(gender, category);
+
+            // 중복 확인
+            try {
+                const checkDoc = await db.collection('hairstyles').doc(styleId).get();
+                if (checkDoc.exists) {
+                    showToast('이미 존재하는 스타일 ID입니다', 'error');
+                    return;
+                }
+            } catch (e) {
+                console.log('중복 확인 중 에러:', e);
+            }
+
+            const saveBtn = document.getElementById('inlineSaveBtn');
+            const resultDiv = document.getElementById('inlineSaveResult');
+            saveBtn.disabled = true;
+            saveBtn.textContent = '저장 중...';
+
+            try {
+                let uploadedImages = [];
+                let uploadedThumbnails = [];
+
+                // 이미지 업로드
+                if (inlineSelectedImages.length > 0) {
+                    showToast('이미지 업로드 중...', 'info');
+
+                    for (let i = 0; i < inlineSelectedImages.length; i++) {
+                        const file = inlineSelectedImages[i];
+                        const timestamp = Date.now();
+                        const fileName = `${styleId}_${timestamp}_${i}.jpg`;
+
+                        // 원본 업로드
+                        const originalRef = storage.ref(`hairstyles/${styleId}/${fileName}`);
+                        await originalRef.put(file);
+                        const originalUrl = await originalRef.getDownloadURL();
+                        uploadedImages.push(originalUrl);
+
+                        // 썸네일 생성 및 업로드
+                        try {
+                            const thumbnailBlob = await createThumbnail(file);
+                            const thumbRef = storage.ref(`hairstyles/${styleId}/thumbs/${fileName}`);
+                            await thumbRef.put(thumbnailBlob);
+                            const thumbUrl = await thumbRef.getDownloadURL();
+                            uploadedThumbnails.push(thumbUrl);
+                        } catch (thumbErr) {
+                            console.log('썸네일 생성 실패, 원본 사용:', thumbErr);
+                            uploadedThumbnails.push(originalUrl);
+                        }
+                    }
+                }
+
+                // Firestore 문서 데이터
+                const docData = {
+                    styleId: styleId,
+                    name: styleName,
+                    gender: gender,
+                    mainCategory: category,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                if (subCategory) docData.subCategory = subCategory;
+                if (textRecipe) docData.textRecipe = textRecipe;
+
+                // 미디어 데이터
+                if (uploadedImages.length > 0) {
+                    docData.media = {
+                        images: uploadedImages,
+                        thumbnails: uploadedThumbnails,
+                        mainImageIndex: inlineMainImageIndex
+                    };
+                    docData.resultImage = uploadedImages[inlineMainImageIndex] || uploadedImages[0];
+                    docData.thumbnailUrl = uploadedThumbnails[inlineMainImageIndex] || uploadedThumbnails[0] || docData.resultImage;
+                }
+
+                // 동영상 URL
+                if (videoUrlVal) {
+                    const vData = parseVideoUrl(videoUrlVal);
+                    if (vData) {
+                        docData.media = docData.media || {};
+                        docData.media.video = {
+                            url: videoUrlVal,
+                            type: vData.platform,
+                            videoId: vData.videoId,
+                            embedUrl: vData.embedUrl
+                        };
+                    }
+                }
+
+                // Firestore 저장
+                await db.collection('hairstyles').doc(styleId).set(docData);
+
+                showToast('새 스타일이 추가되었습니다!', 'success');
+
+                resultDiv.innerHTML = `<div style="color: var(--success); padding: 10px; background: rgba(76, 175, 80, 0.1); border-radius: 8px;">✅ ${styleId} 저장 완료!</div>`;
+                resultDiv.style.display = 'block';
+
+                // 폼 초기화 (ID, 이름, 이미지만)
+                document.getElementById('inlineStyleId').value = '';
+                document.getElementById('inlineStyleName').value = '';
+                inlineSelectedImages = [];
+                inlineMainImageIndex = 0;
+                document.getElementById('inlineImagePreviewGrid').style.display = 'none';
+                document.getElementById('inlineImagePreviewGrid').innerHTML = '';
+                document.getElementById('inlineVideoUrl').value = '';
+                document.getElementById('inlineTextRecipe').value = '';
+
+                // 스타일 목록 새로고침
+                loadStylesList();
+                loadHairstyleStats();
+
+            } catch (err) {
+                console.error('스타일 저장 에러:', err);
+                showToast('스타일 저장 실패: ' + err.message, 'error');
+                resultDiv.innerHTML = `<div style="color: var(--danger); padding: 10px; background: rgba(244, 67, 54, 0.1); border-radius: 8px;">❌ 저장 실패: ${err.message}</div>`;
+                resultDiv.style.display = 'block';
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '💾 스타일 저장';
+            }
+        }
 
         function openAddStyleModal() {
             // 폼 초기화
