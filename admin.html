@@ -3492,7 +3492,18 @@
                         },
                         scales: {
                             x: { grid: { color: '#E5E8EB' }, ticks: { color: '#6B7280' } },
-                            y: { grid: { color: '#E5E8EB' }, ticks: { color: '#6B7280' }, beginAtZero: true }
+                            y: {
+                                grid: { color: '#E5E8EB' },
+                                ticks: {
+                                    color: '#6B7280',
+                                    stepSize: 1,  // 정수 단위로만 표시
+                                    callback: function(value) {
+                                        if (Number.isInteger(value)) return value;
+                                        return null;
+                                    }
+                                },
+                                beginAtZero: true
+                            }
                         }
                     }
                 });
