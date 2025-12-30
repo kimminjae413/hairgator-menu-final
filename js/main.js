@@ -2922,15 +2922,26 @@ async function loadUserNotices() {
             throw new Error('Firebase not initialized');
         }
 
+        // 단순 쿼리 (인덱스 불필요) + 클라이언트 필터/정렬
         const snapshot = await firebase.firestore()
             .collection('notices')
-            .where('isActive', '==', true)
-            .orderBy('isPinned', 'desc')
             .orderBy('createdAt', 'desc')
-            .limit(20)
+            .limit(50)
             .get();
 
-        if (snapshot.empty) {
+        // 클라이언트에서 isActive 필터 + isPinned 정렬
+        const activeDocs = snapshot.docs
+            .filter(doc => doc.data().isActive === true)
+            .sort((a, b) => {
+                const aData = a.data();
+                const bData = b.data();
+                if (aData.isPinned && !bData.isPinned) return -1;
+                if (!aData.isPinned && bData.isPinned) return 1;
+                return 0;
+            })
+            .slice(0, 20);
+
+        if (activeDocs.length === 0) {
             body.innerHTML = '<div class="notice-empty">등록된 공지사항이 없습니다.</div>';
             return;
         }
@@ -2942,7 +2953,7 @@ async function loadUserNotices() {
         const readNotices = getReadNotices();
 
         let html = '<div class="notice-list">';
-        snapshot.forEach(doc => {
+        activeDocs.forEach(doc => {
             const notice = doc.data();
             const noticeId = doc.id;
             const isRead = readNotices.includes(noticeId);
@@ -3048,14 +3059,17 @@ async function checkNewNotices() {
     try {
         if (!firebase || !firebase.firestore) return;
 
+        // 단순 쿼리 + 클라이언트 필터
         const snapshot = await firebase.firestore()
             .collection('notices')
-            .where('isActive', '==', true)
             .orderBy('createdAt', 'desc')
-            .limit(20)
+            .limit(50)
             .get();
 
-        if (snapshot.empty) {
+        // 클라이언트에서 isActive 필터
+        const activeDocs = snapshot.docs.filter(doc => doc.data().isActive === true);
+
+        if (activeDocs.length === 0) {
             badge.style.display = 'none';
             return;
         }
@@ -3065,7 +3079,7 @@ async function checkNewNotices() {
 
         // 읽지 않은 공지 개수 계산
         let unreadCount = 0;
-        snapshot.forEach(doc => {
+        activeDocs.forEach(doc => {
             if (!readNotices.includes(doc.id)) {
                 unreadCount++;
             }
@@ -3140,15 +3154,26 @@ async function loadMypageNotices() {
             throw new Error('Firebase not initialized');
         }
 
+        // 단순 쿼리 + 클라이언트 필터/정렬
         const snapshot = await firebase.firestore()
             .collection('notices')
-            .where('isActive', '==', true)
-            .orderBy('isPinned', 'desc')
             .orderBy('createdAt', 'desc')
-            .limit(10)
+            .limit(30)
             .get();
 
-        if (snapshot.empty) {
+        // 클라이언트에서 isActive 필터 + isPinned 정렬
+        const activeDocs = snapshot.docs
+            .filter(doc => doc.data().isActive === true)
+            .sort((a, b) => {
+                const aData = a.data();
+                const bData = b.data();
+                if (aData.isPinned && !bData.isPinned) return -1;
+                if (!aData.isPinned && bData.isPinned) return 1;
+                return 0;
+            })
+            .slice(0, 10);
+
+        if (activeDocs.length === 0) {
             listEl.innerHTML = '<div class="no-notice-message">공지사항이 없습니다.</div>';
             return;
         }
@@ -3158,7 +3183,7 @@ async function loadMypageNotices() {
         const readNotices = getReadNotices();
 
         let html = '';
-        snapshot.forEach(doc => {
+        activeDocs.forEach(doc => {
             const notice = doc.data();
             const noticeId = doc.id;
             const isRead = readNotices.includes(noticeId);
@@ -3211,13 +3236,17 @@ async function updateMypageNoticeBadge() {
     try {
         if (!firebase || !firebase.firestore) return;
 
+        // 단순 쿼리 + 클라이언트 필터
         const snapshot = await firebase.firestore()
             .collection('notices')
-            .where('isActive', '==', true)
-            .limit(20)
+            .orderBy('createdAt', 'desc')
+            .limit(50)
             .get();
 
-        if (snapshot.empty) {
+        // 클라이언트에서 isActive 필터
+        const activeDocs = snapshot.docs.filter(doc => doc.data().isActive === true);
+
+        if (activeDocs.length === 0) {
             badge.style.display = 'none';
             return;
         }
@@ -3225,7 +3254,7 @@ async function updateMypageNoticeBadge() {
         const readNotices = getReadNotices();
         let hasUnread = false;
 
-        snapshot.forEach(doc => {
+        activeDocs.forEach(doc => {
             if (!readNotices.includes(doc.id)) {
                 hasUnread = true;
             }
