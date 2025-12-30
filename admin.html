@@ -4500,7 +4500,7 @@
             });
         }
 
-        function loadStyleSubcategories() {
+        async function loadStyleSubcategories() {
             const gender = document.getElementById('styleGenderSelect').value;
             const category = document.getElementById('styleCategorySelect').value;
             const subcategorySelect = document.getElementById('styleSubcategorySelect');
@@ -4509,13 +4509,49 @@
 
             if (!gender || !category) return;
 
-            const subcategories = STYLE_CATEGORIES[gender][category] || [];
-            subcategories.forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub;
-                option.textContent = sub;
-                subcategorySelect.appendChild(option);
-            });
+            // 로딩 표시
+            subcategorySelect.innerHTML = '<option value="">로딩 중...</option>';
+            subcategorySelect.disabled = true;
+
+            try {
+                // 해당 성별 + 대분류의 모든 스타일 조회
+                const snapshot = await db.collection('hairstyles')
+                    .where('gender', '==', gender)
+                    .where('mainCategory', '==', category)
+                    .get();
+
+                // 중분류별 스타일 수 계산
+                const subCategoryCounts = {};
+                snapshot.docs.forEach(doc => {
+                    const subCat = doc.data().subCategory || 'None';
+                    subCategoryCounts[subCat] = (subCategoryCounts[subCat] || 0) + 1;
+                });
+
+                // 옵션 생성
+                subcategorySelect.innerHTML = '<option value="">중분류 선택</option>';
+                const subcategories = STYLE_CATEGORIES[gender][category] || [];
+
+                subcategories.forEach(sub => {
+                    const count = subCategoryCounts[sub] || 0;
+                    const option = document.createElement('option');
+                    option.value = sub;
+                    option.textContent = `${sub} (${count}개)`;
+
+                    if (count === 0) {
+                        option.disabled = true;
+                        option.style.color = '#999';
+                    }
+
+                    subcategorySelect.appendChild(option);
+                });
+
+                subcategorySelect.disabled = false;
+
+            } catch (error) {
+                console.error('중분류 로드 오류:', error);
+                subcategorySelect.innerHTML = '<option value="">로드 실패</option>';
+                subcategorySelect.disabled = false;
+            }
         }
 
         async function loadStylesList() {
