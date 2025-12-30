@@ -542,7 +542,7 @@
         <div class="spinner"></div>
     </div>
 
-    <!-- 약관 모달 -->
+    <!-- 약관 보기 모달 -->
     <div id="termsModalOverlay" class="terms-modal-overlay">
         <div class="terms-modal">
             <div class="terms-modal-header">
@@ -551,6 +551,55 @@
             </div>
             <div class="terms-modal-body">
                 <div class="terms-modal-content" id="termsModalContent">로딩중...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 소셜 로그인 약관 동의 모달 -->
+    <div id="socialTermsOverlay" class="terms-modal-overlay">
+        <div class="terms-modal" style="max-width: 440px;">
+            <div class="terms-modal-header">
+                <h3 class="terms-modal-title">서비스 이용 동의</h3>
+            </div>
+            <div class="terms-modal-body" style="padding: 24px;">
+                <p style="margin-bottom: 20px; color: #666; font-size: 14px;">
+                    HAIRGATOR 서비스 이용을 위해 아래 약관에 동의해주세요.
+                </p>
+
+                <div class="terms-agreement" style="margin: 0; background: #f8f9fa;">
+                    <div class="terms-check-item terms-check-all">
+                        <input type="checkbox" id="socialAgreeAll" onclick="toggleSocialTerms()">
+                        <label for="socialAgreeAll"><strong>전체 동의</strong></label>
+                    </div>
+
+                    <div class="terms-check-item">
+                        <input type="checkbox" id="socialAgreeService" class="social-terms-checkbox" required>
+                        <label for="socialAgreeService">서비스 이용약관 동의<span class="required">(필수)</span></label>
+                        <button type="button" class="terms-view-btn" onclick="showTermsModal('service')">보기</button>
+                    </div>
+
+                    <div class="terms-check-item">
+                        <input type="checkbox" id="socialAgreePrivacy" class="social-terms-checkbox" required>
+                        <label for="socialAgreePrivacy">개인정보처리방침 동의<span class="required">(필수)</span></label>
+                        <button type="button" class="terms-view-btn" onclick="showTermsModal('privacy')">보기</button>
+                    </div>
+
+                    <div class="terms-check-item">
+                        <input type="checkbox" id="socialAgreeLocation" class="social-terms-checkbox" required>
+                        <label for="socialAgreeLocation">위치기반서비스 이용약관 동의<span class="required">(필수)</span></label>
+                        <button type="button" class="terms-view-btn" onclick="showTermsModal('location')">보기</button>
+                    </div>
+
+                    <div class="terms-check-item">
+                        <input type="checkbox" id="socialAgreeMarketing" class="social-terms-checkbox">
+                        <label for="socialAgreeMarketing">마케팅 정보 수신 동의 (선택)</label>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button onclick="cancelSocialTerms()" style="flex: 1; padding: 14px; border: 1px solid #ddd; background: #fff; border-radius: 10px; font-size: 15px; cursor: pointer;">취소</button>
+                    <button onclick="confirmSocialTerms()" class="submit-btn" style="flex: 2; margin: 0;">동의하고 시작하기</button>
+                </div>
             </div>
         </div>
     </div>
@@ -605,9 +654,19 @@
         }
 
         // ========== 약관 동의 관련 ==========
+        let pendingSocialUser = null;  // 소셜 로그인 후 약관 동의 대기 중인 사용자
+        let pendingSocialProvider = null;
+
         function toggleAllTerms() {
             const allChecked = document.getElementById('agreeAll').checked;
             document.querySelectorAll('.terms-checkbox').forEach(cb => {
+                cb.checked = allChecked;
+            });
+        }
+
+        function toggleSocialTerms() {
+            const allChecked = document.getElementById('socialAgreeAll').checked;
+            document.querySelectorAll('.social-terms-checkbox').forEach(cb => {
                 cb.checked = allChecked;
             });
         }
@@ -620,7 +679,109 @@
                     document.getElementById('agreeAll').checked = allChecked;
                 });
             });
+
+            document.querySelectorAll('.social-terms-checkbox').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const allChecked = [...document.querySelectorAll('.social-terms-checkbox')].every(c => c.checked);
+                    document.getElementById('socialAgreeAll').checked = allChecked;
+                });
+            });
         });
+
+        // 소셜 로그인 약관 동의 모달 표시
+        function showSocialTermsModal(user, provider) {
+            pendingSocialUser = user;
+            pendingSocialProvider = provider;
+            hideLoading();
+
+            // 체크박스 초기화
+            document.getElementById('socialAgreeAll').checked = false;
+            document.querySelectorAll('.social-terms-checkbox').forEach(cb => cb.checked = false);
+
+            document.getElementById('socialTermsOverlay').classList.add('active');
+        }
+
+        // 약관 동의 취소
+        function cancelSocialTerms() {
+            document.getElementById('socialTermsOverlay').classList.remove('active');
+            pendingSocialUser = null;
+            pendingSocialProvider = null;
+            // 로그아웃
+            auth.signOut();
+            showMessage('회원가입이 취소되었습니다.');
+        }
+
+        // 약관 동의 확인
+        async function confirmSocialTerms() {
+            const agreeService = document.getElementById('socialAgreeService').checked;
+            const agreePrivacy = document.getElementById('socialAgreePrivacy').checked;
+            const agreeLocation = document.getElementById('socialAgreeLocation').checked;
+            const agreeMarketing = document.getElementById('socialAgreeMarketing').checked;
+
+            if (!agreeService || !agreePrivacy || !agreeLocation) {
+                showMessage('필수 약관에 모두 동의해주세요.');
+                return;
+            }
+
+            if (!pendingSocialUser) {
+                showMessage('오류가 발생했습니다. 다시 시도해주세요.');
+                return;
+            }
+
+            showLoading();
+            document.getElementById('socialTermsOverlay').classList.remove('active');
+
+            try {
+                await createOrUpdateUserWithTerms(pendingSocialUser, pendingSocialProvider, {
+                    service: agreeService,
+                    privacy: agreePrivacy,
+                    location: agreeLocation,
+                    marketing: agreeMarketing
+                });
+
+                showMessage('가입이 완료되었습니다!', 'success');
+                setTimeout(redirectToMain, 1000);
+            } catch (error) {
+                console.error('사용자 생성 오류:', error);
+                hideLoading();
+                showMessage('오류가 발생했습니다. 다시 시도해주세요.');
+            }
+
+            pendingSocialUser = null;
+            pendingSocialProvider = null;
+        }
+
+        // 사용자가 이미 약관에 동의했는지 확인
+        async function hasAgreedToTerms(userId) {
+            try {
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (userDoc.exists) {
+                    const data = userDoc.data();
+                    return data.termsAgreement?.service && data.termsAgreement?.privacy;
+                }
+                return false;
+            } catch (error) {
+                console.error('약관 동의 확인 오류:', error);
+                return false;
+            }
+        }
+
+        // 이메일 기반으로 사용자가 이미 약관에 동의했는지 확인
+        async function hasAgreedToTermsByEmail(email) {
+            if (!email) return false;
+            try {
+                const sanitizedEmail = email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_');
+                const userDoc = await db.collection('users').doc(sanitizedEmail).get();
+                if (userDoc.exists) {
+                    const data = userDoc.data();
+                    return data.termsAgreement?.service && data.termsAgreement?.privacy;
+                }
+                return false;
+            } catch (error) {
+                console.error('약관 동의 확인 오류:', error);
+                return false;
+            }
+        }
 
         async function showTermsModal(type) {
             const overlay = document.getElementById('termsModalOverlay');
@@ -844,10 +1005,18 @@
                 const provider = new firebase.auth.GoogleAuthProvider();
                 const result = await auth.signInWithPopup(provider);
 
-                await createOrUpdateUser(result.user, 'google');
-                showMessage('로그인 성공!', 'success');
+                // 약관 동의 여부 확인 (이메일 기반)
+                const hasAgreed = await hasAgreedToTermsByEmail(result.user.email);
 
-                setTimeout(redirectToMain, 1000);
+                if (hasAgreed) {
+                    // 이미 약관 동의한 사용자 - 바로 로그인
+                    await createOrUpdateUser(result.user, 'google');
+                    showMessage('로그인 성공!', 'success');
+                    setTimeout(redirectToMain, 1000);
+                } else {
+                    // 신규 사용자 또는 약관 미동의 - 약관 동의 모달 표시
+                    showSocialTermsModal(result.user, 'google');
+                }
             } catch (error) {
                 console.error('Google 로그인 에러:', error);
                 hideLoading();
@@ -1001,13 +1170,31 @@
                 try {
                     // Firebase Custom Token으로 로그인
                     const result = await auth.signInWithCustomToken(customToken);
-                    await createOrUpdateUser(result.user, 'kakao');
-                    showMessage('카카오 로그인 성공!', 'success');
 
                     // URL 파라미터 제거
                     window.history.replaceState({}, document.title, '/login.html');
 
-                    setTimeout(redirectToMain, 1000);
+                    // 약관 동의 여부 확인 (이메일 기반)
+                    // 카카오 사용자는 이메일이 claims에 있을 수 있으므로 Firestore에서 확인
+                    const userEmail = result.user.email;
+                    let hasAgreed = false;
+
+                    if (userEmail) {
+                        hasAgreed = await hasAgreedToTermsByEmail(userEmail);
+                    } else {
+                        // 이메일이 없는 경우 UID로 확인
+                        hasAgreed = await hasAgreedToTerms(result.user.uid);
+                    }
+
+                    if (hasAgreed) {
+                        // 이미 약관 동의한 사용자 - 바로 로그인
+                        await createOrUpdateUser(result.user, 'kakao');
+                        showMessage('카카오 로그인 성공!', 'success');
+                        setTimeout(redirectToMain, 1000);
+                    } else {
+                        // 신규 사용자 또는 약관 미동의 - 약관 동의 모달 표시
+                        showSocialTermsModal(result.user, 'kakao');
+                    }
                 } catch (error) {
                     console.error('카카오 로그인 에러:', error);
                     hideLoading();
