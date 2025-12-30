@@ -2648,11 +2648,13 @@ async function loadInquiries() {
 window.openNewInquiryModal = function() {
     const user = firebase.auth().currentUser;
     if (!user) {
-        alert('로그인이 필요합니다.');
+        alert(t('ui.loginRequired') || '로그인이 필요합니다.');
         return;
     }
     document.getElementById('inquirySubject').value = '';
     document.getElementById('inquiryMessage').value = '';
+    // 이미지 초기화
+    clearInquiryImage();
     document.getElementById('newInquiryModal').style.display = 'flex';
 };
 
@@ -2661,7 +2663,58 @@ window.openNewInquiryModal = function() {
  */
 window.closeNewInquiryModal = function() {
     document.getElementById('newInquiryModal').style.display = 'none';
+    clearInquiryImage();
 };
+
+/**
+ * 문의 이미지 미리보기
+ */
+window.previewInquiryImage = function(input) {
+    const preview = document.getElementById('inquiryImagePreview');
+    const previewImg = document.getElementById('inquiryImagePreviewImg');
+
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+
+        // 파일 크기 체크 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+            alert(t('ui.fileTooLarge') || '파일 크기는 5MB 이하여야 합니다.');
+            input.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
+/**
+ * 문의 이미지 제거
+ */
+window.clearInquiryImage = function() {
+    const input = document.getElementById('inquiryImage');
+    const preview = document.getElementById('inquiryImagePreview');
+    const previewImg = document.getElementById('inquiryImagePreviewImg');
+
+    if (input) input.value = '';
+    if (preview) preview.style.display = 'none';
+    if (previewImg) previewImg.src = '';
+};
+
+/**
+ * 문의 이미지 Firebase Storage 업로드
+ */
+async function uploadInquiryImage(file, userId) {
+    const storageRef = firebase.storage().ref();
+    const fileName = `inquiries/${userId}/${Date.now()}_${file.name}`;
+    const fileRef = storageRef.child(fileName);
+    await fileRef.put(file);
+    return await fileRef.getDownloadURL();
+}
 
 /**
  * 문의 제출
@@ -2669,28 +2722,42 @@ window.closeNewInquiryModal = function() {
 window.submitInquiry = async function() {
     const user = firebase.auth().currentUser;
     if (!user) {
-        alert('로그인이 필요합니다.');
+        alert(t('ui.loginRequired') || '로그인이 필요합니다.');
         return;
     }
 
     const subject = document.getElementById('inquirySubject').value.trim();
     const message = document.getElementById('inquiryMessage').value.trim();
+    const imageInput = document.getElementById('inquiryImage');
 
     if (!subject) {
-        alert('제목을 입력해주세요.');
+        alert(t('ui.enterSubject') || '제목을 입력해주세요.');
         return;
     }
     if (!message) {
-        alert('내용을 입력해주세요.');
+        alert(t('ui.enterMessage') || '내용을 입력해주세요.');
         return;
     }
 
     try {
+        // 제출 버튼 비활성화 (중복 제출 방지)
+        const submitBtn = document.querySelector('.inquiry-modal-footer .btn-submit');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = t('ui.submitting') || '제출 중...';
+        }
+
+        // 이미지 업로드 (있는 경우)
+        let imageUrl = null;
+        if (imageInput && imageInput.files && imageInput.files[0]) {
+            imageUrl = await uploadInquiryImage(imageInput.files[0], user.uid);
+        }
+
         // 사용자 정보 가져오기
         const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
         const userData = userDoc.exists ? userDoc.data() : {};
 
-        await firebase.firestore().collection('inquiries').add({
+        const inquiryData = {
             userId: user.uid,
             userEmail: user.email || '',
             userName: userData.verifiedName || userData.name || userData.displayName || user.displayName || '',
@@ -2703,15 +2770,29 @@ window.submitInquiry = async function() {
             replies: [],
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        };
 
-        alert('문의가 접수되었습니다.');
+        // 이미지 URL 추가 (있는 경우)
+        if (imageUrl) {
+            inquiryData.imageUrl = imageUrl;
+        }
+
+        await firebase.firestore().collection('inquiries').add(inquiryData);
+
+        alert(t('ui.inquirySubmitted') || '문의가 접수되었습니다.');
         closeNewInquiryModal();
         await loadInquiries();
 
     } catch (error) {
         console.error('문의 제출 실패:', error);
-        alert('문의 제출에 실패했습니다.');
+        alert(t('ui.inquirySubmitFailed') || '문의 제출에 실패했습니다.');
+    } finally {
+        // 버튼 복원
+        const submitBtn = document.querySelector('.inquiry-modal-footer .btn-submit');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = t('ui.submitInquiry') || '문의 보내기';
+        }
     }
 };
 
@@ -2739,9 +2820,16 @@ window.openInquiryDetail = async function(inquiryId) {
 
         // 메시지 HTML 구성
         const createdAt = data.createdAt?.toDate?.() || new Date();
+
+        // 이미지 HTML (있는 경우)
+        const imageHtml = data.imageUrl
+            ? `<div class="inquiry-image" style="margin-top: 8px;"><img src="${data.imageUrl}" alt="첨부 이미지" style="max-width: 100%; border-radius: 8px; cursor: pointer;" onclick="window.open('${data.imageUrl}', '_blank')"></div>`
+            : '';
+
         let messagesHtml = `
             <div class="inquiry-message user">
                 <div class="message-content">${escapeHtml(data.message)}</div>
+                ${imageHtml}
                 <div class="message-time">${createdAt.toLocaleString('ko-KR')}</div>
             </div>
         `;
