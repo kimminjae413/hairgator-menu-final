@@ -2416,11 +2416,11 @@
             }
 
             resetUI() {
-                loginScreen.style.display = 'flex';
-                genderSelection.style.display = 'none';
-                menuContainer.classList.remove('active');
-                backBtn.style.display = 'none';
-                updateUserInfo();
+                if (loginScreen) loginScreen.style.display = 'flex';
+                if (genderSelection) genderSelection.style.display = 'none';
+                if (menuContainer) menuContainer.classList.remove('active');
+                if (backBtn) backBtn.style.display = 'none';
+                if (typeof updateUserInfo === 'function') updateUserInfo();
             }
         }
 
