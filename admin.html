@@ -1015,6 +1015,58 @@
                 left: 0;
             }
 
+            /* 사이드바 열릴 때 텍스트 & 로고 표시 */
+            .sidebar.open .sidebar-logo-img {
+                display: block !important;
+                height: 28px;
+            }
+
+            .sidebar.open .sidebar-logo p {
+                display: block !important;
+            }
+
+            .sidebar.open .nav-section-title {
+                display: block !important;
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                padding: 16px 20px 8px;
+                margin-top: 8px;
+            }
+
+            .sidebar.open .nav-item {
+                justify-content: flex-start !important;
+                padding: 14px 20px !important;
+                gap: 14px;
+            }
+
+            .sidebar.open .nav-item span:not(.nav-item-icon):not(.nav-item-badge) {
+                display: inline !important;
+                font-size: 14px;
+                font-weight: 500;
+                color: var(--text);
+                flex: 1;
+            }
+
+            .sidebar.open .nav-item.active span:not(.nav-item-icon):not(.nav-item-badge) {
+                color: var(--primary);
+                font-weight: 600;
+            }
+
+            .sidebar.open .nav-item-icon {
+                margin: 0 !important;
+                font-size: 20px;
+                width: 24px;
+                text-align: center;
+            }
+
+            .sidebar.open .nav-item-badge {
+                display: inline-flex !important;
+                margin-left: auto;
+            }
+
             .sidebar-overlay {
                 display: none;
                 position: fixed;
