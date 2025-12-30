@@ -3220,12 +3220,79 @@ async function loadMypageNotices() {
     }
 }
 
-// 마이페이지에서 공지 클릭 시 모달 열기
-function openNoticeFromMypage(noticeId) {
-    openNoticeModal();
+// 종 버튼 클릭 시 마이페이지 공지사항으로 이동
+function goToNotices() {
+    // 마이페이지로 이동
+    window.location.hash = 'mypage';
+
+    // 공지사항 섹션 자동 열기
     setTimeout(() => {
-        showNoticeDetail(noticeId);
+        const section = document.getElementById('mypageNoticeSection');
+        const arrow = document.getElementById('noticeArrow');
+        if (section && section.style.display === 'none') {
+            section.style.display = 'block';
+            if (arrow) arrow.textContent = '↓';
+            loadMypageNotices();
+        }
     }, 300);
+}
+
+// 마이페이지에서 공지 클릭 시 상세 보기
+function openNoticeFromMypage(noticeId) {
+    showNoticeDetailInline(noticeId);
+}
+
+// 마이페이지 내 공지 상세 인라인 표시
+async function showNoticeDetailInline(noticeId) {
+    const listEl = document.getElementById('mypageNoticeList');
+    if (!listEl) return;
+
+    try {
+        const doc = await firebase.firestore().collection('notices').doc(noticeId).get();
+        if (!doc.exists) {
+            alert('공지사항을 찾을 수 없습니다.');
+            return;
+        }
+
+        const notice = doc.data();
+
+        // 읽음 처리
+        markNoticeAsRead(noticeId);
+
+        // 언어별 제목/내용
+        const lang = getNoticeLanguage();
+        const localized = getLocalizedNotice(notice, lang);
+
+        // 날짜 포맷
+        let dateStr = '';
+        if (notice.createdAt) {
+            const date = notice.createdAt.toDate ? notice.createdAt.toDate() : new Date(notice.createdAt);
+            dateStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        // 이미지 HTML
+        const imageHtml = notice.imageUrl
+            ? `<img src="${notice.imageUrl}" alt="공지 이미지" style="max-width: 100%; border-radius: 8px; margin: 12px 0;">`
+            : '';
+
+        listEl.innerHTML = `
+            <div class="notice-detail-inline">
+                <button onclick="loadMypageNotices()" style="background: none; border: none; color: var(--primary-color, #E91E63); cursor: pointer; padding: 0 0 12px 0; font-size: 14px;">← 목록으로</button>
+                <h3 style="margin: 0 0 8px 0; font-size: 16px; color: var(--text-primary);">${localized.title || '제목 없음'}</h3>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">${dateStr}</div>
+                ${imageHtml}
+                <div style="font-size: 14px; line-height: 1.6; color: var(--text-primary); white-space: pre-wrap;">${localized.content || ''}</div>
+            </div>
+        `;
+
+        // 뱃지 업데이트
+        checkNewNotices();
+        updateMypageNoticeBadge();
+
+    } catch (error) {
+        console.error('공지 상세 로드 실패:', error);
+        alert('공지사항을 불러올 수 없습니다.');
+    }
 }
 
 // 마이페이지 새 공지 뱃지 업데이트
@@ -3277,6 +3344,8 @@ window.toggleNoticeSection = toggleNoticeSection;
 window.loadMypageNotices = loadMypageNotices;
 window.openNoticeFromMypage = openNoticeFromMypage;
 window.updateMypageNoticeBadge = updateMypageNoticeBadge;
+window.goToNotices = goToNotices;
+window.showNoticeDetailInline = showNoticeDetailInline;
 
 // 페이지 로드 시 새 공지 확인
 document.addEventListener('DOMContentLoaded', () => {
