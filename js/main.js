@@ -188,12 +188,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (tokensEl) tokensEl.textContent = (tokenData.tokenBalance || 0).toLocaleString();
                     if (planEl) {
                         const planNames = {
-                            'free': '무료',
-                            'basic': '베이직',
-                            'pro': '프로',
-                            'business': '비즈니스'
+                            'free': t('payment.freePlan') || 'Free',
+                            'basic': t('payment.basicPlan') || 'Basic',
+                            'pro': t('payment.proPlan') || 'Pro',
+                            'business': t('payment.businessPlan') || 'Business'
                         };
-                        planEl.textContent = planNames[tokenData.plan] || '무료';
+                        planEl.textContent = planNames[tokenData.plan] || planNames['free'];
                     }
                 }
             } catch (e) {
