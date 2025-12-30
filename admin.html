@@ -2779,14 +2779,16 @@
 
     <!-- 관리자 추가 모달 -->
 
-    <!-- 약관 편집 모달 -->
-    <div class="modal-overlay" id="legalEditModal">
-        <div class="modal" style="max-width: 900px; max-height: 95vh;">
-            <div class="modal-header">
-                <h3 class="modal-title" id="legalEditModalTitle">약관 수정</h3>
-                <button class="modal-close" onclick="closeModal('legalEditModal')">&times;</button>
+    <!-- 약관 편집 사이드 패널 -->
+    <div class="legal-panel-overlay" id="legalEditPanel">
+        <div class="legal-panel">
+            <div class="legal-panel-header">
+                <button class="legal-panel-back" onclick="closeLegalPanel()">&larr;</button>
+                <h3 id="legalEditModalTitle">약관 수정</h3>
+                <button class="btn btn-primary" onclick="saveSingleLegalDocument()">저장</button>
             </div>
-            <div class="modal-body" style="max-height: calc(95vh - 140px); overflow-y: auto;">
+
+            <div class="legal-panel-body">
                 <input type="hidden" id="legalEditDocType">
 
                 <div class="form-group">
@@ -2794,31 +2796,185 @@
                     <input type="text" class="form-input" id="legalEditTitle" placeholder="문서 제목">
                 </div>
 
-                <!-- 탭 전환: 편집 / 미리보기 -->
-                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                    <button class="btn btn-sm" id="legalTabEdit" onclick="switchLegalTab('edit')" style="background: var(--primary); color: white;">✏️ 편집</button>
-                    <button class="btn btn-secondary btn-sm" id="legalTabPreview" onclick="switchLegalTab('preview')">👁️ 미리보기</button>
+                <div class="form-group">
+                    <label class="form-label">약관 ID</label>
+                    <input type="text" class="form-input" id="legalEditId" readonly style="background: var(--bg-hover); color: var(--text-muted);">
                 </div>
 
-                <!-- 편집 영역 -->
-                <div id="legalEditArea">
-                    <div class="form-group">
-                        <label class="form-label">내용 (HTML)</label>
-                        <textarea class="form-input" id="legalEditContent" rows="20" placeholder="HTML 내용을 입력하세요..." style="font-family: 'Consolas', monospace; font-size: 13px; line-height: 1.5;"></textarea>
+                <div class="form-group">
+                    <label class="form-label">내용</label>
+                    <!-- WYSIWYG 툴바 -->
+                    <div class="legal-wysiwyg-toolbar">
+                        <button type="button" onclick="legalFormat('bold')" title="굵게"><b>B</b></button>
+                        <button type="button" onclick="legalFormat('italic')" title="기울임"><i>I</i></button>
+                        <button type="button" onclick="legalFormat('underline')" title="밑줄"><u>U</u></button>
+                        <span class="legal-toolbar-divider"></span>
+                        <button type="button" onclick="legalFormat('insertUnorderedList')" title="목록">•</button>
+                        <button type="button" onclick="legalFormat('insertOrderedList')" title="번호목록">1.</button>
+                        <span class="legal-toolbar-divider"></span>
+                        <button type="button" onclick="legalFormatBlock('h2')" title="제목">H2</button>
+                        <button type="button" onclick="legalFormatBlock('h3')" title="소제목">H3</button>
+                        <button type="button" onclick="legalFormatBlock('p')" title="본문">P</button>
+                        <span class="legal-toolbar-divider"></span>
+                        <button type="button" onclick="toggleLegalSource()" id="legalSourceBtn" title="HTML 보기">&lt;/&gt;</button>
                     </div>
+                    <!-- WYSIWYG 편집기 -->
+                    <div id="legalWysiwygEditor" contenteditable="true" class="legal-wysiwyg-editor"></div>
+                    <!-- HTML 소스 편집기 (숨김) -->
+                    <textarea id="legalSourceEditor" class="legal-source-editor" style="display: none;"></textarea>
                 </div>
 
-                <!-- 미리보기 영역 -->
-                <div id="legalPreviewArea" style="display: none;">
-                    <div id="legalPreviewContent" style="padding: 20px; background: white; border-radius: 8px; line-height: 1.8; border: 1px solid var(--border-color); min-height: 300px; color: #333;"></div>
+                <!-- 수정 이력 -->
+                <div class="form-group" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                    <label class="form-label" style="color: var(--text-muted); font-size: 12px;">최종 수정</label>
+                    <div id="legalEditHistory" style="font-size: 13px; color: var(--text-muted);">-</div>
                 </div>
-            </div>
-            <div class="modal-footer" style="display: flex; justify-content: space-between;">
-                <button class="btn btn-secondary" onclick="closeModal('legalEditModal')">취소</button>
-                <button class="btn btn-primary" onclick="saveSingleLegalDocument()">💾 저장하기</button>
             </div>
         </div>
     </div>
+
+    <style>
+    /* 약관 편집 사이드 패널 */
+    .legal-panel-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 1000;
+        display: none;
+        justify-content: flex-end;
+    }
+    .legal-panel-overlay.show {
+        display: flex;
+    }
+    .legal-panel {
+        width: 55%;
+        min-width: 500px;
+        max-width: 700px;
+        height: 100%;
+        background: var(--bg-primary);
+        box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+        display: flex;
+        flex-direction: column;
+        animation: legalSlideIn 0.25s ease;
+    }
+    @keyframes legalSlideIn {
+        from { transform: translateX(100%); }
+        to { transform: translateX(0); }
+    }
+    .legal-panel-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: var(--bg-secondary);
+    }
+    .legal-panel-header h3 {
+        flex: 1;
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    .legal-panel-back {
+        background: none;
+        border: none;
+        font-size: 22px;
+        cursor: pointer;
+        color: var(--text-primary);
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+    .legal-panel-back:hover {
+        background: var(--bg-hover);
+    }
+    .legal-panel-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+    }
+
+    /* WYSIWYG 에디터 */
+    .legal-wysiwyg-toolbar {
+        display: flex;
+        gap: 2px;
+        padding: 8px 10px;
+        background: #f8f9fa;
+        border: 1px solid var(--border-color);
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        flex-wrap: wrap;
+    }
+    .legal-wysiwyg-toolbar button {
+        width: 34px;
+        height: 34px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+    }
+    .legal-wysiwyg-toolbar button:hover {
+        background: #e9ecef;
+    }
+    .legal-wysiwyg-toolbar button.active {
+        background: var(--primary);
+        color: white;
+    }
+    .legal-toolbar-divider {
+        width: 1px;
+        background: #dee2e6;
+        margin: 4px 6px;
+    }
+    .legal-wysiwyg-editor {
+        min-height: 350px;
+        max-height: 500px;
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 0 0 8px 8px;
+        background: white;
+        color: #333;
+        line-height: 1.8;
+        overflow-y: auto;
+        font-size: 15px;
+    }
+    .legal-wysiwyg-editor:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+    .legal-wysiwyg-editor h2 { font-size: 1.4em; margin: 0.8em 0 0.4em; font-weight: 600; }
+    .legal-wysiwyg-editor h3 { font-size: 1.15em; margin: 0.8em 0 0.4em; font-weight: 600; }
+    .legal-wysiwyg-editor p { margin: 0.5em 0; }
+    .legal-wysiwyg-editor ul, .legal-wysiwyg-editor ol { padding-left: 24px; margin: 0.5em 0; }
+    .legal-wysiwyg-editor li { margin: 4px 0; }
+
+    .legal-source-editor {
+        width: 100%;
+        min-height: 350px;
+        max-height: 500px;
+        padding: 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 0 0 8px 8px;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        resize: none;
+        background: #1e1e1e;
+        color: #d4d4d4;
+    }
+
+    @media (max-width: 768px) {
+        .legal-panel {
+            width: 100%;
+            min-width: unset;
+            max-width: unset;
+        }
+    }
+    </style>
 
     <div class="modal-overlay" id="addAdminModal">
         <div class="modal">
@@ -7070,7 +7226,9 @@
             }
         }
 
-        // 편집 모달 열기
+        // 사이드 패널 열기
+        let isSourceMode = false;
+
         async function openLegalEditModal(docType) {
             if (!hasLegalEditPermission()) {
                 alert('수정 권한이 없습니다.');
@@ -7078,10 +7236,14 @@
             }
 
             document.getElementById('legalEditDocType').value = docType;
+            document.getElementById('legalEditId').value = docType;
             document.getElementById('legalEditModalTitle').textContent = LEGAL_DOC_NAMES[docType] + ' 수정';
 
-            // 편집 탭으로 초기화
-            switchLegalTab('edit');
+            // 소스 모드 초기화
+            isSourceMode = false;
+            document.getElementById('legalWysiwygEditor').style.display = 'block';
+            document.getElementById('legalSourceEditor').style.display = 'none';
+            document.getElementById('legalSourceBtn').classList.remove('active');
 
             try {
                 const docRef = db.collection('legal_documents').doc(docType);
@@ -7090,24 +7252,49 @@
                 if (doc.exists) {
                     const data = doc.data();
                     document.getElementById('legalEditTitle').value = data.title || '';
-                    document.getElementById('legalEditContent').value = data.content || '';
+                    document.getElementById('legalWysiwygEditor').innerHTML = data.content || '';
+                    document.getElementById('legalSourceEditor').value = data.content || '';
+
+                    // 수정 이력 표시
+                    if (data.updatedAt) {
+                        const date = data.updatedAt.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt);
+                        document.getElementById('legalEditHistory').innerHTML =
+                            `${data.updatedBy || '알 수 없음'} · ${date.toLocaleString('ko-KR')}`;
+                    } else {
+                        document.getElementById('legalEditHistory').textContent = '-';
+                    }
                 } else {
                     document.getElementById('legalEditTitle').value = LEGAL_DOC_NAMES[docType];
-                    document.getElementById('legalEditContent').value = '';
+                    document.getElementById('legalWysiwygEditor').innerHTML = '';
+                    document.getElementById('legalSourceEditor').value = '';
+                    document.getElementById('legalEditHistory').textContent = '새 문서';
                 }
 
-                document.getElementById('legalEditModal').classList.add('show');
+                document.getElementById('legalEditPanel').classList.add('show');
             } catch (error) {
                 console.error('문서 로드 실패:', error);
                 alert('문서를 불러오지 못했습니다.');
             }
         }
 
+        // 패널 닫기
+        function closeLegalPanel(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('legalEditPanel').classList.remove('show');
+        }
+
         // 개별 문서 저장
         async function saveSingleLegalDocument() {
             const docType = document.getElementById('legalEditDocType').value;
             const title = document.getElementById('legalEditTitle').value;
-            const content = document.getElementById('legalEditContent').value;
+
+            // 소스 모드면 textarea에서, 아니면 WYSIWYG에서 가져옴
+            let content;
+            if (isSourceMode) {
+                content = document.getElementById('legalSourceEditor').value;
+            } else {
+                content = document.getElementById('legalWysiwygEditor').innerHTML;
+            }
 
             if (!title.trim()) {
                 alert('제목을 입력하세요.');
@@ -7123,43 +7310,46 @@
                 });
 
                 alert('저장되었습니다.');
-                closeModal('legalEditModal');
-                loadLegalDocuments(); // 목록 새로고침
+                closeLegalPanel();
+                loadLegalDocuments();
             } catch (error) {
                 console.error('저장 실패:', error);
                 alert('저장 실패: ' + error.message);
             }
         }
 
-        // 편집/미리보기 탭 전환
-        function switchLegalTab(tab) {
-            const editBtn = document.getElementById('legalTabEdit');
-            const previewBtn = document.getElementById('legalTabPreview');
-            const editArea = document.getElementById('legalEditArea');
-            const previewArea = document.getElementById('legalPreviewArea');
+        // WYSIWYG 서식 적용
+        function legalFormat(command) {
+            document.execCommand(command, false, null);
+            document.getElementById('legalWysiwygEditor').focus();
+        }
 
-            if (tab === 'edit') {
-                editBtn.style.background = 'var(--primary)';
-                editBtn.style.color = 'white';
-                editBtn.classList.remove('btn-secondary');
-                previewBtn.classList.add('btn-secondary');
-                previewBtn.style.background = '';
-                previewBtn.style.color = '';
-                editArea.style.display = 'block';
-                previewArea.style.display = 'none';
+        // 블록 서식 적용 (H2, H3, P)
+        function legalFormatBlock(tag) {
+            document.execCommand('formatBlock', false, tag);
+            document.getElementById('legalWysiwygEditor').focus();
+        }
+
+        // HTML 소스 보기 토글
+        function toggleLegalSource() {
+            const wysiwygEditor = document.getElementById('legalWysiwygEditor');
+            const sourceEditor = document.getElementById('legalSourceEditor');
+            const sourceBtn = document.getElementById('legalSourceBtn');
+
+            if (isSourceMode) {
+                // 소스 → WYSIWYG
+                wysiwygEditor.innerHTML = sourceEditor.value;
+                wysiwygEditor.style.display = 'block';
+                sourceEditor.style.display = 'none';
+                sourceBtn.classList.remove('active');
+                isSourceMode = false;
             } else {
-                previewBtn.style.background = 'var(--primary)';
-                previewBtn.style.color = 'white';
-                previewBtn.classList.remove('btn-secondary');
-                editBtn.classList.add('btn-secondary');
-                editBtn.style.background = '';
-                editBtn.style.color = '';
-                editArea.style.display = 'none';
-                previewArea.style.display = 'block';
-
-                // 미리보기 내용 업데이트
-                const content = document.getElementById('legalEditContent').value;
-                document.getElementById('legalPreviewContent').innerHTML = content || '<p style="color: #999;">내용이 없습니다.</p>';
+                // WYSIWYG → 소스
+                sourceEditor.value = wysiwygEditor.innerHTML;
+                wysiwygEditor.style.display = 'none';
+                sourceEditor.style.display = 'block';
+                sourceBtn.classList.add('active');
+                isSourceMode = true;
             }
         }
 
