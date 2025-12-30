@@ -3302,8 +3302,16 @@
                 const paidUsers = allUsers.filter(u => u.plan && u.plan !== 'free').length;
                 const totalTokens = allUsers.reduce((sum, u) => sum + (u.tokenBalance || 0), 0);
 
+                // 오늘 가입자 수 (신규 가입)
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
+                const todayNewUsers = firebaseUsers.filter(u => {
+                    if (!u.createdAt) return false;
+                    const date = u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt);
+                    return date >= today;
+                }).length;
+
+                // 오늘 활성 사용자 (로그인 기준)
                 const todayActive = firebaseUsers.filter(u => {
                     if (!u.lastLoginAt) return false;
                     const date = u.lastLoginAt.toDate ? u.lastLoginAt.toDate() : new Date(u.lastLoginAt);
@@ -3315,6 +3323,16 @@
                 document.getElementById('statPaidUsers').textContent = paidUsers;
                 document.getElementById('statTodayActive').textContent = todayActive;
                 document.getElementById('userCountBadge').textContent = totalUsers.toLocaleString();
+
+                // 오늘 신규 가입 표시
+                const changeEl = document.getElementById('statUsersChange');
+                if (todayNewUsers > 0) {
+                    changeEl.textContent = `오늘 +${todayNewUsers}명 가입`;
+                    changeEl.className = 'stat-change up';
+                } else {
+                    changeEl.textContent = '오늘 신규 가입 없음';
+                    changeEl.className = 'stat-change';
+                }
 
                 // 플랜 분포 차트
                 const planCounts = {
@@ -3373,27 +3391,61 @@
                     .get();
 
                 if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">활동 없음</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">활동 내역이 없습니다</td></tr>';
                     return;
                 }
 
+                // 활동 이름 한글화
+                const actionNames = {
+                    'chatbot': '💬 챗봇',
+                    'lookbook': '📚 룩북',
+                    'hairTry': '💇 헤어체험',
+                    'admin_charge': '💰 토큰충전',
+                    'admin_set': '⚙️ 토큰설정',
+                    'purchase': '💳 결제'
+                };
+
                 tbody.innerHTML = snapshot.docs.map(doc => {
                     const log = doc.data();
-                    const time = log.timestamp?.toDate ? log.timestamp.toDate().toLocaleString('ko-KR') : '-';
+
+                    // 시간 포맷 (오늘이면 시간만, 아니면 날짜+시간)
+                    let timeStr = '-';
+                    if (log.timestamp?.toDate) {
+                        const date = log.timestamp.toDate();
+                        const now = new Date();
+                        const isToday = date.toDateString() === now.toDateString();
+                        if (isToday) {
+                            timeStr = date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                        } else {
+                            timeStr = date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) + ' ' +
+                                      date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                        }
+                    }
+
+                    // 사용자 표시 (이름 > 이메일 > ID)
+                    const userName = log.metadata?.userName || log.userName || '';
+                    const userDisplay = userName || (log.userId ? log.userId.split('_')[0] : '-');
+
+                    // 활동 이름
                     const action = log.action || '-';
-                    const detail = log.metadata?.note || log.metadata?.feature || '-';
+                    const actionName = actionNames[action] || action;
+
+                    // 토큰 사용량
+                    const tokens = log.creditsUsed || log.tokensUsed || 0;
+                    const tokenDisplay = tokens > 0 ? `-${tokens} 토큰` : '';
 
                     return `
                         <tr>
-                            <td style="font-size: 12px; color: var(--text-muted);">${time}</td>
-                            <td style="font-size: 12px;">${log.userId?.substring(0, 12) || '-'}...</td>
-                            <td><span class="badge badge-${getActionBadge(action)}">${action}</span></td>
-                            <td style="font-size: 12px;">${detail}</td>
+                            <td style="font-size: 12px; color: var(--text-muted);">${timeStr}</td>
+                            <td style="font-size: 12px;" title="${log.userId || ''}">${userDisplay}</td>
+                            <td><span class="badge badge-${getActionBadge(action)}">${actionName}</span></td>
+                            <td style="font-size: 12px; color: #ef4444;">${tokenDisplay}</td>
                         </tr>
                     `;
                 }).join('');
             } catch (error) {
                 console.error('활동 로드 실패:', error);
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">로드 실패</td></tr>';
             }
         }
 
