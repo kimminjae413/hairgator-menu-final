@@ -238,15 +238,15 @@
             }
         },
 
-        // 플랜 조회
-        async getPlan(uid) {
+        // 플랜 조회 (이메일 기반 문서 ID 사용)
+        async getPlan(docId) {
             try {
-                if (!uid) {
-                    uid = this.currentUser?.uid;
+                if (!docId) {
+                    docId = await this.getUserDocId();
                 }
 
-                if (!uid) {
-                    return { success: false, error: 'uid required', plan: 'free' };
+                if (!docId) {
+                    return { success: false, error: 'docId required', plan: 'free' };
                 }
 
                 const userDoc = await db.collection('users').doc(docId).get();
@@ -265,15 +265,15 @@
             }
         },
 
-        // 기능 사용 가능 여부 확인
-        async canUseFeature(uid, feature) {
+        // 기능 사용 가능 여부 확인 (이메일 기반 문서 ID 사용)
+        async canUseFeature(docId, feature) {
             try {
-                if (!uid) {
-                    uid = this.currentUser?.uid;
+                if (!docId) {
+                    docId = await this.getUserDocId();
                 }
 
-                if (!uid) {
-                    return { success: false, canUse: false, error: 'uid required' };
+                if (!docId) {
+                    return { success: false, canUse: false, error: 'docId required' };
                 }
 
                 const cost = this.TOKEN_COSTS[feature];
@@ -281,7 +281,7 @@
                     return { success: false, canUse: false, error: `Unknown feature: ${feature}` };
                 }
 
-                const result = await this.getTokenBalance(uid);
+                const result = await this.getTokenBalance(docId);
                 const currentBalance = result.success ? result.tokenBalance : 0;
                 const canUse = currentBalance >= cost;
 
@@ -298,15 +298,15 @@
             }
         },
 
-        // 토큰 차감
-        async deductTokens(uid, feature, metadata = {}) {
+        // 토큰 차감 (이메일 기반 문서 ID 사용)
+        async deductTokens(docId, feature, metadata = {}) {
             try {
-                if (!uid) {
-                    uid = this.currentUser?.uid;
+                if (!docId) {
+                    docId = await this.getUserDocId();
                 }
 
-                if (!uid) {
-                    return { success: false, error: 'uid required' };
+                if (!docId) {
+                    return { success: false, error: 'docId required' };
                 }
 
                 const cost = this.TOKEN_COSTS[feature];
@@ -315,7 +315,7 @@
                 }
 
                 // 현재 잔액 확인
-                const currentResult = await this.getTokenBalance(uid);
+                const currentResult = await this.getTokenBalance(docId);
                 if (!currentResult.success) {
                     return currentResult;
                 }
@@ -333,14 +333,14 @@
                 const newBalance = currentBalance - cost;
 
                 // Firestore 업데이트
-                await db.collection('users').doc(uid).update({
+                await db.collection('users').doc(docId).update({
                     tokenBalance: newBalance,
                     lastUsedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
                 // 사용 로그 저장
                 await db.collection('credit_logs').add({
-                    userId: uid,
+                    userId: docId,
                     action: feature,
                     creditsUsed: cost,
                     previousBalance: currentBalance,
@@ -372,15 +372,15 @@
             }
         },
 
-        // 동적 토큰 차감 (가변 금액)
-        async deductTokensDynamic(uid, amount, feature, metadata = {}) {
+        // 동적 토큰 차감 (가변 금액, 이메일 기반 문서 ID 사용)
+        async deductTokensDynamic(docId, amount, feature, metadata = {}) {
             try {
-                if (!uid) {
-                    uid = this.currentUser?.uid;
+                if (!docId) {
+                    docId = await this.getUserDocId();
                 }
 
-                if (!uid) {
-                    return { success: false, error: 'uid required' };
+                if (!docId) {
+                    return { success: false, error: 'docId required' };
                 }
 
                 if (!amount || amount <= 0) {
@@ -388,7 +388,7 @@
                 }
 
                 // 현재 잔액 확인
-                const currentResult = await this.getTokenBalance(uid);
+                const currentResult = await this.getTokenBalance(docId);
                 if (!currentResult.success) {
                     return currentResult;
                 }
@@ -406,14 +406,14 @@
                 const newBalance = currentBalance - amount;
 
                 // Firestore 업데이트
-                await db.collection('users').doc(uid).update({
+                await db.collection('users').doc(docId).update({
                     tokenBalance: newBalance,
                     lastUsedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
                 // 사용 로그 저장
                 await db.collection('credit_logs').add({
-                    userId: uid,
+                    userId: docId,
                     action: feature,
                     creditsUsed: amount,
                     previousBalance: currentBalance,
@@ -445,31 +445,31 @@
             }
         },
 
-        // 토큰 충전 (결제 후)
-        async chargeTokens(uid, amount, paymentId) {
+        // 토큰 충전 (결제 후, 이메일 기반 문서 ID 사용)
+        async chargeTokens(docId, amount, paymentId) {
             try {
-                if (!uid) {
-                    uid = this.currentUser?.uid;
+                if (!docId) {
+                    docId = await this.getUserDocId();
                 }
 
-                if (!uid) {
-                    return { success: false, error: 'uid required' };
+                if (!docId) {
+                    return { success: false, error: 'docId required' };
                 }
 
                 // 현재 잔액 확인
-                const currentResult = await this.getTokenBalance(uid);
+                const currentResult = await this.getTokenBalance(docId);
                 const currentBalance = currentResult.success ? currentResult.tokenBalance : 0;
                 const newBalance = currentBalance + amount;
 
                 // Firestore 업데이트
-                await db.collection('users').doc(uid).update({
+                await db.collection('users').doc(docId).update({
                     tokenBalance: newBalance,
                     lastChargedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
                 // 충전 로그 저장
                 await db.collection('credit_logs').add({
-                    userId: uid,
+                    userId: docId,
                     action: 'charge',
                     creditsUsed: -amount, // 음수로 저장 (충전)
                     previousBalance: currentBalance,
@@ -496,15 +496,15 @@
             }
         },
 
-        // 플랜 업그레이드
-        async upgradePlan(uid, newPlan, tokenAmount) {
+        // 플랜 업그레이드 (이메일 기반 문서 ID 사용)
+        async upgradePlan(docId, newPlan, tokenAmount) {
             try {
-                if (!uid) {
-                    uid = this.currentUser?.uid;
+                if (!docId) {
+                    docId = await this.getUserDocId();
                 }
 
-                if (!uid) {
-                    return { success: false, error: 'uid required' };
+                if (!docId) {
+                    return { success: false, error: 'docId required' };
                 }
 
                 const validPlans = ['free', 'basic', 'pro', 'business'];
@@ -513,13 +513,13 @@
                 }
 
                 // 현재 정보 확인
-                const currentResult = await this.getTokenBalance(uid);
+                const currentResult = await this.getTokenBalance(docId);
                 const currentBalance = currentResult.success ? currentResult.tokenBalance : 0;
                 const currentPlan = currentResult.plan || 'free';
                 const newBalance = currentBalance + tokenAmount;
 
                 // Firestore 업데이트
-                await db.collection('users').doc(uid).update({
+                await db.collection('users').doc(docId).update({
                     plan: newPlan,
                     tokenBalance: newBalance,
                     planUpgradedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -565,10 +565,19 @@
             return fallback[planKey] || planKey || '무료';
         },
 
-        // 관리자 여부 확인
+        // 관리자 여부 확인 (이메일 기반 ID로 비교)
         isAdminUser() {
-            if (!this.currentUser) return false;
-            return this.ADMIN_USER_IDS.includes(this.currentUser.uid);
+            // 1차: currentDesigner.id 사용 (이메일 기반)
+            if (window.currentDesigner?.id) {
+                return this.ADMIN_USER_IDS.includes(window.currentDesigner.id);
+            }
+            // 2차: 현재 사용자 이메일로 ID 생성
+            const email = this.currentUser?.email || (typeof auth !== 'undefined' ? auth.currentUser?.email : null);
+            if (email) {
+                const emailDocId = email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_');
+                return this.ADMIN_USER_IDS.includes(emailDocId);
+            }
+            return false;
         },
 
         // 토큰 표시 UI 업데이트
