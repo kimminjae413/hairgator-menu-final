@@ -106,13 +106,21 @@ exports.handler = async (event) => {
 
     await billingKeyRef.set(cardInfo);
 
-    // 4. 사용자의 기본 카드로 설정 (첫 번째 카드인 경우)
+    // 4. 사용자의 기본 카드로 설정 + savedCard 필드 업데이트
     const existingCards = await userRef.collection('billing_keys').where('status', '==', 'ACTIVE').get();
-    if (existingCards.size === 1) {
-      await userRef.update({
-        defaultBillingKey: billingKey
-      });
-    }
+
+    // savedCard 필드를 사용자 문서에 직접 저장 (마이페이지 표시용)
+    await userRef.set({
+      billingKey: billingKey,
+      billingKeyCreatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      savedCard: {
+        last4: cardInfo.lastFour,
+        brand: cardInfo.cardBrand,
+        expiryMonth: cardInfo.expiryMonth || '',
+        expiryYear: cardInfo.expiryYear || ''
+      },
+      defaultBillingKey: existingCards.size === 0 ? billingKey : undefined  // 첫 카드면 기본으로 설정
+    }, { merge: true });
 
     console.log('✅ 빌링키 저장 완료:', userId);
 

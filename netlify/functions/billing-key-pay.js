@@ -139,17 +139,34 @@ exports.handler = async (event) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    // 3. 사용자 토큰 충전
+    // 3. 사용자 토큰 충전 (플랜 구매 시 토큰 리셋, 추가 토큰은 합산)
     const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
     const currentTokens = userDoc.exists ? (userDoc.data().tokenBalance || 0) : 0;
-    const newBalance = currentTokens + plan.tokens;
+    const currentPlan = userDoc.exists ? (userDoc.data().plan || 'free') : 'free';
 
-    await userRef.set({
+    // 토큰 계산: 플랜 구매는 리셋, 추가 토큰은 합산
+    const newBalance = planKey === 'tokens_5000' ? currentTokens + plan.tokens : plan.tokens;
+    const newPlan = planKey === 'tokens_5000' ? currentPlan : planKey;
+
+    // 플랜 만료일 계산 (결제일 + 30일)
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    const updateData = {
       tokenBalance: newBalance,
-      plan: planKey,
-      lastPaymentAt: admin.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
+      plan: newPlan,
+      lastPaymentAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastChargedAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+
+    // 플랜 구매 시에만 만료일 설정
+    if (planKey !== 'tokens_5000') {
+      updateData.planExpiresAt = admin.firestore.Timestamp.fromDate(expiresAt);
+      updateData.planStartedAt = admin.firestore.FieldValue.serverTimestamp();
+    }
+
+    await userRef.set(updateData, { merge: true });
 
     // 4. 토큰 로그 기록
     await db.collection('token_logs').add({
@@ -170,11 +187,12 @@ exports.handler = async (event) => {
       headers,
       body: JSON.stringify({
         success: true,
-        message: '결제가 완료되었습니다.',
+        message: `${plan.tokens.toLocaleString()} 토큰이 충전되었습니다. (30일간 유효)`,
         paymentId: paymentId,
         tokens: plan.tokens,
         newBalance: newBalance,
-        plan: planKey
+        plan: newPlan,
+        planExpiresAt: planKey !== 'tokens_5000' ? expiresAt.toISOString() : null
       })
     };
 

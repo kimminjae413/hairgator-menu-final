@@ -3761,10 +3761,122 @@
                     <div style="margin-bottom: 8px;"><strong>가입일:</strong> ${user.createdAt?.toDate ? user.createdAt.toDate().toLocaleString('ko-KR') : '-'}</div>
                     <div><strong>최근 접속:</strong> ${user.lastLoginAt?.toDate ? user.lastLoginAt.toDate().toLocaleString('ko-KR') : '-'}</div>
                 </div>
+
+                ${user.plan && user.plan !== 'free' ? `
+                <div style="margin-top: 16px; background: ${getPlanExpiryStatus(user).bgColor}; border-radius: 8px; padding: 12px; border: 1px solid ${getPlanExpiryStatus(user).borderColor};">
+                    <div style="font-size: 11px; color: ${getPlanExpiryStatus(user).textColor}; font-weight: 600; margin-bottom: 8px;">📅 플랜 만료 정보</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="color: ${getPlanExpiryStatus(user).textColor}; font-size: 10px;">만료일</div>
+                            <div style="font-weight: 600; color: ${getPlanExpiryStatus(user).valueColor};">
+                                ${user.planExpiresAt?.toDate ? user.planExpiresAt.toDate().toLocaleDateString('ko-KR') : '설정되지 않음'}
+                            </div>
+                            <div style="font-size: 10px; color: ${getPlanExpiryStatus(user).valueColor};">
+                                ${getPlanExpiryStatus(user).statusText}
+                            </div>
+                        </div>
+                        <button class="btn btn-sm" style="background: ${getPlanExpiryStatus(user).btnColor}; color: white;" onclick="editPlanExpiry('${user.id}')">
+                            만료일 수정
+                        </button>
+                    </div>
+                </div>
+                ` : ''}
+
+                ${user.savedCard ? `
+                <div style="margin-top: 16px; background: #F0F9FF; border-radius: 8px; padding: 12px; border: 1px solid #0EA5E9;">
+                    <div style="font-size: 11px; color: #0369A1; font-weight: 600; margin-bottom: 8px;">💳 저장된 카드</div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 20px;">💳</span>
+                        <div>
+                            <div style="font-weight: 600; color: #0284C7;">${user.savedCard.brand || '카드'}</div>
+                            <div style="font-size: 11px; color: #0369A1;">**** **** **** ${user.savedCard.last4 || '****'}</div>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
             `;
 
             document.getElementById('userDetailEditBtn').onclick = () => quickEditUser(userId);
             openModal('userDetailModal');
+        }
+
+        // 플랜 만료 상태 계산
+        function getPlanExpiryStatus(user) {
+            if (!user.planExpiresAt) {
+                return {
+                    bgColor: '#FEF3C7', borderColor: '#F59E0B', textColor: '#92400E',
+                    valueColor: '#B45309', btnColor: '#F59E0B', statusText: '만료일 미설정'
+                };
+            }
+
+            const expiresAt = user.planExpiresAt.toDate ? user.planExpiresAt.toDate() : new Date(user.planExpiresAt);
+            const now = new Date();
+            const daysRemaining = Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24));
+
+            if (daysRemaining <= 0) {
+                return {
+                    bgColor: '#FEE2E2', borderColor: '#EF4444', textColor: '#991B1B',
+                    valueColor: '#DC2626', btnColor: '#EF4444', statusText: '만료됨'
+                };
+            } else if (daysRemaining <= 3) {
+                return {
+                    bgColor: '#FEE2E2', borderColor: '#EF4444', textColor: '#991B1B',
+                    valueColor: '#DC2626', btnColor: '#EF4444', statusText: `${daysRemaining}일 남음 (긴급)`
+                };
+            } else if (daysRemaining <= 7) {
+                return {
+                    bgColor: '#FEF3C7', borderColor: '#F59E0B', textColor: '#92400E',
+                    valueColor: '#B45309', btnColor: '#F59E0B', statusText: `${daysRemaining}일 남음`
+                };
+            } else {
+                return {
+                    bgColor: '#ECFDF5', borderColor: '#10B981', textColor: '#065F46',
+                    valueColor: '#047857', btnColor: '#10B981', statusText: `${daysRemaining}일 남음`
+                };
+            }
+        }
+
+        // 플랜 만료일 수정
+        async function editPlanExpiry(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            const currentExpiry = user.planExpiresAt?.toDate
+                ? user.planExpiresAt.toDate().toISOString().split('T')[0]
+                : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+            const newDateStr = prompt(
+                `플랜 만료일을 수정합니다.\n\n현재: ${currentExpiry}\n\n새 만료일 (YYYY-MM-DD):`,
+                currentExpiry
+            );
+
+            if (!newDateStr) return;
+
+            // 날짜 형식 검증
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateRegex.test(newDateStr)) {
+                showToast('올바른 날짜 형식을 입력하세요 (YYYY-MM-DD)', 'error');
+                return;
+            }
+
+            const newDate = new Date(newDateStr + 'T23:59:59');
+            if (isNaN(newDate.getTime())) {
+                showToast('유효하지 않은 날짜입니다', 'error');
+                return;
+            }
+
+            try {
+                await db.collection('users').doc(userId).update({
+                    planExpiresAt: firebase.firestore.Timestamp.fromDate(newDate)
+                });
+
+                showToast('만료일이 수정되었습니다', 'success');
+                closeModal('userDetailModal');
+                loadUsers();
+            } catch (error) {
+                console.error('만료일 수정 실패:', error);
+                showToast('만료일 수정 실패: ' + error.message, 'error');
+            }
         }
 
         function quickEditUser(userId) {

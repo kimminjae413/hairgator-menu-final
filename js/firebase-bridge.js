@@ -107,6 +107,14 @@
                         || userData.nickname
                         || '사용자';
 
+                    // 플랜 만료일 처리
+                    let planExpiresAt = null;
+                    if (userData.planExpiresAt) {
+                        planExpiresAt = userData.planExpiresAt.toDate
+                            ? userData.planExpiresAt.toDate().toISOString()
+                            : userData.planExpiresAt;
+                    }
+
                     // 전역 변수에 저장 (id는 이메일 기반 docId 사용)
                     window.currentDesigner = {
                         id: docId,  // 이메일 기반 문서 ID
@@ -115,6 +123,8 @@
                         photoURL: userData.photoURL || '',
                         tokenBalance: userData.tokenBalance || 0,
                         plan: userData.plan || 'free',
+                        planExpiresAt: planExpiresAt,
+                        savedCard: userData.savedCard || null,
                         provider: userData.provider || userData.primaryProvider || 'email',
                         isFirebaseUser: true
                     };
@@ -126,8 +136,21 @@
                         docId: docId,
                         name: displayName,
                         tokenBalance: userData.tokenBalance,
-                        plan: userData.plan
+                        plan: userData.plan,
+                        planExpiresAt: planExpiresAt
                     });
+
+                    // 플랜 만료 체크 (자동 다운그레이드 + 알림)
+                    const expirationResult = await this.checkPlanExpiration(docId);
+                    if (expirationResult.expired) {
+                        // 만료된 경우 알림
+                        if (typeof showToast === 'function') {
+                            showToast('⏰ ' + expirationResult.message, 'warning', 5000);
+                        }
+                    } else if (expirationResult.warning) {
+                        // 만료 임박 알림
+                        this.showExpirationWarning(expirationResult.warning);
+                    }
 
                     return userData;
                 } else {
@@ -181,6 +204,167 @@
             // 토스트 알림
             if (typeof showToast === 'function') {
                 showToast(`${user.name}님 환영합니다!`, 'success');
+            }
+        },
+
+        // ========== 플랜 만료 관리 함수들 ==========
+
+        /**
+         * 플랜 만료 체크 및 자동 다운그레이드
+         * - 만료 시 토큰 소멸, free로 전환
+         * - 7일전, 3일전 알림 반환
+         */
+        async checkPlanExpiration(docId) {
+            try {
+                if (!docId) {
+                    docId = await this.getUserDocId();
+                }
+                if (!docId) return { expired: false };
+
+                const userDoc = await db.collection('users').doc(docId).get();
+                if (!userDoc.exists) return { expired: false };
+
+                const userData = userDoc.data();
+                const plan = userData.plan || 'free';
+                const planExpiresAt = userData.planExpiresAt;
+
+                // 무료 플랜은 만료 체크 불필요
+                if (plan === 'free' || !planExpiresAt) {
+                    return { expired: false, plan: 'free' };
+                }
+
+                const now = new Date();
+                const expiresDate = planExpiresAt.toDate ? planExpiresAt.toDate() : new Date(planExpiresAt);
+                const daysRemaining = Math.ceil((expiresDate - now) / (1000 * 60 * 60 * 24));
+
+                // 만료된 경우 - 토큰 소멸 및 free 전환
+                if (now > expiresDate) {
+                    console.log('⏰ 플랜 만료 감지! 다운그레이드 진행...');
+
+                    await db.collection('users').doc(docId).update({
+                        plan: 'free',
+                        tokenBalance: 0,
+                        planExpiredAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        previousPlan: plan,
+                        previousTokenBalance: userData.tokenBalance || 0
+                    });
+
+                    // 전역 변수 업데이트
+                    if (window.currentDesigner) {
+                        window.currentDesigner.plan = 'free';
+                        window.currentDesigner.tokenBalance = 0;
+                    }
+
+                    // UI 업데이트
+                    this.updateTokenDisplay(0, 'free');
+
+                    return {
+                        expired: true,
+                        previousPlan: plan,
+                        previousTokens: userData.tokenBalance || 0,
+                        message: '플랜이 만료되었습니다. 토큰이 초기화되었습니다.'
+                    };
+                }
+
+                // 만료 임박 알림
+                let warning = null;
+                if (daysRemaining <= 3) {
+                    warning = {
+                        type: 'urgent',
+                        daysRemaining: daysRemaining,
+                        message: `플랜이 ${daysRemaining}일 후 만료됩니다. 만료 시 토큰이 소멸됩니다.`
+                    };
+                } else if (daysRemaining <= 7) {
+                    warning = {
+                        type: 'warning',
+                        daysRemaining: daysRemaining,
+                        message: `플랜이 ${daysRemaining}일 후 만료됩니다.`
+                    };
+                }
+
+                return {
+                    expired: false,
+                    plan: plan,
+                    expiresAt: expiresDate.toISOString(),
+                    daysRemaining: daysRemaining,
+                    warning: warning
+                };
+
+            } catch (error) {
+                console.error('❌ 플랜 만료 체크 실패:', error);
+                return { expired: false, error: error.message };
+            }
+        },
+
+        /**
+         * 만료 알림 표시
+         */
+        showExpirationWarning(warning) {
+            if (!warning) return;
+
+            const { type, daysRemaining, message } = warning;
+
+            // 이미 오늘 알림을 보여줬으면 스킵
+            const lastShown = localStorage.getItem('plan_warning_shown');
+            const today = new Date().toDateString();
+            if (lastShown === today) return;
+
+            localStorage.setItem('plan_warning_shown', today);
+
+            if (type === 'urgent') {
+                // 3일 이하: 빨간색 경고
+                if (typeof showToast === 'function') {
+                    showToast(`⚠️ ${message}`, 'error', 5000);
+                } else {
+                    alert(message);
+                }
+            } else {
+                // 7일 이하: 노란색 경고
+                if (typeof showToast === 'function') {
+                    showToast(`📅 ${message}`, 'warning', 4000);
+                }
+            }
+        },
+
+        /**
+         * 저장된 카드 정보 조회
+         */
+        async getSavedCard(docId) {
+            try {
+                if (!docId) {
+                    docId = await this.getUserDocId();
+                }
+                if (!docId) return null;
+
+                const userDoc = await db.collection('users').doc(docId).get();
+                if (!userDoc.exists) return null;
+
+                const userData = userDoc.data();
+                return userData.savedCard || null;
+            } catch (error) {
+                console.error('❌ 저장된 카드 조회 실패:', error);
+                return null;
+            }
+        },
+
+        /**
+         * 빌링키 조회 (간편 결제용)
+         */
+        async getBillingKey(docId) {
+            try {
+                if (!docId) {
+                    docId = await this.getUserDocId();
+                }
+                if (!docId) return null;
+
+                const userDoc = await db.collection('users').doc(docId).get();
+                if (!userDoc.exists) return null;
+
+                const userData = userDoc.data();
+                return userData.billingKey || null;
+            } catch (error) {
+                console.error('❌ 빌링키 조회 실패:', error);
+                return null;
             }
         },
 

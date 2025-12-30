@@ -196,11 +196,133 @@ document.addEventListener('DOMContentLoaded', function() {
                         planEl.textContent = planNames[tokenData.plan] || planNames['free'];
                     }
                 }
+
+                // 플랜 만료일 표시
+                const expirySection = document.getElementById('mypagePlanExpiry');
+                const expiryDateEl = document.getElementById('mypageExpiryDate');
+                const expiryBadgeEl = document.getElementById('mypageExpiryBadge');
+
+                if (window.currentDesigner?.planExpiresAt && window.currentDesigner.plan !== 'free') {
+                    const expiresAt = new Date(window.currentDesigner.planExpiresAt);
+                    const now = new Date();
+                    const daysRemaining = Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24));
+
+                    if (expirySection) expirySection.style.display = 'block';
+                    if (expiryDateEl) {
+                        expiryDateEl.textContent = expiresAt.toLocaleDateString('ko-KR', {
+                            year: 'numeric', month: 'long', day: 'numeric'
+                        });
+                    }
+                    if (expiryBadgeEl) {
+                        if (daysRemaining <= 0) {
+                            expiryBadgeEl.textContent = '만료됨';
+                            expiryBadgeEl.style.background = '#ef4444';
+                            expiryBadgeEl.style.color = '#fff';
+                        } else if (daysRemaining <= 3) {
+                            expiryBadgeEl.textContent = `${daysRemaining}일 남음`;
+                            expiryBadgeEl.style.background = '#ef4444';
+                            expiryBadgeEl.style.color = '#fff';
+                        } else if (daysRemaining <= 7) {
+                            expiryBadgeEl.textContent = `${daysRemaining}일 남음`;
+                            expiryBadgeEl.style.background = '#f59e0b';
+                            expiryBadgeEl.style.color = '#fff';
+                        } else {
+                            expiryBadgeEl.textContent = `${daysRemaining}일 남음`;
+                            expiryBadgeEl.style.background = '#10b981';
+                            expiryBadgeEl.style.color = '#fff';
+                        }
+                    }
+                } else {
+                    if (expirySection) expirySection.style.display = 'none';
+                }
+
+                // 저장된 카드 정보 업데이트
+                updateSavedCardDisplay();
+
             } catch (e) {
                 console.error('토큰 정보 로드 실패:', e);
             }
         }
     }
+
+    // 저장된 카드 정보 표시 업데이트
+    function updateSavedCardDisplay() {
+        const cardBrandEl = document.getElementById('mypageCardBrand');
+        const cardNumberEl = document.getElementById('mypageCardNumber');
+        const deleteBtn = document.getElementById('mypageDeleteCardBtn');
+
+        const savedCard = window.currentDesigner?.savedCard;
+
+        if (savedCard && savedCard.last4) {
+            const brandNames = {
+                'visa': 'VISA',
+                'mastercard': 'Mastercard',
+                'amex': 'American Express',
+                'jcb': 'JCB',
+                'unionpay': 'UnionPay',
+                'bc': 'BC카드',
+                'samsung': '삼성카드',
+                'hyundai': '현대카드',
+                'shinhan': '신한카드',
+                'lotte': '롯데카드',
+                'kb': 'KB국민카드',
+                'hana': '하나카드',
+                'woori': '우리카드',
+                'nh': 'NH농협카드'
+            };
+
+            if (cardBrandEl) cardBrandEl.textContent = brandNames[savedCard.brand?.toLowerCase()] || savedCard.brand || '카드';
+            if (cardNumberEl) cardNumberEl.textContent = `**** **** **** ${savedCard.last4}`;
+            if (deleteBtn) deleteBtn.style.display = 'block';
+        } else {
+            if (cardBrandEl) cardBrandEl.textContent = '카드 없음';
+            if (cardNumberEl) cardNumberEl.textContent = '저장된 카드가 없습니다';
+            if (deleteBtn) deleteBtn.style.display = 'none';
+        }
+    }
+
+    // 저장된 카드 섹션 토글
+    window.toggleSavedCardsSection = function() {
+        const section = document.getElementById('mypageSavedCardSection');
+        const arrow = document.getElementById('savedCardsArrow');
+
+        if (section) {
+            const isVisible = section.style.display !== 'none';
+            section.style.display = isVisible ? 'none' : 'block';
+            if (arrow) arrow.textContent = isVisible ? '→' : '↓';
+        }
+    };
+
+    // 저장된 카드 삭제
+    window.deleteSavedCard = async function() {
+        if (!confirm('저장된 카드를 삭제하시겠습니까?')) return;
+
+        try {
+            const docId = await window.FirebaseBridge?.getUserDocId();
+            if (!docId) {
+                alert('로그인이 필요합니다.');
+                return;
+            }
+
+            await firebase.firestore().collection('users').doc(docId).update({
+                billingKey: firebase.firestore.FieldValue.delete(),
+                savedCard: firebase.firestore.FieldValue.delete()
+            });
+
+            // 로컬 상태 업데이트
+            if (window.currentDesigner) {
+                delete window.currentDesigner.savedCard;
+            }
+
+            updateSavedCardDisplay();
+            if (typeof showToast === 'function') {
+                showToast('카드가 삭제되었습니다.', 'success');
+            }
+        } catch (e) {
+            console.error('카드 삭제 실패:', e);
+            alert('카드 삭제에 실패했습니다.');
+        }
+    };
 
     // 마이페이지 정보 업데이트 함수 전역 노출
     window.updateMypageInfo = updateMypageInfo;

@@ -73,9 +73,9 @@ exports.handler = async (event) => {
       };
     }
 
-    const { paymentId, planKey, userId, userName } = JSON.parse(event.body);
+    const { paymentId, planKey, userId, userName, billingKey, cardInfo } = JSON.parse(event.body);
 
-    console.log('💳 결제 검증 요청:', { paymentId, planKey, userId, userName });
+    console.log('💳 결제 검증 요청:', { paymentId, planKey, userId, userName, hasBillingKey: !!billingKey });
 
     // 필수 파라미터 확인
     if (!paymentId || !planKey || !userId) {
@@ -149,8 +149,21 @@ exports.handler = async (event) => {
       };
     }
 
-    // 5. Firestore에서 직접 토큰 충전 + 플랜 업그레이드
-    const chargeResult = await chargeTokens(userId, plan.tokens, planKey);
+    // 4.5. 카드 정보 추출 (포트원 결제 응답에서)
+    let extractedCardInfo = cardInfo;
+    if (!extractedCardInfo && paymentData.method?.card) {
+      const card = paymentData.method.card;
+      extractedCardInfo = {
+        last4: card.number?.slice(-4) || '',
+        brand: card.brand || card.issuer || '',
+        expiryMonth: '',
+        expiryYear: ''
+      };
+      console.log('💳 카드 정보 추출:', extractedCardInfo);
+    }
+
+    // 5. Firestore에서 직접 토큰 충전 + 플랜 업그레이드 + 카드 저장
+    const chargeResult = await chargeTokens(userId, plan.tokens, planKey, billingKey, extractedCardInfo);
 
     if (!chargeResult.success) {
       return {
@@ -206,7 +219,8 @@ exports.handler = async (event) => {
         tokens: plan.tokens,
         newBalance: chargeResult.newTokens,
         plan: chargeResult.newPlan,
-        message: `${plan.tokens.toLocaleString()} 토큰이 충전되었습니다.`
+        planExpiresAt: chargeResult.planExpiresAt,
+        message: `${plan.tokens.toLocaleString()} 토큰이 충전되었습니다. (30일간 유효)`
       })
     };
 
@@ -252,8 +266,13 @@ async function verifyPaymentWithPortone(paymentId) {
 /**
  * Firestore에서 직접 토큰 충전 + 플랜 업그레이드
  * userId는 이메일 기반 문서 ID (예: 708eric_hanmail_net)
+ *
+ * 변경사항 (2025-12-30):
+ * - 토큰은 기존+신규가 아닌, 플랜 토큰으로 리셋 (ChatGPT/Claude 방식)
+ * - planExpiresAt 추가 (결제일 + 30일)
+ * - 만료 시 토큰 소멸, free로 다운그레이드
  */
-async function chargeTokens(userId, tokens, planKey) {
+async function chargeTokens(userId, tokens, planKey, billingKey = null, cardInfo = null) {
   try {
     // 1. 현재 사용자 데이터 조회
     const userRef = db.collection('users').doc(userId);
@@ -270,25 +289,48 @@ async function chargeTokens(userId, tokens, planKey) {
       console.warn(`⚠️ 사용자 문서가 없습니다: ${userId}, 새로 생성합니다.`);
     }
 
-    const newTokens = currentTokens + tokens;
-
-    // 2. 플랜 결정: 추가 토큰 구매(tokens_5000)가 아니면 해당 플랜으로 업그레이드
-    // 플랜 우선순위: business > pro > basic > free
-    const planPriority = { 'free': 0, 'basic': 1, 'pro': 2, 'business': 3, 'tokens_5000': -1 };
+    // 2. 플랜 결정
     let newPlan = currentPlan;
+    let newTokens = tokens; // 토큰 리셋 (기존 토큰 무시, 새 플랜 토큰으로 설정)
 
     if (planKey !== 'tokens_5000') {
-      if ((planPriority[planKey] || 0) >= (planPriority[currentPlan] || 0)) {
-        newPlan = planKey;
-      }
+      // 플랜 구매: 해당 플랜으로 설정, 토큰 리셋
+      newPlan = planKey;
+    } else {
+      // 추가 토큰 구매: 기존 토큰에 추가
+      newTokens = currentTokens + tokens;
     }
 
-    // 3. Firestore 업데이트
+    // 3. 플랜 만료일 계산 (결제일 + 30일)
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30일 후
+
+    // 4. Firestore 업데이트
     const updateData = {
       tokenBalance: newTokens,
       plan: newPlan,
       lastChargedAt: admin.firestore.FieldValue.serverTimestamp()
     };
+
+    // 플랜 구매 시 만료일 설정 (추가 토큰 구매는 만료일 연장 안함)
+    if (planKey !== 'tokens_5000') {
+      updateData.planExpiresAt = admin.firestore.Timestamp.fromDate(expiresAt);
+      updateData.planStartedAt = admin.firestore.FieldValue.serverTimestamp();
+    }
+
+    // 빌링키 저장 (카드 정보 저장)
+    if (billingKey) {
+      updateData.billingKey = billingKey;
+      updateData.billingKeyCreatedAt = admin.firestore.FieldValue.serverTimestamp();
+    }
+    if (cardInfo) {
+      updateData.savedCard = {
+        last4: cardInfo.last4 || '',
+        brand: cardInfo.brand || '',
+        expiryMonth: cardInfo.expiryMonth || '',
+        expiryYear: cardInfo.expiryYear || ''
+      };
+    }
 
     if (userDoc.exists) {
       await userRef.update(updateData);
@@ -300,14 +342,15 @@ async function chargeTokens(userId, tokens, planKey) {
       });
     }
 
-    console.log(`✅ 토큰 충전 완료: userId=${userId}, added=${tokens}, newBalance=${newTokens}, plan=${newPlan}`);
+    console.log(`✅ 토큰 충전 완료: userId=${userId}, tokens=${newTokens}, plan=${newPlan}, expiresAt=${expiresAt.toISOString()}`);
 
     return {
       success: true,
       previousTokens: currentTokens,
       newTokens: newTokens,
       previousPlan: currentPlan,
-      newPlan: newPlan
+      newPlan: newPlan,
+      planExpiresAt: expiresAt.toISOString()
     };
 
   } catch (error) {
