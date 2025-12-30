@@ -6098,8 +6098,8 @@
             const editId = document.getElementById('noticeEditId').value;
             const title = document.getElementById('noticeTitle').value.trim();
             const content = document.getElementById('noticeContent').value.trim();
-            const pinned = document.getElementById('noticePinned').checked;
-            const active = document.getElementById('noticeActive').checked;
+            const isPinned = document.getElementById('noticePinned').checked;
+            const isActive = document.getElementById('noticeActive').checked;
 
             if (!title) {
                 showToast('제목을 입력해주세요', 'error');
@@ -6111,13 +6111,50 @@
             }
 
             try {
+                showToast('번역 중...', 'info');
+
+                // 번역 API 호출
+                const translateRes = await fetch('/.netlify/functions/translate-notice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, content })
+                });
+
+                let translations = null;
+                if (translateRes.ok) {
+                    const translateData = await translateRes.json();
+                    translations = translateData.translations;
+                } else {
+                    console.warn('번역 실패, 한국어만 저장');
+                }
+
+                // Firestore 데이터 구성
                 const noticeData = {
+                    // 기본 필드 (하위 호환)
                     title,
                     content,
-                    pinned,
-                    active,
+                    isPinned,
+                    isActive,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
+
+                // 다국어 필드 추가
+                if (translations) {
+                    noticeData.title_ko = translations.ko?.title || title;
+                    noticeData.title_en = translations.en?.title || title;
+                    noticeData.title_ja = translations.ja?.title || title;
+                    noticeData.title_zh = translations.zh?.title || title;
+                    noticeData.title_vi = translations.vi?.title || title;
+                    noticeData.content_ko = translations.ko?.content || content;
+                    noticeData.content_en = translations.en?.content || content;
+                    noticeData.content_ja = translations.ja?.content || content;
+                    noticeData.content_zh = translations.zh?.content || content;
+                    noticeData.content_vi = translations.vi?.content || content;
+                } else {
+                    // 번역 실패 시 한국어만
+                    noticeData.title_ko = title;
+                    noticeData.content_ko = content;
+                }
 
                 if (editId) {
                     // 수정

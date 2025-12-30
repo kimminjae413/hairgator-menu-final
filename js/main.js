@@ -2898,6 +2898,18 @@ function closeNoticeModal(event) {
     }
 }
 
+// 현재 언어 가져오기
+function getNoticeLanguage() {
+    return localStorage.getItem('hairgator_language') || window.currentLanguage || 'ko';
+}
+
+// 언어별 공지 필드 가져오기
+function getLocalizedNotice(notice, lang) {
+    const title = notice[`title_${lang}`] || notice.title_ko || notice.title || '';
+    const content = notice[`content_${lang}`] || notice.content_ko || notice.content || '';
+    return { title, content };
+}
+
 // 공지사항 목록 로드
 async function loadUserNotices() {
     const body = document.getElementById('noticeModalBody');
@@ -2923,6 +2935,9 @@ async function loadUserNotices() {
             return;
         }
 
+        // 현재 언어
+        const lang = getNoticeLanguage();
+
         // 읽은 공지 ID 목록 가져오기
         const readNotices = getReadNotices();
 
@@ -2933,6 +2948,9 @@ async function loadUserNotices() {
             const isRead = readNotices.includes(noticeId);
             const isNew = !isRead;
 
+            // 언어별 제목/내용
+            const localized = getLocalizedNotice(notice, lang);
+
             // 날짜 포맷
             let dateStr = '';
             if (notice.createdAt) {
@@ -2941,14 +2959,14 @@ async function loadUserNotices() {
             }
 
             // 미리보기 텍스트 (100자 제한)
-            const preview = (notice.content || '').replace(/<[^>]*>/g, '').substring(0, 100);
+            const preview = localized.content.replace(/<[^>]*>/g, '').substring(0, 100);
 
             html += `
                 <div class="notice-item ${isNew ? 'new' : ''}" onclick="showNoticeDetail('${noticeId}')">
                     <div class="notice-item-header">
                         <span class="notice-item-title">
                             ${notice.isPinned ? '<span class="notice-item-pinned">📌</span>' : ''}
-                            ${notice.title || '제목 없음'}
+                            ${localized.title || '제목 없음'}
                         </span>
                         ${isNew ? '<span class="notice-item-new">NEW</span>' : ''}
                     </div>
@@ -2984,6 +3002,10 @@ async function showNoticeDetail(noticeId) {
         // 읽음 처리
         markNoticeAsRead(noticeId);
 
+        // 언어별 제목/내용
+        const lang = getNoticeLanguage();
+        const localized = getLocalizedNotice(notice, lang);
+
         // 날짜 포맷
         let dateStr = '';
         if (notice.createdAt) {
@@ -2994,9 +3016,9 @@ async function showNoticeDetail(noticeId) {
         body.innerHTML = `
             <div class="notice-detail">
                 <button class="notice-detail-back" onclick="loadUserNotices()">← 목록으로</button>
-                <h2 class="notice-detail-title">${notice.title || '제목 없음'}</h2>
+                <h2 class="notice-detail-title">${localized.title || '제목 없음'}</h2>
                 <div class="notice-detail-date">${dateStr}</div>
-                <div class="notice-detail-content">${notice.content || ''}</div>
+                <div class="notice-detail-content">${localized.content || ''}</div>
             </div>
         `;
 
@@ -3122,6 +3144,8 @@ async function loadMypageNotices() {
             return;
         }
 
+        // 현재 언어
+        const lang = getNoticeLanguage();
         const readNotices = getReadNotices();
 
         let html = '';
@@ -3130,6 +3154,9 @@ async function loadMypageNotices() {
             const noticeId = doc.id;
             const isRead = readNotices.includes(noticeId);
             const isNew = !isRead;
+
+            // 언어별 제목
+            const localized = getLocalizedNotice(notice, lang);
 
             let dateStr = '';
             if (notice.createdAt) {
@@ -3141,7 +3168,7 @@ async function loadMypageNotices() {
                 <div class="mypage-notice-item ${isNew ? 'new' : ''}" onclick="openNoticeFromMypage('${noticeId}')">
                     <div class="mypage-notice-title">
                         ${notice.isPinned ? '<span class="notice-pin">📌</span>' : ''}
-                        ${notice.title || '제목 없음'}
+                        ${localized.title || '제목 없음'}
                         ${isNew ? '<span class="notice-new-tag">NEW</span>' : ''}
                     </div>
                     <div class="mypage-notice-date">${dateStr}</div>
