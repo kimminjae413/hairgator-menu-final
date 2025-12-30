@@ -73,8 +73,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('👤 마이페이지 표시');
                 }
                 break;
+            case 'stylemenu':
+                // 스타일 메뉴 (메인 화면)
+                if (genderSelection) genderSelection.style.display = '';
+                if (menuContainer) menuContainer.style.display = '';
+                console.log('💇 스타일 메뉴 표시');
+                break;
             default:
-                // 메인 페이지 (해시 없음)
+                // 메인 페이지 (해시 없음) - stylemenu와 동일
+                if (genderSelection) genderSelection.style.display = '';
+                if (menuContainer) menuContainer.style.display = '';
                 console.log('🏠 메인 페이지');
                 break;
         }
