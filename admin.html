@@ -3284,33 +3284,44 @@
         // 대시보드 로드
         async function loadDashboard() {
             try {
-                const usersSnapshot = await db.collection('users').get();
-                const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // Firebase users + Bullnabi users 모두 조회
+                const [usersSnapshot, bullnabiSnapshot] = await Promise.all([
+                    db.collection('users').get(),
+                    db.collection('bullnabi_users').get()
+                ]);
 
-                const totalUsers = users.length;
-                const paidUsers = users.filter(u => u.plan && u.plan !== 'free').length;
-                const totalTokens = users.reduce((sum, u) => sum + (u.tokenBalance || 0), 0);
+                const firebaseUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), source: 'firebase' }));
+                const bullnabiUsers = bullnabiSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), source: 'bullnabi' }));
+
+                // 이메일 기준 중복 제거 (firebase 우선)
+                const firebaseEmails = new Set(firebaseUsers.map(u => u.email?.toLowerCase()).filter(Boolean));
+                const uniqueBullnabi = bullnabiUsers.filter(u => !firebaseEmails.has(u.email?.toLowerCase()));
+                const allUsers = [...firebaseUsers, ...uniqueBullnabi];
+
+                const totalUsers = allUsers.length;
+                const paidUsers = allUsers.filter(u => u.plan && u.plan !== 'free').length;
+                const totalTokens = allUsers.reduce((sum, u) => sum + (u.tokenBalance || 0), 0);
 
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                const todayActive = users.filter(u => {
+                const todayActive = firebaseUsers.filter(u => {
                     if (!u.lastLoginAt) return false;
                     const date = u.lastLoginAt.toDate ? u.lastLoginAt.toDate() : new Date(u.lastLoginAt);
                     return date >= today;
                 }).length;
 
-                document.getElementById('statTotalUsers').textContent = totalUsers;
+                document.getElementById('statTotalUsers').textContent = totalUsers.toLocaleString();
                 document.getElementById('statTotalTokens').textContent = totalTokens.toLocaleString();
                 document.getElementById('statPaidUsers').textContent = paidUsers;
                 document.getElementById('statTodayActive').textContent = todayActive;
-                document.getElementById('userCountBadge').textContent = totalUsers;
+                document.getElementById('userCountBadge').textContent = totalUsers.toLocaleString();
 
                 // 플랜 분포 차트
                 const planCounts = {
-                    free: users.filter(u => !u.plan || u.plan === 'free').length,
-                    basic: users.filter(u => u.plan === 'basic').length,
-                    pro: users.filter(u => u.plan === 'pro').length,
-                    business: users.filter(u => u.plan === 'business').length
+                    free: allUsers.filter(u => !u.plan || u.plan === 'free').length,
+                    basic: allUsers.filter(u => u.plan === 'basic').length,
+                    pro: allUsers.filter(u => u.plan === 'pro').length,
+                    business: allUsers.filter(u => u.plan === 'business').length
                 };
 
                 if (planChart) planChart.destroy();
