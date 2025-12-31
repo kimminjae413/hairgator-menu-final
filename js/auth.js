@@ -7,6 +7,7 @@ let currentUser = null;
 let authInitialized = false;
 let welcomeToastShown = false; // 환영 메시지 중복 방지
 let authListenerRegistered = false; // onAuthStateChanged 중복 등록 방지
+let lastProcessedUid = null; // 마지막 처리된 사용자 UID (중복 처리 방지)
 
 /**
  * 이메일을 Firestore 문서 ID로 변환
@@ -77,6 +78,13 @@ function initFirebaseAuth() {
         authInitialized = true;
 
         if (user) {
+            // 같은 사용자가 이미 처리되었으면 스킵 (중복 방지)
+            if (lastProcessedUid === user.uid) {
+                console.log('⏭️ 이미 처리된 사용자, 스킵:', user.uid);
+                return;
+            }
+            lastProcessedUid = user.uid;
+
             // 로그인 상태
             console.log('🔐 Firebase Auth 로그인:', user.email || user.uid);
             currentUser = user;
@@ -86,6 +94,8 @@ function initFirebaseAuth() {
             // 로그아웃 상태
             console.log('🔓 Firebase Auth 로그아웃 상태');
             currentUser = null;
+            lastProcessedUid = null; // 로그아웃 시 초기화
+            welcomeToastShown = false; // 다음 로그인 시 환영 메시지 표시
 
             // 로그인 페이지로 리다이렉트 (login.html이 아닌 경우에만)
             const currentPage = window.location.pathname;
