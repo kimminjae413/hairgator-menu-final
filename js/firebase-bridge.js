@@ -370,22 +370,38 @@
 
         // ========== 토큰 관리 함수들 ==========
 
-        // 사용자 문서 ID 가져오기 (Firebase Auth 이메일 기반 - 항상 서버에서!)
+        // 사용자 문서 ID 가져오기 (Firebase Auth 이메일 기반, UID 폴백)
         async getUserDocId() {
-            // Firebase Auth에서 현재 사용자 이메일 가져오기 (가장 신뢰할 수 있는 소스)
+            // Firebase Auth에서 현재 사용자 가져오기
             const firebaseUser = typeof auth !== 'undefined' ? auth.currentUser : null;
+
+            // 1. Firebase Auth 이메일 기반
             if (firebaseUser?.email) {
                 const docId = firebaseUser.email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_');
                 console.log('🔑 getUserDocId: Firebase Auth email =', docId);
                 return docId;
             }
-            // Firebase Auth 미초기화 시 window.currentDesigner 폴백 (로그인 직후)
+
+            // 2. currentDesigner 이메일 폴백
             if (window.currentDesigner?.email) {
                 const docId = window.currentDesigner.email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_');
                 console.log('🔑 getUserDocId: currentDesigner.email =', docId);
                 return docId;
             }
-            console.warn('⚠️ getUserDocId: Firebase Auth 또는 currentDesigner 이메일 없음');
+
+            // 3. UID 기반 폴백 (카카오 등 이메일 없는 경우)
+            if (firebaseUser?.uid) {
+                console.log('🔑 getUserDocId: UID 폴백 =', firebaseUser.uid);
+                return firebaseUser.uid;
+            }
+
+            // 4. currentDesigner UID 폴백
+            if (window.currentDesigner?.uid) {
+                console.log('🔑 getUserDocId: currentDesigner UID 폴백 =', window.currentDesigner.uid);
+                return window.currentDesigner.uid;
+            }
+
+            console.warn('⚠️ getUserDocId: 사용자 정보 없음');
             return null;
         },
 
