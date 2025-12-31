@@ -860,7 +860,7 @@ window.captureFromCamera = function() {
 
     const video = document.getElementById('cameraVideo');
     const canvas = document.getElementById('cameraCanvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
     // 캔버스 크기 설정
     canvas.width = video.videoWidth;
@@ -993,7 +993,7 @@ window.startAnalysis = async function() {
         const img = new Image();
         img.onload = async () => {
             const canvas = document.getElementById('faceCanvas');
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
             canvas.width = img.width;
             canvas.height = img.height;
