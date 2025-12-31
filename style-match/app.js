@@ -2581,8 +2581,8 @@ function generateStyleReason(style, analysis, ratios, score = 50) {
         return '얼굴형 분석 기반 추천';
     }
 
-    const { upperRatio, lowerRatio, cheekJawRatio, eyeDistanceRatio } = ratios.raw;
-    const isLongFace = lowerRatio > 0.36;
+    const { upperRatio, middleRatio, lowerRatio, cheekJawRatio, eyeDistanceRatio } = ratios.raw;
+    const isLongFace = lowerRatio > 0.36 || lowerRatio > middleRatio * 1.12;
     const isShortFace = lowerRatio < 0.28;
     const isSquareJaw = cheekJawRatio < 1.15;
     const isOvalFace = cheekJawRatio > 1.35;
