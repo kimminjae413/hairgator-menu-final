@@ -938,6 +938,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (sidebar) {
             sidebar.classList.add('active');
             updateLoginInfo();
+            // 사이드바 열릴 때마다 플랜 기반 버튼 상태 업데이트
+            if (typeof applyPlanBasedDisabledState === 'function') {
+                applyPlanBasedDisabledState();
+            }
         }
     }
 

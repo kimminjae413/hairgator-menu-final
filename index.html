@@ -4158,7 +4158,26 @@ function goToProducts() {
 // 플랜에 따라 유료 기능 버튼들 disabled 상태 적용
 function applyPlanBasedDisabledState() {
     const allowedPlans = ['basic', 'pro', 'business'];
-    const userPlan = window.currentDesigner?.plan || 'free';
+
+    // 여러 소스에서 plan 정보 가져오기
+    let userPlan = 'free';
+
+    // 1. window.currentDesigner에서 확인
+    if (window.currentDesigner?.plan) {
+        userPlan = window.currentDesigner.plan;
+    }
+    // 2. getBullnabiUser()에서 확인
+    else if (window.getBullnabiUser) {
+        const bullnabiUser = window.getBullnabiUser();
+        if (bullnabiUser?.plan) {
+            userPlan = bullnabiUser.plan;
+        }
+    }
+    // 3. FirebaseBridge에서 확인
+    else if (window.FirebaseBridge?.cachedUserData?.plan) {
+        userPlan = window.FirebaseBridge.cachedUserData.plan;
+    }
+
     const isAllowed = allowedPlans.includes(userPlan);
 
     console.log('🔐 플랜 기반 접근 체크:', userPlan, '허용:', isAllowed);
@@ -4173,6 +4192,7 @@ function applyPlanBasedDisabledState() {
                 btn.classList.remove('disabled');
                 btn.style.opacity = '';
                 btn.style.filter = '';
+                btn.style.pointerEvents = '';
             } else {
                 btn.classList.add('disabled');
                 btn.style.opacity = '0.4';
