@@ -546,6 +546,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
 
+                        <!-- 상호 설정 -->
+                        <div class="menu-item" id="brandSettingBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 20px;">✏️</span>
+                                <span class="sidebar-menu-text" style="font-size: 14px;">${t('ui.brandSetting') || '상호 설정'}</span>
+                            </div>
+                        </div>
+
                         <!-- AI 스타일 매칭 -->
                         <div class="menu-item" id="styleMatchBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
@@ -573,14 +581,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <span class="sidebar-menu-text" style="font-size: 14px;">${t('aiTransform.menuTitle') || 'AI 얼굴변환 & 영상'}</span>
                                     <div style="font-size: 11px; color: var(--text-secondary, #888); margin-top: 2px;">${t('aiTransform.menuSubtitle') || '얼굴 합성 · 영상 생성'}</div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- 상호 설정 -->
-                        <div class="menu-item" id="brandSettingBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span style="font-size: 20px;">✏️</span>
-                                <span class="sidebar-menu-text" style="font-size: 14px;">${t('ui.brandSetting') || '상호 설정'}</span>
                             </div>
                         </div>
 
@@ -701,10 +701,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.href = '/style-match/';
             });
 
-            // 플랜에 따라 disabled 상태 적용
-            if (typeof applyStyleMatchDisabledState === 'function') {
-                applyStyleMatchDisabledState();
-            }
         }
 
         // 퍼스널 이미지 분석 (베이직 플랜 이상만 접근 가능)
@@ -735,11 +731,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const gender = window.currentGender || 'female';
                 window.location.href = `/personal-color/?gender=${gender}`;
             });
-
-            // 플랜에 따라 disabled 상태 적용
-            if (typeof applyPlanBasedDisabledState === 'function') {
-                applyPlanBasedDisabledState();
-            }
         }
 
         // AI 얼굴변환 & 영상
@@ -771,6 +762,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     openPricingModal();
                 }
             });
+        }
+
+        // 플랜에 따라 유료 기능 버튼들 disabled 상태 적용 (한 번만 호출)
+        if (typeof applyPlanBasedDisabledState === 'function') {
+            applyPlanBasedDisabledState();
         }
 
         console.log('✅ 사이드바 메뉴 이벤트 리스너 설정 완료');
