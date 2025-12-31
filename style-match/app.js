@@ -2290,7 +2290,7 @@ async function loadStyles() {
     }
 }
 
-// ========== 추천 생성 ==========
+// ========== 추천 생성 (리팩토링됨) ==========
 function generateRecommendations(analysis) {
     const container = document.getElementById('recommendationsContainer');
     container.innerHTML = '';
@@ -2298,40 +2298,17 @@ function generateRecommendations(analysis) {
     const categories = selectedGender === 'female' ? FEMALE_CATEGORIES : MALE_CATEGORIES;
 
     console.log('🎨 추천 생성 시작:', selectedGender, '스타일 수:', allStyles.length);
-    console.log('📂 카테고리:', categories);
 
-    // 디버그: 스타일 샘플 출력
-    if (allStyles.length > 0) {
-        console.log('📋 샘플 스타일:', allStyles[0]);
-        console.log('📋 gender 값들:', [...new Set(allStyles.map(s => s.gender))]);
-        console.log('📋 mainCategory 값들:', [...new Set(allStyles.map(s => s.mainCategory))]);
-    }
+    // 1. 점수 계산 함수 호출 (별도 함수로 분리)
+    const scoredAllStyles = calculateHairstyleScores(analysis, allStyles);
 
-    // 스타일 데이터 확인 (대소문자 무시)
-    const genderStyles = allStyles.filter(s =>
-        s.gender && s.gender.toLowerCase() === selectedGender.toLowerCase()
-    );
-    console.log('👥 성별 필터링된 스타일:', genderStyles.length);
-
-    // 카테고리별 데이터 수집 (점수순 정렬을 위해)
+    // 카테고리별 데이터 수집
     const categoryResults = [];
 
-    // 디버그: 추천/회피 조건 로그
-    console.log('📋 추천 조건:', analysis.recommendations?.map(r => ({
-        mainCat: r.mainCategory,
-        subCat: r.subCategory,
-        score: r.score
-    })));
-    console.log('📋 회피 조건:', analysis.avoidances?.map(a => ({
-        mainCat: a.mainCategory,
-        subCat: a.subCategory,
-        score: a.score
-    })));
-
     categories.forEach(category => {
-        // 해당 카테고리 스타일 필터링 (대소문자 무시, type 조건 완화)
+        // 해당 카테고리 스타일 필터링
         const categoryLower = category.toLowerCase();
-        const categoryStyles = allStyles.filter(s =>
+        const categoryStyles = scoredAllStyles.filter(s =>
             s.gender && s.gender.toLowerCase() === selectedGender.toLowerCase() &&
             s.mainCategory && s.mainCategory.toLowerCase() === categoryLower &&
             (s.type === 'cut' || !s.type)
@@ -2341,95 +2318,8 @@ function generateRecommendations(analysis) {
 
         if (categoryStyles.length === 0) return;
 
-        // 각 스타일에 점수 부여
-        const scoredStyles = categoryStyles.map(style => {
-            let score = 50; // 기본 점수
-            let reasons = [];
-            const styleMainCat = (style.mainCategory || '').toUpperCase();
-            const styleSubCat = (style.subCategory || '').toUpperCase();
-
-            // 추천 조건 매칭 (대소문자 무시)
-            analysis.recommendations.forEach(rec => {
-                // mainCategory 배열 매칭
-                if (rec.mainCategory) {
-                    const matchedMain = rec.mainCategory.some(cat =>
-                        cat.toUpperCase() === styleMainCat
-                    );
-                    if (matchedMain) {
-                        score += rec.score;
-                        reasons.push({ type: 'positive', text: rec.reason, score: rec.score });
-                    }
-                }
-                // subCategory 배열 매칭
-                if (rec.subCategory) {
-                    const matchedSub = rec.subCategory.some(cat =>
-                        cat.toUpperCase() === styleSubCat
-                    );
-                    if (matchedSub) {
-                        score += rec.score;
-                        reasons.push({ type: 'positive', text: rec.reason, score: rec.score });
-                    }
-                }
-            });
-
-            // 회피 조건 매칭 (대소문자 무시)
-            analysis.avoidances.forEach(avoid => {
-                if (avoid.mainCategory) {
-                    const matchedMain = avoid.mainCategory.some(cat =>
-                        cat.toUpperCase() === styleMainCat
-                    );
-                    if (matchedMain) {
-                        score += avoid.score;
-                        reasons.push({ type: 'negative', text: avoid.reason, score: avoid.score });
-                    }
-                }
-                if (avoid.subCategory) {
-                    const matchedSub = avoid.subCategory.some(cat =>
-                        cat.toUpperCase() === styleSubCat
-                    );
-                    if (matchedSub) {
-                        score += avoid.score;
-                        reasons.push({ type: 'negative', text: avoid.reason, score: avoid.score });
-                    }
-                }
-            });
-
-            // 이미지 타입 기반 스타일 무드 매칭
-            if (analysis.imageType && analysis.imageType.styleKeywords) {
-                const styleName = (style.name || style.styleName || '').toLowerCase();
-                const textRecipe = (style.textRecipe || '').toLowerCase();
-                const searchText = `${styleName} ${textRecipe}`;
-
-                const { boost, penalty } = analysis.imageType.styleKeywords;
-
-                // 부스트 키워드 매칭
-                const hasBoostKeyword = boost.some(kw => searchText.includes(kw.toLowerCase()));
-                if (hasBoostKeyword) {
-                    score += 15;
-                    reasons.push({
-                        type: 'positive',
-                        text: `${analysis.imageType.name} 스타일 무드와 일치`,
-                        score: 15
-                    });
-                }
-
-                // 페널티 키워드 매칭
-                const hasPenaltyKeyword = penalty.some(kw => searchText.includes(kw.toLowerCase()));
-                if (hasPenaltyKeyword) {
-                    score -= 10;
-                    reasons.push({
-                        type: 'negative',
-                        text: `${analysis.imageType.name} 무드와 다소 불일치`,
-                        score: -10
-                    });
-                }
-            }
-
-            return { ...style, score: Math.max(0, Math.min(100, score)), reasons };
-        });
-
         // TOP 3 선정 (점수순)
-        const top3 = scoredStyles
+        const top3 = categoryStyles
             .sort((a, b) => b.score - a.score)
             .slice(0, 3);
 
@@ -2438,6 +2328,9 @@ function generateRecommendations(analysis) {
             ? Math.round(top3.reduce((sum, s) => sum + s.score, 0) / top3.length)
             : 0;
 
+        // 디버그: TOP 3 점수 출력
+        console.log(`  📊 ${category} TOP3:`, top3.map(s => `${s.name}(${s.score}점)`).join(', '));
+
         categoryResults.push({
             category,
             avgScore,
@@ -2445,7 +2338,7 @@ function generateRecommendations(analysis) {
         });
     });
 
-    // ⭐ 카테고리를 평균 점수순으로 정렬 (높은 점수 먼저)
+    // 카테고리를 평균 점수순으로 정렬 (높은 점수 먼저)
     categoryResults.sort((a, b) => b.avgScore - a.avgScore);
 
     console.log('📊 점수순 카테고리:', categoryResults.map(c => `${c.category}: ${c.avgScore}점`));
@@ -2456,6 +2349,191 @@ function generateRecommendations(analysis) {
         const categoryCard = createCategoryCard(category, categoryReason, top3);
         container.appendChild(categoryCard);
     });
+}
+
+// ========== 스타일 점수 계산 로직 (신규 추가) ==========
+function calculateHairstyleScores(analysis, styles) {
+    const { ratios } = analysis;
+    if (!ratios || !ratios.raw) {
+        return styles.map(s => ({ ...s, score: 50, reason: '기본 추천' }));
+    }
+
+    const { lowerRatio, middleRatio, cheekJawRatio, upperRatio } = ratios.raw;
+
+    // 얼굴형 판단 (통일된 기준)
+    const isLongFace = lowerRatio > 0.36 || lowerRatio > middleRatio * 1.12;
+    const isShortFace = lowerRatio < 0.28;
+    const isSquareJaw = cheekJawRatio < 1.15;
+    const isWideForehead = upperRatio > 0.36;
+
+    console.log('🔍 얼굴형 분석:', { isLongFace, isShortFace, isSquareJaw, isWideForehead });
+
+    return styles.map(style => {
+        let score = 50; // 기본 점수
+        let categoryBonus = 0;
+        let styleBonus = 0;
+
+        // 카테고리 대문자 변환
+        const cat = (style.mainCategory || '').toUpperCase();
+        const subCat = (style.subCategory || '').toUpperCase();
+        const name = (style.name || '').toLowerCase();
+
+        // 1. 카테고리(기장)별 점수 - 여자
+        if (selectedGender === 'female') {
+            if (isLongFace) {
+                // 긴 얼굴: 긴 머리 감점, 중단발~세미롱 가산점
+                if (['A LENGTH', 'B LENGTH'].includes(cat)) {
+                    categoryBonus -= 20;
+                } else if (['C LENGTH', 'D LENGTH', 'E LENGTH', 'F LENGTH'].includes(cat)) {
+                    categoryBonus += 40; // 기획서대로 +40점
+                }
+            } else if (isShortFace) {
+                // 짧은 얼굴: 긴 머리 추천
+                if (['A LENGTH', 'B LENGTH', 'C LENGTH'].includes(cat)) {
+                    categoryBonus += 35;
+                }
+            }
+        } else {
+            // 남자 카테고리별 점수
+            if (isLongFace) {
+                if (['SIDE PART', 'SIDE FRINGE'].includes(cat)) {
+                    categoryBonus += 50; // 사이드 볼륨 강력 추천
+                } else if (['FRINGE UP', 'PUSHED BACK', 'MOHICAN'].includes(cat)) {
+                    categoryBonus -= 30; // 탑 볼륨 감점
+                }
+            } else if (isShortFace) {
+                if (['FRINGE UP', 'PUSHED BACK', 'MOHICAN'].includes(cat)) {
+                    categoryBonus += 40; // 탑 볼륨 추천
+                }
+            }
+        }
+
+        // 앞머리(subCategory)별 점수
+        if (isWideForehead) {
+            if (['EB', 'EYE BROW', 'E', 'EYE', 'FH', 'FORE HEAD'].includes(subCat)) {
+                categoryBonus += 30; // 앞머리로 이마 커버
+            } else if (['N', 'NONE', ''].includes(subCat)) {
+                categoryBonus -= 20; // 이마 노출 감점
+            }
+        }
+
+        // 2. 스타일 태그/특성별 점수
+        if (isLongFace) {
+            // 웨이브, 컬, 볼륨 선호
+            if (name.includes('웨이브') || name.includes('wave') || name.includes('컬') || name.includes('curl') || name.includes('펌')) {
+                styleBonus += 10;
+            }
+            if (name.includes('볼륨') || name.includes('volume') || name.includes('레이어')) {
+                styleBonus += 10;
+            }
+            // 생머리, 슬릭 기피
+            if (name.includes('매직') || name.includes('스트레이트') || name.includes('straight')) {
+                styleBonus -= 10;
+            }
+        }
+
+        if (isSquareJaw) {
+            // 부드러운 스타일 선호
+            if (name.includes('웨이브') || name.includes('레이어') || name.includes('소프트')) {
+                styleBonus += 15;
+            }
+        }
+
+        // 3. 이미지 타입 매칭 (analysis에서 가져옴)
+        if (analysis.imageType && analysis.imageType.styleKeywords) {
+            const searchText = name + ' ' + (style.textRecipe || '').toLowerCase();
+            const { boost, penalty } = analysis.imageType.styleKeywords;
+
+            if (boost.some(kw => searchText.includes(kw.toLowerCase()))) {
+                styleBonus += 15;
+            }
+            if (penalty.some(kw => searchText.includes(kw.toLowerCase()))) {
+                styleBonus -= 10;
+            }
+        }
+
+        // 최종 점수 합산 (0~100 범위)
+        score += categoryBonus + styleBonus;
+        score = Math.min(100, Math.max(0, score));
+
+        // 추천 사유 생성
+        const reason = generateSimpleStyleReason(style, score, { isLongFace, isShortFace, isSquareJaw, isWideForehead }, ratios);
+
+        return {
+            ...style,
+            score: score,
+            reason: reason
+        };
+    });
+}
+
+// ========== 간소화된 스타일 추천 사유 생성 ==========
+function generateSimpleStyleReason(style, score, faceFlags, ratios) {
+    const { isLongFace, isShortFace, isSquareJaw, isWideForehead } = faceFlags;
+    const name = (style.name || '').toLowerCase();
+    const subCat = (style.subCategory || '').toUpperCase();
+
+    // 스타일 특성 파악
+    const hasWave = name.includes('웨이브') || name.includes('wave') || name.includes('컬') || name.includes('curl');
+    const hasVolume = name.includes('볼륨') || name.includes('volume') || name.includes('레이어');
+    const hasBang = ['EB', 'EYE BROW', 'E', 'EYE', 'FH', 'FORE HEAD'].includes(subCat);
+
+    let parts = [];
+
+    // === 고득점 (80점 이상) ===
+    if (score >= 80) {
+        if (isLongFace) {
+            if (hasWave) {
+                parts.push('✓ 웨이브가 시선을 가로로 분산시켜 긴 얼굴형을 완벽하게 보완');
+            } else if (hasVolume) {
+                parts.push('✓ 풍성한 볼륨이 얼굴의 가로 비율을 채워 밸런스 최적화');
+            } else {
+                parts.push('✓ 얼굴형의 단점을 커버하고 장점을 극대화하는 베스트 스타일');
+            }
+        } else if (isShortFace) {
+            parts.push('✓ 세로 라인을 연장해 갸름한 인상 연출');
+        } else if (isSquareJaw && hasWave) {
+            parts.push('✓ 부드러운 질감이 각진 턱선을 자연스럽게 소프닝');
+        } else if (isWideForehead && hasBang) {
+            parts.push('✓ 앞머리가 넓은 이마를 커버하여 이상적인 비율 완성');
+        } else {
+            parts.push('✓ 얼굴형과 아주 이상적인 조화를 이루는 스타일');
+        }
+    }
+    // === 중립/평범 (41 ~ 79점) ===
+    else if (score > 40) {
+        if (hasWave) {
+            parts.push('곡선감으로 부드러운 인상 연출');
+        } else if (hasVolume) {
+            parts.push('볼륨감으로 자연스러운 분위기');
+        } else {
+            parts.push('깔끔하고 단정한 무드 연출');
+        }
+
+        // 개선 조언
+        if (isLongFace && score < 70) {
+            parts.push('옆볼륨을 더 살리면 비율이 좋아짐');
+        } else if (isSquareJaw) {
+            parts.push('레이어드 추가 시 소프닝 효과 UP');
+        } else {
+            parts.push('무난하게 소화 가능한 스타일');
+        }
+    }
+    // === 저득점 (40점 이하) ===
+    else {
+        if (isLongFace) {
+            parts.push('⚠️ 세로 라인이 강조되어 얼굴이 더 길어 보일 수 있음');
+            parts.push('뿌리 볼륨이나 웨이브 추가를 추천');
+        } else if (isShortFace) {
+            parts.push('⚠️ 가로 라인이 강조되어 얼굴이 더 짧아 보일 수 있음');
+        } else if (isWideForehead && !hasBang) {
+            parts.push('⚠️ 넓은 이마가 노출되어 밸런스 주의 필요');
+        } else {
+            parts.push('⚠️ 얼굴형의 단점이 부각될 수 있어 스타일링 주의 필요');
+        }
+    }
+
+    return [...new Set(parts)].slice(0, 2).join(' / ');
 }
 
 // 카테고리별 추천 이유 생성 (전문가 스타일)
