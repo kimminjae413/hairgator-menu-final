@@ -180,22 +180,41 @@ const ALLOWED_EMAILS = [
 ];
 
 function isAllowedUser() {
-    // window.currentDesigner 확인
+    // 1. window.currentDesigner 확인
     if (window.currentDesigner?.email) {
         return ALLOWED_EMAILS.includes(window.currentDesigner.email.toLowerCase());
     }
-    // parent의 currentDesigner 확인 (iframe인 경우)
+    // 2. parent의 currentDesigner 확인 (iframe인 경우)
     try {
         if (parent.window.currentDesigner?.email) {
             return ALLOWED_EMAILS.includes(parent.window.currentDesigner.email.toLowerCase());
         }
     } catch (e) {}
-    // localStorage에서 확인
+    // 3. localStorage hairgator_user 확인
+    try {
+        const cached = localStorage.getItem('hairgator_user');
+        if (cached) {
+            const user = JSON.parse(cached);
+            if (user.email) {
+                return ALLOWED_EMAILS.includes(user.email.toLowerCase());
+            }
+        }
+    } catch (e) {}
+    // 4. localStorage firebase_user 확인
     try {
         const cached = localStorage.getItem('firebase_user');
         if (cached) {
             const user = JSON.parse(cached);
             if (user.email) {
+                return ALLOWED_EMAILS.includes(user.email.toLowerCase());
+            }
+        }
+    } catch (e) {}
+    // 5. Firebase Auth currentUser 확인
+    try {
+        if (window.firebase && firebase.auth) {
+            const user = firebase.auth().currentUser;
+            if (user?.email) {
                 return ALLOWED_EMAILS.includes(user.email.toLowerCase());
             }
         }
