@@ -693,15 +693,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 여러 소스에서 이메일 확인
                 let userEmail = '';
 
-                // 1. Firebase Auth currentUser
-                if (window.firebase && firebase.auth) {
+                // 1. window.currentDesigner (가장 신뢰할 수 있는 소스)
+                if (window.currentDesigner && window.currentDesigner.email) {
+                    userEmail = window.currentDesigner.email;
+                }
+
+                // 2. Firebase Auth currentUser
+                if (!userEmail && window.firebase && firebase.auth) {
                     const firebaseUser = firebase.auth().currentUser;
                     if (firebaseUser && firebaseUser.email) {
                         userEmail = firebaseUser.email;
                     }
                 }
 
-                // 2. localStorage hairgator_user
+                // 3. localStorage hairgator_user
                 if (!userEmail) {
                     try {
                         const stored = localStorage.getItem('hairgator_user');
@@ -712,7 +717,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     } catch (e) {}
                 }
 
-                // 3. localStorage firebase_user
+                // 4. localStorage firebase_user
                 if (!userEmail) {
                     try {
                         const stored = localStorage.getItem('firebase_user');
@@ -723,10 +728,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     } catch (e) {}
                 }
 
-                // 4. getBullnabiUser fallback
+                // 5. getBullnabiUser fallback
                 if (!userEmail) {
                     const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
                     userEmail = bullnabiUser?.email || '';
+                }
+
+                // 6. 마이페이지 이메일에서 가져오기
+                if (!userEmail) {
+                    const mypageEmail = document.getElementById('mypageEmail');
+                    if (mypageEmail && mypageEmail.textContent && mypageEmail.textContent !== '-') {
+                        userEmail = mypageEmail.textContent;
+                    }
                 }
 
                 const isAllowed = ALLOWED_EMAILS.includes(userEmail.toLowerCase());
