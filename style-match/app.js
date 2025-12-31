@@ -1033,7 +1033,7 @@ function onFaceMeshResults(results) {
         const canvas = document.getElementById('cameraCanvas') || document.getElementById('faceCanvas');
         let imageData = null;
         if (canvas && canvas.width > 0 && canvas.height > 0) {
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
             imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         }
         eyebrowAnalysis = analyzeEyebrows(landmarks, imageData, canvas);
@@ -1249,7 +1249,7 @@ function analyzeEyebrowTexture(landmarks, imageData, canvas) {
     };
 
     try {
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         const width = canvas.width;
         const height = canvas.height;
 
