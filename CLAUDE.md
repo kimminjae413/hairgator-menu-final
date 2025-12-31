@@ -514,6 +514,41 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 로그인 시 이메일 매칭으로 `users`로 복사
 
 ## 최근 작업 이력
+- 2025-12-31: 토큰 사전 체크 시스템 + UI 개선
+
+  ### 토큰 사전 체크 시스템 구축 (중요!)
+  - **문제**: API 호출 후 토큰 차감 → 토큰 0이어도 무료 사용 가능했음
+  - **해결**: API 호출 전에 토큰 잔액 체크 + 부족 시 업그레이드 모달 표시
+
+  | 기능 | 토큰 비용 | 사전 체크 위치 | 상태 |
+  |------|----------|---------------|------|
+  | 챗봇 | 3~30 | `js/ai-studio.js` sendMessage() | ✅ 추가됨 |
+  | 룩북 | 200 | `js/menu.js` + `lookbook.html` | ✅ 추가됨 |
+  | 헤어체험 | 350 | `js/menu.js` | ✅ 이미 있었음 |
+  | 레시피 보기 | 무료 | - | N/A |
+
+  ### 토큰 부족 모달 함수
+  - `showInsufficientTokenModal()` - ai-studio.js (챗봇용)
+  - `showLookbookInsufficientTokenModal()` - lookbook.html (룩북용)
+  - 5개국어 지원 (ko, en, ja, zh, vi)
+  - "요금제 보기" 버튼 → `/#products` 이동
+
+  ### 사이드바 메뉴 순서 변경
+  - **변경 전**: 테마 전환 → AI 스타일 매칭 → 퍼스널 → AI 얼굴변환 → 상호 설정 → 플랜
+  - **변경 후**: 테마 전환 → **상호 설정** → AI 스타일 매칭 → 퍼스널 → AI 얼굴변환 → 플랜
+  - **파일**: `js/main.js` (동적 생성되는 사이드바 HTML)
+
+  ### 무료 플랜 유료 기능 비활성화
+  - **적용 대상**: AI 스타일 매칭, 퍼스널 이미지 분석
+  - **시각적 효과**: `opacity: 0.4`, `filter: grayscale(0.5)`
+  - **클릭 시**: 업그레이드 모달 표시
+  - **함수**: `applyPlanBasedDisabledState()` (index.html)
+  - **호출 시점**: `setupSidebarMenuListeners()` 끝에서 한 번만 호출
+
+  ### 마이페이지 테마 전환 메뉴 삭제
+  - 사이드바에 이미 테마 전환 있으므로 중복 제거
+  - `index.html`에서 `mypageThemeIcon`, `mypageThemeText` 관련 코드 삭제
+
 - 2025-12-30: 버그 수정 (로그인 + 결제 수단 관리)
   - **login.html 카카오 로그인 에러 수정**: `showTermsModal` 함수가 한 줄로 압축되어 `//주석`이 나머지 코드 무효화 → iOS 심사 실패 원인
   - **마이페이지 카드 등록 버튼 수정**: `toggleSavedCardsSection` 함수 중복 정의로 잘못된 섹션 열림 → "+ 카드 등록" 버튼 정상 표시
@@ -904,17 +939,17 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 프로 20회: 38,000원
 - 비즈니스 50회: 80,000원
 
-### 현재 토큰 시스템 구조 (2025-12-23 업데이트)
-- **불나비 DB `_users.tokenBalance`** 필드에 헤어게이터 토큰 저장
-- `remainCount`는 불나비 기존 크레딧 (분리됨)
-- bullnabi-proxy.js API 엔드포인트:
-  - `getTokenBalance`: 토큰 잔액 조회
-  - `setTokenBalance`: 토큰 잔액 설정 (관리자용)
-  - `deductTokenBalance`: 토큰 차감
-- 토큰 비용:
+### 현재 토큰 시스템 구조 (2025-12-31 업데이트)
+- **Firestore `users` 컬렉션**의 `tokenBalance` 필드에 토큰 저장
+- **firebase-bridge.js** API:
+  - `getTokenBalance()`: 토큰 잔액 + 플랜 조회
+  - `deductTokens(docId, feature, metadata)`: 고정 비용 차감 (lookbook, hairTry)
+  - `deductTokensDynamic(docId, amount, feature, metadata)`: 가변 비용 차감 (chatbot)
+- **토큰 비용** (firebase-bridge.js TOKEN_COSTS):
   - 룩북: 200 토큰
   - 헤어체험: 350 토큰
-  - 챗봇: 10 토큰
+  - 챗봇: 3~30 토큰 (토큰 사용량 구간별)
+- **사전 체크**: API 호출 전 잔액 확인 → 부족 시 업그레이드 모달
 
 ### 토큰 사용 로그
 - Firestore `credit_logs` 컬렉션에 사용 기록 저장
