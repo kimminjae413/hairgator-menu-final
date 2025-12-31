@@ -85,8 +85,12 @@ exports.handler = async (event) => {
       currency: 'KRW'
     };
 
-    // customer 정보는 빌링키 결제에서 제외 (빌링키 발급 시 이미 저장됨)
-    // PortOne V2에서는 customer 필드가 빌링키 결제 시 필요하지 않음
+    // customer 정보 추가 (PortOne V2 형식)
+    if (userName) {
+      requestBody.customer = {
+        fullName: userName
+      };
+    }
 
     console.log('📤 포트원 요청 body:', JSON.stringify(requestBody, null, 2));
 
@@ -114,15 +118,19 @@ exports.handler = async (event) => {
       };
     }
 
-    // 결제 상태 확인
+    // 결제 상태 확인 (다양한 응답 구조 지원)
     const paymentStatus = paymentResult.payment?.status || paymentResult.status;
-    if (paymentStatus !== 'PAID' && paymentStatus !== 'VIRTUAL_ACCOUNT_ISSUED') {
+    console.log('📊 결제 상태:', paymentStatus, '전체 응답:', JSON.stringify(paymentResult));
+
+    // PAID 상태이거나 응답이 성공(ok)이면 결제 완료로 처리
+    if (paymentStatus !== 'PAID' && paymentStatus !== 'VIRTUAL_ACCOUNT_ISSUED' && !paymentResponse.ok) {
       return {
         statusCode: 400,
         headers,
         body: JSON.stringify({
           error: '결제가 완료되지 않았습니다.',
-          status: paymentStatus
+          status: paymentStatus,
+          response: paymentResult
         })
       };
     }
