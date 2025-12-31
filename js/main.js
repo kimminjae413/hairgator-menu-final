@@ -584,14 +584,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
 
-                        <!-- 로그아웃 -->
-                        <div class="menu-item" id="logoutBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span style="font-size: 20px;">🚪</span>
-                                <span style="color: #ff4444; font-size: 14px;">${t('ui.logout')}</span>
-                            </div>
-                        </div>
-
                         <!-- 구분선 -->
                         <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(128,128,128,0.3), transparent); margin: 15px 20px;"></div>
 
@@ -676,7 +668,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const personalColorBtn = document.getElementById('personalColorBtn');
         const aiTransformBtn = document.getElementById('aiTransformBtn');
         const brandSettingBtn = document.getElementById('brandSettingBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
 
         if (themeToggleMenu) {
             themeToggleMenu.addEventListener('click', toggleTheme);
@@ -797,10 +788,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 showBrandSettingModal();
                 closeSidebar();
             });
-        }
-
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', handleLogout);
         }
 
         // 프리미엄 업그레이드 버튼
