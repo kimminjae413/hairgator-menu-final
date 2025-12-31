@@ -2745,14 +2745,18 @@ window.closeStyleModal = function() {
 window.goToLookbook = function() {
     if (!currentModalStyle) return;
 
+    // 스타일 정보를 먼저 저장 (closeStyleModal이 null로 만들기 전에)
+    const styleId = currentModalStyle.styleId;
+    const gender = currentModalStyle.gender || selectedGender;
+
     closeStyleModal();
     stopCamera();
 
     // 메인 페이지 룩북으로 이동
     const params = new URLSearchParams({
         action: 'lookbook',
-        styleId: currentModalStyle.styleId,
-        gender: currentModalStyle.gender || selectedGender
+        styleId: styleId,
+        gender: gender
     });
     window.location.href = `/?${params.toString()}`;
 };
@@ -2761,14 +2765,18 @@ window.goToLookbook = function() {
 window.goToHairTry = function() {
     if (!currentModalStyle) return;
 
+    // 스타일 정보를 먼저 저장
+    const styleId = currentModalStyle.styleId;
+    const gender = currentModalStyle.gender || selectedGender;
+
     closeStyleModal();
     stopCamera();
 
     // 메인 페이지 헤어 체험으로 이동
     const params = new URLSearchParams({
         action: 'hairtry',
-        styleId: currentModalStyle.styleId,
-        gender: currentModalStyle.gender || selectedGender
+        styleId: styleId,
+        gender: gender
     });
     window.location.href = `/?${params.toString()}`;
 };
@@ -2777,14 +2785,18 @@ window.goToHairTry = function() {
 window.goToRecipe = function() {
     if (!currentModalStyle) return;
 
+    // 스타일 정보를 먼저 저장
+    const styleId = currentModalStyle.styleId;
+    const gender = currentModalStyle.gender || selectedGender;
+
     closeStyleModal();
     stopCamera();
 
     // 메인 페이지 레시피로 이동
     const params = new URLSearchParams({
         action: 'recipe',
-        styleId: currentModalStyle.styleId,
-        gender: currentModalStyle.gender || selectedGender
+        styleId: styleId,
+        gender: gender
     });
     window.location.href = `/?${params.toString()}`;
 };
