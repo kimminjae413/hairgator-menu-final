@@ -258,11 +258,17 @@ function showAccessDenied(userPlan) {
             <p style="color: #888; font-size: 14px; margin-bottom: 8px;">베이직 플랜 이상에서 사용 가능합니다.</p>
             <p style="color: #666; font-size: 13px; margin-bottom: 24px;">현재 플랜: ${planName}</p>
             <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 200px;">
-                <button onclick="window.parent.location.hash='#products'; window.history.back();" style="padding: 14px 24px; background: linear-gradient(135deg, #E91E63, #C2185B); border: none; border-radius: 10px; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;">요금제 보기</button>
-                <button onclick="window.history.back()" style="padding: 12px 24px; background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: #999; font-size: 14px; cursor: pointer;">뒤로 가기</button>
+                <button onclick="goToProductsPage()" style="padding: 14px 24px; background: linear-gradient(135deg, #E91E63, #C2185B); border: none; border-radius: 10px; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;">요금제 보기</button>
+                <button onclick="goBack()" style="padding: 12px 24px; background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: #999; font-size: 14px; cursor: pointer;">뒤로 가기</button>
             </div>
         </div>
     `;
+}
+
+// 요금제 페이지로 이동 (플러터 웹뷰 호환)
+function goToProductsPage() {
+    // 메인 페이지의 #products로 이동
+    window.location.href = '/#products';
 }
 
 // ========== 초기화 ==========

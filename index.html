@@ -2977,7 +2977,11 @@
                 userInfo.style.display = 'block';
                 guestMessage.style.display = 'none';
                 personalColorSection.style.display = 'block'; // 퍼스널컬러 버튼 표시
-                if (styleMatchSection) styleMatchSection.style.display = 'block'; // AI 스타일 매칭 표시
+                if (styleMatchSection) {
+                    styleMatchSection.style.display = 'block'; // AI 스타일 매칭 표시
+                    // 플랜에 따라 disabled 상태 적용
+                    applyStyleMatchDisabledState();
+                }
 
                 // 각 요소 null 체크
                 if (designerName) {
@@ -4015,7 +4019,7 @@ function isMobileDevice() {
 }
 
 // AI 스타일 매칭 접근 처리
-async function handleStyleMatchAccess(event) {
+function handleStyleMatchAccess(event) {
     if (event) {
         event.stopPropagation();
         event.preventDefault();
@@ -4023,8 +4027,8 @@ async function handleStyleMatchAccess(event) {
 
     console.log('✨ 스타일 매칭 버튼 클릭됨');
 
-    // 사용자 플랜 확인
-    const userPlan = await getUserPlanFromFirestore();
+    // 사용자 플랜 확인 (currentDesigner에서 바로 가져옴)
+    const userPlan = window.currentDesigner?.plan || 'free';
     const allowedPlans = ['basic', 'pro', 'business'];
 
     if (!allowedPlans.includes(userPlan)) {
@@ -4102,13 +4106,15 @@ function goToProducts() {
     window.location.hash = '#products';
 }
 
-// 사이드바 열릴 때 플랜에 따라 버튼 상태 업데이트
-async function updateSidebarMenuByPlan() {
-    const userPlan = await getUserPlanFromFirestore();
+// 플랜에 따라 AI 스타일 매칭 버튼 disabled 상태 적용
+function applyStyleMatchDisabledState() {
     const allowedPlans = ['basic', 'pro', 'business'];
+    // currentDesigner에서 플랜 가져오기 (이미 로드됨)
+    const userPlan = window.currentDesigner?.plan || 'free';
     const isAllowed = allowedPlans.includes(userPlan);
 
-    // AI 스타일 매칭 버튼
+    console.log('🔐 AI 스타일 매칭 플랜 체크:', userPlan, '허용:', isAllowed);
+
     const styleMatchBtn = document.querySelector('#styleMatchSection .sidebar-menu-item');
     if (styleMatchBtn) {
         if (isAllowed) {
@@ -4117,6 +4123,11 @@ async function updateSidebarMenuByPlan() {
             styleMatchBtn.classList.add('disabled');
         }
     }
+}
+
+// 사이드바 열릴 때 플랜에 따라 버튼 상태 업데이트
+async function updateSidebarMenuByPlan() {
+    applyStyleMatchDisabledState();
 }
 
 // AI 얼굴변환 & 영상변환 접근 처리
