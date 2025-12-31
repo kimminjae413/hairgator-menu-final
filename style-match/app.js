@@ -1551,8 +1551,8 @@ function interpretAnalysis(ratios, eyebrowAnalysis = null) {
         });
     }
 
-    // 2. 하안부 분석 (긴 얼굴) - 하안부가 40% 이상이면 긴 얼굴로 판단
-    const isLongFace = raw.lowerRatio > 0.40 || raw.lowerRatio > raw.middleRatio * 1.15;
+    // 2. 하안부 분석 (긴 얼굴) - 하안부가 36% 이상이면 긴 얼굴로 판단
+    const isLongFace = raw.lowerRatio > 0.36 || raw.lowerRatio > raw.middleRatio * 1.12;
     const isShortFace = raw.lowerRatio < 0.28 || raw.lowerRatio < raw.middleRatio * 0.85;
 
     if (isLongFace) {
@@ -1912,7 +1912,7 @@ function getAIPrescription(ratios) {
     const { lowerRatio, cheekJawRatio, upperRatio } = ratios.raw;
 
     // 긴 얼굴 → 살리기 (볼륨)
-    if (lowerRatio > 0.40) {
+    if (lowerRatio > 0.36) {
         return { treatment: 'volume', reason: '긴 얼굴 → 옆볼륨으로 길이 분산' };
     }
     // 둥근/짧은 얼굴 → 누르기 (슬림)
@@ -2582,7 +2582,7 @@ function generateStyleReason(style, analysis, ratios, score = 50) {
     }
 
     const { upperRatio, lowerRatio, cheekJawRatio, eyeDistanceRatio } = ratios.raw;
-    const isLongFace = lowerRatio > 0.40;
+    const isLongFace = lowerRatio > 0.36;
     const isShortFace = lowerRatio < 0.28;
     const isSquareJaw = cheekJawRatio < 1.15;
     const isOvalFace = cheekJawRatio > 1.35;
@@ -2647,7 +2647,9 @@ function generateStyleReason(style, analysis, ratios, score = 50) {
             parts.push(`다른 카테고리 스타일을 추천드립니다`);
         }
 
-        return parts.slice(0, 2).join(' / ');
+        // 중복 제거 후 반환
+        const uniqueParts = [...new Set(parts)];
+        return uniqueParts.slice(0, 2).join(' / ');
     }
 
     // ============================================
@@ -2673,10 +2675,12 @@ function generateStyleReason(style, analysis, ratios, score = 50) {
             parts.push(`이마 노출에 주의 필요`);
         } else {
             // 기본 중립 멘트
-            parts.push(`나쁘지 않지만 베스트는 아님`);
+            parts.push(`무난하게 소화 가능하지만, 얼굴형 보정 효과는 미미함`);
         }
 
-        return parts.slice(0, 2).join(' / ');
+        // 중복 제거 후 반환
+        const uniqueParts = [...new Set(parts)];
+        return uniqueParts.slice(0, 2).join(' / ');
     }
 
     // ============================================
@@ -2713,7 +2717,9 @@ function generateStyleReason(style, analysis, ratios, score = 50) {
             parts.push(`✓ 얼굴형과 이미지 타입에 가장 잘 어울리는 스타일`);
         }
 
-        return parts.slice(0, 2).join(' / ');
+        // 중복 제거 후 반환
+        const uniqueParts = [...new Set(parts)];
+        return uniqueParts.slice(0, 2).join(' / ');
     }
 
     // ============================================
@@ -2805,7 +2811,9 @@ function generateStyleReason(style, analysis, ratios, score = 50) {
         }
     }
 
-    return parts.slice(0, 2).join(' / ');
+    // 중복 제거 후 반환
+    const uniqueParts = [...new Set(parts)];
+    return uniqueParts.slice(0, 2).join(' / ');
 }
 
 // 카테고리 카드 생성
