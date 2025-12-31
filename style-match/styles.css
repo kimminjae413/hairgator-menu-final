@@ -396,35 +396,54 @@ body::after {
 /* 측정 �??�시 - 카메??�??�래쪽으�??�동 */
 .measurement-display {
     position: relative;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-    padding: 12px 20px;
+    padding: 16px;
     margin: var(--space-sm) auto;
-    background: var(--bg-card);
-    border: 1px solid var(--border-medium);
-    border-radius: var(--radius-md);
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
+    background: linear-gradient(135deg, rgba(20, 20, 30, 0.95), rgba(30, 30, 45, 0.95));
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
     max-width: 500px;
 }
 
-.measurement-line {
+.measurement-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.measurement-item {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(168, 85, 247, 0.1);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+}
+
+.measurement-item:hover {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: rgba(168, 85, 247, 0.4);
+    transform: translateY(-2px);
+}
+
+.measurement-icon {
+    font-size: 1.2rem;
 }
 
 .measurement-label {
     color: var(--text-secondary);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    flex: 1;
 }
 
 .measurement-value {
-    color: var(--accent-primary);
-    font-weight: 600;
+    color: #22d3ee;
+    font-weight: 700;
     font-size: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    text-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
 }
 
 .camera-overlay {

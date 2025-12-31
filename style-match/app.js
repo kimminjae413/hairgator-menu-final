@@ -542,6 +542,8 @@ function stopCamera() {
 }
 
 // ========== 랜드마크 시각화 ==========
+let scanLineY = 0; // 스캔 라인 애니메이션용
+
 function drawLandmarksOnCanvas(landmarks, video) {
     const canvas = document.getElementById('landmarkCanvas');
     if (!canvas || !landmarks) return;
@@ -567,15 +569,40 @@ function drawLandmarksOnCanvas(landmarks, video) {
         rightZygoma: 454,
         leftGonion: 58,
         rightGonion: 288,
-        leftEye: 33,
-        rightEye: 263
+        leftEyeOuter: 33,
+        rightEyeOuter: 263,
+        leftEyeInner: 133,
+        rightEyeInner: 362,
+        leftEyebrowOuter: 70,
+        rightEyebrowOuter: 300,
+        leftEyebrowInner: 107,
+        rightEyebrowInner: 336,
+        upperLip: 13,
+        lowerLip: 14,
+        leftMouth: 61,
+        rightMouth: 291,
+        foreheadLeft: 71,
+        foreheadRight: 301
     };
 
-    // 1. 얼굴 윤곽선 그리기 (연한 선)
+    // 0. 스캔 라인 애니메이션
+    scanLineY = (scanLineY + 3) % h;
+    const gradient = ctx.createLinearGradient(0, scanLineY - 20, 0, scanLineY + 20);
+    gradient.addColorStop(0, 'rgba(168, 85, 247, 0)');
+    gradient.addColorStop(0.5, 'rgba(168, 85, 247, 0.6)');
+    gradient.addColorStop(1, 'rgba(168, 85, 247, 0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, scanLineY - 20, w, 40);
+
+    // 1. 얼굴 윤곽선 (네온 효과)
     const faceOutline = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10];
+
+    // 글로우 효과
+    ctx.shadowColor = '#a855f7';
+    ctx.shadowBlur = 10;
     ctx.beginPath();
-    ctx.strokeStyle = 'rgba(74, 144, 226, 0.4)';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(168, 85, 247, 0.6)';
+    ctx.lineWidth = 2;
     faceOutline.forEach((idx, i) => {
         const x = landmarks[idx].x * w;
         const y = landmarks[idx].y * h;
@@ -583,62 +610,173 @@ function drawLandmarksOnCanvas(landmarks, video) {
         else ctx.lineTo(x, y);
     });
     ctx.stroke();
+    ctx.shadowBlur = 0;
 
-    // 2. 주요 측정선 그리기
-    // 세로선: 이마 ~ 턱 (핑크)
-    drawMeasurementLine(ctx, landmarks, keyPoints.hairline, keyPoints.chin, w, h, '#E91E63', '세로');
+    // 2. 측정선들 (라벨 포함)
+    // 세로선: 이마 ~ 턱 (보라색)
+    drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.hairline, keyPoints.chin, w, h, '#a855f7', 'HEIGHT', 'left');
 
-    // 가로선: 광대 너비 (파랑)
-    drawMeasurementLine(ctx, landmarks, keyPoints.leftZygoma, keyPoints.rightZygoma, w, h, '#4A90E2', '광대');
+    // 광대 너비 (시안)
+    drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.leftZygoma, keyPoints.rightZygoma, w, h, '#22d3ee', 'CHEEKBONE', 'top');
 
-    // 가로선: 턱 너비 (노랑)
-    drawMeasurementLine(ctx, landmarks, keyPoints.leftGonion, keyPoints.rightGonion, w, h, '#fbbf24', '턱');
+    // 턱 너비 (노랑)
+    drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.leftGonion, keyPoints.rightGonion, w, h, '#fbbf24', 'JAW', 'bottom');
 
-    // 3. 주요 포인트 그리기 (밝은 점)
-    Object.values(keyPoints).forEach(idx => {
+    // 눈썹 너비 (핑크)
+    drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.leftEyebrowOuter, keyPoints.rightEyebrowOuter, w, h, '#ec4899', 'EYEBROW', 'top');
+
+    // 미간 거리 (그린)
+    drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.leftEyebrowInner, keyPoints.rightEyebrowInner, w, h, '#22c55e', 'GLABELLA', 'top');
+
+    // 입술 너비 (오렌지)
+    drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.leftMouth, keyPoints.rightMouth, w, h, '#f97316', 'LIPS', 'bottom');
+
+    // 이마 너비 (연보라)
+    drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.foreheadLeft, keyPoints.foreheadRight, w, h, '#c084fc', 'FOREHEAD', 'top');
+
+    // 3. 주요 포인트 (펄스 애니메이션 효과)
+    const pulseRadius = 4 + Math.sin(Date.now() / 200) * 2;
+    const importantPoints = [
+        { idx: keyPoints.hairline, color: '#a855f7' },
+        { idx: keyPoints.chin, color: '#a855f7' },
+        { idx: keyPoints.leftZygoma, color: '#22d3ee' },
+        { idx: keyPoints.rightZygoma, color: '#22d3ee' },
+        { idx: keyPoints.leftGonion, color: '#fbbf24' },
+        { idx: keyPoints.rightGonion, color: '#fbbf24' },
+        { idx: keyPoints.glabella, color: '#22c55e' },
+        { idx: keyPoints.leftEyebrowOuter, color: '#ec4899' },
+        { idx: keyPoints.rightEyebrowOuter, color: '#ec4899' }
+    ];
+
+    importantPoints.forEach(({ idx, color }) => {
         const x = landmarks[idx].x * w;
         const y = landmarks[idx].y * h;
 
-        // 외곽 원
+        // 외곽 글로우
         ctx.beginPath();
-        ctx.arc(x, y, 6, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(233, 30, 99, 0.3)';
+        ctx.arc(x, y, pulseRadius + 4, 0, Math.PI * 2);
+        ctx.fillStyle = color.replace(')', ', 0.2)').replace('rgb', 'rgba').replace('#', 'rgba(');
+        // hex to rgba
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.3)`;
         ctx.fill();
 
         // 내부 점
         ctx.beginPath();
-        ctx.arc(x, y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = '#E91E63';
+        ctx.arc(x, y, pulseRadius, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        // 중심점
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
         ctx.fill();
     });
 
-    // 4. 측정 값 표시
+    // 4. 코너 프레임 (스캔 UI 느낌)
+    drawCornerFrame(ctx, w, h);
+
+    // 5. 측정 값 표시
     updateMeasurementDisplay(landmarks, w, h);
 }
 
-function drawMeasurementLine(ctx, landmarks, idx1, idx2, w, h, color, label) {
+function drawMeasurementLineWithLabel(ctx, landmarks, idx1, idx2, w, h, color, label, labelPos) {
     const x1 = landmarks[idx1].x * w;
     const y1 = landmarks[idx1].y * h;
     const x2 = landmarks[idx2].x * w;
     const y2 = landmarks[idx2].y * h;
 
-    // 점선
+    // 글로우 효과
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8;
+
+    // 선
     ctx.beginPath();
-    ctx.setLineDash([5, 5]);
+    ctx.setLineDash([8, 4]);
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.stroke();
     ctx.setLineDash([]);
+    ctx.shadowBlur = 0;
 
-    // 끝점 표시
+    // 끝점 마커
     [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(pt => {
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = color;
+        ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
         ctx.fill();
     });
+
+    // 라벨
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+    const dist = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    const distText = Math.round(dist);
+
+    ctx.font = 'bold 10px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+
+    let labelX = midX;
+    let labelY = midY;
+
+    if (labelPos === 'top') labelY -= 12;
+    else if (labelPos === 'bottom') labelY += 18;
+    else if (labelPos === 'left') { labelX = x1 - 35; labelY = midY; }
+    else if (labelPos === 'right') { labelX = x2 + 35; labelY = midY; }
+
+    // 라벨 배경
+    const textWidth = ctx.measureText(label).width + 8;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(labelX - textWidth/2, labelY - 8, textWidth, 14);
+
+    // 라벨 텍스트
+    ctx.fillStyle = color;
+    ctx.fillText(label, labelX, labelY + 2);
+}
+
+function drawCornerFrame(ctx, w, h) {
+    const cornerSize = 30;
+    const margin = 15;
+    ctx.strokeStyle = 'rgba(168, 85, 247, 0.8)';
+    ctx.lineWidth = 2;
+
+    // 좌상단
+    ctx.beginPath();
+    ctx.moveTo(margin, margin + cornerSize);
+    ctx.lineTo(margin, margin);
+    ctx.lineTo(margin + cornerSize, margin);
+    ctx.stroke();
+
+    // 우상단
+    ctx.beginPath();
+    ctx.moveTo(w - margin - cornerSize, margin);
+    ctx.lineTo(w - margin, margin);
+    ctx.lineTo(w - margin, margin + cornerSize);
+    ctx.stroke();
+
+    // 좌하단
+    ctx.beginPath();
+    ctx.moveTo(margin, h - margin - cornerSize);
+    ctx.lineTo(margin, h - margin);
+    ctx.lineTo(margin + cornerSize, h - margin);
+    ctx.stroke();
+
+    // 우하단
+    ctx.beginPath();
+    ctx.moveTo(w - margin - cornerSize, h - margin);
+    ctx.lineTo(w - margin, h - margin);
+    ctx.lineTo(w - margin, h - margin - cornerSize);
+    ctx.stroke();
 }
 
 function updateMeasurementDisplay(landmarks, w, h) {
@@ -660,33 +798,44 @@ function updateMeasurementDisplay(landmarks, w, h) {
     const rightZygoma = landmarks[454];
     const leftGonion = landmarks[58];
     const rightGonion = landmarks[288];
+    const leftEyebrowOuter = landmarks[70];
+    const rightEyebrowOuter = landmarks[300];
+    const leftMouth = landmarks[61];
+    const rightMouth = landmarks[291];
 
     const dist = (a, b) => Math.sqrt(Math.pow((a.x - b.x) * w, 2) + Math.pow((a.y - b.y) * h, 2));
 
     const totalHeight = dist(hairline, chin);
-    const upperHeight = dist(hairline, glabella);
-    const middleHeight = dist(glabella, noseTip);
-    const lowerHeight = dist(noseTip, chin);
     const faceWidth = dist(leftZygoma, rightZygoma);
     const jawWidth = dist(leftGonion, rightGonion);
+    const eyebrowWidth = dist(leftEyebrowOuter, rightEyebrowOuter);
+    const lipWidth = dist(leftMouth, rightMouth);
 
-    const upperRatio = Math.round(upperHeight / totalHeight * 100);
-    const middleRatio = Math.round(middleHeight / totalHeight * 100);
-    const lowerRatio = Math.round(lowerHeight / totalHeight * 100);
+    const faceRatio = (totalHeight / faceWidth).toFixed(2);
     const widthRatio = (faceWidth / jawWidth).toFixed(2);
 
     display.innerHTML = `
-        <div class="measurement-line">
-            <span class="measurement-label">상안부:</span>
-            <span class="measurement-value">${upperRatio}%</span>
-            <span class="measurement-label">중안부:</span>
-            <span class="measurement-value">${middleRatio}%</span>
-            <span class="measurement-label">하안부:</span>
-            <span class="measurement-value">${lowerRatio}%</span>
-        </div>
-        <div class="measurement-line">
-            <span class="measurement-label">광대/턱:</span>
-            <span class="measurement-value">${widthRatio}</span>
+        <div class="measurement-grid">
+            <div class="measurement-item">
+                <span class="measurement-icon">📏</span>
+                <span class="measurement-label">세로/가로</span>
+                <span class="measurement-value">${faceRatio}</span>
+            </div>
+            <div class="measurement-item">
+                <span class="measurement-icon">💎</span>
+                <span class="measurement-label">광대/턱</span>
+                <span class="measurement-value">${widthRatio}</span>
+            </div>
+            <div class="measurement-item">
+                <span class="measurement-icon">👁️</span>
+                <span class="measurement-label">눈썹폭</span>
+                <span class="measurement-value">${Math.round(eyebrowWidth)}px</span>
+            </div>
+            <div class="measurement-item">
+                <span class="measurement-icon">👄</span>
+                <span class="measurement-label">입술폭</span>
+                <span class="measurement-value">${Math.round(lipWidth)}px</span>
+            </div>
         </div>
     `;
 }
