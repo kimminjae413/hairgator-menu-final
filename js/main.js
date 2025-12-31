@@ -1917,11 +1917,30 @@ async function loadBrandFromFirebase() {
             return null;
         }
 
-        // 이메일 기반 문서 ID 우선 사용
-        const docId = userInfo.id || `${userInfo.name}_${userInfo.phone}`;
-        console.log('🏷️ Firebase 브랜드 로드 시도:', docId);
+        // 1차: 이메일 기반 문서 ID로 조회
+        const primaryDocId = userInfo.id || `${userInfo.name}_${userInfo.phone}`;
+        console.log('🏷️ Firebase 브랜드 로드 시도:', primaryDocId);
 
-        const doc = await window.db.collection('brandSettings').doc(docId).get();
+        let doc = await window.db.collection('brandSettings').doc(primaryDocId).get();
+
+        // 2차: 없으면 레거시 ID로 폴백 (기존 사용자 마이그레이션)
+        if (!doc.exists && userInfo.id && userInfo.name && userInfo.phone) {
+            const legacyDocId = `${userInfo.name}_${userInfo.phone}`;
+            console.log('🏷️ 레거시 ID로 재시도:', legacyDocId);
+            doc = await window.db.collection('brandSettings').doc(legacyDocId).get();
+
+            // 레거시에서 찾으면 새 ID로 마이그레이션
+            if (doc.exists) {
+                const data = doc.data();
+                console.log('🏷️ 레거시 브랜드 발견, 마이그레이션:', data.brandName);
+                await window.db.collection('brandSettings').doc(primaryDocId).set({
+                    ...data,
+                    email: userInfo.email || '',
+                    migratedFrom: legacyDocId,
+                    migratedAt: Date.now()
+                });
+            }
+        }
 
         if (doc.exists) {
             const data = doc.data();
@@ -1984,11 +2003,30 @@ async function loadUserSettingsFromFirebase() {
             return null;
         }
 
-        // 이메일 기반 문서 ID 우선 사용
-        const docId = userInfo.id || `${userInfo.name}_${userInfo.phone}`;
-        console.log('⚙️ Firebase 사용자 설정 로드 시도:', docId);
+        // 1차: 이메일 기반 문서 ID로 조회
+        const primaryDocId = userInfo.id || `${userInfo.name}_${userInfo.phone}`;
+        console.log('⚙️ Firebase 사용자 설정 로드 시도:', primaryDocId);
 
-        const doc = await window.db.collection('userSettings').doc(docId).get();
+        let doc = await window.db.collection('userSettings').doc(primaryDocId).get();
+
+        // 2차: 없으면 레거시 ID로 폴백 (기존 사용자 마이그레이션)
+        if (!doc.exists && userInfo.id && userInfo.name && userInfo.phone) {
+            const legacyDocId = `${userInfo.name}_${userInfo.phone}`;
+            console.log('⚙️ 레거시 ID로 재시도:', legacyDocId);
+            doc = await window.db.collection('userSettings').doc(legacyDocId).get();
+
+            // 레거시에서 찾으면 새 ID로 마이그레이션
+            if (doc.exists) {
+                const data = doc.data();
+                console.log('⚙️ 레거시 설정 발견, 마이그레이션');
+                await window.db.collection('userSettings').doc(primaryDocId).set({
+                    ...data,
+                    email: userInfo.email || '',
+                    migratedFrom: legacyDocId,
+                    migratedAt: Date.now()
+                });
+            }
+        }
 
         if (doc.exists) {
             const data = doc.data();
