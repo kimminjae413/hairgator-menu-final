@@ -105,6 +105,32 @@
 - 한글 경로 (`김민재`) 있으면 일부 도구 오류
 - Flutter/Gradle은 **D드라이브** 사용 (`D:\hairgator_dev\`)
 
+### 9. RAG 업로드 (Gemini File Search) ⚠️ 중요!
+**잘못된 방법 (파일만 업로드, Store에 추가 안 됨):**
+```python
+# ❌ 이렇게 하면 Files API에만 올라가고 RAG Store에는 안 들어감!
+client.files.upload(file=file_path)
+```
+
+**올바른 방법 (Store에 직접 업로드):**
+```python
+# ✅ 방법 1: 직접 업로드
+client.file_search_stores.upload_to_file_search_store(
+    file=file_path,
+    file_search_store_name=STORE_NAME
+)
+
+# ✅ 방법 2: 업로드 후 import
+uploaded = client.files.upload(file=file_path)
+client.file_search_stores.import_file(
+    file_search_store_name=STORE_NAME,
+    file_name=uploaded.name
+)
+```
+
+**Store ID**: `fileSearchStores/hairgator-theory-final-2025-kkb6n1ftfbf2`
+**참고 스크립트**: `scripts/upload-*-to-rag.py`
+
 ---
 
 ## Google Play Console 계정 (앱 출시용)
