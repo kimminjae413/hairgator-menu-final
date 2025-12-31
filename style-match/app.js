@@ -237,13 +237,26 @@ function showAccessDenied() {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🎯 AI Style Match 초기화');
 
-    // 접근 제한 체크
-    if (!isAllowedUser()) {
+    // 접근 제한 체크 (Firebase Auth 로드 대기)
+    async function checkAccess() {
+        // 최대 3초간 500ms 간격으로 체크
+        for (let i = 0; i < 6; i++) {
+            if (isAllowedUser()) {
+                console.log('✅ AI 스타일 매칭 접근 허용');
+                return true;
+            }
+            console.log(`⏳ 접근 체크 대기... (${i + 1}/6)`);
+            await new Promise(r => setTimeout(r, 500));
+        }
+        return false;
+    }
+
+    const allowed = await checkAccess();
+    if (!allowed) {
         console.log('❌ AI 스타일 매칭 접근 제한: 허용되지 않은 사용자');
         showAccessDenied();
         return;
     }
-    console.log('✅ AI 스타일 매칭 접근 허용');
 
     // 테마 상속
     inheritTheme();
