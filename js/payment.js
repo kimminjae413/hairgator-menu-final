@@ -445,6 +445,16 @@ async function verifyAndPay(planKey) {
     return;
   }
 
+  // TODO: 프로덕션에서는 본인인증 활성화 필요
+  // 테스트 모드: 본인인증 스킵하고 바로 결제 진행
+  const SKIP_IDENTITY_VERIFICATION = true;
+
+  if (SKIP_IDENTITY_VERIFICATION) {
+    // 테스트 모드 - 바로 결제 진행
+    await showPaymentOptions(planKey);
+    return;
+  }
+
   // 본인인증 여부 확인
   const verification = await checkIdentityVerification(userId);
 
