@@ -1892,11 +1892,12 @@ async function saveBrandToFirebase(brandSettings) {
             return;
         }
 
-        const docId = `${userInfo.name}_${userInfo.phone}`;
+        // 이메일 기반 문서 ID 우선 사용
+        const docId = userInfo.id || `${userInfo.name}_${userInfo.phone}`;
         await window.db.collection('brandSettings').doc(docId).set({
             ...brandSettings,
             designerName: userInfo.name,
-            designerPhone: userInfo.phone,
+            email: userInfo.email || '',
             updatedAt: Date.now()
         }, { merge: true });
 
@@ -1916,7 +1917,8 @@ async function loadBrandFromFirebase() {
             return null;
         }
 
-        const docId = `${userInfo.name}_${userInfo.phone}`;
+        // 이메일 기반 문서 ID 우선 사용
+        const docId = userInfo.id || `${userInfo.name}_${userInfo.phone}`;
         console.log('🏷️ Firebase 브랜드 로드 시도:', docId);
 
         const doc = await window.db.collection('brandSettings').doc(docId).get();
@@ -1957,11 +1959,12 @@ async function saveUserSettingsToFirebase(settings) {
             return;
         }
 
-        const docId = `${userInfo.name}_${userInfo.phone}`;
+        // 이메일 기반 문서 ID 우선 사용
+        const docId = userInfo.id || `${userInfo.name}_${userInfo.phone}`;
         await window.db.collection('userSettings').doc(docId).set({
             ...settings,
             designerName: userInfo.name,
-            designerPhone: userInfo.phone,
+            email: userInfo.email || '',
             updatedAt: Date.now()
         }, { merge: true });
 
@@ -1981,7 +1984,8 @@ async function loadUserSettingsFromFirebase() {
             return null;
         }
 
-        const docId = `${userInfo.name}_${userInfo.phone}`;
+        // 이메일 기반 문서 ID 우선 사용
+        const docId = userInfo.id || `${userInfo.name}_${userInfo.phone}`;
         console.log('⚙️ Firebase 사용자 설정 로드 시도:', docId);
 
         const doc = await window.db.collection('userSettings').doc(docId).get();
