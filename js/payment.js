@@ -5,6 +5,8 @@ const HAIRGATOR_PAYMENT = {
   // 포트원 설정
   storeId: 'store-69fa8bc3-f410-433a-a8f2-f5d922f94dcb',
   channelKey: 'channel-key-da1e7007-39b9-4afa-8c40-0f158d323af1',
+  // 본인인증용 다날 채널 키
+  identityChannelKey: 'channel-key-48488a5d-8ae1-416d-b570-f91cab03398f',
 
   // 요금제 정보
   plans: {
@@ -383,11 +385,11 @@ async function requestIdentityVerification(userId) {
     // 고유 인증 ID 생성
     const identityVerificationId = `HG_ID_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // 포트원 본인인증 요청
+    // 포트원 본인인증 요청 (다날 본인인증 채널 사용)
     const response = await PortOne.requestIdentityVerification({
       storeId: HAIRGATOR_PAYMENT.storeId,
       identityVerificationId: identityVerificationId,
-      channelKey: HAIRGATOR_PAYMENT.channelKey,
+      channelKey: HAIRGATOR_PAYMENT.identityChannelKey,
       windowType: { pc: 'POPUP', mobile: 'REDIRECTION' },
       redirectUrl: window.location.origin + '/identity-complete.html'
     });
