@@ -103,8 +103,9 @@ async function handleUserLogin(user) {
         const providerName = getProviderName(user.providerData[0]?.providerId);
 
         // 이메일이 없으면 UID 기반 폴백 (카카오 이메일 미제공 등)
+        // → handleUserLoginByUid에서 token claims에서 이메일 추출
         if (!email) {
-            console.warn('⚠️ 이메일 없음, UID 기반 폴백:', user.uid);
+            console.log('🔑 UID 기반 로그인 처리:', user.uid);
             await handleUserLoginByUid(user);
             return;
         }

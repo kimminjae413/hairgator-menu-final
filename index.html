@@ -3009,9 +3009,8 @@
             const designerPhone = document.getElementById('designerPhoneDisplay');
             const sessionStatus = document.getElementById('sessionStatusDisplay');
 
-            // null 체크 추가
+            // null 체크 - 마이페이지 섹션이 아닐 때는 조용히 종료
             if (!userInfo || !guestMessage || !personalColorSection) {
-                console.warn('⚠️ updateUserInfo: 필수 DOM 요소를 찾을 수 없습니다');
                 return;
             }
 
@@ -3986,12 +3985,11 @@
     <!-- 퍼스널컬러 모달 - 수정된 버전 -->
 <div id="personalColorModal" class="personal-color-modal">
     <button class="personal-color-close-btn" onclick="closePersonalColorModal()">×</button>
-    <iframe 
-        id="personalColorFrame" 
-        src="personal-color/index.html" 
+    <iframe
+        id="personalColorFrame"
+        src="personal-color/index.html"
         frameborder="0"
-        allow="camera; microphone; autoplay; fullscreen"
-        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox">
+        allow="camera; microphone; autoplay; fullscreen">
     </iframe>
 </div>
 

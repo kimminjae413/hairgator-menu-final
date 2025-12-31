@@ -29,7 +29,7 @@ if (storage) {
     window.storage = storage;
 }
 
-// 캐시 설정
+// 캐시 설정 (merge: true로 기존 설정 유지)
 try {
    db.settings({
        cache: {
@@ -37,7 +37,8 @@ try {
            tabManager: {
                kind: 'multi-tab'
            }
-       }
+       },
+       merge: true
    });
 } catch (error) {
    console.warn('Cache settings failed, using fallback');
