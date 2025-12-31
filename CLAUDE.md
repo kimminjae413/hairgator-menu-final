@@ -56,6 +56,57 @@
 
 ---
 
+## 🔴 자주 헷갈리는 것들 (Claude 필독!)
+
+### 1. main.js vs menu.js 구분
+- **main.js**: 사이드바 메뉴 HTML 동적 생성, 테마 전환, 초기화
+- **menu.js**: 메뉴 클릭 액션, 페이지 이동, 토큰 체크
+- ⚠️ 사이드바 메뉴 순서/구조 변경 → **main.js** 수정
+- ⚠️ 메뉴 클릭 시 동작 변경 → **menu.js** 수정
+
+### 2. 삭제된 파일 (더 이상 없음!)
+| 삭제된 파일 | 대체된 파일 |
+|------------|------------|
+| `js/bullnabi-bridge.js` | `js/firebase-bridge.js` |
+| `netlify/functions/bullnabi-proxy.js` | Firestore 직접 접근 |
+| `netlify/functions/token-api.js` | `firebase-bridge.js` |
+| `js/dynamic-token-service.js` | 삭제됨 (미사용) |
+
+### 3. Firestore 컬렉션명 (정확히!)
+| 용도 | 올바른 컬렉션명 | 잘못된 예시 |
+|------|----------------|------------|
+| 헤어스타일 | `hairstyles` | ~~styles, men_styles~~ |
+| 사용자 | `users` | ~~_users~~ |
+| 불나비 마이그레이션 | `bullnabi_users` | - |
+| 토큰 로그 | `credit_logs` | - |
+
+### 4. Firestore 필드값 (대소문자 주의!)
+**남자 카테고리 (category):**
+- ✅ `SIDE FRINGE`, `SIDE PART`, `FRINGE UP`, `PUSHED BACK`, `BUZZ`, `CROP`, `MOHICAN`
+- ❌ ~~Side Fade, Full Up, Push Back~~
+
+**중분류 (subCategory):**
+- ✅ `None`, `Fore Head`, `Eye Brow`, `Eye`, `Cheekbone`
+- ❌ ~~N, FH, EB, E, CB~~ (축약형 아님!)
+
+### 5. CSS 누락 주의
+- 새 모달 만들 때 `.modal-overlay` CSS 있는지 확인
+- `display: none` → `display: flex` 전환 시 position/z-index 필요
+
+### 6. 함수 호출 타이밍
+- `applyPlanBasedDisabledState()`: setupSidebarMenuListeners() **끝에서 한 번만** 호출
+- 여러 번 호출하면 타이밍 문제로 일부 버튼에 적용 안 됨
+
+### 7. 브라우저 캐시
+- JS 수정 후 반영 안 되면 → **Ctrl+Shift+R** (하드 리프레시)
+- Netlify 배포 후 1-2분 대기 필요
+
+### 8. 경로 문제 (Windows)
+- 한글 경로 (`김민재`) 있으면 일부 도구 오류
+- Flutter/Gradle은 **D드라이브** 사용 (`D:\hairgator_dev\`)
+
+---
+
 ## Google Play Console 계정 (앱 출시용)
 - **이메일**: drylink.info@gmail.com
 - **비밀번호**: alswo1206!@
