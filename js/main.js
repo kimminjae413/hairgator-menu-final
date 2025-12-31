@@ -2510,7 +2510,8 @@ async function applyProfileImage() {
 
         // 1차: 카카오/구글 로그인 시 받은 photoURL 사용
         if (window.currentDesigner?.photoURL) {
-            imageUrl = window.currentDesigner.photoURL;
+            // HTTP → HTTPS 변환 (Mixed Content 방지)
+            imageUrl = window.currentDesigner.photoURL.replace(/^http:\/\//i, 'https://');
             console.log('👤 소셜 로그인 프로필 이미지 사용');
         }
 
