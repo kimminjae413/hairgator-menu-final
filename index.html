@@ -2866,6 +2866,11 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('active');
+
+            // 사이드바 열릴 때 플랜 기반 메뉴 상태 업데이트
+            if (sidebar.classList.contains('active')) {
+                updateSidebarMenuByPlan();
+            }
         }
 
         // ========== 요금제 모달 함수 ==========
@@ -4010,13 +4015,23 @@ function isMobileDevice() {
 }
 
 // AI 스타일 매칭 접근 처리
-function handleStyleMatchAccess(event) {
+async function handleStyleMatchAccess(event) {
     if (event) {
         event.stopPropagation();
         event.preventDefault();
     }
 
     console.log('✨ 스타일 매칭 버튼 클릭됨');
+
+    // 사용자 플랜 확인
+    const userPlan = await getUserPlanFromFirestore();
+    const allowedPlans = ['basic', 'pro', 'business'];
+
+    if (!allowedPlans.includes(userPlan)) {
+        // 무료 사용자 - 업그레이드 안내
+        showUpgradeModal('AI 스타일 매칭', '베이직 플랜 이상에서 사용 가능합니다.');
+        return;
+    }
 
     // 사이드바 먼저 닫기
     const sidebar = document.getElementById('sidebar');
@@ -4028,6 +4043,80 @@ function handleStyleMatchAccess(event) {
     setTimeout(() => {
         showStyleMatchView();
     }, 300);
+}
+
+// Firestore에서 사용자 플랜 가져오기
+async function getUserPlanFromFirestore() {
+    try {
+        // localStorage에서 먼저 확인
+        const cached = localStorage.getItem('hairgator_user');
+        if (cached) {
+            const user = JSON.parse(cached);
+            if (user.plan) return user.plan;
+        }
+
+        // Firestore에서 확인
+        const user = firebase.auth().currentUser;
+        if (!user?.email) return 'free';
+
+        const emailDocId = user.email.replace(/[@.]/g, '_');
+        const db = firebase.firestore();
+        const userDoc = await db.collection('users').doc(emailDocId).get();
+
+        if (userDoc.exists) {
+            return userDoc.data().plan || 'free';
+        }
+        return 'free';
+    } catch (e) {
+        console.log('플랜 확인 오류:', e);
+        return 'free';
+    }
+}
+
+// 업그레이드 모달 표시
+function showUpgradeModal(featureName, message) {
+    const modal = document.createElement('div');
+    modal.className = 'upgrade-modal-overlay';
+    modal.innerHTML = `
+        <div class="upgrade-modal">
+            <div class="upgrade-icon">🔒</div>
+            <h3>${featureName}</h3>
+            <p>${message}</p>
+            <div class="upgrade-buttons">
+                <button class="upgrade-btn-primary" onclick="goToProducts(); this.closest('.upgrade-modal-overlay').remove();">요금제 보기</button>
+                <button class="upgrade-btn-secondary" onclick="this.closest('.upgrade-modal-overlay').remove();">닫기</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    // 배경 클릭 시 닫기
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+}
+
+function goToProducts() {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.remove('active');
+    window.location.hash = '#products';
+}
+
+// 사이드바 열릴 때 플랜에 따라 버튼 상태 업데이트
+async function updateSidebarMenuByPlan() {
+    const userPlan = await getUserPlanFromFirestore();
+    const allowedPlans = ['basic', 'pro', 'business'];
+    const isAllowed = allowedPlans.includes(userPlan);
+
+    // AI 스타일 매칭 버튼
+    const styleMatchBtn = document.querySelector('#styleMatchSection .sidebar-menu-item');
+    if (styleMatchBtn) {
+        if (isAllowed) {
+            styleMatchBtn.classList.remove('disabled');
+        } else {
+            styleMatchBtn.classList.add('disabled');
+        }
+    }
 }
 
 // AI 얼굴변환 & 영상변환 접근 처리

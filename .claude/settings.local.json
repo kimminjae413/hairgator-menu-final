@@ -73,7 +73,9 @@
       "Bash(\"$JAVA_HOME/bin/keytool\":*)",
       "Bash(claude mcp add chrome-devtools -- npx -y @anthropic/mcp-chrome-devtools)",
       "Bash(claude mcp list:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "mcp__chrome-devtools__get_console_message",
+      "Bash(timeout /t 60 /nobreak)"
     ],
     "deny": [],
     "ask": []

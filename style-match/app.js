@@ -175,82 +175,92 @@ const FACE_STYLE_COMBINATIONS = {
 };
 
 // ========== 접근 제한 ==========
-const ALLOWED_EMAILS = [
-    '708eric@hanmail.net'
-];
+// 허용 요금제 (베이직 이상)
+const ALLOWED_PLANS = ['basic', 'pro', 'business'];
 
-function isAllowedUser() {
-    let foundEmail = null;
+// Firestore에서 사용자 요금제 확인
+async function checkAccessFromFirestore(email) {
+    if (!email) return { allowed: false, plan: null };
 
-    // 1. window.currentDesigner 확인
-    if (window.currentDesigner?.email) {
-        foundEmail = window.currentDesigner.email;
-        console.log('📧 currentDesigner에서 이메일 발견:', foundEmail);
-        return ALLOWED_EMAILS.includes(foundEmail.toLowerCase());
+    try {
+        const db = firebase.firestore();
+        const emailDocId = email.replace(/[@.]/g, '_');
+        const userDoc = await db.collection('users').doc(emailDocId).get();
+
+        if (userDoc.exists) {
+            const userData = userDoc.data();
+            const userPlan = userData.plan || 'free';
+            const isAllowed = ALLOWED_PLANS.includes(userPlan);
+
+            console.log(`📋 사용자 요금제: ${userPlan}, 접근 허용: ${isAllowed}`);
+            return { allowed: isAllowed, plan: userPlan };
+        }
+
+        console.log('❌ Firestore에서 사용자 없음:', email);
+        return { allowed: false, plan: null };
+    } catch (e) {
+        console.log('Firestore 오류:', e);
+        return { allowed: false, plan: null };
+    }
+}
+
+// 사용자 이메일 가져오기
+function getUserEmail() {
+    // 1. Firebase Auth currentUser
+    if (window.firebase && firebase.auth) {
+        const user = firebase.auth().currentUser;
+        if (user?.email) {
+            console.log('📧 Firebase Auth에서 이메일 발견:', user.email);
+            return user.email;
+        }
     }
 
-    // 2. parent의 currentDesigner 확인 (iframe인 경우)
+    // 2. localStorage hairgator_user
     try {
-        if (parent.window.currentDesigner?.email) {
-            foundEmail = parent.window.currentDesigner.email;
-            console.log('📧 parent.currentDesigner에서 이메일 발견:', foundEmail);
-            return ALLOWED_EMAILS.includes(foundEmail.toLowerCase());
+        const cached = localStorage.getItem('hairgator_user');
+        if (cached) {
+            const user = JSON.parse(cached);
+            if (user.email) {
+                console.log('📧 hairgator_user에서 이메일 발견:', user.email);
+                return user.email;
+            }
         }
     } catch (e) {}
 
-    // 3. localStorage hairgator_user 확인
-    try {
-        const cached = localStorage.getItem('hairgator_user');
-        console.log('🔍 hairgator_user:', cached ? '있음' : '없음');
-        if (cached) {
-            const user = JSON.parse(cached);
-            if (user.email) {
-                foundEmail = user.email;
-                console.log('📧 hairgator_user에서 이메일 발견:', foundEmail);
-                return ALLOWED_EMAILS.includes(foundEmail.toLowerCase());
-            }
-        }
-    } catch (e) { console.log('hairgator_user 파싱 오류:', e); }
-
-    // 4. localStorage firebase_user 확인
+    // 3. localStorage firebase_user
     try {
         const cached = localStorage.getItem('firebase_user');
-        console.log('🔍 firebase_user:', cached ? '있음' : '없음');
         if (cached) {
             const user = JSON.parse(cached);
             if (user.email) {
-                foundEmail = user.email;
-                console.log('📧 firebase_user에서 이메일 발견:', foundEmail);
-                return ALLOWED_EMAILS.includes(foundEmail.toLowerCase());
+                console.log('📧 firebase_user에서 이메일 발견:', user.email);
+                return user.email;
             }
         }
-    } catch (e) { console.log('firebase_user 파싱 오류:', e); }
+    } catch (e) {}
 
-    // 5. Firebase Auth currentUser 확인
-    try {
-        console.log('🔍 Firebase Auth:', window.firebase ? '있음' : '없음');
-        if (window.firebase && firebase.auth) {
-            const user = firebase.auth().currentUser;
-            console.log('🔍 Firebase currentUser:', user ? user.email : '없음');
-            if (user?.email) {
-                foundEmail = user.email;
-                console.log('📧 Firebase Auth에서 이메일 발견:', foundEmail);
-                return ALLOWED_EMAILS.includes(foundEmail.toLowerCase());
-            }
-        }
-    } catch (e) { console.log('Firebase Auth 오류:', e); }
+    // 4. window.currentDesigner
+    if (window.currentDesigner?.email) {
+        console.log('📧 currentDesigner에서 이메일 발견:', window.currentDesigner.email);
+        return window.currentDesigner.email;
+    }
 
     console.log('❌ 이메일을 찾지 못함');
-    return false;
+    return null;
 }
 
-function showAccessDenied() {
+function showAccessDenied(userPlan) {
+    const planName = userPlan === 'free' ? '무료' : userPlan || '무료';
     document.body.innerHTML = `
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #1a1a2e; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; text-align: center; padding: 20px;">
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #1a1a2e; color: #fff; font-family: 'Noto Sans KR', sans-serif; text-align: center; padding: 20px;">
             <div style="font-size: 48px; margin-bottom: 20px;">🔒</div>
-            <h1 style="font-size: 24px; margin-bottom: 12px;">아직 오픈 전입니다</h1>
-            <p style="color: #888; font-size: 14px;">AI 스타일 매칭 기능은 현재 테스트 중입니다.</p>
-            <button onclick="window.history.back()" style="margin-top: 24px; padding: 12px 24px; background: #E91E63; border: none; border-radius: 8px; color: #fff; font-size: 14px; cursor: pointer;">뒤로 가기</button>
+            <h1 style="font-size: 22px; margin-bottom: 12px; font-weight: 600;">AI 스타일 매칭</h1>
+            <p style="color: #888; font-size: 14px; margin-bottom: 8px;">베이직 플랜 이상에서 사용 가능합니다.</p>
+            <p style="color: #666; font-size: 13px; margin-bottom: 24px;">현재 플랜: ${planName}</p>
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 200px;">
+                <button onclick="window.parent.location.hash='#products'; window.history.back();" style="padding: 14px 24px; background: linear-gradient(135deg, #E91E63, #C2185B); border: none; border-radius: 10px; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;">요금제 보기</button>
+                <button onclick="window.history.back()" style="padding: 12px 24px; background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: #999; font-size: 14px; cursor: pointer;">뒤로 가기</button>
+            </div>
         </div>
     `;
 }
@@ -284,26 +294,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Firebase Auth 먼저 대기
-    const firebaseUser = await waitForFirebaseAuth();
+    await waitForFirebaseAuth();
 
-    // 접근 제한 체크
-    async function checkAccess() {
-        // localStorage에서도 체크 (Firebase 외 소스)
-        for (let i = 0; i < 3; i++) {
-            if (isAllowedUser()) {
-                console.log('✅ AI 스타일 매칭 접근 허용');
-                return true;
-            }
-            console.log(`⏳ 접근 체크 대기... (${i + 1}/3)`);
-            await new Promise(r => setTimeout(r, 300));
-        }
-        return false;
-    }
+    // 사용자 이메일 가져오기
+    const userEmail = getUserEmail();
+    console.log('📧 확인된 사용자 이메일:', userEmail);
 
-    const allowed = await checkAccess();
+    // Firestore에서 접근 권한 확인
+    const { allowed, plan } = await checkAccessFromFirestore(userEmail);
     if (!allowed) {
-        console.log('❌ AI 스타일 매칭 접근 제한: 허용되지 않은 사용자');
-        showAccessDenied();
+        console.log('❌ AI 스타일 매칭 접근 제한: 허용되지 않은 사용자 (플랜:', plan, ')');
+        showAccessDenied(plan);
         return;
     }
 

@@ -1457,6 +1457,33 @@ body.light-theme .language-btn:hover {
     transform: scale(0.98);
 }
 
+/* 무료 플랜 - 비활성화 스타일 */
+.sidebar-menu-item.disabled {
+    opacity: 0.4;
+    filter: grayscale(0.5);
+    cursor: not-allowed;
+    position: relative;
+}
+
+.sidebar-menu-item.disabled::after {
+    content: '🔒';
+    position: absolute;
+    right: 15px;
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.sidebar-menu-item.disabled:hover {
+    transform: none;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-menu-item.disabled:active {
+    background: rgba(255, 255, 255, 0.05) !important;
+    transform: none;
+}
+
 .sidebar-menu-item.theme-toggle-mini {
     min-height: 50px;
     padding: 12px 20px;
@@ -4181,13 +4208,131 @@ body.light-theme .plan-card {
         flex: 0 0 160px;
         padding: 16px 12px;
     }
-    
+
     .plan-price {
         font-size: 24px;
     }
-    
+
     .plan-name {
         font-size: 16px;
     }
+}
+
+/* ========== 업그레이드 모달 ========== */
+.upgrade-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.2s ease;
+}
+
+.upgrade-modal {
+    background: var(--card-bg, #1a1a2e);
+    border-radius: 16px;
+    padding: 32px 24px;
+    text-align: center;
+    max-width: 320px;
+    width: 90%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.3s ease;
+}
+
+.upgrade-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.upgrade-modal h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text-primary, #fff);
+}
+
+.upgrade-modal p {
+    font-size: 14px;
+    color: var(--text-secondary, #999);
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.upgrade-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.upgrade-btn-primary {
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #E91E63, #C2185B);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.upgrade-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.4);
+}
+
+.upgrade-btn-secondary {
+    padding: 12px 24px;
+    background: transparent;
+    color: var(--text-secondary, #999);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.upgrade-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 라이트 테마 */
+body.light-theme .upgrade-modal {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .upgrade-modal h3 {
+    color: #1a1a2e;
+}
+
+body.light-theme .upgrade-modal p {
+    color: #666;
+}
+
+body.light-theme .upgrade-btn-secondary {
+    color: #666;
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+body.light-theme .upgrade-btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.05);
 }
 
