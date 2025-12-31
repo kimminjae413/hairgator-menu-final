@@ -6,6 +6,7 @@
 let currentUser = null;
 let authInitialized = false;
 let welcomeToastShown = false; // 환영 메시지 중복 방지
+let authListenerRegistered = false; // onAuthStateChanged 중복 등록 방지
 
 /**
  * 이메일을 Firestore 문서 ID로 변환
@@ -62,6 +63,12 @@ function initFirebaseAuth() {
         setTimeout(initFirebaseAuth, 100);
         return;
     }
+
+    // 이미 리스너가 등록되었으면 중복 등록 방지
+    if (authListenerRegistered) {
+        return;
+    }
+    authListenerRegistered = true;
 
     const auth = firebase.auth();
 
