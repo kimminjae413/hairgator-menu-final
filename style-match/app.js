@@ -2536,18 +2536,64 @@ function generateSimpleStyleReason(style, score, faceFlags, ratios) {
     return [...new Set(parts)].slice(0, 2).join(' / ');
 }
 
-// 카테고리별 추천 이유 생성 (전문가 스타일)
+// 카테고리별 추천 이유 생성 (개선됨 - 얼굴형 직접 판단)
 function generateCategoryReason(category, analysis, topStyles) {
+    const { ratios } = analysis;
+
+    // 얼굴형 직접 판단
+    if (!ratios || !ratios.raw) {
+        return '얼굴형 분석 기반 추천';
+    }
+
+    const { lowerRatio, middleRatio } = ratios.raw;
+    const isLongFace = lowerRatio > 0.36 || lowerRatio > middleRatio * 1.12;
+    const isShortFace = lowerRatio < 0.28;
+
+    // 카테고리별 동적 멘트 생성
+    if (selectedGender === 'female') {
+        if (['C LENGTH', 'D LENGTH', 'E LENGTH', 'F LENGTH'].includes(category)) {
+            if (isLongFace) return '긴 얼굴형을 보완하는 <strong>가장 이상적인 기장</strong>입니다. (+40점)';
+            return '누구에게나 잘 어울리는 <strong>황금 비율 기장</strong>입니다.';
+        }
+        if (['A LENGTH', 'B LENGTH'].includes(category)) {
+            if (isLongFace) return '얼굴이 길어 보일 수 있어 <strong>볼륨이나 웨이브</strong>가 필수입니다. (-20점)';
+            if (isShortFace) return '세로 라인을 강조해 얼굴을 <strong>갸름하게</strong> 보이게 합니다. (+35점)';
+            return '긴 기장으로 우아한 분위기 연출';
+        }
+        if (['G LENGTH', 'H LENGTH'].includes(category)) {
+            return '짧은 기장으로 산뜻하고 활동적인 이미지';
+        }
+    } else {
+        // 남성
+        if (['SIDE FRINGE', 'SIDE PART'].includes(category)) {
+            if (isLongFace) return '가로 볼륨으로 <strong>얼굴 길이를 효과적으로 보정</strong>합니다. (+50점)';
+            return '자연스러운 사이드 라인이 특징';
+        }
+        if (['FRINGE UP', 'PUSHED BACK', 'MOHICAN'].includes(category)) {
+            if (isLongFace) return '탑 볼륨이 얼굴을 <strong>더 길어 보이게</strong> 할 수 있습니다. (-30점)';
+            if (isShortFace) return '이마를 드러내 <strong>시원하고 갸름한 인상</strong>을 줍니다. (+40점)';
+            return '시원하게 올린 스타일로 깔끔한 인상';
+        }
+        if (['BUZZ', 'CROP'].includes(category)) {
+            return '짧고 깔끔한 스타일로 관리가 편함';
+        }
+    }
+
+    // 기본 멘트 (상위 스타일 기반)
+    if (topStyles && topStyles.length > 0) {
+        const bestStyle = topStyles[0];
+        return `<strong>${bestStyle.name}</strong> 등 ${category} 스타일이 고객님께 적합합니다.`;
+    }
+
+    return '얼굴형 분석 기반 추천 카테고리';
+}
+
+// 기존 로직 (레거시 - 참고용 주석)
+function generateCategoryReasonLegacy(category, analysis, topStyles) {
     const reasonParts = [];
-
-    // 1. 얼굴 분석 기반 전문가 의견 생성
     const { insights, recommendations, avoidances, faceType } = analysis;
-
-    // 이 카테고리가 추천되는 이유 찾기
     const matchedRecs = recommendations.filter(rec => rec.mainCategory?.includes(category));
     const matchedAvoids = avoidances.filter(avoid => avoid.mainCategory?.includes(category));
-
-    // 추천 점수 계산
     const recScore = matchedRecs.reduce((sum, r) => sum + r.score, 0);
     const avoidScore = matchedAvoids.reduce((sum, a) => sum + a.score, 0);
     const totalScore = recScore + avoidScore;
