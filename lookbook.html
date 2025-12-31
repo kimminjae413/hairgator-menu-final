@@ -1205,6 +1205,21 @@
                 return;
             }
 
+            // ⭐ 사전 토큰 체크 (룩북 비용: 200 토큰)
+            const LOOKBOOK_COST = 200;
+            if (window.FirebaseBridge) {
+                try {
+                    const result = await window.FirebaseBridge.getTokenBalance();
+                    if (result.success && result.tokenBalance < LOOKBOOK_COST) {
+                        console.warn('⚠️ 룩북 토큰 부족:', result.tokenBalance, '필요:', LOOKBOOK_COST);
+                        showLookbookInsufficientTokenModal();
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('토큰 체크 실패:', e);
+                }
+            }
+
             // 로딩 상태 표시
             showLoadingState();
 
@@ -1491,6 +1506,80 @@
             } catch (error) {
                 console.error('토큰 차감 오류:', error);
             }
+        }
+
+        // ⭐ 룩북 토큰 부족 모달 (5개국어 지원)
+        function showLookbookInsufficientTokenModal() {
+            const existingModal = document.querySelector('.lookbook-token-modal-overlay');
+            if (existingModal) existingModal.remove();
+
+            const modal = document.createElement('div');
+            modal.className = 'lookbook-token-modal-overlay';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
+
+            const texts = {
+                ko: { title: '토큰이 부족합니다', message: '룩북을 사용하려면 200 토큰이 필요합니다.\n요금제를 업그레이드하여 토큰을 충전하세요.', upgrade: '요금제 보기', close: '닫기' },
+                en: { title: 'Insufficient Tokens', message: '200 tokens are required to use Lookbook.\nUpgrade your plan to get more tokens.', upgrade: 'View Plans', close: 'Close' },
+                ja: { title: 'トークンが不足しています', message: 'ルックブックを使用するには200トークンが必要です。\nプランをアップグレードしてトークンを追加してください。', upgrade: 'プランを見る', close: '閉じる' },
+                zh: { title: '代币不足', message: '使用Lookbook需要200代币。\n升级您的套餐以获取更多代币。', upgrade: '查看套餐', close: '关闭' },
+                vi: { title: 'Không đủ token', message: 'Cần 200 token để sử dụng Lookbook.\nNâng cấp gói của bạn để nhận thêm token.', upgrade: 'Xem gói', close: 'Đóng' }
+            };
+            const t = texts[currentLang] || texts.ko;
+
+            modal.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                    border-radius: 20px;
+                    padding: 32px;
+                    max-width: 380px;
+                    width: 90%;
+                    text-align: center;
+                    box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+                    border: 1px solid rgba(255,255,255,0.1);
+                ">
+                    <div style="font-size: 56px; margin-bottom: 20px;">🔒</div>
+                    <h3 style="color: #fff; margin: 0 0 16px; font-size: 22px; font-weight: 600;">${t.title}</h3>
+                    <p style="color: rgba(255,255,255,0.7); margin: 0 0 28px; font-size: 15px; line-height: 1.7; white-space: pre-line;">${t.message}</p>
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button onclick="window.location.href='/#products';" style="
+                            background: linear-gradient(135deg, #e91e63, #9c27b0);
+                            color: white;
+                            border: none;
+                            padding: 14px 28px;
+                            border-radius: 10px;
+                            font-size: 15px;
+                            font-weight: 600;
+                            cursor: pointer;
+                        ">${t.upgrade}</button>
+                        <button onclick="this.closest('.lookbook-token-modal-overlay').remove();" style="
+                            background: rgba(255,255,255,0.1);
+                            color: #fff;
+                            border: 1px solid rgba(255,255,255,0.2);
+                            padding: 14px 28px;
+                            border-radius: 10px;
+                            font-size: 15px;
+                            cursor: pointer;
+                        ">${t.close}</button>
+                    </div>
+                </div>
+            `;
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+
+            document.body.appendChild(modal);
         }
 
         console.log('📖 Lookbook loaded:', { title: styleTitle, image: imageSrc, lang: currentLang, theme: selectedTheme, gender: genderParam });
