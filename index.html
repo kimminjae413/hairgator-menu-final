@@ -3170,11 +3170,7 @@
                         backBtn.style.display = 'flex';
 
                         updateUserInfo();
-                        if (currentDesigner.isNewUser) {
-    showToast(`가입을 환영합니다, ${currentDesigner.name}님! 🎉`, 'success');
-} else {
-    showToast(`환영합니다, ${currentDesigner.name}님!`, 'success');
-}
+                        // 환영 메시지는 auth.js에서 처리 (중복 방지)
 
                     } catch (error) {
                         showToast(error.message, 'error');

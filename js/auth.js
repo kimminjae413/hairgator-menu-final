@@ -5,6 +5,7 @@
 // 인증 상태 변수
 let currentUser = null;
 let authInitialized = false;
+let welcomeToastShown = false; // 환영 메시지 중복 방지
 
 /**
  * 이메일을 Firestore 문서 ID로 변환
@@ -445,8 +446,9 @@ function updateUIAfterLogin(userData) {
         window.updateMypageInfo();
     }
 
-    // 환영 메시지
-    if (typeof showToast === 'function') {
+    // 환영 메시지 (중복 방지)
+    if (typeof showToast === 'function' && !welcomeToastShown) {
+        welcomeToastShown = true;
         showToast(`${userData.displayName}님 환영합니다!`, 'success');
     }
 }
@@ -542,6 +544,7 @@ async function logout() {
         // 전역 변수 초기화
         currentUser = null;
         window.currentDesigner = null;
+        welcomeToastShown = false; // 다음 로그인 시 환영 메시지 표시
 
         console.log('🔓 로그아웃 완료');
 
