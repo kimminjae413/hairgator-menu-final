@@ -180,45 +180,67 @@ const ALLOWED_EMAILS = [
 ];
 
 function isAllowedUser() {
+    let foundEmail = null;
+
     // 1. window.currentDesigner 확인
     if (window.currentDesigner?.email) {
-        return ALLOWED_EMAILS.includes(window.currentDesigner.email.toLowerCase());
+        foundEmail = window.currentDesigner.email;
+        console.log('📧 currentDesigner에서 이메일 발견:', foundEmail);
+        return ALLOWED_EMAILS.includes(foundEmail.toLowerCase());
     }
+
     // 2. parent의 currentDesigner 확인 (iframe인 경우)
     try {
         if (parent.window.currentDesigner?.email) {
-            return ALLOWED_EMAILS.includes(parent.window.currentDesigner.email.toLowerCase());
+            foundEmail = parent.window.currentDesigner.email;
+            console.log('📧 parent.currentDesigner에서 이메일 발견:', foundEmail);
+            return ALLOWED_EMAILS.includes(foundEmail.toLowerCase());
         }
     } catch (e) {}
+
     // 3. localStorage hairgator_user 확인
     try {
         const cached = localStorage.getItem('hairgator_user');
+        console.log('🔍 hairgator_user:', cached ? '있음' : '없음');
         if (cached) {
             const user = JSON.parse(cached);
             if (user.email) {
-                return ALLOWED_EMAILS.includes(user.email.toLowerCase());
+                foundEmail = user.email;
+                console.log('📧 hairgator_user에서 이메일 발견:', foundEmail);
+                return ALLOWED_EMAILS.includes(foundEmail.toLowerCase());
             }
         }
-    } catch (e) {}
+    } catch (e) { console.log('hairgator_user 파싱 오류:', e); }
+
     // 4. localStorage firebase_user 확인
     try {
         const cached = localStorage.getItem('firebase_user');
+        console.log('🔍 firebase_user:', cached ? '있음' : '없음');
         if (cached) {
             const user = JSON.parse(cached);
             if (user.email) {
-                return ALLOWED_EMAILS.includes(user.email.toLowerCase());
+                foundEmail = user.email;
+                console.log('📧 firebase_user에서 이메일 발견:', foundEmail);
+                return ALLOWED_EMAILS.includes(foundEmail.toLowerCase());
             }
         }
-    } catch (e) {}
+    } catch (e) { console.log('firebase_user 파싱 오류:', e); }
+
     // 5. Firebase Auth currentUser 확인
     try {
+        console.log('🔍 Firebase Auth:', window.firebase ? '있음' : '없음');
         if (window.firebase && firebase.auth) {
             const user = firebase.auth().currentUser;
+            console.log('🔍 Firebase currentUser:', user ? user.email : '없음');
             if (user?.email) {
-                return ALLOWED_EMAILS.includes(user.email.toLowerCase());
+                foundEmail = user.email;
+                console.log('📧 Firebase Auth에서 이메일 발견:', foundEmail);
+                return ALLOWED_EMAILS.includes(foundEmail.toLowerCase());
             }
         }
-    } catch (e) {}
+    } catch (e) { console.log('Firebase Auth 오류:', e); }
+
+    console.log('❌ 이메일을 찾지 못함');
     return false;
 }
 
@@ -237,16 +259,43 @@ function showAccessDenied() {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🎯 AI Style Match 초기화');
 
-    // 접근 제한 체크 (Firebase Auth 로드 대기)
+    // Firebase Auth 상태 기다리기
+    async function waitForFirebaseAuth() {
+        return new Promise((resolve) => {
+            if (window.firebase && firebase.auth) {
+                // Auth 상태 변경 리스너
+                const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                    unsubscribe(); // 한 번만 실행
+                    console.log('🔐 Firebase Auth 상태:', user ? user.email : '로그인 안됨');
+                    resolve(user);
+                });
+
+                // 3초 타임아웃
+                setTimeout(() => {
+                    unsubscribe();
+                    console.log('⏰ Firebase Auth 타임아웃');
+                    resolve(null);
+                }, 3000);
+            } else {
+                console.log('⚠️ Firebase SDK 없음');
+                resolve(null);
+            }
+        });
+    }
+
+    // Firebase Auth 먼저 대기
+    const firebaseUser = await waitForFirebaseAuth();
+
+    // 접근 제한 체크
     async function checkAccess() {
-        // 최대 3초간 500ms 간격으로 체크
-        for (let i = 0; i < 6; i++) {
+        // localStorage에서도 체크 (Firebase 외 소스)
+        for (let i = 0; i < 3; i++) {
             if (isAllowedUser()) {
                 console.log('✅ AI 스타일 매칭 접근 허용');
                 return true;
             }
-            console.log(`⏳ 접근 체크 대기... (${i + 1}/6)`);
-            await new Promise(r => setTimeout(r, 500));
+            console.log(`⏳ 접근 체크 대기... (${i + 1}/3)`);
+            await new Promise(r => setTimeout(r, 300));
         }
         return false;
     }

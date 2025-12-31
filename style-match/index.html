@@ -315,8 +315,21 @@
         </div>
     </div>
 
+    <!-- Firebase SDK (접근 제한 체크용) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script>
+        // Firebase 초기화 (auth만 필요)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5N_MBKpKj_K3-aYpOBG2H5RK71BbKUiQ",
+            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
+            projectId: "hairgatormenu-4a43e"
+        };
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
     <!-- i18n -->
     <script src="../js/i18n.js"></script>
-    <script src="app.js?v=20251231"></script>
+    <script src="app.js?v=20251231-firebase"></script>
 </body>
 </html>
