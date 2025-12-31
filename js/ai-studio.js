@@ -4256,6 +4256,22 @@ ${data.customRecipe ? `\n생성된 레시피:\n${data.customRecipe}` : ''}`;
 async function sendMessage() {
   console.log('🔍 sendMessage 호출됨, pendingImageData:', pendingImageData, 'selectedImageAction:', selectedImageAction);
 
+  // ⭐ 토큰 잔액 체크 (최소 3크레딧 필요)
+  const MIN_CHATBOT_COST = 3;
+  if (window.FirebaseBridge || window.BullnabiBridge) {
+    const bridge = window.FirebaseBridge || window.BullnabiBridge;
+    try {
+      const result = await bridge.getTokenBalance();
+      if (result.success && result.tokenBalance < MIN_CHATBOT_COST) {
+        console.warn('⚠️ 토큰 부족:', result.tokenBalance);
+        showInsufficientTokenModal();
+        return;
+      }
+    } catch (e) {
+      console.warn('토큰 체크 실패:', e);
+    }
+  }
+
   // 이미지가 있고 레시피 모드가 선택된 경우
   if (pendingImageData && pendingImageData.file && selectedImageAction === 'recipe') {
     console.log('📷 레시피 모드: 이미지와 함께 전송 시작');
@@ -4644,4 +4660,115 @@ function updateAutoRecipeUI(gender, service, category) {
       }
     }, 100);
   }
+}
+
+// ⭐ 토큰 부족 시 업그레이드 안내 모달
+function showInsufficientTokenModal() {
+  // 기존 모달이 있으면 제거
+  const existingModal = document.querySelector('.insufficient-token-modal-overlay');
+  if (existingModal) existingModal.remove();
+
+  const modal = document.createElement('div');
+  modal.className = 'insufficient-token-modal-overlay';
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.2s ease;
+  `;
+
+  const lang = localStorage.getItem('hairgator_language') || 'ko';
+  const texts = {
+    ko: {
+      title: '토큰이 부족합니다',
+      message: '챗봇을 사용하려면 토큰이 필요합니다.\n요금제를 업그레이드하여 더 많은 토큰을 충전하세요.',
+      upgrade: '요금제 보기',
+      close: '닫기'
+    },
+    en: {
+      title: 'Insufficient Tokens',
+      message: 'Tokens are required to use the chatbot.\nUpgrade your plan to get more tokens.',
+      upgrade: 'View Plans',
+      close: 'Close'
+    },
+    ja: {
+      title: 'トークンが不足しています',
+      message: 'チャットボットを使用するにはトークンが必要です。\nプランをアップグレードしてトークンを追加してください。',
+      upgrade: 'プランを見る',
+      close: '閉じる'
+    },
+    zh: {
+      title: '代币不足',
+      message: '使用聊天机器人需要代币。\n升级您的套餐以获取更多代币。',
+      upgrade: '查看套餐',
+      close: '关闭'
+    },
+    vi: {
+      title: 'Không đủ token',
+      message: 'Cần có token để sử dụng chatbot.\nNâng cấp gói của bạn để nhận thêm token.',
+      upgrade: 'Xem gói',
+      close: 'Đóng'
+    }
+  };
+  const t = texts[lang] || texts.ko;
+
+  modal.innerHTML = `
+    <div style="
+      background: var(--card-bg, #1a1a2e);
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 360px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+    ">
+      <div style="font-size: 48px; margin-bottom: 16px;">🔒</div>
+      <h3 style="color: var(--text-primary, #fff); margin: 0 0 12px; font-size: 20px;">${t.title}</h3>
+      <p style="color: var(--text-secondary, #aaa); margin: 0 0 24px; font-size: 14px; line-height: 1.6; white-space: pre-line;">${t.message}</p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button onclick="window.location.href='/#products'; this.closest('.insufficient-token-modal-overlay').remove();" style="
+          background: linear-gradient(135deg, #e91e63, #9c27b0);
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: transform 0.2s, box-shadow 0.2s;
+        " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 20px rgba(233,30,99,0.4)';"
+           onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
+          ${t.upgrade}
+        </button>
+        <button onclick="this.closest('.insufficient-token-modal-overlay').remove();" style="
+          background: rgba(255,255,255,0.1);
+          color: var(--text-primary, #fff);
+          border: 1px solid rgba(255,255,255,0.2);
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-size: 14px;
+          cursor: pointer;
+          transition: background 0.2s;
+        " onmouseover="this.style.background='rgba(255,255,255,0.2)';"
+           onmouseout="this.style.background='rgba(255,255,255,0.1)';">
+          ${t.close}
+        </button>
+      </div>
+    </div>
+  `;
+
+  // 배경 클릭 시 닫기
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+
+  document.body.appendChild(modal);
 }
