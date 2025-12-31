@@ -2798,11 +2798,10 @@ async function loadPaymentHistory() {
 
     try {
 
-        // Firestore에서 결제 내역 조회
+        // Firestore에서 결제 내역 조회 (인덱스 없이 작동하도록 orderBy 제거 후 클라이언트 정렬)
         const snapshot = await firebase.firestore()
             .collection('payments')
             .where('userId', '==', userId)
-            .orderBy('createdAt', 'desc')
             .limit(50)
             .get();
 
@@ -2828,7 +2827,14 @@ async function loadPaymentHistory() {
 
         let html = '';
 
-        snapshot.forEach(doc => {
+        // 클라이언트 측 정렬 (최신순)
+        const docs = snapshot.docs.sort((a, b) => {
+            const aTime = a.data().createdAt?.toMillis?.() || 0;
+            const bTime = b.data().createdAt?.toMillis?.() || 0;
+            return bTime - aTime;
+        });
+
+        docs.forEach(doc => {
             const data = doc.data();
             const paymentId = data.paymentId || doc.id;
             const planKey = data.planKey || 'unknown';
