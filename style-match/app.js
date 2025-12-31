@@ -204,50 +204,7 @@ async function checkAccessFromFirestore(email) {
     }
 }
 
-// 사용자 이메일 가져오기
-function getUserEmail() {
-    // 1. Firebase Auth currentUser
-    if (window.firebase && firebase.auth) {
-        const user = firebase.auth().currentUser;
-        if (user?.email) {
-            console.log('📧 Firebase Auth에서 이메일 발견:', user.email);
-            return user.email;
-        }
-    }
-
-    // 2. localStorage hairgator_user
-    try {
-        const cached = localStorage.getItem('hairgator_user');
-        if (cached) {
-            const user = JSON.parse(cached);
-            if (user.email) {
-                console.log('📧 hairgator_user에서 이메일 발견:', user.email);
-                return user.email;
-            }
-        }
-    } catch (e) {}
-
-    // 3. localStorage firebase_user
-    try {
-        const cached = localStorage.getItem('firebase_user');
-        if (cached) {
-            const user = JSON.parse(cached);
-            if (user.email) {
-                console.log('📧 firebase_user에서 이메일 발견:', user.email);
-                return user.email;
-            }
-        }
-    } catch (e) {}
-
-    // 4. window.currentDesigner
-    if (window.currentDesigner?.email) {
-        console.log('📧 currentDesigner에서 이메일 발견:', window.currentDesigner.email);
-        return window.currentDesigner.email;
-    }
-
-    console.log('❌ 이메일을 찾지 못함');
-    return null;
-}
+// [REMOVED] getUserEmail - 초기화 로직에 직접 통합됨
 
 function showAccessDenied(userPlan) {
     const planName = userPlan === 'free' ? '무료' : userPlan || '무료';
@@ -275,39 +232,76 @@ function goToProductsPage() {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🎯 AI Style Match 초기화');
 
-    // Firebase Auth 상태 기다리기
-    async function waitForFirebaseAuth() {
-        return new Promise((resolve) => {
+    // 1단계: localStorage에서 먼저 확인 (가장 빠름)
+    let userEmail = null;
+    let userPlan = null;
+
+    try {
+        const cached = localStorage.getItem('firebase_user');
+        if (cached) {
+            const user = JSON.parse(cached);
+            if (user.email && user.plan) {
+                userEmail = user.email;
+                userPlan = user.plan;
+                console.log('✅ localStorage에서 사용자 정보 발견:', userEmail, userPlan);
+            }
+        }
+    } catch (e) {
+        console.warn('localStorage 파싱 실패:', e);
+    }
+
+    // 2단계: localStorage에 없으면 Firebase Auth 대기
+    if (!userEmail) {
+        console.log('⏳ localStorage에 정보 없음, Firebase Auth 대기...');
+
+        const firebaseUser = await new Promise((resolve) => {
             if (window.firebase && firebase.auth) {
-                // Auth 상태 변경 리스너
                 const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
-                    unsubscribe(); // 한 번만 실행
+                    unsubscribe();
                     console.log('🔐 Firebase Auth 상태:', user ? user.email : '로그인 안됨');
                     resolve(user);
                 });
 
-                // 3초 타임아웃
+                // 5초 타임아웃 (늘림)
                 setTimeout(() => {
                     unsubscribe();
                     console.log('⏰ Firebase Auth 타임아웃');
                     resolve(null);
-                }, 3000);
+                }, 5000);
             } else {
                 console.log('⚠️ Firebase SDK 없음');
                 resolve(null);
             }
         });
+
+        if (firebaseUser?.email) {
+            userEmail = firebaseUser.email;
+        }
     }
 
-    // Firebase Auth 먼저 대기
-    await waitForFirebaseAuth();
+    // 3단계: 여전히 없으면 로그인 페이지로 리다이렉트
+    if (!userEmail) {
+        console.log('❌ 사용자 정보 없음 → 로그인 페이지로 이동');
+        window.location.href = '/login.html';
+        return;
+    }
 
-    // 사용자 이메일 가져오기
-    const userEmail = getUserEmail();
     console.log('📧 확인된 사용자 이메일:', userEmail);
 
-    // Firestore에서 접근 권한 확인
-    const { allowed, plan } = await checkAccessFromFirestore(userEmail);
+    // 4단계: localStorage에서 플랜을 이미 가져왔으면 Firestore 조회 생략
+    let allowed = false;
+    let plan = userPlan;
+
+    if (userPlan && ALLOWED_PLANS.includes(userPlan)) {
+        allowed = true;
+        console.log('✅ localStorage 플랜으로 접근 허용:', userPlan);
+    } else {
+        // Firestore에서 접근 권한 확인
+        const result = await checkAccessFromFirestore(userEmail);
+        allowed = result.allowed;
+        plan = result.plan;
+    }
+
     if (!allowed) {
         console.log('❌ AI 스타일 매칭 접근 제한: 허용되지 않은 사용자 (플랜:', plan, ')');
         showAccessDenied(plan);

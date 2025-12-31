@@ -30,137 +30,25 @@
         // 관리자 ID 목록 (이메일 기반: email.replace(/@/g, '_').replace(/\./g, '_'))
         ADMIN_USER_IDS: ['708eric_hanmail_net'],
 
-        // 초기화
+        // 초기화 (auth.js가 onAuthStateChanged 담당, 여기서는 유틸리티만 제공)
         init() {
-            this.setupAuthListener();
-            console.log('✅ Firebase 브릿지 준비 완료');
+            this.isInitialized = true;
+            console.log('✅ Firebase 브릿지 준비 완료 (auth.js가 인증 상태 관리)');
         },
 
-        // Firebase Auth 상태 리스너 설정
-        setupAuthListener() {
-            if (!window.auth) {
-                console.warn('⚠️ Firebase Auth가 아직 로드되지 않았습니다. 재시도...');
-                setTimeout(() => this.setupAuthListener(), 500);
-                return;
-            }
+        // [DEPRECATED] setupAuthListener는 auth.js로 이동됨
+        // auth.js의 onAuthStateChanged에서 인증 상태 관리
 
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    console.log('👤 사용자 로그인 감지:', user.uid);
-                    this.currentUser = user;
-                    this.isInitialized = true;
+        // 캐시된 사용자 데이터 (auth.js에서 설정)
+        cachedUserData: null,
 
-                    // Firestore에서 추가 사용자 정보 로드
-                    await this.loadUserData(user.uid);
-
-                    // UI 업데이트
-                    this.updateUIAfterLogin();
-                } else {
-                    console.log('👤 사용자 로그아웃 상태');
-                    this.currentUser = null;
-                    this.isInitialized = true;
-
-                    // 로그인 페이지가 아니면 리다이렉트
-                    if (!window.location.pathname.includes('login.html')) {
-                        // 로그인 필요한 페이지에서만 리다이렉트
-                        // window.location.href = '/login.html';
-                    }
-                }
-            });
-        },
-
-        // Firestore에서 사용자 데이터 로드 (이메일 기반 우선)
+        // [DEPRECATED] loadUserData - auth.js에서 직접 Firestore 조회함
+        // 이 함수는 호환성을 위해 유지하지만, 실제 인증 흐름에서는 사용하지 않음
+        // auth.js의 handleUserLogin()과 handleUserLoginByUid()에서 처리
         async loadUserData(uid) {
-            try {
-                const firebaseUser = auth.currentUser;
-                const email = firebaseUser?.email;
-
-                // 이메일 기반 문서 ID 우선 시도
-                const emailDocId = sanitizeEmailForDocId(email);
-                let userDoc = null;
-                let docId = null;
-
-                // 1차: 이메일 기반 조회
-                if (emailDocId) {
-                    userDoc = await db.collection('users').doc(emailDocId).get();
-                    if (userDoc.exists) {
-                        docId = emailDocId;
-                        console.log('📧 이메일 기반 사용자 문서 발견:', emailDocId);
-                    }
-                }
-
-                // 2차: 이메일 기반에 없으면 UID로 폴백
-                if (!userDoc?.exists) {
-                    userDoc = await db.collection('users').doc(uid).get();
-                    if (userDoc.exists) {
-                        docId = uid;
-                        console.log('🔑 UID 기반 사용자 문서 발견:', uid);
-                    }
-                }
-
-                if (userDoc?.exists) {
-                    const userData = userDoc.data();
-
-                    // displayName이 비어있으면 name 또는 nickname 사용
-                    const displayName = userData.displayName?.trim()
-                        || userData.name
-                        || userData.nickname
-                        || '사용자';
-
-                    // 플랜 만료일 처리
-                    let planExpiresAt = null;
-                    if (userData.planExpiresAt) {
-                        planExpiresAt = userData.planExpiresAt.toDate
-                            ? userData.planExpiresAt.toDate().toISOString()
-                            : userData.planExpiresAt;
-                    }
-
-                    // 전역 변수에 저장 (id는 이메일 기반 docId 사용)
-                    window.currentDesigner = {
-                        id: docId,  // 이메일 기반 문서 ID
-                        name: displayName,
-                        email: userData.email || email || '',
-                        photoURL: userData.photoURL || '',
-                        tokenBalance: userData.tokenBalance || 0,
-                        plan: userData.plan || 'free',
-                        planExpiresAt: planExpiresAt,
-                        savedCard: userData.savedCard || null,
-                        provider: userData.provider || userData.primaryProvider || 'email',
-                        isFirebaseUser: true
-                    };
-
-                    // localStorage에도 저장 (호환성)
-                    localStorage.setItem('firebase_user', JSON.stringify(window.currentDesigner));
-
-                    console.log('📊 사용자 데이터 로드 완료:', {
-                        docId: docId,
-                        name: displayName,
-                        tokenBalance: userData.tokenBalance,
-                        plan: userData.plan,
-                        planExpiresAt: planExpiresAt
-                    });
-
-                    // 플랜 만료 체크 (자동 다운그레이드 + 알림)
-                    const expirationResult = await this.checkPlanExpiration(docId);
-                    if (expirationResult.expired) {
-                        // 만료된 경우 알림
-                        if (typeof showToast === 'function') {
-                            showToast('⏰ ' + expirationResult.message, 'warning', 5000);
-                        }
-                    } else if (expirationResult.warning) {
-                        // 만료 임박 알림
-                        this.showExpirationWarning(expirationResult.warning);
-                    }
-
-                    return userData;
-                } else {
-                    console.warn('⚠️ 사용자 문서가 없습니다:', emailDocId || uid);
-                    return null;
-                }
-            } catch (error) {
-                console.error('❌ 사용자 데이터 로드 실패:', error);
-                return null;
-            }
+            console.log('⚠️ loadUserData는 deprecated됨. auth.js에서 처리.');
+            // 이미 auth.js에서 설정한 currentDesigner 반환
+            return window.currentDesigner || null;
         },
 
         // 로그인 후 UI 업데이트

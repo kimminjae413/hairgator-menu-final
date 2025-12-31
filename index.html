@@ -2853,8 +2853,7 @@
                         await firebase.auth().signOut();
                     }
 
-                    // localStorage 정리
-                    localStorage.removeItem('hairgator_user');
+                    // localStorage 정리 (firebase_user로 통합됨)
                     localStorage.removeItem('firebase_user');
 
                     currentDesigner = null;
@@ -4095,8 +4094,8 @@ function handleStyleMatchAccess(event) {
 // Firestore에서 사용자 플랜 가져오기
 async function getUserPlanFromFirestore() {
     try {
-        // localStorage에서 먼저 확인
-        const cached = localStorage.getItem('hairgator_user');
+        // localStorage에서 먼저 확인 (firebase_user로 통합됨)
+        const cached = localStorage.getItem('firebase_user');
         if (cached) {
             const user = JSON.parse(cached);
             if (user.plan) return user.plan;

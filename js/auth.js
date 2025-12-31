@@ -181,29 +181,42 @@ async function handleUserLogin(user) {
             console.log('👤 신규 사용자 생성 (이메일 기반):', emailDocId);
         }
 
-        // localStorage에 사용자 정보 캐시
-        localStorage.setItem('hairgator_user', JSON.stringify({
-            docId: emailDocId,
-            email: userData.email,
-            displayName: userData.displayName,
-            photoURL: userData.photoURL,
-            provider: providerName,
-            tokenBalance: userData.tokenBalance,
-            plan: userData.plan,
-            loginTime: Date.now()
-        }));
+        // planExpiresAt 처리
+        let planExpiresAt = null;
+        if (userData.planExpiresAt) {
+            planExpiresAt = userData.planExpiresAt.toDate
+                ? userData.planExpiresAt.toDate().toISOString()
+                : userData.planExpiresAt;
+        }
 
-        // window.currentDesigner 호환성 유지 (id는 이메일 기반 docId 사용)
+        // window.currentDesigner 설정 (전역 사용자 정보)
         window.currentDesigner = {
-            id: emailDocId,  // 이메일 기반 문서 ID
+            id: emailDocId,
             name: userData.displayName,
             email: userData.email,
-            phone: '0000',
-            tokens: 0,
+            phone: userData.phone || '0000',
+            photoURL: userData.photoURL || '',
             tokenBalance: userData.tokenBalance,
             plan: userData.plan,
+            planExpiresAt: planExpiresAt,
+            savedCard: userData.savedCard || null,
+            provider: providerName,
             isFirebaseUser: true
         };
+
+        // localStorage에 사용자 정보 캐시 (firebase_user로 통합)
+        localStorage.setItem('firebase_user', JSON.stringify(window.currentDesigner));
+
+        // 플랜 만료 체크 (자동 다운그레이드)
+        if (window.FirebaseBridge && typeof window.FirebaseBridge.checkPlanExpiration === 'function') {
+            const expirationResult = await window.FirebaseBridge.checkPlanExpiration(emailDocId);
+            if (expirationResult && expirationResult.expired) {
+                // 만료되면 currentDesigner 업데이트
+                window.currentDesigner.plan = 'free';
+                window.currentDesigner.tokenBalance = 0;
+                localStorage.setItem('firebase_user', JSON.stringify(window.currentDesigner));
+            }
+        }
 
         // UI 업데이트
         updateUIAfterLogin(userData);
@@ -329,18 +342,42 @@ async function handleUserLoginByUid(user) {
             }
         }
 
+        // planExpiresAt 처리
+        let planExpiresAt = null;
+        if (userData.planExpiresAt) {
+            planExpiresAt = userData.planExpiresAt.toDate
+                ? userData.planExpiresAt.toDate().toISOString()
+                : userData.planExpiresAt;
+        }
+
         // window.currentDesigner (이메일 기반 ID 우선!)
         const finalDocId = emailDocId || user.uid;
         window.currentDesigner = {
             id: finalDocId,
             name: userData.displayName,
             email: userEmail || '',
-            phone: '0000',
-            tokens: 0,
+            phone: userData.phone || '0000',
+            photoURL: userData.photoURL || '',
             tokenBalance: userData.tokenBalance,
             plan: userData.plan,
+            planExpiresAt: planExpiresAt,
+            savedCard: userData.savedCard || null,
+            provider: providerName,
             isFirebaseUser: true
         };
+
+        // localStorage에 저장 (firebase_user로 통합)
+        localStorage.setItem('firebase_user', JSON.stringify(window.currentDesigner));
+
+        // 플랜 만료 체크 (자동 다운그레이드)
+        if (window.FirebaseBridge && typeof window.FirebaseBridge.checkPlanExpiration === 'function') {
+            const expirationResult = await window.FirebaseBridge.checkPlanExpiration(finalDocId);
+            if (expirationResult && expirationResult.expired) {
+                window.currentDesigner.plan = 'free';
+                window.currentDesigner.tokenBalance = 0;
+                localStorage.setItem('firebase_user', JSON.stringify(window.currentDesigner));
+            }
+        }
 
         updateUIAfterLogin(userData);
 
@@ -443,17 +480,12 @@ function getFirebaseUser() {
         return firebase.auth().currentUser;
     }
 
-    // localStorage 캐시 확인
+    // localStorage 캐시 확인 (firebase_user로 통합됨)
     try {
-        const cached = localStorage.getItem('hairgator_user');
+        const cached = localStorage.getItem('firebase_user');
         if (cached) {
             const userData = JSON.parse(cached);
-            // 24시간 세션 체크
-            if (userData.loginTime && (Date.now() - userData.loginTime) < 24 * 60 * 60 * 1000) {
-                return userData;
-            } else {
-                localStorage.removeItem('hairgator_user');
-            }
+            return userData;
         }
     } catch (e) {
         console.warn('캐시 사용자 정보 파싱 실패:', e);
@@ -499,8 +531,8 @@ async function logout() {
     try {
         await firebase.auth().signOut();
 
-        // localStorage 정리
-        localStorage.removeItem('hairgator_user');
+        // localStorage 정리 (firebase_user로 통합됨)
+        localStorage.removeItem('firebase_user');
         localStorage.removeItem('hairgator_profile_image');
         localStorage.removeItem('hairgator_brand_name');
         localStorage.removeItem('hairgator_brand_font');
