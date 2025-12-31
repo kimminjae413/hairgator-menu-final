@@ -690,15 +690,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 허용된 사용자 체크 (이메일)
                 const ALLOWED_EMAILS = ['708eric@hanmail.net'];
 
-                // Firebase 사용자 우선 확인
+                // 여러 소스에서 이메일 확인
                 let userEmail = '';
+
+                // 1. Firebase Auth currentUser
                 if (window.firebase && firebase.auth) {
                     const firebaseUser = firebase.auth().currentUser;
-                    if (firebaseUser) {
-                        userEmail = firebaseUser.email || '';
+                    if (firebaseUser && firebaseUser.email) {
+                        userEmail = firebaseUser.email;
                     }
                 }
-                // Firebase 없으면 getBullnabiUser fallback
+
+                // 2. localStorage hairgator_user
+                if (!userEmail) {
+                    try {
+                        const stored = localStorage.getItem('hairgator_user');
+                        if (stored) {
+                            const parsed = JSON.parse(stored);
+                            userEmail = parsed.email || '';
+                        }
+                    } catch (e) {}
+                }
+
+                // 3. localStorage firebase_user
+                if (!userEmail) {
+                    try {
+                        const stored = localStorage.getItem('firebase_user');
+                        if (stored) {
+                            const parsed = JSON.parse(stored);
+                            userEmail = parsed.email || '';
+                        }
+                    } catch (e) {}
+                }
+
+                // 4. getBullnabiUser fallback
                 if (!userEmail) {
                     const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
                     userEmail = bullnabiUser?.email || '';
