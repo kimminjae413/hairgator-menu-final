@@ -2653,10 +2653,22 @@
                         heartbeatInterval = null;
                     }
 
+                    // Firebase Auth 로그아웃 (핵심!)
+                    if (firebase.auth) {
+                        await firebase.auth().signOut();
+                    }
+
+                    // localStorage 정리
+                    localStorage.removeItem('hairgator_user');
+                    localStorage.removeItem('firebase_user');
+
                     currentDesigner = null;
                     currentSessionId = null;
 
                     console.log('✅ 로그아웃 완료');
+
+                    // 로그인 페이지로 이동
+                    window.location.href = '/login.html';
 
                 } catch (error) {
                     console.error('❌ 로그아웃 오류:', error);
