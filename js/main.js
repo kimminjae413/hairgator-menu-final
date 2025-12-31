@@ -1439,22 +1439,31 @@ window.addEventListener('load', function() {
     // localStorage에 있으면 먼저 적용
     applyCustomBrand();
 
-    // Firebase에서 브랜드 로드 (앱용 - 여러 번 시도)
+    // Firebase에서 브랜드 로드 (앱용 - 로그인 대기 후 1회 시도)
     async function tryLoadBrandFromFirebase(attempt = 1) {
-        const maxAttempts = 5;
-        const delay = attempt * 1000; // 1초, 2초, 3초, 4초, 5초
+        const maxAttempts = 3;
+        const delay = 1500;
 
-        console.log(`🏷️ Firebase 브랜드 로드 시도 ${attempt}/${maxAttempts}`);
+        // 로그인 정보 확인
+        const userInfo = getUserInfo();
+        if (!userInfo || !userInfo.id) {
+            // 로그인 정보 없으면 대기 후 재시도
+            if (attempt < maxAttempts) {
+                console.log(`🏷️ 로그인 대기 중... (${attempt}/${maxAttempts})`);
+                setTimeout(() => tryLoadBrandFromFirebase(attempt + 1), delay);
+            }
+            return;
+        }
 
+        // 로그인 완료 → 1회만 시도
+        console.log('🏷️ Firebase 브랜드 로드 시도');
         const firebaseBrand = await loadBrandFromFirebase();
         if (firebaseBrand) {
             console.log('🏷️ Firebase에서 브랜드 로드 성공!');
             applyCustomBrand();
-            applyProfileImage();
-        } else if (attempt < maxAttempts) {
-            // 로그인 정보가 아직 없으면 다시 시도
-            setTimeout(() => tryLoadBrandFromFirebase(attempt + 1), delay);
         }
+        // 브랜드 유무와 관계없이 프로필 이미지 적용
+        applyProfileImage();
     }
 
     // 1초 후 첫 시도
@@ -2488,7 +2497,7 @@ async function saveProfileImageToFirebase(imageData) {
     }
 }
 
-// 프로필 이미지 적용 (Firebase 우선, localStorage 캐시 사용 안 함)
+// 프로필 이미지 적용 (카카오/구글 photoURL 우선, Firebase brandSettings 폴백)
 async function applyProfileImage() {
     const profileImage = document.getElementById('profileImage');
     if (!profileImage) return;
@@ -2497,31 +2506,28 @@ async function applyProfileImage() {
     profileImage.innerHTML = `<span id="profileInitial">👤</span>`;
 
     try {
-        // Firebase에서 현재 사용자의 프로필 이미지 로드
-        const userInfo = getUserInfo();
-        if (!window.db || !userInfo) return;
+        let imageUrl = null;
 
-        // Firebase Auth 사용자: UID 기반 문서 ID
-        const primaryDocId = userInfo.id || `${userInfo.name}_${userInfo.phone}`;
-        // 레거시 문서 ID (기존 불나비 사용자용)
-        const legacyDocId = `${userInfo.name}_${userInfo.phone}`;
+        // 1차: 카카오/구글 로그인 시 받은 photoURL 사용
+        if (window.currentDesigner?.photoURL) {
+            imageUrl = window.currentDesigner.photoURL;
+            console.log('👤 소셜 로그인 프로필 이미지 사용');
+        }
 
-        console.log('👤 프로필 이미지 로드 시도:', primaryDocId);
-
-        // 1차: 새 문서 ID로 조회
-        let doc = await window.db.collection('brandSettings').doc(primaryDocId).get();
-        let imageUrl = doc.exists ? doc.data().profileImage : null;
-
-        // 2차: 없으면 레거시 문서 ID로 조회 (Firebase Auth 사용자의 기존 데이터 호환)
-        if (!imageUrl && primaryDocId !== legacyDocId) {
-            console.log('👤 레거시 문서 ID로 재시도:', legacyDocId);
-            doc = await window.db.collection('brandSettings').doc(legacyDocId).get();
-            imageUrl = doc.exists ? doc.data().profileImage : null;
+        // 2차: 없으면 Firebase brandSettings에서 커스텀 프로필 이미지 확인
+        if (!imageUrl && window.db) {
+            const userInfo = getUserInfo();
+            if (userInfo?.id) {
+                const doc = await window.db.collection('brandSettings').doc(userInfo.id).get();
+                if (doc.exists && doc.data().profileImage) {
+                    imageUrl = doc.data().profileImage;
+                    console.log('👤 Firebase 커스텀 프로필 이미지 사용');
+                }
+            }
         }
 
         if (imageUrl) {
-            profileImage.innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
-            console.log('👤 Firebase에서 프로필 이미지 로드 성공');
+            profileImage.innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
         } else {
             console.log('👤 프로필 이미지 없음 (기본 아이콘 사용)');
         }
