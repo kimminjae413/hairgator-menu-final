@@ -687,13 +687,25 @@ document.addEventListener('DOMContentLoaded', function() {
             styleMatchBtn.addEventListener('click', function() {
                 console.log('✨ AI 스타일 매칭 클릭');
 
-                // 허용된 사용자 체크 (ID 또는 이메일)
-                const ALLOWED_IDS = ['691ceee09d868b5736d22007'];
+                // 허용된 사용자 체크 (이메일)
                 const ALLOWED_EMAILS = ['708eric@hanmail.net'];
-                const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
-                const userId = bullnabiUser?.userId || bullnabiUser?.id || bullnabiUser?._id || '';
-                const userEmail = bullnabiUser?.email || '';
-                const isAllowed = ALLOWED_IDS.includes(userId) || ALLOWED_EMAILS.includes(userEmail.toLowerCase());
+
+                // Firebase 사용자 우선 확인
+                let userEmail = '';
+                if (window.firebase && firebase.auth) {
+                    const firebaseUser = firebase.auth().currentUser;
+                    if (firebaseUser) {
+                        userEmail = firebaseUser.email || '';
+                    }
+                }
+                // Firebase 없으면 getBullnabiUser fallback
+                if (!userEmail) {
+                    const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
+                    userEmail = bullnabiUser?.email || '';
+                }
+
+                const isAllowed = ALLOWED_EMAILS.includes(userEmail.toLowerCase());
+                console.log('AI 스타일 매칭 접근 체크:', { userEmail, isAllowed });
 
                 if (!isAllowed) {
                     if (typeof showToast === 'function') {
