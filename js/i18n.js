@@ -1,5 +1,5 @@
 // HAIRGATOR 다국어 지원 시스템
-// 지원 언어: 한국어(ko), 영어(en), 일본어(ja), 중국어(zh), 베트남어(vi)
+// 지원 언어: 한국어(ko), 영어(en), 일본어(ja), 중국어(zh), 베트남어(vi), 인도네시아어(id), 스페인어(es)
 
 const HAIRGATOR_I18N = {
   ko: {
@@ -7278,6 +7278,6 @@ Object.defineProperty(window, 'currentLanguage', {
 // 초기화 시 저장된 언어 자동 로드
 loadLanguage();
 
-console.log('🌍 HAIRGATOR 다국어 시스템 로드 완료 (5개 언어 지원)');
+console.log('🌍 HAIRGATOR 다국어 시스템 로드 완료 (7개 언어 지원)');
 console.log(`현재 언어: ${currentLanguage}`);
 console.log('사용법: t("ui.close"), translateCategory("SIDE FRINGE"), setLanguage("en")');
