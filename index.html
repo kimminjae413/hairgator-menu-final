@@ -546,6 +546,72 @@
             background: rgba(255,59,48,0.2);
         }
 
+        .withdraw-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background: transparent;
+            border: 1px solid var(--text-secondary);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .withdraw-btn:active {
+            background: rgba(128,128,128,0.1);
+        }
+
+        /* 회원 탈퇴 모달 */
+        .withdraw-modal {
+            background: var(--card-bg);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 340px;
+            padding: 24px;
+            text-align: center;
+        }
+        .withdraw-modal-header h3 {
+            margin: 0 0 16px 0;
+            font-size: 18px;
+            color: var(--text-primary);
+        }
+        .withdraw-modal-body p {
+            margin: 0 0 8px 0;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+        .withdraw-warning {
+            font-size: 13px !important;
+            color: #ef4444 !important;
+        }
+        .withdraw-modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .withdraw-cancel-btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--text-secondary);
+            background: transparent;
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .withdraw-confirm-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: #ef4444;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
         /* 저장된 카드 섹션 */
         .saved-cards-section {
             background: rgba(255,255,255,0.05);
@@ -2297,9 +2363,27 @@
             </div>
         </div>
 
-        <!-- 로그아웃 -->
+        <!-- 로그아웃 & 탈퇴 -->
         <div class="mypage-footer">
             <button class="logout-btn-full" onclick="logout()" data-i18n="ui.logout">로그아웃</button>
+            <button class="withdraw-btn" onclick="showWithdrawConfirm()" data-i18n="ui.withdrawAccount">회원 탈퇴</button>
+        </div>
+    </div>
+</div>
+
+<!-- 회원 탈퇴 확인 모달 -->
+<div id="withdrawModal" class="modal-overlay" style="display: none;">
+    <div class="withdraw-modal">
+        <div class="withdraw-modal-header">
+            <h3 data-i18n="ui.withdrawConfirmTitle">회원 탈퇴</h3>
+        </div>
+        <div class="withdraw-modal-body">
+            <p data-i18n="ui.withdrawConfirmMessage">정말 탈퇴하시겠습니까?</p>
+            <p class="withdraw-warning" data-i18n="ui.withdrawWarning">탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.</p>
+        </div>
+        <div class="withdraw-modal-footer">
+            <button class="withdraw-cancel-btn" onclick="closeWithdrawModal()" data-i18n="ui.cancel">취소</button>
+            <button class="withdraw-confirm-btn" onclick="confirmWithdraw()" data-i18n="ui.confirmWithdraw">탈퇴하기</button>
         </div>
     </div>
 </div>
@@ -3069,7 +3153,73 @@
             }
         }
 
-        
+        // 회원 탈퇴 함수들
+        function showWithdrawConfirm() {
+            document.getElementById('withdrawModal').style.display = 'flex';
+        }
+
+        function closeWithdrawModal() {
+            document.getElementById('withdrawModal').style.display = 'none';
+        }
+
+        async function confirmWithdraw() {
+            try {
+                showLoading(true);
+                closeWithdrawModal();
+
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    showToast('로그인이 필요합니다.', 'error');
+                    showLoading(false);
+                    return;
+                }
+
+                const userEmail = user.email;
+                const userId = user.uid;
+
+                // 1. Firestore에서 사용자 문서 삭제
+                if (userEmail) {
+                    const sanitizedEmail = userEmail.replace(/[@.]/g, '_');
+                    try {
+                        await db.collection('users').doc(sanitizedEmail).delete();
+                        console.log('✅ Firestore 사용자 문서 삭제 완료');
+                    } catch (e) {
+                        console.log('Firestore 문서 삭제 시도:', e.message);
+                    }
+                }
+
+                // 2. Firebase Auth에서 사용자 삭제
+                await user.delete();
+                console.log('✅ Firebase Auth 사용자 삭제 완료');
+
+                // 3. localStorage 정리
+                localStorage.clear();
+
+                showLoading(false);
+                showToast('회원 탈퇴가 완료되었습니다.', 'success');
+
+                // 로그인 페이지로 이동
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 1500);
+
+            } catch (error) {
+                console.error('회원 탈퇴 오류:', error);
+                showLoading(false);
+
+                if (error.code === 'auth/requires-recent-login') {
+                    showToast('보안을 위해 다시 로그인 후 탈퇴해주세요.', 'error');
+                    setTimeout(() => {
+                        firebase.auth().signOut();
+                        window.location.href = '/login.html';
+                    }, 2000);
+                } else {
+                    showToast('탈퇴 처리 중 오류가 발생했습니다.', 'error');
+                }
+            }
+        }
+
+
         // 패스워드 복구 UI 함수들 (외부 스크립트에서 사용)
         function showSelfPasswordCheckModal() {
             if (window.HAIRGATOR_PASSWORD_RECOVERY) {
