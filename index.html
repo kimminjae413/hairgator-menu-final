@@ -4115,13 +4115,22 @@ function applyStyleMatchDisabledState() {
 
     console.log('🔐 AI 스타일 매칭 플랜 체크:', userPlan, '허용:', isAllowed);
 
-    const styleMatchBtn = document.querySelector('#styleMatchSection .sidebar-menu-item');
+    // 실제 사이드바의 styleMatchBtn 요소
+    const styleMatchBtn = document.getElementById('styleMatchBtn');
     if (styleMatchBtn) {
         if (isAllowed) {
             styleMatchBtn.classList.remove('disabled');
+            styleMatchBtn.style.opacity = '';
+            styleMatchBtn.style.filter = '';
         } else {
             styleMatchBtn.classList.add('disabled');
+            // 인라인 스타일로 확실하게 적용
+            styleMatchBtn.style.opacity = '0.4';
+            styleMatchBtn.style.filter = 'grayscale(0.5)';
         }
+        console.log('🔐 styleMatchBtn 클래스:', styleMatchBtn.className);
+    } else {
+        console.log('⚠️ styleMatchBtn 요소를 찾을 수 없음');
     }
 }
 

@@ -673,82 +673,38 @@ document.addEventListener('DOMContentLoaded', function() {
             themeToggleMenu.addEventListener('click', toggleTheme);
         }
 
-        // AI 스타일 매칭 (허용된 사용자만 접근 가능)
+        // AI 스타일 매칭 (베이직 플랜 이상만 접근 가능)
         if (styleMatchBtn) {
             styleMatchBtn.addEventListener('click', function() {
                 console.log('✨ AI 스타일 매칭 클릭');
 
-                // 허용된 사용자 체크 (이메일)
-                const ALLOWED_EMAILS = ['708eric@hanmail.net'];
+                // 플랜 기반 체크
+                const ALLOWED_PLANS = ['basic', 'pro', 'business'];
+                const userPlan = window.currentDesigner?.plan || 'free';
+                const isAllowed = ALLOWED_PLANS.includes(userPlan);
 
-                // 여러 소스에서 이메일 확인
-                let userEmail = '';
-
-                // 1. window.currentDesigner (가장 신뢰할 수 있는 소스)
-                if (window.currentDesigner && window.currentDesigner.email) {
-                    userEmail = window.currentDesigner.email;
-                }
-
-                // 2. Firebase Auth currentUser
-                if (!userEmail && window.firebase && firebase.auth) {
-                    const firebaseUser = firebase.auth().currentUser;
-                    if (firebaseUser && firebaseUser.email) {
-                        userEmail = firebaseUser.email;
-                    }
-                }
-
-                // 3. localStorage hairgator_user
-                if (!userEmail) {
-                    try {
-                        const stored = localStorage.getItem('hairgator_user');
-                        if (stored) {
-                            const parsed = JSON.parse(stored);
-                            userEmail = parsed.email || '';
-                        }
-                    } catch (e) {}
-                }
-
-                // 4. localStorage firebase_user
-                if (!userEmail) {
-                    try {
-                        const stored = localStorage.getItem('firebase_user');
-                        if (stored) {
-                            const parsed = JSON.parse(stored);
-                            userEmail = parsed.email || '';
-                        }
-                    } catch (e) {}
-                }
-
-                // 5. getBullnabiUser fallback
-                if (!userEmail) {
-                    const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
-                    userEmail = bullnabiUser?.email || '';
-                }
-
-                // 6. 마이페이지 이메일에서 가져오기
-                if (!userEmail) {
-                    const mypageEmail = document.getElementById('mypageEmail');
-                    if (mypageEmail && mypageEmail.textContent && mypageEmail.textContent !== '-') {
-                        userEmail = mypageEmail.textContent;
-                    }
-                }
-
-                const isAllowed = ALLOWED_EMAILS.includes(userEmail.toLowerCase());
-                console.log('AI 스타일 매칭 접근 체크:', { userEmail, isAllowed });
+                console.log('AI 스타일 매칭 접근 체크:', { userPlan, isAllowed });
 
                 if (!isAllowed) {
-                    if (typeof showToast === 'function') {
-                        showToast('개발중입니다.', 'info');
+                    // 업그레이드 모달 표시
+                    if (typeof showUpgradeModal === 'function') {
+                        showUpgradeModal('AI 스타일 매칭', '베이직 플랜 이상에서 사용 가능합니다.');
+                    } else if (typeof showToast === 'function') {
+                        showToast('베이직 플랜 이상에서 사용 가능합니다.', 'warning');
                     } else {
-                        alert('개발중입니다.');
+                        alert('베이직 플랜 이상에서 사용 가능합니다.');
                     }
-                    closeSidebar();
                     return;
                 }
 
                 closeSidebar();
                 window.location.href = '/style-match/';
             });
+
+            // 플랜에 따라 disabled 상태 적용
+            if (typeof applyStyleMatchDisabledState === 'function') {
+                applyStyleMatchDisabledState();
+            }
         }
 
         if (personalColorBtn) {
