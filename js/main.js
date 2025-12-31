@@ -707,26 +707,39 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // 퍼스널 이미지 분석 (베이직 플랜 이상만 접근 가능)
         if (personalColorBtn) {
-            personalColorBtn.addEventListener('click', async function() {
+            personalColorBtn.addEventListener('click', function() {
                 console.log('🎨 퍼스널 이미지 분석 클릭');
 
-                // 무료 플랜 사용자는 이용 불가
-                if (window.BullnabiBridge) {
-                    const result = await window.BullnabiBridge.getTokenBalance();
-                    if (result.success && result.plan === 'free') {
-                        if (typeof showToast === 'function') {
-                            showToast(t('payment.freePlanRestricted') || '유료 플랜 구독 시 이용 가능합니다.', 'warning');
-                        } else {
-                            alert('유료 플랜 구독 시 이용 가능합니다.');
-                        }
-                        return;
+                // 플랜 기반 체크
+                const ALLOWED_PLANS = ['basic', 'pro', 'business'];
+                const userPlan = window.currentDesigner?.plan || 'free';
+                const isAllowed = ALLOWED_PLANS.includes(userPlan);
+
+                console.log('퍼스널 이미지 분석 접근 체크:', { userPlan, isAllowed });
+
+                if (!isAllowed) {
+                    // 업그레이드 모달 표시
+                    if (typeof showUpgradeModal === 'function') {
+                        showUpgradeModal('퍼스널 이미지 분석', '베이직 플랜 이상에서 사용 가능합니다.');
+                    } else if (typeof showToast === 'function') {
+                        showToast('베이직 플랜 이상에서 사용 가능합니다.', 'warning');
+                    } else {
+                        alert('베이직 플랜 이상에서 사용 가능합니다.');
                     }
+                    return;
                 }
 
+                closeSidebar();
                 const gender = window.currentGender || 'female';
                 window.location.href = `/personal-color/?gender=${gender}`;
             });
+
+            // 플랜에 따라 disabled 상태 적용
+            if (typeof applyPlanBasedDisabledState === 'function') {
+                applyPlanBasedDisabledState();
+            }
         }
 
         // AI 얼굴변환 & 영상
