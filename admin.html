@@ -5072,23 +5072,41 @@
                     portioneCancellation: cancelResult.cancellation || null
                 });
 
-                // 3. 사용자 토큰 차감
+                // 3. 결제 문서에서 planKey 확인
+                const paymentDoc = await db.collection('payments').doc(docId).get();
+                const planKey = paymentDoc.exists ? paymentDoc.data().planKey : null;
+                const isPlanPurchase = planKey && planKey !== 'tokens_5000';
+
+                // 4. 사용자 토큰 차감 + 플랜 리셋
                 const userRef = db.collection('users').doc(userId);
                 const userDoc = await userRef.get();
                 if (userDoc.exists) {
                     const currentTokens = userDoc.data().tokenBalance || 0;
+                    const currentPlan = userDoc.data().plan || 'free';
                     const newTokens = Math.max(0, currentTokens - tokens);
-                    await userRef.update({
-                        tokenBalance: newTokens
-                    });
 
-                    // 4. 로그 기록
+                    const updateData = {
+                        tokenBalance: newTokens
+                    };
+
+                    // 플랜 구매 취소 시 무료 플랜으로 되돌리기
+                    if (isPlanPurchase) {
+                        updateData.plan = 'free';
+                        updateData.planExpiresAt = null;
+                        updateData.planStartedAt = null;
+                    }
+
+                    await userRef.update(updateData);
+
+                    // 5. 로그 기록
                     await db.collection('token_logs').add({
                         userId: userId,
                         action: 'payment_cancelled',
                         tokensDeducted: tokens,
                         previousBalance: currentTokens,
                         newBalance: newTokens,
+                        previousPlan: currentPlan,
+                        newPlan: isPlanPurchase ? 'free' : currentPlan,
                         paymentDocId: docId,
                         cancelReason: reason,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
