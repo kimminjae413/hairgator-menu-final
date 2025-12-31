@@ -678,9 +678,34 @@ document.addEventListener('DOMContentLoaded', function() {
             styleMatchBtn.addEventListener('click', function() {
                 console.log('✨ AI 스타일 매칭 클릭');
 
-                // 플랜 기반 체크
+                // 플랜 기반 체크 (여러 소스에서 확인)
                 const ALLOWED_PLANS = ['basic', 'pro', 'business'];
-                const userPlan = window.currentDesigner?.plan || 'free';
+                let userPlan = 'free';
+
+                // 1. currentDesigner에서 확인
+                if (window.currentDesigner?.plan) {
+                    userPlan = window.currentDesigner.plan;
+                }
+                // 2. getBullnabiUser에서 확인
+                else if (typeof window.getBullnabiUser === 'function') {
+                    const bullnabiUser = window.getBullnabiUser();
+                    if (bullnabiUser?.plan) userPlan = bullnabiUser.plan;
+                }
+                // 3. FirebaseBridge.cachedUserData에서 확인
+                else if (window.FirebaseBridge?.cachedUserData?.plan) {
+                    userPlan = window.FirebaseBridge.cachedUserData.plan;
+                }
+                // 4. localStorage에서 확인
+                else {
+                    try {
+                        const stored = localStorage.getItem('firebase_user');
+                        if (stored) {
+                            const parsed = JSON.parse(stored);
+                            if (parsed?.plan) userPlan = parsed.plan;
+                        }
+                    } catch(e) {}
+                }
+
                 const isAllowed = ALLOWED_PLANS.includes(userPlan);
 
                 console.log('AI 스타일 매칭 접근 체크:', { userPlan, isAllowed });
@@ -708,9 +733,34 @@ document.addEventListener('DOMContentLoaded', function() {
             personalColorBtn.addEventListener('click', function() {
                 console.log('🎨 퍼스널 이미지 분석 클릭');
 
-                // 플랜 기반 체크
+                // 플랜 기반 체크 (여러 소스에서 확인)
                 const ALLOWED_PLANS = ['basic', 'pro', 'business'];
-                const userPlan = window.currentDesigner?.plan || 'free';
+                let userPlan = 'free';
+
+                // 1. currentDesigner에서 확인
+                if (window.currentDesigner?.plan) {
+                    userPlan = window.currentDesigner.plan;
+                }
+                // 2. getBullnabiUser에서 확인
+                else if (typeof window.getBullnabiUser === 'function') {
+                    const bullnabiUser = window.getBullnabiUser();
+                    if (bullnabiUser?.plan) userPlan = bullnabiUser.plan;
+                }
+                // 3. FirebaseBridge.cachedUserData에서 확인
+                else if (window.FirebaseBridge?.cachedUserData?.plan) {
+                    userPlan = window.FirebaseBridge.cachedUserData.plan;
+                }
+                // 4. localStorage에서 확인
+                else {
+                    try {
+                        const stored = localStorage.getItem('firebase_user');
+                        if (stored) {
+                            const parsed = JSON.parse(stored);
+                            if (parsed?.plan) userPlan = parsed.plan;
+                        }
+                    } catch(e) {}
+                }
+
                 const isAllowed = ALLOWED_PLANS.includes(userPlan);
 
                 console.log('퍼스널 이미지 분석 접근 체크:', { userPlan, isAllowed });

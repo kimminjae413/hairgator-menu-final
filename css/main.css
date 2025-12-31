@@ -4034,19 +4034,57 @@ body.light-theme .products-subtitle {
 
 .plan-card {
     flex: 0 0 180px;
-    background: #fff;
+    background: #2a2a2a;
     border-radius: 16px;
     padding: 20px 16px;
-    border: 1px solid #e5e5e5;
+    border: 1px solid #444;
     display: flex;
     flex-direction: column;
     position: relative;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 body.light-theme .plan-card {
     background: #fff;
     border-color: #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.plan-name {
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    margin: 8px 0;
+    color: #fff;
+}
+
+body.light-theme .plan-name {
+    color: #222;
+}
+
+.plan-price {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+    margin: 4px 0;
+}
+
+body.light-theme .plan-price {
+    color: #111;
+}
+
+.plan-features li {
+    font-size: 12px;
+    padding: 4px 0;
+    color: #ddd;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+body.light-theme .plan-features li {
+    color: #333;
 }
 
 .plan-card-recommended {
@@ -4074,25 +4112,9 @@ body.light-theme .plan-card {
     color: #fff;
 }
 
-.plan-name {
-    font-size: 18px;
-    font-weight: 700;
-    text-align: center;
-    margin: 8px 0;
-    color: #222;
-}
-
 .plan-name-addon {
     color: #E91E63 !important;
     font-size: 14px !important;
-}
-
-.plan-price {
-    text-align: center;
-    font-size: 28px;
-    font-weight: 800;
-    color: #111;
-    margin: 4px 0;
 }
 
 .plan-period {
@@ -4106,6 +4128,13 @@ body.light-theme .plan-card {
     color: #E91E63;
     font-weight: 700;
     font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.plan-usage-example {
+    text-align: center;
+    color: #888;
+    font-size: 11px;
     margin-bottom: 8px;
 }
 
@@ -4127,15 +4156,6 @@ body.light-theme .plan-card {
     flex: 1;
 }
 
-.plan-features li {
-    font-size: 12px;
-    padding: 4px 0;
-    color: #333;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
 .plan-features li.locked {
     color: #bbb;
 }
@@ -4155,6 +4175,11 @@ body.light-theme .plan-card {
 
 .icon-x {
     color: #ccc;
+}
+
+.icon-bonus {
+    color: #E91E63;
+    font-weight: bold;
 }
 
 .icon-emoji {
