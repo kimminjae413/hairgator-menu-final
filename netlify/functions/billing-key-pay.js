@@ -76,24 +76,31 @@ exports.handler = async (event) => {
     console.log('💳 빌링키 결제 요청:', { paymentId, planKey, userId, amount: plan.price });
 
     // 1. 포트원 빌링키 결제 API 호출
+    const requestBody = {
+      billingKey: billingKey,
+      orderName: `HAIRGATOR ${plan.name}`,
+      amount: {
+        total: plan.price
+      },
+      currency: 'KRW'
+    };
+
+    // customer 정보 추가 (값이 있는 필드만)
+    if (userId || userName) {
+      requestBody.customer = {};
+      if (userId) requestBody.customer.id = userId;
+      if (userName) requestBody.customer.name = userName;
+    }
+
+    console.log('📤 포트원 요청 body:', JSON.stringify(requestBody, null, 2));
+
     const paymentResponse = await fetch(`${PORTONE_API_URL}/payments/${encodeURIComponent(paymentId)}/billing-key`, {
       method: 'POST',
       headers: {
         'Authorization': `PortOne ${apiSecret}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        billingKey: billingKey,
-        orderName: `HAIRGATOR ${plan.name}`,
-        amount: {
-          total: plan.price
-        },
-        currency: 'KRW',
-        customer: {
-          id: userId,
-          name: userName || undefined
-        }
-      })
+      body: JSON.stringify(requestBody)
     });
 
     const paymentResult = await paymentResponse.json();
