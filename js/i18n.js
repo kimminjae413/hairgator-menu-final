@@ -157,6 +157,7 @@ const HAIRGATOR_I18N = {
       currentPlanLabel: '현재 플랜',
       tokenBalanceLabel: '토큰 잔액',
       chargeTokens: '토큰 충전',
+      upgradePlan: '플랜 업그레이드',
 
       // 프로필 사진
       profilePhoto: '📷 프로필 사진',
@@ -1285,6 +1286,7 @@ const HAIRGATOR_I18N = {
       currentPlanLabel: 'Current Plan',
       tokenBalanceLabel: 'Token Balance',
       chargeTokens: 'Charge Tokens',
+      upgradePlan: 'Upgrade Plan',
 
       // Profile photo
       profilePhoto: '📷 Profile Photo',
@@ -2378,6 +2380,7 @@ const HAIRGATOR_I18N = {
       currentPlanLabel: '現在のプラン',
       tokenBalanceLabel: 'トークン残高',
       chargeTokens: 'トークンチャージ',
+      upgradePlan: 'プランアップグレード',
 
       // プロフィール写真
       profilePhoto: '📷 プロフィール写真',
@@ -3467,6 +3470,7 @@ const HAIRGATOR_I18N = {
       currentPlanLabel: '当前套餐',
       tokenBalanceLabel: '代币余额',
       chargeTokens: '充值代币',
+      upgradePlan: '升级套餐',
 
       // 个人照片
       profilePhoto: '📷 个人照片',
@@ -4559,6 +4563,7 @@ const HAIRGATOR_I18N = {
       currentPlanLabel: 'Gói hiện tại',
       tokenBalanceLabel: 'Số dư token',
       chargeTokens: 'Nạp token',
+      upgradePlan: 'Nâng cấp gói',
 
       // Ảnh hồ sơ
       profilePhoto: '📷 Ảnh hồ sơ',
@@ -5611,6 +5616,7 @@ const HAIRGATOR_I18N = {
       currentPlanLabel: 'Paket Saat Ini',
       tokenBalanceLabel: 'Saldo Token',
       chargeTokens: 'Isi Token',
+      upgradePlan: 'Upgrade Paket',
 
       // Foto profil
       profilePhoto: '📷 Foto Profil',
@@ -6555,6 +6561,7 @@ const HAIRGATOR_I18N = {
       currentPlanLabel: 'Plan Actual',
       tokenBalanceLabel: 'Saldo de Tokens',
       chargeTokens: 'Cargar Tokens',
+      upgradePlan: 'Actualizar Plan',
 
       profilePhoto: '📷 Foto de Perfil',
       profilePhotoHint: 'La foto de perfil se usará para consultas de estilo.',
