@@ -85,12 +85,8 @@ exports.handler = async (event) => {
       currency: 'KRW'
     };
 
-    // customer 정보 추가 (값이 있는 필드만)
-    if (userId || userName) {
-      requestBody.customer = {};
-      if (userId) requestBody.customer.id = userId;
-      if (userName) requestBody.customer.name = userName;
-    }
+    // customer 정보는 빌링키 결제에서 제외 (빌링키 발급 시 이미 저장됨)
+    // PortOne V2에서는 customer 필드가 빌링키 결제 시 필요하지 않음
 
     console.log('📤 포트원 요청 body:', JSON.stringify(requestBody, null, 2));
 
