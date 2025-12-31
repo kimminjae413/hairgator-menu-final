@@ -275,7 +275,7 @@ C:\hairgator_flutter_app\
 ### RAG 시스템
 - **Gemini File Search API** 사용
 - Store ID: `fileSearchStores/hairgator-theory-final-2025-kkb6n1ftfbf2`
-- **54개 문서**, 524MB (영구 저장됨)
+- **56개 문서**, 524MB (영구 저장됨)
 - 업로드된 자료:
   - 이론 PDF 38개
   - 펌 레시피 자막 4개
