@@ -2859,11 +2859,16 @@ async function loadPaymentHistory() {
                 });
             }
 
-            // 영수증 URL 생성 (포트원 V2 영수증)
-            const receiptUrl = `https://service.portone.io/receipt/${paymentId}`;
+            // 취소/환불된 결제는 영수증 볼 수 없음
+            const isCancelled = status === 'cancelled' || status === 'refunded';
+            const receiptText = isCancelled
+                ? (t('ui.receiptNotAvailable') || '취소된 결제')
+                : (t('ui.viewReceipt') || '영수증 보기');
+            const receiptClass = isCancelled ? 'payment-item-receipt disabled' : 'payment-item-receipt';
+            const onClickAttr = isCancelled ? '' : `onclick="openPaymentReceipt('${paymentId}')"`;
 
             html += `
-                <div class="payment-history-item" onclick="openPaymentReceipt('${paymentId}')">
+                <div class="payment-history-item" ${onClickAttr}>
                     <div class="payment-item-left">
                         <div class="payment-item-plan">${planName}</div>
                         <div class="payment-item-date">${dateStr}</div>
@@ -2872,7 +2877,7 @@ async function loadPaymentHistory() {
                     <div class="payment-item-right">
                         <div class="payment-item-amount">${amount.toLocaleString()}${t('ui.currencyWon') || '원'}</div>
                         <div class="payment-item-tokens">+${tokens.toLocaleString()} ${t('ui.tokens') || '토큰'}</div>
-                        <span class="payment-item-receipt">${t('ui.viewReceipt') || '영수증 보기'}</span>
+                        <span class="${receiptClass}">${receiptText}</span>
                     </div>
                 </div>
             `;
