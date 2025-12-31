@@ -473,6 +473,58 @@
             color: rgba(0,0,0,0.3);
         }
 
+        /* 고객센터 */
+        .mypage-customer-service {
+            padding: 20px;
+            margin-top: 16px;
+            background: var(--card-bg);
+            border-radius: 12px;
+        }
+        .cs-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+        .cs-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .cs-item:last-child {
+            margin-bottom: 0;
+        }
+        .cs-icon {
+            font-size: 16px;
+        }
+        .cs-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .cs-phone {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        .cs-phone:hover {
+            text-decoration: underline;
+        }
+        .cs-hours {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .cs-email {
+            font-size: 14px;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        .cs-email:hover {
+            text-decoration: underline;
+        }
+
         .mypage-footer {
             padding-top: 16px;
         }
@@ -2090,7 +2142,7 @@
 
         <!-- 플랜 정보 -->
         <div class="mypage-section">
-            <div class="mypage-card">
+            <div class="mypage-card" style="width: 100%;">
                 <div class="card-label" data-i18n="ui.currentPlanLabel">현재 플랜</div>
                 <div class="card-value" id="mypagePlan">무료</div>
             </div>
@@ -2226,6 +2278,22 @@
             </div>
             <div id="inquiryList" class="inquiry-list">
                 <div class="no-inquiry-message" data-i18n="ui.noInquiries">문의 내역이 없습니다.</div>
+            </div>
+        </div>
+
+        <!-- 고객센터 -->
+        <div class="mypage-customer-service">
+            <div class="cs-title" data-i18n="ui.customerService">고객센터</div>
+            <div class="cs-item">
+                <span class="cs-icon">📞</span>
+                <div class="cs-info">
+                    <a href="tel:02-6731-5000" class="cs-phone">02-6731-5000</a>
+                    <span class="cs-hours" data-i18n="ui.csHours">평일 10:00~17:00</span>
+                </div>
+            </div>
+            <div class="cs-item">
+                <span class="cs-icon">📧</span>
+                <a href="mailto:hairgator.info@gmail.com" class="cs-email">hairgator.info@gmail.com</a>
             </div>
         </div>
 
