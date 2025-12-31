@@ -666,10 +666,7 @@ async function loginWithBullnabi(userInfo) {
 
         console.log('✅ 불나비 자동 로그인 완료:', userInfo.name, '토큰:', tokenBalance);
 
-        // 환영 메시지
-        if (typeof showToast === 'function') {
-            showToast(`${userInfo.name}님 환영합니다!`, 'success');
-        }
+        // 환영 메시지는 updateUIAfterLogin()에서 처리 (중복 방지)
 
     } catch (error) {
         console.error('불나비 자동 로그인 실패:', error);

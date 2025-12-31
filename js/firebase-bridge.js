@@ -201,10 +201,7 @@
                 window.updateLoginInfo();
             }
 
-            // 토스트 알림
-            if (typeof showToast === 'function') {
-                showToast(`${user.name}님 환영합니다!`, 'success');
-            }
+            // 환영 메시지는 auth.js handleUserLogin()에서 처리 (중복 방지)
         },
 
         // ========== 플랜 만료 관리 함수들 ==========
