@@ -2773,7 +2773,7 @@ async function loadPaymentHistory() {
 
     // 1. FirebaseBridge에서 시도
     if (window.FirebaseBridge && typeof window.FirebaseBridge.getUserDocId === 'function') {
-        userId = window.FirebaseBridge.getUserDocId();
+        userId = await window.FirebaseBridge.getUserDocId();
     }
 
     // 2. currentDesigner에서 시도
