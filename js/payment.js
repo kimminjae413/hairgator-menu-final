@@ -445,9 +445,8 @@ async function verifyAndPay(planKey) {
     return;
   }
 
-  // TODO: 프로덕션에서는 본인인증 활성화 필요
-  // 테스트 모드: 본인인증 스킵하고 바로 결제 진행
-  const SKIP_IDENTITY_VERIFICATION = true;
+  // 본인인증 활성화 (다날 채널 사용)
+  const SKIP_IDENTITY_VERIFICATION = false;
 
   if (SKIP_IDENTITY_VERIFICATION) {
     // 테스트 모드 - 바로 결제 진행
