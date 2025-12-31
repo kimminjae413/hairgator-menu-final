@@ -2316,6 +2316,18 @@ function generateRecommendations(analysis) {
     // 카테고리별 데이터 수집 (점수순 정렬을 위해)
     const categoryResults = [];
 
+    // 디버그: 추천/회피 조건 로그
+    console.log('📋 추천 조건:', analysis.recommendations?.map(r => ({
+        mainCat: r.mainCategory,
+        subCat: r.subCategory,
+        score: r.score
+    })));
+    console.log('📋 회피 조건:', analysis.avoidances?.map(a => ({
+        mainCat: a.mainCategory,
+        subCat: a.subCategory,
+        score: a.score
+    })));
+
     categories.forEach(category => {
         // 해당 카테고리 스타일 필터링 (대소문자 무시, type 조건 완화)
         const categoryLower = category.toLowerCase();
@@ -2333,28 +2345,52 @@ function generateRecommendations(analysis) {
         const scoredStyles = categoryStyles.map(style => {
             let score = 50; // 기본 점수
             let reasons = [];
+            const styleMainCat = (style.mainCategory || '').toUpperCase();
+            const styleSubCat = (style.subCategory || '').toUpperCase();
 
-            // 추천 조건 매칭
+            // 추천 조건 매칭 (대소문자 무시)
             analysis.recommendations.forEach(rec => {
-                if (rec.mainCategory?.includes(style.mainCategory)) {
-                    score += rec.score;
-                    reasons.push({ type: 'positive', text: rec.reason, score: rec.score });
+                // mainCategory 배열 매칭
+                if (rec.mainCategory) {
+                    const matchedMain = rec.mainCategory.some(cat =>
+                        cat.toUpperCase() === styleMainCat
+                    );
+                    if (matchedMain) {
+                        score += rec.score;
+                        reasons.push({ type: 'positive', text: rec.reason, score: rec.score });
+                    }
                 }
-                if (rec.subCategory?.includes(style.subCategory)) {
-                    score += rec.score;
-                    reasons.push({ type: 'positive', text: rec.reason, score: rec.score });
+                // subCategory 배열 매칭
+                if (rec.subCategory) {
+                    const matchedSub = rec.subCategory.some(cat =>
+                        cat.toUpperCase() === styleSubCat
+                    );
+                    if (matchedSub) {
+                        score += rec.score;
+                        reasons.push({ type: 'positive', text: rec.reason, score: rec.score });
+                    }
                 }
             });
 
-            // 회피 조건 매칭
+            // 회피 조건 매칭 (대소문자 무시)
             analysis.avoidances.forEach(avoid => {
-                if (avoid.mainCategory?.includes(style.mainCategory)) {
-                    score += avoid.score;
-                    reasons.push({ type: 'negative', text: avoid.reason, score: avoid.score });
+                if (avoid.mainCategory) {
+                    const matchedMain = avoid.mainCategory.some(cat =>
+                        cat.toUpperCase() === styleMainCat
+                    );
+                    if (matchedMain) {
+                        score += avoid.score;
+                        reasons.push({ type: 'negative', text: avoid.reason, score: avoid.score });
+                    }
                 }
-                if (avoid.subCategory?.includes(style.subCategory)) {
-                    score += avoid.score;
-                    reasons.push({ type: 'negative', text: avoid.reason, score: avoid.score });
+                if (avoid.subCategory) {
+                    const matchedSub = avoid.subCategory.some(cat =>
+                        cat.toUpperCase() === styleSubCat
+                    );
+                    if (matchedSub) {
+                        score += avoid.score;
+                        reasons.push({ type: 'negative', text: avoid.reason, score: avoid.score });
+                    }
                 }
             });
 
@@ -2656,26 +2692,35 @@ function generateStyleReason(style, analysis, ratios, score = 50) {
     // 😐 중립 점수 (41~60점): 중립/보통 모드
     // ============================================
     if (score <= 60) {
-        // 스타일 특징은 언급하되, 단점도 함께 언급
+        // 스타일 키워드 추출
+        const styleNameLower = styleName.toLowerCase();
+        const hasWave = styleNameLower.includes('웨이브') || styleNameLower.includes('wave') || styleNameLower.includes('컬');
+        const hasVolume = styleNameLower.includes('볼륨') || styleNameLower.includes('레이어');
+
+        // 스타일 특징 언급 (부정적이지 않게)
         if (styleFeature) {
-            // 긍정적이지 않은 중립 표현
-            parts.push(`${styleFeature.keywords[0]}이(가) 특징인 스타일`);
+            parts.push(`${styleFeature.benefit}`);
+        } else if (hasWave) {
+            parts.push(`곡선감으로 부드러운 인상 연출`);
+        } else if (hasVolume) {
+            parts.push(`볼륨감으로 자연스러운 분위기`);
+        } else {
+            parts.push(`깔끔하고 단정한 무드 연출`);
         }
 
-        // 단점/한계점 언급
+        // 개선 조언 (부정 대신 구체적 조언)
         if (isLongFace) {
-            if (isShortStyle || isTopVolumeStyle) {
-                parts.push(`단, 긴 하안부(${ratios.lowerRatio}%)를 커버해주지는 못합니다`);
+            if (hasWave || hasVolume) {
+                parts.push(`옆볼륨을 조금 더 살리면 비율이 더 좋아짐`);
             } else {
-                parts.push(`얼굴 길이 보정 효과는 제한적`);
+                parts.push(`웨이브나 볼륨 추가 시 길이 보정 효과 UP`);
             }
         } else if (isSquareJaw) {
-            parts.push(`턱선 소프닝 효과는 제한적`);
+            parts.push(`턱 주변 레이어드 추가 시 소프닝 효과 UP`);
         } else if (isWideForehead && isTopVolumeStyle) {
-            parts.push(`이마 노출에 주의 필요`);
+            parts.push(`앞머리 길이 조절로 밸런스 조정 가능`);
         } else {
-            // 기본 중립 멘트
-            parts.push(`무난하게 소화 가능하지만, 얼굴형 보정 효과는 미미함`);
+            parts.push(`무난하게 소화 가능한 스타일`);
         }
 
         // 중복 제거 후 반환
@@ -2687,34 +2732,52 @@ function generateStyleReason(style, analysis, ratios, score = 50) {
     // ✓ 고점수 (80점 이상): 강력 추천 모드
     // ============================================
     if (score >= 80) {
-        // Part A: 스타일 고유 장점
-        if (styleFeature) {
+        // 스타일 태그/키워드 추출
+        const styleNameLower = styleName.toLowerCase();
+        const hasWave = styleNameLower.includes('웨이브') || styleNameLower.includes('wave') || styleNameLower.includes('컬') || styleNameLower.includes('curl');
+        const hasVolume = styleNameLower.includes('볼륨') || styleNameLower.includes('volume') || styleNameLower.includes('레이어') || styleNameLower.includes('layer');
+        const hasSleek = styleNameLower.includes('생머리') || styleNameLower.includes('sleek') || styleNameLower.includes('스트레이트') || styleNameLower.includes('straight');
+        const hasBang = ['EB', 'E', 'Eye Brow', 'Eye', 'FH', 'Fore Head'].includes(subCat);
+
+        // Part A: 얼굴형 + 스타일 특성 강력 매칭
+        if (isLongFace) {
+            if (hasWave) {
+                parts.push(`✓ 웨이브가 시선을 가로로 분산시켜 긴 얼굴형을 완벽하게 보완`);
+            } else if (hasVolume) {
+                parts.push(`✓ 풍성한 볼륨이 얼굴의 가로 비율을 채워주어 밸런스 최적화`);
+            } else if (isSideVolumeStyle) {
+                parts.push(`✓ 사이드 볼륨이 긴 하안부(${ratios.lowerRatio}%)를 완벽히 커버`);
+            }
+        } else if (isSquareJaw) {
+            if (hasWave || (styleFeature && ['soft', 'dynamic'].includes(styleFeature.mood))) {
+                parts.push(`✓ 부드러운 질감이 각진 턱선을 자연스럽게 소프닝`);
+            }
+        } else if (isShortFace && isTopVolumeStyle) {
+            parts.push(`✓ 탑 볼륨이 짧은 얼굴(${ratios.lowerRatio}%)을 갸름하게 연출`);
+        } else if (isWideEyes && isSideVolumeStyle) {
+            parts.push(`✓ 가르마 라인이 넓은 미간을 중앙으로 모아줌`);
+        } else if (isWideForehead && hasBang) {
+            parts.push(`✓ 앞머리가 넓은 이마를 커버하여 이상적인 비율 완성`);
+        }
+
+        // Part B: 스타일 고유 장점 (fallback)
+        if (parts.length === 0 && styleFeature) {
             parts.push(`✨ ${styleFeature.benefit}`);
         }
 
-        // Part B: 얼굴 분석 기반 강력 추천 이유
-        if (isLongFace && isSideVolumeStyle) {
-            parts.push(`✓ 사이드 볼륨이 긴 하안부(${ratios.lowerRatio}%)를 완벽히 커버`);
-        } else if (isSquareJaw && styleFeature && ['soft', 'dynamic', 'volume'].includes(styleFeature.mood)) {
-            parts.push(`✓ 부드러운 질감이 각진 턱선(${ratios.cheekJawRatio})을 자연스럽게 소프닝`);
-        } else if (isWideEyes && isSideVolumeStyle) {
-            parts.push(`✓ 가르마 라인이 넓은 미간(${ratios.eyeDistanceRatio})을 중앙으로 모아줌`);
-        } else if (isShortFace && isTopVolumeStyle) {
-            parts.push(`✓ 탑 볼륨이 짧은 얼굴(${ratios.lowerRatio}%)을 갸름하게 연출`);
-        }
-
-        // 이미지 타입 매칭
-        if (imageType && styleFeature && parts.length < 2) {
+        // Part C: 이미지 타입 매칭
+        if (imageType && parts.length < 2) {
             const type = imageType.type;
-            if (type === 'warm' && ['chic', 'contrast', 'minimal', 'bold'].includes(styleFeature.mood)) {
+            if (type === 'warm' && styleFeature && ['chic', 'contrast', 'minimal', 'bold'].includes(styleFeature.mood)) {
                 parts.push(`💡 ${imageType.name}의 또렷함이 시크한 무드와 완벽 시너지`);
-            } else if (type === 'cool' && ['soft', 'volume', 'elegant'].includes(styleFeature.mood)) {
+            } else if (type === 'cool' && (hasWave || (styleFeature && ['soft', 'volume', 'elegant'].includes(styleFeature.mood)))) {
                 parts.push(`💡 ${imageType.name}의 부드러움이 로맨틱 무드를 배가`);
             }
         }
 
+        // 기본 베스트 매칭 멘트
         if (parts.length === 0) {
-            parts.push(`✓ 얼굴형과 이미지 타입에 가장 잘 어울리는 스타일`);
+            parts.push(`✓ 얼굴형의 단점을 커버하고 장점을 극대화하는 베스트 스타일`);
         }
 
         // 중복 제거 후 반환
