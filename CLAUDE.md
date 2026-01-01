@@ -275,7 +275,7 @@ C:\hairgator_flutter_app\
 ### RAG 시스템
 - **Gemini File Search API** 사용
 - Store ID: `fileSearchStores/hairgator-theory-final-2025-kkb6n1ftfbf2`
-- **56개 문서**, 524MB (영구 저장됨)
+- **57개 문서**, 524MB (영구 저장됨)
 - 업로드된 자료:
   - 이론 PDF 38개
   - 펌 레시피 자막 4개
@@ -296,6 +296,11 @@ C:\hairgator_flutter_app\
     - 얼굴형 분석 임계값: 긴 얼굴(0.36), 짧은 얼굴(0.28), 사각턱(1.15)
     - 카테고리별 점수 테이블 (여자 A~H Length, 남자 SF/SP/FU/PB/BZ/CR/MH)
     - 점수 구간별 멘트 생성 원리 (80+/41-79/0-40)
+  - **연화 테스트 이론(softening_test_theory.txt)**: 펌 연화 판정 이론 (2026-01-01 추가)
+    - 모발 4대 결합: 펩타이드, 다이설파이드(-S-S-), 수소, 이온(염) 결합
+    - 환원 화학: 티오글리콜산, 시스테아민, pH/온도/시간 상호작용
+    - 연화 테스트 3종류: 당겨보기, 접어보기, 밀기/문지르기
+    - 모발 상태별 연화 전략: 건강모, 손상모, 탈색모
 
 ### Firestore
 - 컬렉션: `theory_indexes` - 키워드 매칭 + 이미지 URL 저장 (커트 164개 + 펌 46개 = 210개)
