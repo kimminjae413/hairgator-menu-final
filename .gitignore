@@ -46,6 +46,7 @@ scripts/
 
 # Image files in root
 *.png
+!admin.png
 
 # Claude local settings
 .claude/settings.local.json
