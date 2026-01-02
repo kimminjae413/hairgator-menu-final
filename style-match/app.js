@@ -595,11 +595,10 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.fillRect(0, scanLineY - 20, w, 40);
 
     // 1. 얼굴 윤곽선 (MediaPipe Face Oval + 이마 확장)
-    // MediaPipe 공식 얼굴 외곽선 인덱스 (36개 포인트)
+    // MediaPipe 얼굴 외곽선 (입 근처 뾰족한 포인트 제거)
     const faceOvalIndices = [
         10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288,
-        397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136,
-        172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109
+        397, 152, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109
     ];
 
     // 상단 포인트 인덱스 (이마 영역 - 위로 확장 필요)
@@ -777,7 +776,7 @@ function drawMeasurementLineWithLabel(ctx, landmarks, idx1, idx2, w, h, color, l
     let labelY = midY;
 
     if (labelPos === 'top') labelY -= 12;
-    else if (labelPos === 'bottom') labelY += 18;
+    else if (labelPos === 'bottom') labelY += 35;
     else if (labelPos === 'left') { labelX = x1 - 35; labelY = midY; }
     else if (labelPos === 'right') { labelX = x2 + 35; labelY = midY; }
 
