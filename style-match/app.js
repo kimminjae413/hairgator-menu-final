@@ -594,8 +594,17 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, scanLineY - 20, w, 40);
 
-    // 1. 얼굴 윤곽선 (네온 효과)
-    const faceOutline = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10];
+    // 1. 얼굴 윤곽선 (네온 효과) - 헤어라인 보정 적용
+    // MediaPipe 윤곽선에서 상단 포인트들을 위로 확장
+    const glabellaY = landmarks[keyPoints.glabella].y;
+    const chinY = landmarks[keyPoints.chin].y;
+    const faceHeight = chinY - glabellaY;
+    const hairlineOffset = faceHeight * 0.35; // 35% 위로 확장
+
+    // 상단 포인트들 (헤어라인 주변)
+    const topPoints = [10, 338, 297, 109, 67, 103, 54, 21, 162, 127];
+    // 하단 포인트들 (원본 유지)
+    const bottomPoints = [332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234];
 
     // 글로우 효과
     ctx.shadowColor = '#a855f7';
@@ -603,22 +612,43 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.beginPath();
     ctx.strokeStyle = 'rgba(168, 85, 247, 0.6)';
     ctx.lineWidth = 2;
-    faceOutline.forEach((idx, i) => {
+
+    // 보정된 윤곽선 그리기
+    // 시작: 보정된 헤어라인 중앙
+    const startX = landmarks[10].x * w;
+    const startY = Math.max(10, (landmarks[10].y - hairlineOffset) * h);
+    ctx.moveTo(startX, startY);
+
+    // 오른쪽 상단 (보정)
+    [338, 297].forEach(idx => {
+        const x = landmarks[idx].x * w;
+        const y = Math.max(10, (landmarks[idx].y - hairlineOffset * 0.7) * h);
+        ctx.lineTo(x, y);
+    });
+
+    // 오른쪽 하단 ~ 턱 ~ 왼쪽 하단 (원본)
+    [332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234].forEach(idx => {
         const x = landmarks[idx].x * w;
         const y = landmarks[idx].y * h;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        ctx.lineTo(x, y);
     });
+
+    // 왼쪽 상단 (보정)
+    [127, 162, 21, 54, 103, 67, 109].forEach(idx => {
+        const x = landmarks[idx].x * w;
+        const y = Math.max(10, (landmarks[idx].y - hairlineOffset * 0.7) * h);
+        ctx.lineTo(x, y);
+    });
+
+    // 시작점으로 돌아가기
+    ctx.lineTo(startX, startY);
     ctx.stroke();
     ctx.shadowBlur = 0;
 
     // 2. 측정선들 (라벨 포함)
-    // 세로선: 이마 ~ 턱 (보라색) - 헤어라인 15% 보정 적용
-    // MediaPipe hairline(10)이 실제보다 낮으므로 보정된 위치 사용
-    const glabellaY = landmarks[keyPoints.glabella].y;
-    const chinY = landmarks[keyPoints.chin].y;
-    const lowerFaceHeight = chinY - glabellaY;
-    const correctedHairlineY = landmarks[keyPoints.hairline].y - (lowerFaceHeight * 0.3); // 30% 위로 (시각적으로 더 명확하게)
+    // 세로선: 이마 ~ 턱 (보라색) - 헤어라인 보정 적용
+    // 이미 위에서 계산된 faceHeight, hairlineOffset 재사용
+    const correctedHairlineY = landmarks[keyPoints.hairline].y - hairlineOffset;
 
     // 보정된 헤어라인 위치로 HEIGHT 선 그리기
     drawCorrectedHeightLine(ctx, landmarks, keyPoints, correctedHairlineY, w, h, '#a855f7', 'HEIGHT');
