@@ -2456,8 +2456,9 @@ function calculateHairstyleScores(analysis, styles) {
     const isShortFace = lowerRatio < 0.28;
     const isSquareJaw = cheekJawRatio < 1.15;
     const isWideForehead = upperRatio > 0.36;
+    const isNarrowForehead = upperRatio < 0.25;  // 좁은 이마 (25% 미만)
 
-    console.log('🔍 얼굴형 분석:', { isLongFace, isShortFace, isSquareJaw, isWideForehead });
+    console.log('🔍 얼굴형 분석:', { isLongFace, isShortFace, isSquareJaw, isWideForehead, isNarrowForehead });
 
     return styles.map(style => {
         let score = 50; // 기본 점수
@@ -2513,12 +2514,40 @@ function calculateHairstyleScores(analysis, styles) {
             }
         }
 
-        // 앞머리(subCategory)별 점수
+        // 앞머리(subCategory)별 점수 - 여자
         if (isWideForehead) {
+            // 넓은 이마 → 앞머리로 커버 추천
             if (['EB', 'EYE BROW', 'E', 'EYE', 'FH', 'FORE HEAD'].includes(subCat)) {
                 categoryBonus += 30; // 앞머리로 이마 커버
             } else if (['N', 'NONE', ''].includes(subCat)) {
                 categoryBonus -= 20; // 이마 노출 감점
+            }
+        } else if (isNarrowForehead) {
+            // 좁은 이마 → 이마 드러내기 OR 볼륨 앞머리 추천
+            if (['N', 'NONE', ''].includes(subCat) || ['FH', 'FORE HEAD'].includes(subCat)) {
+                categoryBonus += 20; // 이마 드러내거나 짧은 앞머리로 볼륨감
+            } else if (['E', 'EYE', 'CB', 'CHEEKBONE'].includes(subCat)) {
+                categoryBonus -= 15; // 긴 앞머리는 이마를 더 좁아 보이게 함
+            }
+        }
+
+        // 앞머리(대분류)별 점수 - 남자
+        if (!isFemale) {
+            if (isWideForehead) {
+                // 넓은 이마 → 앞머리 있는 스타일 추천
+                if (['SIDE FRINGE'].includes(cat)) {
+                    categoryBonus += 25; // 사이드 프린지로 이마 커버
+                } else if (['FRINGE UP', 'PUSHED BACK'].includes(cat)) {
+                    categoryBonus -= 20; // 이마 완전 노출 감점
+                }
+            } else if (isNarrowForehead) {
+                // 좁은 이마 → 이마 드러내기 추천
+                if (['FRINGE UP', 'PUSHED BACK'].includes(cat)) {
+                    categoryBonus += 25; // 이마 노출로 시원한 인상
+                } else if (['SIDE FRINGE'].includes(cat)) {
+                    // 사이드 프린지는 중립 (앞머리가 있어도 옆으로 넘기면 OK)
+                    categoryBonus += 5;
+                }
             }
         }
 
@@ -2648,7 +2677,7 @@ function calculateHairstyleScores(analysis, styles) {
         }
 
         // 추천 사유 생성 (AI 분석 정보 포함)
-        const reason = generateSimpleStyleReason(style, score, { isLongFace, isShortFace, isSquareJaw, isWideForehead }, ratios, aiBonus);
+        const reason = generateSimpleStyleReason(style, score, { isLongFace, isShortFace, isSquareJaw, isWideForehead, isNarrowForehead }, ratios, aiBonus);
 
         return {
             ...style,
@@ -2661,7 +2690,7 @@ function calculateHairstyleScores(analysis, styles) {
 
 // ========== 간소화된 스타일 추천 사유 생성 ==========
 function generateSimpleStyleReason(style, score, faceFlags, ratios, aiBonus = 0) {
-    const { isLongFace, isShortFace, isSquareJaw, isWideForehead } = faceFlags;
+    const { isLongFace, isShortFace, isSquareJaw, isWideForehead, isNarrowForehead } = faceFlags;
     const name = (style.name || '').toLowerCase();
     const subCat = (style.subCategory || '').toUpperCase();
     const ai = style.aiAnalysis;
@@ -2701,6 +2730,8 @@ function generateSimpleStyleReason(style, score, faceFlags, ratios, aiBonus = 0)
             parts.push('✓ 부드러운 질감이 각진 턱선을 자연스럽게 소프닝');
         } else if (isWideForehead && (hasBang || aiHasBangs)) {
             parts.push('✓ 앞머리가 넓은 이마를 커버하여 이상적인 비율 완성');
+        } else if (isNarrowForehead && !hasBang) {
+            parts.push('✓ 이마를 드러내 시원한 인상과 이상적인 밸런스 완성');
         } else {
             parts.push('✓ 얼굴형과 아주 이상적인 조화를 이루는 스타일');
         }
@@ -2733,6 +2764,8 @@ function generateSimpleStyleReason(style, score, faceFlags, ratios, aiBonus = 0)
             parts.push('⚠️ 가로 라인이 강조되어 얼굴이 더 짧아 보일 수 있음');
         } else if (isWideForehead && !hasBang) {
             parts.push('⚠️ 넓은 이마가 노출되어 밸런스 주의 필요');
+        } else if (isNarrowForehead && hasBang) {
+            parts.push('⚠️ 긴 앞머리가 좁은 이마를 더 좁아 보이게 함');
         } else {
             parts.push('⚠️ 얼굴형의 단점이 부각될 수 있어 스타일링 주의 필요');
         }
@@ -2770,13 +2803,19 @@ function generateCategoryReason(category, analysis, topStyles) {
         }
     } else {
         // 남성
+        const isNarrowForehead = ratios?.raw?.upperRatio < 0.25;
+        const isWideForehead = ratios?.raw?.upperRatio > 0.36;
+
         if (['SIDE FRINGE', 'SIDE PART'].includes(category)) {
             if (isLongFace) return '가로 볼륨으로 <strong>얼굴 길이를 효과적으로 보정</strong>합니다. (+50점)';
+            if (isWideForehead && category === 'SIDE FRINGE') return '앞머리로 <strong>넓은 이마를 자연스럽게 커버</strong>합니다. (+25점)';
             return '자연스러운 사이드 라인이 특징';
         }
         if (['FRINGE UP', 'PUSHED BACK', 'MOHICAN'].includes(category)) {
             if (isLongFace) return '탑 볼륨이 얼굴을 <strong>더 길어 보이게</strong> 할 수 있습니다. (-30점)';
             if (isShortFace) return '이마를 드러내 <strong>시원하고 갸름한 인상</strong>을 줍니다. (+40점)';
+            if (isNarrowForehead) return '이마를 드러내 <strong>좁은 이마가 시원하게 보이는 효과</strong>. (+25점)';
+            if (isWideForehead) return '이마가 완전 노출되어 <strong>밸런스 주의</strong> 필요. (-20점)';
             return '시원하게 올린 스타일로 깔끔한 인상';
         }
         if (['BUZZ', 'CROP'].includes(category)) {
