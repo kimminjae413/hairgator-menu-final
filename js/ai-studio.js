@@ -747,8 +747,9 @@ class AIStudio {
 
           if (result.success) {
             console.log(`💳 챗봇 크레딧 차감: ${creditCost} (토큰: ${totalTokens}), 잔액: ${result.newBalance}`);
-          } else if (result.code === 'INSUFFICIENT_TOKENS') {
-            console.warn('⚠️ 크레딧 부족');
+          } else if (result.code === 'INSUFFICIENT_TOKENS' || result.error?.includes('부족')) {
+            console.warn('⚠️ 크레딧 부족 - 업그레이드 페이지로 이동');
+            window.location.href = '/#products';
           }
         } catch (tokenError) {
           console.warn('⚠️ 크레딧 차감 실패:', tokenError);
@@ -4255,22 +4256,6 @@ ${data.customRecipe ? `\n생성된 레시피:\n${data.customRecipe}` : ''}`;
 
 async function sendMessage() {
   console.log('🔍 sendMessage 호출됨, pendingImageData:', pendingImageData, 'selectedImageAction:', selectedImageAction);
-
-  // ⭐ 토큰 잔액 체크 (최소 3크레딧 필요)
-  const MIN_CHATBOT_COST = 3;
-  if (window.FirebaseBridge || window.BullnabiBridge) {
-    const bridge = window.FirebaseBridge || window.BullnabiBridge;
-    try {
-      const result = await bridge.getTokenBalance();
-      if (result.success && result.tokenBalance < MIN_CHATBOT_COST) {
-        console.warn('⚠️ 토큰 부족:', result.tokenBalance);
-        showInsufficientTokenModal();
-        return;
-      }
-    } catch (e) {
-      console.warn('토큰 체크 실패:', e);
-    }
-  }
 
   // 이미지가 있고 레시피 모드가 선택된 경우
   if (pendingImageData && pendingImageData.file && selectedImageAction === 'recipe') {

@@ -1205,21 +1205,6 @@
                 return;
             }
 
-            // ⭐ 사전 토큰 체크 (룩북 비용: 200 토큰)
-            const LOOKBOOK_COST = 200;
-            if (window.FirebaseBridge) {
-                try {
-                    const result = await window.FirebaseBridge.getTokenBalance();
-                    if (result.success && result.tokenBalance < LOOKBOOK_COST) {
-                        console.warn('⚠️ 룩북 토큰 부족:', result.tokenBalance, '필요:', LOOKBOOK_COST);
-                        showLookbookInsufficientTokenModal();
-                        return;
-                    }
-                } catch (e) {
-                    console.warn('토큰 체크 실패:', e);
-                }
-            }
-
             // 로딩 상태 표시
             showLoadingState();
 
@@ -1497,9 +1482,9 @@
                 } else {
                     console.error('❌ 토큰 차감 실패:', result.error);
 
-                    // 토큰 부족 시 안내
+                    // 토큰 부족 시 업그레이드 페이지로 이동
                     if (result.error?.includes('부족')) {
-                        alert('토큰이 부족합니다. 토큰을 충전해주세요.');
+                        window.location.href = '/#products';
                     }
                 }
 

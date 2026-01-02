@@ -228,13 +228,6 @@ function getThumbnailUrl(style) {
 
 // ========== 헤어게이터 토큰 차감 (Bullnabi API _users.tokenBalance) ==========
 
-// 토큰 비용 상수
-const HAIRGATOR_TOKEN_COSTS = {
-    lookbook: 200,
-    hairTry: 350,
-    chatbot: 10
-};
-
 // 룩북 토큰 차감
 async function deductLookbookTokens(metadata = {}) {
     try {
@@ -269,182 +262,12 @@ async function deductHairTryTokens(metadata = {}) {
     }
 }
 
-// 토큰 잔액 조회
-async function getHairgatorTokenBalance() {
-    try {
-        if (!window.BullnabiBridge) {
-            return { success: false, tokenBalance: 0 };
-        }
-        return await window.BullnabiBridge.getTokenBalance();
-    } catch (error) {
-        console.error('❌ 토큰 잔액 조회 오류:', error);
-        return { success: false, tokenBalance: 0 };
-    }
-}
-
-// 기능 사용 가능 여부 확인
-async function canUseHairgatorFeature(feature) {
-    try {
-        if (!window.BullnabiBridge) {
-            return { success: false, canUse: false };
-        }
-        return await window.BullnabiBridge.canUseFeature(null, feature);
-    } catch (error) {
-        console.error('❌ 기능 사용 가능 여부 확인 오류:', error);
-        return { success: false, canUse: false };
-    }
-}
 
 // 레거시 함수 (호환성 유지)
 function deductLookbookCreditFromMenu(creditCost) {
     console.log('⚠️ 레거시 함수 호출됨: deductLookbookCreditFromMenu - 새 토큰 시스템으로 대체됨');
     // 새 토큰 시스템으로 자동 전환
     deductLookbookTokens({ legacyCall: true });
-}
-
-// ========== 토큰 차감 확인 다이얼로그 ==========
-function showTokenConfirmDialog(type) {
-    return new Promise((resolve) => {
-        // type: 'lookbook' 또는 'hairTry'
-        const title = t(`${type}.confirmTitle`) || '토큰 차감 안내';
-        const defaultMessage = '토큰이 차감됩니다.\n계속하시겠습니까?';
-        const message = t(`${type}.confirmMessage`) || defaultMessage;
-        const confirmText = t(`${type}.confirmButton`) || '동의';
-        const cancelText = t(`${type}.cancelButton`) || '취소';
-
-        // 성별에 따른 테마 색상
-        const isMale = window.currentGender === 'male';
-        const primaryColor = isMale ? '#4A90E2' : '#E91E63';
-        const primaryColorLight = isMale ? '#5BA0F2' : '#F43D7A';
-        const primaryColorDark = isMale ? '#3A7BC8' : '#C2185B';
-
-        // 기존 다이얼로그가 있으면 제거
-        const existingDialog = document.getElementById('token-confirm-dialog');
-        if (existingDialog) {
-            existingDialog.remove();
-        }
-
-        // 다이얼로그 생성
-        const overlay = document.createElement('div');
-        overlay.id = 'token-confirm-dialog';
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100000;
-            backdrop-filter: blur(3px);
-        `;
-
-        const dialog = document.createElement('div');
-        dialog.style.cssText = `
-            background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
-            border-radius: 16px;
-            padding: 28px 32px;
-            max-width: 340px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px ${primaryColor}33;
-            text-align: center;
-            animation: dialogSlideIn 0.3s ease-out;
-        `;
-
-        dialog.innerHTML = `
-            <style>
-                @keyframes dialogSlideIn {
-                    from {
-                        opacity: 0;
-                        transform: scale(0.9) translateY(-20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: scale(1) translateY(0);
-                    }
-                }
-            </style>
-            <div style="margin-bottom: 16px;">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="${primaryColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M12 16v-4"></path>
-                    <path d="M12 8h.01"></path>
-                </svg>
-            </div>
-            <h3 style="color: ${primaryColor}; font-size: 18px; font-weight: 600; margin-bottom: 12px;">${title}</h3>
-            <p style="color: #e0e0e0; font-size: 14px; line-height: 1.6; margin-bottom: 24px; white-space: pre-line;">${message}</p>
-            <div style="display: flex; gap: 12px; justify-content: center;">
-                <button id="tokenConfirmCancel" style="
-                    flex: 1;
-                    padding: 12px 20px;
-                    border: 1px solid rgba(255, 255, 255, 0.2);
-                    background: transparent;
-                    color: #999;
-                    border-radius: 8px;
-                    font-size: 14px;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                ">${cancelText}</button>
-                <button id="tokenConfirmOk" style="
-                    flex: 1;
-                    padding: 12px 20px;
-                    border: none;
-                    background: linear-gradient(135deg, ${primaryColor}, ${primaryColorDark});
-                    color: #ffffff;
-                    border-radius: 8px;
-                    font-size: 14px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                ">${confirmText}</button>
-            </div>
-        `;
-
-        overlay.appendChild(dialog);
-        document.body.appendChild(overlay);
-
-        // 버튼 이벤트
-        const confirmBtn = document.getElementById('tokenConfirmOk');
-        const cancelBtn = document.getElementById('tokenConfirmCancel');
-
-        confirmBtn.onclick = () => {
-            overlay.remove();
-            resolve(true);
-        };
-
-        cancelBtn.onclick = () => {
-            overlay.remove();
-            resolve(false);
-        };
-
-        // 배경 클릭시 취소
-        overlay.onclick = (e) => {
-            if (e.target === overlay) {
-                overlay.remove();
-                resolve(false);
-            }
-        };
-
-        // 호버 효과
-        confirmBtn.onmouseenter = () => {
-            confirmBtn.style.transform = 'scale(1.02)';
-            confirmBtn.style.boxShadow = '0 4px 15px rgba(212, 165, 116, 0.4)';
-        };
-        confirmBtn.onmouseleave = () => {
-            confirmBtn.style.transform = 'scale(1)';
-            confirmBtn.style.boxShadow = 'none';
-        };
-        cancelBtn.onmouseenter = () => {
-            cancelBtn.style.borderColor = 'rgba(255, 255, 255, 0.4)';
-            cancelBtn.style.color = '#ccc';
-        };
-        cancelBtn.onmouseleave = () => {
-            cancelBtn.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-            cancelBtn.style.color = '#999';
-        };
-    });
 }
 
 // ========== 룩북 로딩 오버레이 ==========
@@ -1763,25 +1586,6 @@ async function openStyleModal(style) {
     // Lookbook 버튼 이벤트 연결 (index.html의 버튼)
     const btnLookbook = document.getElementById('btnOpenLookbook');
     if (btnLookbook) {
-        const LOOKBOOK_TOKEN_COST = HAIRGATOR_TOKEN_COSTS.lookbook; // 룩북 사용 비용: 200 토큰
-
-        // 토큰 잔액 확인 함수 (비동기)
-        const getTokenBalance = async () => {
-            try {
-                const result = await getHairgatorTokenBalance();
-                return result.success ? result.tokenBalance : 0;
-            } catch (e) {
-                console.warn('토큰 확인 실패:', e);
-                return 0;
-            }
-        };
-
-        // 토큰 부족 여부 확인 (비동기)
-        const hasEnoughTokens = async () => {
-            const result = await canUseHairgatorFeature('lookbook');
-            return result.success && result.canUse;
-        };
-
         // 다국어 버튼 텍스트 설정 (SVG 아이콘 유지)
         const lookbookText = t('lookbook.button') || 'Lookbook';
         const svgIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1790,67 +1594,8 @@ async function openStyleModal(style) {
         </svg>`;
         btnLookbook.innerHTML = `${svgIcon}<span>${lookbookText}</span>`;
 
-        // 토큰 상태에 따라 버튼 스타일 업데이트 (비동기)
-        const updateButtonState = async () => {
-            const hasTokens = await hasEnoughTokens();
-            if (!hasTokens) {
-                btnLookbook.style.opacity = '0.5';
-                btnLookbook.style.cursor = 'not-allowed';
-                btnLookbook.title = t('lookbook.noCredits') || '토큰이 부족합니다';
-            } else {
-                btnLookbook.style.opacity = '1';
-                btnLookbook.style.cursor = 'pointer';
-                btnLookbook.title = '';
-            }
-        };
-
-        // 초기 상태 설정 (비동기)
-        updateButtonState();
-
         btnLookbook.onclick = async function (e) {
             e.stopPropagation();
-
-            // 무료 플랜 사용자 제한
-            if (window.BullnabiBridge) {
-                const planCheck = await window.BullnabiBridge.getTokenBalance();
-                if (planCheck.success && planCheck.plan === 'free') {
-                    if (typeof showToast === 'function') {
-                        showToast(t('payment.freePlanRestricted') || '유료 플랜 구독 시 이용 가능합니다.', 'warning');
-                    } else {
-                        alert('유료 플랜 구독 시 이용 가능합니다.');
-                    }
-                    return;
-                }
-            }
-
-            // 토큰 체크 (비동기)
-            const tokenCheck = await canUseHairgatorFeature('lookbook');
-            if (!tokenCheck.success || !tokenCheck.canUse) {
-                const currentTokens = tokenCheck.currentBalance || 0;
-                const message = t('lookbook.insufficientCredits') ||
-                    `토큰이 부족합니다. (현재: ${currentTokens}, 필요: ${LOOKBOOK_TOKEN_COST})`;
-
-                // 토스트 메시지 또는 알림
-                if (typeof showToast === 'function') {
-                    showToast(message, 'error');
-                } else {
-                    alert(message);
-                }
-                console.warn('💳 토큰 부족:', { current: currentTokens, required: LOOKBOOK_TOKEN_COST });
-
-                // 결제 안내 팝업
-                if (window.BullnabiBridge) {
-                    window.BullnabiBridge.showInsufficientTokensPopup(LOOKBOOK_TOKEN_COST, currentTokens);
-                }
-                return;
-            }
-
-            // 토큰 차감 확인 다이얼로그 표시
-            const confirmed = await showTokenConfirmDialog('lookbook');
-            if (!confirmed) {
-                console.log('📖 Lookbook 사용자가 취소함');
-                return;
-            }
 
             const genderValue = currentGender || window.currentGender || 'female';
             console.log('📖 Lookbook 분석 시작:', style.name, '성별:', genderValue);
@@ -1889,8 +1634,16 @@ async function openStyleModal(style) {
                 sessionStorage.setItem('lookbookGender', genderValue);
                 sessionStorage.setItem('lookbookLanguage', window.currentLanguage || 'ko');
 
-                // 토큰 차감 (API 성공 시에만)
-                await deductLookbookTokens({ styleId: style.styleId, styleName: style.name });
+                // 토큰 차감 (API 성공 후)
+                const deductResult = await deductLookbookTokens({ styleId: style.styleId, styleName: style.name });
+
+                // 토큰 부족 시 업그레이드 유도 (차감 실패 시에만)
+                if (!deductResult.success && deductResult.error === '토큰이 부족합니다') {
+                    loadingOverlay.remove();
+                    // 업그레이드 페이지로 이동
+                    window.location.href = '/#products';
+                    return;
+                }
 
                 // 로딩 오버레이 제거
                 loadingOverlay.remove();
@@ -1915,14 +1668,6 @@ async function openStyleModal(style) {
     // 헤어체험 버튼 이벤트 연결 (index.html의 버튼)
     const btnHairTry = document.getElementById('btnHairTry');
     if (btnHairTry) {
-        const HAIR_TRY_TOKEN_COST = HAIRGATOR_TOKEN_COSTS.hairTry; // 헤어체험 사용 비용: 300 토큰
-
-        // 토큰 부족 여부 확인 (비동기)
-        const hasEnoughHairTryTokens = async () => {
-            const result = await canUseHairgatorFeature('hairTry');
-            return result.success && result.canUse;
-        };
-
         // 다국어 버튼 텍스트 설정 (SVG 아이콘 유지)
         const hairTryText = t('hairTry.button') || '헤어체험';
         const svgIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1931,70 +1676,11 @@ async function openStyleModal(style) {
         </svg>`;
         btnHairTry.innerHTML = `${svgIcon}<span>${hairTryText}</span>`;
 
-        // 토큰 상태에 따라 버튼 스타일 업데이트 (비동기)
-        const updateHairTryButtonState = async () => {
-            const hasTokens = await hasEnoughHairTryTokens();
-            if (!hasTokens) {
-                btnHairTry.style.opacity = '0.5';
-                btnHairTry.style.cursor = 'not-allowed';
-                btnHairTry.title = t('hairTry.noCredits') || '토큰이 부족합니다';
-            } else {
-                btnHairTry.style.opacity = '1';
-                btnHairTry.style.cursor = 'pointer';
-                btnHairTry.title = '';
-            }
-        };
-
-        // 초기 상태 설정 (비동기)
-        updateHairTryButtonState();
-
         btnHairTry.onclick = async function (e) {
             e.stopPropagation();
-
-            // 무료 플랜 사용자 제한
-            if (window.BullnabiBridge) {
-                const planCheck = await window.BullnabiBridge.getTokenBalance();
-                if (planCheck.success && planCheck.plan === 'free') {
-                    if (typeof showToast === 'function') {
-                        showToast(t('payment.freePlanRestricted') || '유료 플랜 구독 시 이용 가능합니다.', 'warning');
-                    } else {
-                        alert('유료 플랜 구독 시 이용 가능합니다.');
-                    }
-                    return;
-                }
-            }
-
-            // 토큰 체크 (비동기)
-            const tokenCheck = await canUseHairgatorFeature('hairTry');
-            if (!tokenCheck.success || !tokenCheck.canUse) {
-                const currentTokens = tokenCheck.currentBalance || 0;
-                const message = t('hairTry.insufficientCredits') ||
-                    `토큰이 부족합니다. (현재: ${currentTokens}, 필요: ${HAIR_TRY_TOKEN_COST})`;
-
-                if (typeof showToast === 'function') {
-                    showToast(message, 'error');
-                } else {
-                    alert(message);
-                }
-                console.warn('💳 토큰 부족:', { current: currentTokens, required: HAIR_TRY_TOKEN_COST });
-
-                // 결제 안내 팝업
-                if (window.BullnabiBridge) {
-                    window.BullnabiBridge.showInsufficientTokensPopup(HAIR_TRY_TOKEN_COST, currentTokens);
-                }
-                return;
-            }
-
-            // 토큰 차감 확인 다이얼로그 표시
-            const confirmed = await showTokenConfirmDialog('hairTry');
-            if (!confirmed) {
-                console.log('💇 헤어체험 사용자가 취소함');
-                return;
-            }
-
             console.log('💇 헤어체험 버튼 클릭:', style.name);
 
-            // 헤어체험 모달 열기
+            // 헤어체험 모달 열기 (토큰 차감은 API 호출 후 내부에서 처리)
             openAIPhotoModal(style.id, style.name, style.imageUrl);
         };
     }
