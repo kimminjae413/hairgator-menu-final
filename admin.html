@@ -5979,6 +5979,98 @@
             });
         }
 
+        // 파일을 Base64로 변환
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const base64 = reader.result.split(',')[1]; // data:image/...;base64, 제거
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // AI 분석 결과 모달 표시
+        function showAiAnalysisModal(styleName, analysis) {
+            const imageTypeKo = { warm: '웜계 (곡선적)', neutral: '뉴트럴계', cool: '쿨계 (직선적)' };
+            const textureKo = { hard: '하드 (또렷함)', neutral: '뉴트럴', soft: '소프트 (부드러움)' };
+            const silhouetteKo = { curved: '곡선형', mixed: '혼합형', straight: '직선형' };
+            const volumeKo = { top: '탑 볼륨', side: '사이드 볼륨', overall: '전체 볼륨', minimal: '미니멀' };
+            const coverAreaKo = { forehead: '이마', cheek: '광대', jaw: '턱', ear: '귀', neck: '목' };
+
+            const coverAreas = (analysis.coverArea || []).map(a => coverAreaKo[a] || a).join(', ') || '없음';
+            const tags = (analysis.tags || []).join(', ') || '-';
+            const recFaces = (analysis.recommendedFaceTypes || []).join(', ') || '-';
+            const avoidFaces = (analysis.avoidFaceTypes || []).join(', ') || '-';
+
+            const modalHtml = `
+                <div class="modal-overlay" id="aiAnalysisModal" onclick="if(event.target===this) closeModal('aiAnalysisModal')">
+                    <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                        <div class="modal-header">
+                            <h3>🤖 AI 스타일 분석 결과</h3>
+                            <button class="close-btn" onclick="closeModal('aiAnalysisModal')">&times;</button>
+                        </div>
+                        <div class="modal-body" style="text-align: left;">
+                            <h4 style="margin-bottom: 15px; color: var(--primary);">${styleName}</h4>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                                <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px;">
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">이미지 타입</div>
+                                    <div style="font-weight: 600; color: var(--primary);">${imageTypeKo[analysis.imageType] || analysis.imageType}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${analysis.imageTypeReason || ''}</div>
+                                </div>
+                                <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px;">
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">텍스쳐</div>
+                                    <div style="font-weight: 600;">${textureKo[analysis.texture] || analysis.texture}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${analysis.textureReason || ''}</div>
+                                </div>
+                                <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px;">
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">실루엣</div>
+                                    <div style="font-weight: 600;">${silhouetteKo[analysis.silhouette] || analysis.silhouette}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${analysis.silhouetteDesc || ''}</div>
+                                </div>
+                                <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px;">
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">볼륨 위치</div>
+                                    <div style="font-weight: 600;">${volumeKo[analysis.volumePosition] || analysis.volumePosition}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${analysis.volumeDesc || ''}</div>
+                                </div>
+                            </div>
+
+                            <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">커버 영역</div>
+                                <div>${coverAreas}</div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${analysis.coverDesc || ''}</div>
+                            </div>
+
+                            <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">추천 얼굴형</div>
+                                <div style="color: #10b981;">${recFaces}</div>
+                                <div style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">비추천 얼굴형</div>
+                                <div style="color: #ef4444;">${avoidFaces}</div>
+                            </div>
+
+                            <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px;">
+                                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">태그</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                    ${(analysis.tags || []).map(tag => `<span style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">${tag}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" onclick="closeModal('aiAnalysisModal')">확인</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 기존 모달 제거 후 추가
+            const existingModal = document.getElementById('aiAnalysisModal');
+            if (existingModal) existingModal.remove();
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
         async function saveNewStyle() {
             const styleIdInput = document.getElementById('newStyleId').value.trim().toUpperCase();
             const styleName = document.getElementById('newStyleName').value.trim();
@@ -6086,6 +6178,39 @@
                     }
                 }
 
+                // AI 스타일 분석 (이미지 매칭용)
+                let aiAnalysis = null;
+                if (selectedImages.length > 0) {
+                    try {
+                        saveBtn.textContent = 'AI 분석 중...';
+                        showToast('AI가 헤어스타일 특성을 분석 중...', 'info');
+
+                        const mainImage = selectedImages[mainImageIndex] || selectedImages[0];
+                        const base64 = await fileToBase64(mainImage);
+
+                        const analysisResponse = await fetch('/.netlify/functions/chatbot-api', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'analyze_style_for_matching',
+                                payload: {
+                                    image_base64: base64,
+                                    mime_type: mainImage.type || 'image/jpeg'
+                                }
+                            })
+                        });
+
+                        const analysisResult = await analysisResponse.json();
+                        if (analysisResult.success && analysisResult.data) {
+                            aiAnalysis = analysisResult.data;
+                            docData.aiAnalysis = aiAnalysis;
+                            console.log('AI 분석 완료:', aiAnalysis);
+                        }
+                    } catch (aiErr) {
+                        console.warn('AI 분석 실패 (저장은 계속):', aiErr);
+                    }
+                }
+
                 // Firestore 저장
                 if (isEditMode && currentEditingStyleId) {
                     await db.collection('hairstyles').doc(currentEditingStyleId).update(docData);
@@ -6098,6 +6223,11 @@
                 closeModal('addStyleModal');
                 loadStylesList();
                 loadHairstyleStats();
+
+                // AI 분석 결과 표시
+                if (aiAnalysis) {
+                    showAiAnalysisModal(styleName, aiAnalysis);
+                }
 
             } catch (err) {
                 console.error('스타일 저장 에러:', err);

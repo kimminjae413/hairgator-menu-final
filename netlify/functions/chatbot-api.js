@@ -465,6 +465,10 @@ exports.handler = async (event, context) => {
       case 'analyze_style_for_generation':
         return await analyzeStyleForGeneration(payload, GEMINI_KEY);
 
+      // ⭐ 어드민: 스타일 이미지 분석 (AI 스타일 매칭용 메타데이터 추출)
+      case 'analyze_style_for_matching':
+        return await analyzeStyleForMatching(payload, GEMINI_KEY);
+
       // ⭐ 어드민: URL에서 이미지 가져와서 분석
       case 'analyze_style_from_url':
         return await analyzeStyleFromUrl(payload, GEMINI_KEY);
@@ -11085,6 +11089,137 @@ Be EXTREMELY specific. Every detail matters for accurate replication.`;
 
   } catch (error) {
     console.error('💥 스타일 분석 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 어드민: 스타일 이미지 분석 (AI 스타일 매칭용) ====================
+// 이미지 매칭 이론 기반: 웜/뉴트럴/쿨, 하드/소프트, 실루엣, 볼륨, 커버영역 등
+async function analyzeStyleForMatching(payload, geminiKey) {
+  const { image_base64, mime_type } = payload;
+
+  const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || geminiKey;
+
+  console.log('🎯 스타일 매칭용 분석 시작');
+
+  try {
+    const prompt = `You are a professional hair stylist and image consultant expert.
+Analyze this hairstyle image based on "Image Matching Theory" (이미지 매칭 이론).
+
+## Image Matching Theory Background:
+- **Warm Type (웜계)**: Curved, soft, voluminous styles. Suits round faces, wide-set eyes.
+- **Cool Type (쿨계)**: Straight, sleek, sharp styles. Suits angular faces, close-set eyes.
+- **Neutral Type (뉴트럴계)**: Balanced between warm and cool.
+
+- **Hard Texture (하드계)**: Bold, defined, high contrast, prominent features.
+- **Soft Texture (소프트계)**: Subtle, blended, low contrast, delicate features.
+
+## Analyze and return ONLY a JSON object:
+{
+  "imageType": "warm" | "neutral" | "cool",
+  "imageTypeReason": "Why this style is warm/neutral/cool (Korean, 1 sentence)",
+
+  "texture": "hard" | "neutral" | "soft",
+  "textureReason": "Why this texture level (Korean, 1 sentence)",
+
+  "silhouette": "curved" | "mixed" | "straight",
+  "silhouetteDesc": "Overall shape description (Korean)",
+
+  "volumePosition": "top" | "side" | "overall" | "minimal",
+  "volumeDesc": "Volume distribution (Korean)",
+
+  "coverArea": ["forehead", "cheek", "jaw", "ear", "neck"],
+  "coverDesc": "Which facial areas this style covers (Korean)",
+
+  "lineCharacter": {
+    "archBrowMatch": true/false,
+    "straightBrowMatch": true/false,
+    "roundEyeMatch": true/false,
+    "sharpEyeMatch": true/false,
+    "highNoseMatch": true/false,
+    "lowNoseMatch": true/false,
+    "fullLipMatch": true/false,
+    "thinLipMatch": true/false
+  },
+
+  "recommendedFaceTypes": ["round", "oval", "square", "heart", "long", "diamond"],
+  "avoidFaceTypes": ["round", "oval", "square", "heart", "long", "diamond"],
+
+  "recommendedImageTypes": ["warm", "neutral", "cool"],
+
+  "tags": ["Korean style tags like 웨이브, 볼륨, 슬릭, 레이어드, 시스루, 가르마 etc."],
+
+  "styleFeatures": {
+    "hasWave": true/false,
+    "hasCurl": true/false,
+    "hasLayer": true/false,
+    "hasBangs": true/false,
+    "bangsType": "none" | "full" | "side" | "curtain" | "seethrough",
+    "partingType": "none" | "center" | "side" | "zigzag"
+  }
+}
+
+Be precise and consistent. This data will be used for AI face-hairstyle matching.`;
+
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${ADMIN_GEMINI_KEY}`;
+
+    const requestBody = {
+      contents: [{
+        parts: [
+          {
+            inline_data: {
+              mime_type: mime_type || 'image/jpeg',
+              data: image_base64
+            }
+          },
+          { text: prompt }
+        ]
+      }],
+      generationConfig: {
+        temperature: 0.2,
+        maxOutputTokens: 1500
+      }
+    };
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ API 에러:', errorText);
+      throw new Error(`AI 서비스 오류: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // JSON 파싱
+    const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('JSON 파싱 실패');
+    }
+
+    const analysis = JSON.parse(jsonMatch[0]);
+    console.log('✅ 스타일 매칭용 분석 완료:', analysis.imageType, analysis.texture);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: analysis
+      })
+    };
+
+  } catch (error) {
+    console.error('💥 스타일 매칭 분석 오류:', error);
     return {
       statusCode: 500,
       headers,
