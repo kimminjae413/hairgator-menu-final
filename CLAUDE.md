@@ -600,7 +600,32 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 로그인 시 이메일 매칭으로 `users`로 복사
 
 ## 최근 작업 이력
-- 2026-01-02: 토큰 시스템 GPT/Claude 스타일로 전환
+- 2026-01-02: 토큰 시스템 + 스타일매칭 헤어체험 + Google Play 심사
+
+  ### 스타일매칭 페이지 헤어체험 인라인 실행
+  - **이전**: 체험하기 클릭 → 메인 페이지로 이동
+  - **현재**: 스타일매칭 페이지에서 바로 API 호출 → 결과 모달 표시
+  - **파일**: `style-match/app.js` (goToHairTry 함수 전면 수정)
+  - **추가 기능**: 로딩 오버레이, 결과 비교 모달, 다운로드 버튼
+
+  ### Google Play 심사 재제출
+  - **문제**: `https://hairgator.kr/privacy-policy.html` 404 에러
+  - **원인**: 서브도메인 분리 후 파일이 app.hairgator.kr에만 있었음
+  - **해결**: hairgatorHP 레포에 privacy-policy.html, delete-account.html 복사
+  - **결과**: 두 URL 모두 정상 작동
+    - `https://hairgator.kr/privacy-policy.html`
+    - `https://app.hairgator.kr/privacy-policy.html`
+
+  ### Google Play 데이터 보안 설정 가이드
+  | 카테고리 | 선택 | 이유 |
+  |---------|------|------|
+  | 위치 | ❌ | 위치 정보 안 씀 |
+  | 개인 정보 | ✅ | 이메일, 이름, 프로필사진 |
+  | 사진 및 동영상 | ✅ | 헤어체험, 스타일매칭 |
+  | 앱 활동 | ✅ | 토큰 사용 로그 |
+  | 기기 또는 기타 ID | ✅ | Firebase 사용자 ID |
+  - **계정 생성 방법**: 사용자 이름/비밀번호 + OAuth (카카오/구글)
+  - **계정 삭제 URL**: `https://hairgator.kr/delete-account.html`
 
   ### 토큰 시스템 변경 (중요!)
   - **이전 방식**: 사전 토큰 체크 + 확인 다이얼로그 + 토큰 부족 모달
