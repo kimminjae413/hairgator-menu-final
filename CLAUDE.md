@@ -632,6 +632,20 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 로그인 시 이메일 매칭으로 `users`로 복사
 
 ## 최근 작업 이력
+- 2026-01-03: ESLint 경고 정리
+
+  ### ESLint 경고 202개 → 0개 수정
+  - **미사용 catch 변수**: `catch (e)` → `catch (_e)` 변환 (29개)
+  - **미사용 함수 인자**: `_` 접두사 추가 (32개, 예: `lang` → `_lang`)
+  - **HTML onclick 핸들러**: 파일별 `eslint-disable no-unused-vars` 주석 추가
+  - **이모지 regex**: `u` 플래그 + `eslint-disable-next-line` 추가
+
+  ### 수정된 파일 (26개)
+  - `js/`: ai-studio.js, auth.js, dynamic-layout.js, firebase-bridge.js, firebase-config.js, i18n.js, main.js, menu.js, password-recovery.js, payment.js, personal-color.js, tablet-touch-handler.js
+  - `netlify/functions/`: chatbot-api.js, cleanup-old-images.js, identity-verify.js, kakao-callback.js, kakao-token.js, lookbook-analyze.js
+  - `netlify/functions/lib/`: embedding.js, female-recipe.js, male-recipe.js, schemas.js, utils.js, vision-analyzer.js
+  - `personal-color/app.js`, `style-match/app.js`
+
 - 2026-01-02: 토큰 시스템 + 스타일매칭 헤어체험 + Google Play 심사
 
   ### 스타일매칭 페이지 헤어체험 인라인 실행
