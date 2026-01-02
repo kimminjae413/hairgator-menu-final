@@ -636,12 +636,11 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.shadowBlur = 0;
 
     // 2. 측정선들 (라벨 포함)
-    // 세로선: 이마 ~ 턱 (보라색) - 헤어라인 보정 적용
-    // 이미 위에서 계산된 faceHeight, hairlineOffset 재사용
-    const correctedHairlineY = landmarks[keyPoints.hairline].y - hairlineOffset;
+    // 세로선: 이마 ~ 턱 (보라색) - 위에서 계산된 값 재사용
+    const correctedHairlineYRatio = landmarks[keyPoints.hairline].y - hairlineOffset;
 
     // 보정된 헤어라인 위치로 HEIGHT 선 그리기
-    drawCorrectedHeightLine(ctx, landmarks, keyPoints, correctedHairlineY, w, h, '#a855f7', 'HEIGHT');
+    drawCorrectedHeightLine(ctx, landmarks, keyPoints, correctedHairlineYRatio, w, h, '#a855f7', 'HEIGHT');
 
     // 광대 너비 (시안)
     drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.leftZygoma, keyPoints.rightZygoma, w, h, '#22d3ee', 'CHEEKBONE', 'top');
@@ -665,9 +664,10 @@ function drawLandmarksOnCanvas(landmarks, video) {
     const pulseRadius = 4 + Math.sin(Date.now() / 200) * 2;
 
     // 보정된 헤어라인 포인트 추가 (별도 처리)
+    // correctedHairlineY는 이미 픽셀 단위 (line 606에서 * h 적용됨)
     const correctedHairlinePoint = {
         x: landmarks[keyPoints.hairline].x * w,
-        y: Math.max(0, correctedHairlineY * h),
+        y: correctedHairlineY,
         color: '#a855f7'
     };
 
