@@ -152,7 +152,9 @@ html, body {
     touch-action: manipulation;
     user-select: none;
     -webkit-user-select: none;
-    contain: layout style paint;  /* 리페인트 격리 */
+    /* NEW 표시를 위한 position 설정 */
+    position: relative;
+    overflow: visible;
 }
 
 /* 모바일/데스크탑 탭 이름 전환 */
