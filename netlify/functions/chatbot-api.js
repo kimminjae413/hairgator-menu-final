@@ -469,6 +469,10 @@ exports.handler = async (event, context) => {
       case 'analyze_style_for_matching':
         return await analyzeStyleForMatching(payload, GEMINI_KEY);
 
+      // ⭐ 배치: 스타일 aiAnalysis 업데이트
+      case 'update_style_ai_analysis':
+        return await updateStyleAiAnalysis(payload);
+
       // ⭐ 어드민: URL에서 이미지 가져와서 분석
       case 'analyze_style_from_url':
         return await analyzeStyleFromUrl(payload, GEMINI_KEY);
@@ -11257,6 +11261,86 @@ Be precise and consistent. This data will be used for AI face-hairstyle matching
 
   } catch (error) {
     console.error('💥 스타일 매칭 분석 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 배치: 스타일 aiAnalysis 업데이트 ====================
+async function updateStyleAiAnalysis(payload) {
+  const { doc_id, ai_analysis } = payload;
+
+  if (!doc_id || !ai_analysis) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ success: false, error: 'doc_id and ai_analysis required' })
+    };
+  }
+
+  console.log(`📝 스타일 AI 분석 업데이트: ${doc_id}`);
+
+  try {
+    // Firestore REST API로 업데이트 (PATCH)
+    const updateUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/hairstyles/${doc_id}?updateMask.fieldPaths=aiAnalysis&updateMask.fieldPaths=aiAnalysisUpdatedAt`;
+
+    // Firestore 형식으로 변환
+    function toFirestoreValue(val) {
+      if (val === null || val === undefined) {
+        return { nullValue: null };
+      } else if (typeof val === 'boolean') {
+        return { booleanValue: val };
+      } else if (typeof val === 'number') {
+        if (Number.isInteger(val)) {
+          return { integerValue: String(val) };
+        }
+        return { doubleValue: val };
+      } else if (typeof val === 'string') {
+        return { stringValue: val };
+      } else if (Array.isArray(val)) {
+        return { arrayValue: { values: val.map(toFirestoreValue) } };
+      } else if (typeof val === 'object') {
+        const fields = {};
+        for (const [k, v] of Object.entries(val)) {
+          fields[k] = toFirestoreValue(v);
+        }
+        return { mapValue: { fields } };
+      }
+      return { stringValue: String(val) };
+    }
+
+    const body = {
+      fields: {
+        aiAnalysis: toFirestoreValue(ai_analysis),
+        aiAnalysisUpdatedAt: { timestampValue: new Date().toISOString() }
+      }
+    };
+
+    const response = await fetch(updateUrl, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Firestore 업데이트 실패:', errorText);
+      throw new Error(`Firestore update failed: ${response.status}`);
+    }
+
+    console.log(`✅ 스타일 AI 분석 업데이트 완료: ${doc_id}`);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ success: true, doc_id })
+    };
+
+  } catch (error) {
+    console.error('💥 스타일 업데이트 오류:', error);
     return {
       statusCode: 500,
       headers,
