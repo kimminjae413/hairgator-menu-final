@@ -594,32 +594,13 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, scanLineY - 20, w, 40);
 
-    // 1. 얼굴 윤곽선 (실제 측정 포인트 기반 - 전체 얼굴 커버)
-    const glabellaY = landmarks[keyPoints.glabella].y;
-    const chinY = landmarks[keyPoints.chin].y;
-    const faceHeight = chinY - glabellaY;
-
-    // 헤어라인 보정: MediaPipe는 눈썹까지만 감지하므로 위로 50% 확장
-    const hairlineOffset = faceHeight * 0.50;
-
-    // 실제 측정 포인트들 (픽셀 좌표)
-    const leftZygomaX = landmarks[keyPoints.leftZygoma].x * w;
-    const leftZygomaY = landmarks[keyPoints.leftZygoma].y * h;
-    const rightZygomaX = landmarks[keyPoints.rightZygoma].x * w;
-    const rightZygomaY = landmarks[keyPoints.rightZygoma].y * h;
-    const leftGonionX = landmarks[keyPoints.leftGonion].x * w;
-    const leftGonionY = landmarks[keyPoints.leftGonion].y * h;
-    const rightGonionX = landmarks[keyPoints.rightGonion].x * w;
-    const rightGonionY = landmarks[keyPoints.rightGonion].y * h;
-    const chinX = landmarks[keyPoints.chin].x * w;
-    const chinYPos = landmarks[keyPoints.chin].y * h;
-
-    // 보정된 헤어라인 위치 (이마 상단)
-    const hairlineTopY = Math.max(10, (landmarks[10].y - hairlineOffset) * h);
-
-    // 이마 너비 포인트 (71, 301)를 사용하여 헤어라인 좌우 끝점 계산
-    const foreheadLeftX = landmarks[keyPoints.foreheadLeft].x * w;
-    const foreheadRightX = landmarks[keyPoints.foreheadRight].x * w;
+    // 1. 얼굴 윤곽선 (MediaPipe Face Oval 랜드마크 사용)
+    // MediaPipe 공식 얼굴 외곽선 인덱스 (36개 포인트)
+    const faceOvalIndices = [
+        10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288,
+        397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136,
+        172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109
+    ];
 
     // 글로우 효과
     ctx.shadowColor = '#a855f7';
@@ -628,17 +609,26 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.strokeStyle = 'rgba(168, 85, 247, 0.7)';
     ctx.lineWidth = 2.5;
 
-    // 8각형 윤곽선: 헤어라인(좌/우) → 광대(좌/우) → 턱각(좌/우) → 턱끝
-    ctx.moveTo(foreheadLeftX, hairlineTopY);            // 1. 헤어라인 왼쪽
-    ctx.lineTo(foreheadRightX, hairlineTopY);           // 2. 헤어라인 오른쪽
-    ctx.lineTo(rightZygomaX, rightZygomaY);             // 3. 오른쪽 광대
-    ctx.lineTo(rightGonionX, rightGonionY);             // 4. 오른쪽 턱각
-    ctx.lineTo(chinX, chinYPos);                         // 5. 턱 끝
-    ctx.lineTo(leftGonionX, leftGonionY);               // 6. 왼쪽 턱각
-    ctx.lineTo(leftZygomaX, leftZygomaY);               // 7. 왼쪽 광대
-    ctx.closePath();                                     // 8. 헤어라인 왼쪽으로 돌아감
+    // 얼굴 외곽선 그리기 (실제 MediaPipe가 감지한 얼굴 테두리)
+    const firstPoint = landmarks[faceOvalIndices[0]];
+    ctx.moveTo(firstPoint.x * w, firstPoint.y * h);
+
+    for (let i = 1; i < faceOvalIndices.length; i++) {
+        const point = landmarks[faceOvalIndices[i]];
+        ctx.lineTo(point.x * w, point.y * h);
+    }
+    ctx.closePath();
     ctx.stroke();
     ctx.shadowBlur = 0;
+
+    // 측정용 변수 (기존 로직 유지)
+    const glabellaY = landmarks[keyPoints.glabella].y;
+    const chinY = landmarks[keyPoints.chin].y;
+    const faceHeight = chinY - glabellaY;
+    const hairlineOffset = faceHeight * 0.15; // 측정용 보정값
+
+    // 헤어라인 Y 위치 (측정선/포인트용)
+    const hairlineTopY = Math.max(10, (landmarks[10].y - hairlineOffset) * h);
 
     // 2. 측정선들 (라벨 포함)
     // 세로선: 이마 ~ 턱 (보라색) - 위에서 계산된 값 재사용
