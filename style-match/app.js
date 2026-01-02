@@ -594,18 +594,15 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, scanLineY - 20, w, 40);
 
-    // 1. 얼굴 윤곽선 (실제 측정 포인트 기반)
+    // 1. 얼굴 윤곽선 (실제 측정 포인트 기반 - 전체 얼굴 커버)
     const glabellaY = landmarks[keyPoints.glabella].y;
     const chinY = landmarks[keyPoints.chin].y;
     const faceHeight = chinY - glabellaY;
-    const hairlineOffset = faceHeight * 0.35; // 헤어라인 보정
 
-    // 실제 측정에 사용되는 포인트들로 윤곽선 구성
-    // 보정된 헤어라인 (상단)
-    const correctedHairlineX = landmarks[10].x * w;
-    const correctedHairlineY = Math.max(10, (landmarks[10].y - hairlineOffset) * h);
+    // 헤어라인 보정: MediaPipe는 눈썹까지만 감지하므로 위로 50% 확장
+    const hairlineOffset = faceHeight * 0.50;
 
-    // 실제 측정 포인트들
+    // 실제 측정 포인트들 (픽셀 좌표)
     const leftZygomaX = landmarks[keyPoints.leftZygoma].x * w;
     const leftZygomaY = landmarks[keyPoints.leftZygoma].y * h;
     const rightZygomaX = landmarks[keyPoints.rightZygoma].x * w;
@@ -617,6 +614,13 @@ function drawLandmarksOnCanvas(landmarks, video) {
     const chinX = landmarks[keyPoints.chin].x * w;
     const chinYPos = landmarks[keyPoints.chin].y * h;
 
+    // 보정된 헤어라인 위치 (이마 상단)
+    const hairlineTopY = Math.max(10, (landmarks[10].y - hairlineOffset) * h);
+
+    // 이마 너비 포인트 (71, 301)를 사용하여 헤어라인 좌우 끝점 계산
+    const foreheadLeftX = landmarks[keyPoints.foreheadLeft].x * w;
+    const foreheadRightX = landmarks[keyPoints.foreheadRight].x * w;
+
     // 글로우 효과
     ctx.shadowColor = '#a855f7';
     ctx.shadowBlur = 10;
@@ -624,14 +628,15 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.strokeStyle = 'rgba(168, 85, 247, 0.7)';
     ctx.lineWidth = 2.5;
 
-    // 실제 측정 포인트를 연결하는 윤곽선
-    ctx.moveTo(correctedHairlineX, correctedHairlineY); // 헤어라인 (보정)
-    ctx.lineTo(rightZygomaX, rightZygomaY);             // 오른쪽 광대
-    ctx.lineTo(rightGonionX, rightGonionY);             // 오른쪽 턱각
-    ctx.lineTo(chinX, chinYPos);                         // 턱 끝
-    ctx.lineTo(leftGonionX, leftGonionY);               // 왼쪽 턱각
-    ctx.lineTo(leftZygomaX, leftZygomaY);               // 왼쪽 광대
-    ctx.closePath();                                     // 헤어라인으로 돌아감
+    // 8각형 윤곽선: 헤어라인(좌/우) → 광대(좌/우) → 턱각(좌/우) → 턱끝
+    ctx.moveTo(foreheadLeftX, hairlineTopY);            // 1. 헤어라인 왼쪽
+    ctx.lineTo(foreheadRightX, hairlineTopY);           // 2. 헤어라인 오른쪽
+    ctx.lineTo(rightZygomaX, rightZygomaY);             // 3. 오른쪽 광대
+    ctx.lineTo(rightGonionX, rightGonionY);             // 4. 오른쪽 턱각
+    ctx.lineTo(chinX, chinYPos);                         // 5. 턱 끝
+    ctx.lineTo(leftGonionX, leftGonionY);               // 6. 왼쪽 턱각
+    ctx.lineTo(leftZygomaX, leftZygomaY);               // 7. 왼쪽 광대
+    ctx.closePath();                                     // 8. 헤어라인 왼쪽으로 돌아감
     ctx.stroke();
     ctx.shadowBlur = 0;
 
@@ -664,10 +669,10 @@ function drawLandmarksOnCanvas(landmarks, video) {
     const pulseRadius = 4 + Math.sin(Date.now() / 200) * 2;
 
     // 보정된 헤어라인 포인트 추가 (별도 처리)
-    // correctedHairlineY는 이미 픽셀 단위 (line 606에서 * h 적용됨)
+    // hairlineTopY는 이미 픽셀 단위
     const correctedHairlinePoint = {
         x: landmarks[keyPoints.hairline].x * w,
-        y: correctedHairlineY,
+        y: hairlineTopY,
         color: '#a855f7'
     };
 
