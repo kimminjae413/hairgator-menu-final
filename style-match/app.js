@@ -594,13 +594,22 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, scanLineY - 20, w, 40);
 
-    // 1. 얼굴 윤곽선 (MediaPipe Face Oval 랜드마크 사용)
+    // 1. 얼굴 윤곽선 (MediaPipe Face Oval + 이마 확장)
     // MediaPipe 공식 얼굴 외곽선 인덱스 (36개 포인트)
     const faceOvalIndices = [
         10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288,
         397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136,
         172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109
     ];
+
+    // 상단 포인트 인덱스 (이마 영역 - 위로 확장 필요)
+    const topPointIndices = [10, 338, 297, 109, 67, 103, 54, 21, 162, 127, 332, 284, 251];
+
+    // 턱 끝(152) 기준으로 이마 확장량 계산
+    const chinY = landmarks[152].y;
+    const foreheadY = landmarks[10].y;
+    const faceHeight = chinY - foreheadY;
+    const foreheadExtension = faceHeight * 0.35; // 얼굴 높이의 35%만큼 위로 확장
 
     // 글로우 효과
     ctx.shadowColor = '#a855f7';
@@ -609,23 +618,28 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.strokeStyle = 'rgba(168, 85, 247, 0.7)';
     ctx.lineWidth = 2.5;
 
-    // 얼굴 외곽선 그리기 (실제 MediaPipe가 감지한 얼굴 테두리)
+    // 얼굴 외곽선 그리기 (상단은 위로 확장)
     const firstPoint = landmarks[faceOvalIndices[0]];
-    ctx.moveTo(firstPoint.x * w, firstPoint.y * h);
+    const isFirstTop = topPointIndices.includes(faceOvalIndices[0]);
+    const firstY = isFirstTop ? Math.max(5, (firstPoint.y - foreheadExtension) * h) : firstPoint.y * h;
+    ctx.moveTo(firstPoint.x * w, firstY);
 
     for (let i = 1; i < faceOvalIndices.length; i++) {
-        const point = landmarks[faceOvalIndices[i]];
-        ctx.lineTo(point.x * w, point.y * h);
+        const idx = faceOvalIndices[i];
+        const point = landmarks[idx];
+        const isTopPoint = topPointIndices.includes(idx);
+        const y = isTopPoint ? Math.max(5, (point.y - foreheadExtension) * h) : point.y * h;
+        ctx.lineTo(point.x * w, y);
     }
     ctx.closePath();
     ctx.stroke();
     ctx.shadowBlur = 0;
 
     // 측정용 변수 (기존 로직 유지)
-    const glabellaY = landmarks[keyPoints.glabella].y;
-    const chinY = landmarks[keyPoints.chin].y;
-    const faceHeight = chinY - glabellaY;
-    const hairlineOffset = faceHeight * 0.15; // 측정용 보정값
+    const glabellaYPos = landmarks[keyPoints.glabella].y;
+    const chinYPos = landmarks[keyPoints.chin].y;
+    const measureFaceHeight = chinYPos - glabellaYPos;
+    const hairlineOffset = measureFaceHeight * 0.15; // 측정용 보정값
 
     // 헤어라인 Y 위치 (측정선/포인트용)
     const hairlineTopY = Math.max(10, (landmarks[10].y - hairlineOffset) * h);
