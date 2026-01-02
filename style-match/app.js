@@ -1227,9 +1227,9 @@ function calculateFaceRatios(landmarks) {
     // 원본 상안부 계산
     const rawUpperFace = distance(hairline, glabella);
 
-    // 보정된 헤어라인 Y좌표 (15% 위로 올림)
+    // 보정된 헤어라인 Y좌표 (25% 위로 올림 - MediaPipe 헤어라인 감지 한계 보정)
     // Y좌표는 위로 갈수록 0에 가까워지므로 빼줘야 함
-    const correctionAmount = estimatedFaceHeight * 0.15;
+    const correctionAmount = estimatedFaceHeight * 0.25;
     const adjustedHairlineY = hairline.y - correctionAmount;
 
     // 보정된 상안부 = |보정된 헤어라인Y - 미간Y| (정규화된 좌표 사용)
@@ -1242,7 +1242,7 @@ function calculateFaceRatios(landmarks) {
         raw: rawUpperFace.toFixed(4),
         corrected: correctedUpperFace.toFixed(4),
         final: upperFace.toFixed(4),
-        correction: '15%'
+        correction: '25%'
     });
 
     const totalHeight = upperFace + middleFace + lowerFace;
