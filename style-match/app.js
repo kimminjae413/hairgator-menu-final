@@ -3678,9 +3678,16 @@ window.goToLookbook = function() {
 window.goToHairTry = async function() {
     if (!currentModalStyle) return;
 
-    const styleImageUrl = currentModalStyle.imageUrl;
+    const styleImageUrl = currentModalStyle.resultImage || currentModalStyle.imageUrl || currentModalStyle.thumbnailUrl;
     const styleName = currentModalStyle.name;
     const gender = currentModalStyle.gender || selectedGender;
+
+    // 스타일 이미지 URL 확인
+    if (!styleImageUrl) {
+        console.error('❌ 스타일 이미지 URL 없음:', currentModalStyle);
+        alert(t('hairTry.noStyleImage') || '스타일 이미지를 불러올 수 없습니다.');
+        return;
+    }
 
     // 저장된 사진 가져오기
     let customerPhoto = sessionStorage.getItem('styleMatchPhoto') || localStorage.getItem('styleMatchPhoto');
@@ -3696,7 +3703,7 @@ window.goToHairTry = async function() {
     showHairTryLoading(true, styleName);
 
     try {
-        console.log('💇 헤어체험 시작:', { styleName, gender });
+        console.log('💇 헤어체험 시작:', { styleName, gender, styleImageUrl });
 
         // 1단계: Task 생성
         const startResponse = await fetch('/.netlify/functions/hair-change', {
