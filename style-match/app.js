@@ -2648,6 +2648,19 @@ function calculateHairstyleScores(analysis, styles) {
                 aiBonus += 10;
             }
 
+            // 4-5-1. 좁은 이마 + 앞머리 있는 스타일 감점 (스타일별 개별 적용)
+            const styleHasBangs = ai.styleFeatures?.hasBangs;
+            if (isNarrowForehead && styleHasBangs) {
+                // 앞머리가 이마를 가리면 좁은 이마가 더 좁아 보임
+                aiBonus -= 20;
+                console.log(`👁️ ${style.styleId}: 좁은 이마 + 앞머리 있음 → -20점`);
+            }
+            if (isNarrowForehead && !styleHasBangs) {
+                // 이마를 드러내는 스타일은 좁은 이마에 가산
+                aiBonus += 15;
+                console.log(`👁️ ${style.styleId}: 좁은 이마 + 앞머리 없음 → +15점`);
+            }
+
             // 4-6. 실루엣/볼륨 매칭
             if (ai.silhouette) {
                 if (isLongFace && ai.silhouette === 'curved') {
