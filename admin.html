@@ -2353,7 +2353,7 @@
                         <!-- 동영상 URL -->
                         <div class="form-group">
                             <label class="form-label">동영상 URL</label>
-                            <input type="url" class="form-input" id="inlineVideoUrl" placeholder="YouTube/Vimeo URL">
+                            <input type="url" class="form-input" id="inlineVideoUrl" placeholder="YouTube/Instagram/Vimeo URL">
                         </div>
 
                         <div class="form-group">
@@ -3102,8 +3102,8 @@
 
                 <!-- 동영상 URL -->
                 <div class="video-url-section">
-                    <label class="form-label">동영상 URL (YouTube/Vimeo)</label>
-                    <input type="url" class="form-input" id="videoUrlInput" placeholder="https://youtube.com/watch?v=...">
+                    <label class="form-label">동영상 URL (YouTube/Instagram/Vimeo)</label>
+                    <input type="url" class="form-input" id="videoUrlInput" placeholder="https://youtube.com/watch?v=... 또는 instagram.com/reel/...">
                     <div class="video-preview" id="videoPreview" style="display: none;"></div>
                 </div>
 
@@ -6045,7 +6045,21 @@
                 return;
             }
 
-            showToast('지원하지 않는 동영상 URL입니다', 'warning');
+            // Instagram 파싱 (reel, p, tv)
+            const instaMatch = url.match(/instagram\.com\/(?:reel|p|tv)\/([a-zA-Z0-9_-]+)/);
+            if (instaMatch) {
+                videoUrl = url;
+                videoData = {
+                    platform: 'instagram',
+                    videoId: instaMatch[1],
+                    embedUrl: `https://www.instagram.com/p/${instaMatch[1]}/embed`,
+                    thumbnailUrl: null
+                };
+                showVideoPreview();
+                return;
+            }
+
+            showToast('지원하지 않는 동영상 URL입니다 (YouTube, Instagram, Vimeo 지원)', 'warning');
         });
 
         function showVideoPreview() {
@@ -6067,6 +6081,46 @@
             document.getElementById('videoPreview').style.display = 'none';
             videoUrl = '';
             videoData = null;
+        }
+
+        // 비디오 URL 파싱 함수 (인라인 업로드용)
+        function parseVideoUrl(url) {
+            if (!url) return null;
+
+            // YouTube 파싱
+            const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            if (ytMatch) {
+                return {
+                    platform: 'youtube',
+                    videoId: ytMatch[1],
+                    embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}`,
+                    thumbnailUrl: `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`
+                };
+            }
+
+            // Instagram 파싱 (reel, p, tv)
+            const instaMatch = url.match(/instagram\.com\/(?:reel|p|tv)\/([a-zA-Z0-9_-]+)/);
+            if (instaMatch) {
+                return {
+                    platform: 'instagram',
+                    videoId: instaMatch[1],
+                    embedUrl: `https://www.instagram.com/p/${instaMatch[1]}/embed`,
+                    thumbnailUrl: null
+                };
+            }
+
+            // Vimeo 파싱
+            const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+            if (vimeoMatch) {
+                return {
+                    platform: 'vimeo',
+                    videoId: vimeoMatch[1],
+                    embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}`,
+                    thumbnailUrl: null
+                };
+            }
+
+            return null;
         }
 
         // 스타일 ID 자동 생성
