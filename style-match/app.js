@@ -1781,7 +1781,8 @@ function determineFaceType(ratios) {
     if (cheekJawRatio > 1.25) return { name: t('styleMatch.faceType.heart') || '하트형', code: 'heart' };
     if (raw.lowerRatio > raw.middleRatio * 1.1) return { name: t('styleMatch.faceType.long') || '긴 얼굴', code: 'long' };
     if (raw.lowerRatio < raw.middleRatio * 0.9) return { name: t('styleMatch.faceType.round') || '둥근형', code: 'round' };
-    return { name: t('styleMatch.faceType.balanced') || '균형형', code: 'balanced' };
+    // 균형형은 aiAnalysis 매칭을 위해 oval로 코드 설정 (계란형과 유사)
+    return { name: t('styleMatch.faceType.balanced') || '균형형', code: 'oval' };
 }
 
 // ========== 이미지 타입 결정 (웜계/뉴트럴/쿨계) ==========
@@ -2560,14 +2561,19 @@ function calculateHairstyleScores(analysis, styles) {
             }
 
             // 4-3. 텍스쳐 매칭 (하드/소프트)
+            // 사용자: 'hard', 'soft', 'balanced' / AI: 'hard', 'soft', 'neutral'
             if (userTexture && ai.texture) {
-                if (userTexture === ai.texture) {
+                // balanced(사용자) = neutral(AI) 동일 취급
+                const normalizedUserTexture = userTexture === 'balanced' ? 'neutral' : userTexture;
+
+                if (normalizedUserTexture === ai.texture) {
                     aiBonus += 10;
-                } else if (userTexture === 'hard' && ai.texture === 'soft') {
+                } else if (normalizedUserTexture === 'hard' && ai.texture === 'soft') {
                     aiBonus -= 5; // 미스매치 시 약간 감점
-                } else if (userTexture === 'soft' && ai.texture === 'hard') {
+                } else if (normalizedUserTexture === 'soft' && ai.texture === 'hard') {
                     aiBonus -= 5;
                 }
+                // neutral/balanced는 hard/soft 어느쪽과도 감점 없음 (중간값)
             }
 
             // 4-4. 눈썹 라인 매칭
