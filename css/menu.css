@@ -106,10 +106,11 @@ html, body {
     background: rgba(20, 20, 20, 0.85) !important;  /* blur 대신 불투명도 높임 */
     backdrop-filter: blur(10px) saturate(120%) !important;  /* blur 감소 */
     -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
-    padding: 15px 10px;
+    padding: 20px 10px 15px 10px;  /* top 패딩 증가 - NEW 표시 공간 확보 */
     display: flex;
     gap: 10px;
     overflow-x: auto;
+    overflow-y: visible;  /* NEW 표시가 잘리지 않도록 */
     scrollbar-width: none;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
