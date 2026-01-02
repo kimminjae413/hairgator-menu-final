@@ -1,6 +1,8 @@
 // ========== Firebase Auth 인증 시스템 ==========
 // 2025-12-27: 불나비 → Firebase Auth 전환
 // 2025-12-27: 이메일 기반 사용자 통합 (다중 로그인 방식 지원)
+/* eslint-disable no-unused-vars */
+// showLoginScreen: login.html에서 호출되는 함수
 
 // 인증 상태 변수
 let currentUser = null;

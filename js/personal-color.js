@@ -2,6 +2,8 @@
 // HAIRGATOR 퍼스널컬러 진단 모듈 (메인 앱 통합 버전)
 // js/personal-color.js
 // ========================================
+/* eslint-disable no-unused-vars */
+
 
 console.log('🎨 퍼스널컬러 모듈 로드 중...');
 
@@ -195,7 +197,7 @@ window.HAIRGATOR_PERSONAL_COLOR = (function() {
     }
 
     async function loadExternalHairColorData() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             // 이미 로드되었는지 확인
             if (document.querySelector('script[src*="hair-color-data.js"]')) {
                 if (typeof HAIR_COLOR_614_DATA !== 'undefined') {

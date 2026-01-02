@@ -72,7 +72,7 @@ function getSecurityResponse(language) {
 }
 
 // ==================== 레시피 보안 필터링 ====================
-function sanitizeRecipeForPublic(recipe, language = 'ko') {
+function sanitizeRecipeForPublic(recipe, _language = 'ko') {
   if (!recipe) return recipe;
 
   let filtered = recipe;

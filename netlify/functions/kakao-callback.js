@@ -34,7 +34,7 @@ function initializeFirebaseAdmin() {
     });
 }
 
-exports.handler = async (event, context) => {
+exports.handler = async (event, _context) => {
     console.log('카카오 콜백 함수 시작');
 
     const { code, error, error_description } = event.queryStringParameters || {};

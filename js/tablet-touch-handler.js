@@ -32,7 +32,7 @@ function setupTabletTouchHandling() {
     const replaceTabClickHandlers = () => {
         const categoryTabs = document.querySelectorAll('.category-tab, .main-tab');
 
-        categoryTabs.forEach((tab, index) => {
+        categoryTabs.forEach((tab, _index) => {
             // ⚠️ 기존 onclick 유지 (터치가 안 될 때 폴백용)
             // tab.onclick = null;
             // tab.removeAttribute('onclick');
@@ -156,7 +156,7 @@ function setupTabletClickHandling() {
             if (tab._webClickHandlerAdded) return;
 
             // 추가 클릭 이벤트 리스너 (기존 onclick과 함께 동작)
-            tab.addEventListener('click', function (e) {
+            tab.addEventListener('click', function (_e) {
                 console.log(`🖱️ 웹 브라우저 탭 클릭: ${this.textContent.trim()}`);
 
                 // menu.js의 onclick이 이미 처리했으면 추가 처리 불필요

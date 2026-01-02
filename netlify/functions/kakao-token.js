@@ -24,7 +24,8 @@ function initializeFirebaseAdmin() {
     });
 }
 
-exports.handler = async (event, context) => {
+/* eslint-disable no-unused-vars */
+exports.handler = async (event, _context) => {
     // CORS 헤더
     const headers = {
         'Access-Control-Allow-Origin': '*',

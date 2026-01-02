@@ -1,5 +1,9 @@
 // netlify/functions/chatbot-api.js
 // HAIRGATOR v5.1 - 9 Matrix 기반 스타일 매칭 (2025-12-05)
+/* eslint-disable no-unused-vars */
+// DEPRECATED 함수들 (Gemini 전환으로 미사용): generateProfessionalResponse, generateRecipeStream,
+// searchStyles, generateProfessionalResponseStream, calculateVolumeFromLifting, calculateFeatureScore,
+// analyzeDifferences, analyzeImageLengthOnly, analyzeMaleStyleCodeOnly, getSeriesInfo
 //
 // 🎯 주요 변경사항:
 // ✅ 9 Matrix (3x3) 기반 스타일 매칭 추가
@@ -389,7 +393,7 @@ const PARAMS_56_SCHEMA = {
 };
 
 // ==================== 메인 핸들러 ====================
-exports.handler = async (event, context) => {
+exports.handler = async (event, _context) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
   }
@@ -1400,7 +1404,7 @@ function calculateVolumeFromLifting(liftingCode) {
 }
 
 // ==================== 보안 필터링 ====================
-function sanitizeRecipeForPublic(recipe, language = 'ko') {
+function sanitizeRecipeForPublic(recipe, _language = 'ko') {
   if (!recipe) return recipe;
 
   let filtered = recipe;
@@ -2551,7 +2555,7 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
                 sseBuffer += `data: ${JSON.stringify({ type: 'content', content })}\n\n`;
               }
             }
-          } catch (e) {
+          } catch (_e) {
             // JSON 파싱 실패 무시
           }
         }
@@ -5681,11 +5685,11 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
 
     // 1) 종합 점수 매칭된 도해도 먼저 (step 순서로)
     matchedDiagrams.sort((a, b) => (a.step || 0) - (b.step || 0));
-    matchedDiagrams.forEach((d, i) => addDiagram(d, d.idx));
+    matchedDiagrams.forEach((d, _i) => addDiagram(d, d.idx));
 
     // 2) 남은 자리에 미매칭 도해도 (step 순서로)
     unmatchedDiagrams.sort((a, b) => (a.step || 0) - (b.step || 0));
-    unmatchedDiagrams.forEach((d, i) => addDiagram(d, d.idx));
+    unmatchedDiagrams.forEach((d, _i) => addDiagram(d, d.idx));
 
     console.log(`   → Top-1에서 ${selectedDiagrams.length}장 선별 (종합 매칭 ${matchedDiagrams.length}장 우선)`);
     console.log(`   → Top-1 앞머리 도해도: ${top1HasFringe ? '있음' : '없음'}`);
@@ -6344,7 +6348,7 @@ function calculateFeatureScore(style, params56, captionText) {
       score += 10;
       reasons.push(`Matrix: ${analysisMatch.matrix}`);
     }
-  } catch (e) {
+  } catch (_e) {
     // 매트릭스 매칭 실패 시 무시
   }
 
@@ -6492,7 +6496,7 @@ function calculateFeatureScore(style, params56, captionText) {
         reasons.push(`VS NO.${vsTech.number}`);
       }
     }
-  } catch (e) {
+  } catch (_e) {
     // 기법 매칭 실패 시 무시
   }
 
@@ -6679,7 +6683,7 @@ function formatRecipeSentences(text) {
     }
 
     // 기존 번호 제거
-    const cleanedLine = trimmed.replace(/^\d+[\.\)]\s*/, '');
+    const cleanedLine = trimmed.replace(/^\d+[.)]\s*/, '');
 
     // 번호 안 붙이는 줄들
     const skipNumbering =
@@ -6709,7 +6713,7 @@ function formatRecipeSentences(text) {
       }
 
       // 기존 번호 제거 (분리된 문장에도 적용)
-      const cleanSentence = trimmedSentence.replace(/^\d+[\.\)]\s*/, '');
+      const cleanSentence = trimmedSentence.replace(/^\d+[.)]\s*/, '');
 
       // 레시피 문장 감지: 기술 용어 포함 여부
       const isRecipeSentence =
@@ -8333,7 +8337,7 @@ function convertToNarrativeFormat(line, zoneName) {
 
   // 간략 형식 파싱: "1. 각도 30° / D7 / Rod 18mm / 오프베이스 / 와인딩"
   // 또는: "각도 45° / D8 / Rod 20mm / 오프베이스 / 와인딩"
-  const shortPattern = /(\d+\.\s*)?각도\s*([\d.]+)[°도]?\s*\/\s*(D\d+(?:~D\d+)?)\s*\/\s*(?:Rod\s*|로드\s*)?([\d]+)\s*(?:mm|호)\s*\/\s*([^\/]+)\s*\/\s*([^\/\n]+)/i;
+  const shortPattern = /(\d+\.\s*)?각도\s*([\d.]+)[°도]?\s*\/\s*(D\d+(?:~D\d+)?)\s*\/\s*(?:Rod\s*|로드\s*)?([\d]+)\s*(?:mm|호)\s*\/\s*([^/]+)\s*\/\s*([^/\n]+)/i;
   const match = line.match(shortPattern);
 
   if (match) {

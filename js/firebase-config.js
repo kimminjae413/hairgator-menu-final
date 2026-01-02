@@ -40,7 +40,7 @@ try {
        },
        merge: true
    });
-} catch (error) {
+} catch (_error) {
    console.warn('Cache settings failed, using fallback');
    db.enablePersistence({ synchronizeTabs: true })
        .catch((err) => {

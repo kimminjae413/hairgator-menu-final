@@ -1,6 +1,8 @@
 // lib/schemas.js
 // 2WAY CUT SYSTEM: 상세 스키마 명세 (Detailed Schema Specification)
 // 파라미터 스키마 정의 (여자/남자 공통 + 개별)
+/* eslint-disable no-unused-vars */
+// 일부 변수는 스키마 문서화 목적으로 선언됨
 
 // ==================== 1. 공통 변수 정의 (Global Variables) ====================
 // 모든 커트 모듈에서 공통적으로 호출되는 파라미터
@@ -836,7 +838,7 @@ function determineTechniqueNumber(sectionType, params) {
       return determineDBSTechnique(params).number;
     case 'VS':
       return determineVSTechnique(params).number;
-    case 'HS':
+    case 'HS': {
       // Horizontal Section 로직
       const cutForm = params.cut_form || 'L (Layer)';
       const graduationAngle = params.graduation_angle || 45;
@@ -849,6 +851,7 @@ function determineTechniqueNumber(sectionType, params) {
       if (layerType === 'Low Layer') return 5;
       if (layerType === 'High Layer' || layerType === 'Full Layer') return 6;
       return 7;
+    }
     case 'PS':
       return 1; // Pie Section
     case 'RS':

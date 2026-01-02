@@ -1,5 +1,6 @@
 // netlify/functions/identity-verify.js
 // 본인인증 결과 검증 및 Firestore에 사용자 정보 저장
+/* eslint-disable no-unused-vars */
 
 const admin = require('firebase-admin');
 

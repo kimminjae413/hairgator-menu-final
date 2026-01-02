@@ -2,6 +2,12 @@
 // HAIRGATOR AI Studio - Pro Workstation JavaScript
 // Split View Layout + Firebase Integration
 // ============================================================
+/* eslint-disable no-unused-vars */
+// HTML onclick 핸들러: goBack, showHistoryPanel, startNewChat, clearChat, selectImageAction,
+// selectGender, selectService, selectCategory, triggerImageUpload, handleImageSelect,
+// quickAction, searchStylesDemo, hideCanvas, saveResult, shareResult, fetchImageAsBase64,
+// showInsufficientTokenModal
+
 
 // ⭐ Pull-to-Refresh 비활성화 (웹뷰용) - 스크롤 가능 영역 제외
 (function() {
@@ -170,7 +176,7 @@ class AIStudio {
   }
 
   // DOM 텍스트 직접 업데이트 (fallback)
-  updateDOMTexts(lang) {
+  updateDOMTexts(_lang) {
     // data-i18n 속성 처리
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
@@ -213,7 +219,7 @@ class AIStudio {
         }
       }
       return value;
-    } catch (e) {
+    } catch (_e) {
       return null;
     }
   }
@@ -468,7 +474,7 @@ class AIStudio {
   getStoredLanguage() {
     try {
       return localStorage.getItem('hairgator_language') || 'ko';
-    } catch (e) {
+    } catch (_e) {
       return 'ko';
     }
   }
@@ -512,7 +518,7 @@ class AIStudio {
         localStorage.setItem('hairgator_anonymous_id', anonId);
       }
       return anonId;
-    } catch (e) {
+    } catch (_e) {
       return 'anon_' + Date.now();
     }
   }
@@ -859,7 +865,7 @@ class AIStudio {
           } else if (typeof data === 'string') {
             fullContent += data;
           }
-        } catch (e) {
+        } catch (_e) {
           // JSON이 아닌 경우 그냥 텍스트로 추가
           if (jsonStr && jsonStr !== '[DONE]') {
             fullContent += jsonStr;
@@ -880,7 +886,7 @@ class AIStudio {
         } else if (jsonResponse.message) {
           fullContent = jsonResponse.message;
         }
-      } catch (e) {
+      } catch (_e) {
         fullContent = responseText;
       }
     }
@@ -987,7 +993,7 @@ class AIStudio {
               fullContent += data.content;
               onChunk(fullContent);
             }
-          } catch (e) {
+          } catch (_e) {
             // JSON 파싱 실패 시 무시
           }
         }
@@ -1003,7 +1009,7 @@ class AIStudio {
           if (data.content) {
             fullContent += data.content;
           }
-        } catch (e) {}
+        } catch (_e) {}
       }
     }
 
@@ -2821,7 +2827,7 @@ class AIStudio {
         // 갤러리 HTML 생성
         gallery.innerHTML = `
           <div class="angle-views-scroll">
-            ${images.map((img, idx) => `
+            ${images.map((img, _idx) => `
               <div class="angle-view-item ${img.error ? 'error' : ''}">
                 ${img.url
                   ? `<img src="${img.url}" alt="${img.angle}" class="angle-view-image" onclick="window.aiStudio.openAngleViewModal('${img.url}', '${img.angle}')">`
@@ -3428,7 +3434,8 @@ class AIStudio {
     // 남은 단독 * 제거 (HTML 태그 안은 제외)
     formatted = formatted.replace(/(?<![<a-zA-Z])\*(?![a-zA-Z>])/g, '');
     // 서버 출력 이모지 제거 (📐, ✂️, ➡️, ⭐ 등) - 섹션 아이콘(🔵🟣🟢🟡)은 유지
-    formatted = formatted.replace(/[📐✂️➡️⭐🎯✨🌀]/g, '');
+    // eslint-disable-next-line no-misleading-character-class
+    formatted = formatted.replace(/[📐✂️➡️⭐🎯✨🌀]/gu, '');
 
     // ⭐ "이때" 부연설명을 이전 라인과 합치기 (번호 목록 변환 전에 처리)
     // "2. 이때..." 패턴을 찾아서 이전 "1. ..." 라인의 내용 뒤에 합침

@@ -76,7 +76,7 @@ const MALE_TERMS = {
 };
 
 // ==================== 남자 레시피 프롬프트 빌드 ====================
-function buildMaleRecipePrompt(params, diagrams, theoryContext = null, language = 'ko') {
+function buildMaleRecipePrompt(params, diagrams, theoryContext = null, _language = 'ko') {
   const styleCode = params.style_category;
   const styleInfo = MALE_TERMS.style[styleCode] || { ko: params.style_name, desc: '', subStyles: [] };
   const subStyleName = params.sub_style || styleInfo.subStyles?.[0] || styleInfo.ko;
@@ -86,7 +86,7 @@ function buildMaleRecipePrompt(params, diagrams, theoryContext = null, language 
   const faceShapesKo = (params.face_shape_match || []).join(', ');
   const availableSubStyles = styleInfo.subStyles?.join(', ') || '';
 
-  const diagramsContext = diagrams.map((d, idx) =>
+  const diagramsContext = diagrams.map((d, _idx) =>
     `Step ${d.step_number}: ${d.style_id}\n` +
     `  - Zone: ${d.zone || 'N/A'}\n` +
     `  - Lifting: ${d.lifting || 'N/A'}\n` +

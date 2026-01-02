@@ -230,7 +230,7 @@ async function analyzeImage(imageBase64, mimeType, geminiKey, userGender = null)
 }
 
 // ==================== 이미지+질문 분석 ====================
-async function analyzeImageWithQuestion(imageBase64, mimeType, question, geminiKey, language = 'ko') {
+async function analyzeImageWithQuestion(imageBase64, mimeType, question, geminiKey, _language = 'ko') {
   console.log(`📸 Gemini Vision 이미지+질문 분석 시작`);
   console.log(`📝 질문: ${question}`);
 

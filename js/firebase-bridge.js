@@ -2,6 +2,9 @@
 // js/firebase-bridge.js
 // 기존 bullnabi-bridge.js를 대체
 // 2025-12-27: 이메일 기반 사용자 통합
+/* eslint-disable no-unused-vars */
+// sanitizeEmailForDocId: 내부 유틸 함수로 다른 파일에서 import 가능
+
 
 (function() {
     'use strict';
@@ -45,7 +48,7 @@
         // [DEPRECATED] loadUserData - auth.js에서 직접 Firestore 조회함
         // 이 함수는 호환성을 위해 유지하지만, 실제 인증 흐름에서는 사용하지 않음
         // auth.js의 handleUserLogin()과 handleUserLoginByUid()에서 처리
-        async loadUserData(uid) {
+        async loadUserData(_uid) {
             console.log('⚠️ loadUserData는 deprecated됨. auth.js에서 처리.');
             // 이미 auth.js에서 설정한 currentDesigner 반환
             return window.currentDesigner || null;

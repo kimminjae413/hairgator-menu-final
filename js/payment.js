@@ -166,7 +166,7 @@ const HAIRGATOR_PAYMENT = {
         const parsed = JSON.parse(firebaseUser);
         if (parsed.id) return parsed.id;
       }
-    } catch (e) {}
+    } catch (_e) {}
 
     return null;
   },
@@ -191,7 +191,7 @@ const HAIRGATOR_PAYMENT = {
           userEmail = userEmail || parsed.email || '';
           userName = userName || parsed.name || parsed.displayName || '';
         }
-      } catch (e) {}
+      } catch (_e) {}
     }
 
     console.log('💳 결제 시도 - userId:', userId);

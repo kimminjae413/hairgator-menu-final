@@ -895,7 +895,7 @@
             try {
                 document.execCommand('copy');
                 this.showToast('클립보드에 복사되었습니다', 'success');
-            } catch (err) {
+            } catch (_err) {
                 this.showToast('복사에 실패했습니다', 'error');
             }
             

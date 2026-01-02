@@ -1,5 +1,6 @@
 // netlify/functions/lookbook-analyze.js
 // HAIRGATOR Lookbook AI Analysis
+/* eslint-disable no-unused-vars */
 //
 // 모델 구성:
 // - 분석: Gemini 2.0 Flash ($0.10/1M input, $0.40/1M output) → ~1원/회
@@ -284,7 +285,7 @@ async function editWithGemini25FlashImage(originalImageUrl, analysis, apiKey, ha
     };
 
     // 각 패션 스타일별 편집 프롬프트 생성
-    const editPrompts = fashionRecommendations.slice(0, 3).map((rec, index) => {
+    const editPrompts = fashionRecommendations.slice(0, 3).map((rec, _index) => {
         const fashionItems = rec.items.join(', ');
         const fashionStyle = rec.style;
         const fashionReason = rec.reason || '';

@@ -25,7 +25,7 @@ const bucket = admin.storage().bucket();
 // 스케줄 설정 (Netlify Scheduled Functions)
 exports.schedule = '@daily'; // 매일 실행
 
-exports.handler = async (event, context) => {
+exports.handler = async (_event, _context) => {
   console.log('🧹 이미지 정리 작업 시작...');
   console.log(`⏰ 실행 시간: ${new Date().toISOString()}`);
 

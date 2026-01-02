@@ -6813,7 +6813,7 @@ const HAIRGATOR_I18N = {
       descriptions: {
         main: 'Abraza el caos. Este estilo trae un espíritu bohemio y despreocupado al estilismo moderno. No es solo un peinado; es una actitud.',
         faceShape: 'El **volumen lateral rico** de este estilo complementa la mandíbula estrecha de rostros en forma de corazón, creando equilibrio, mientras maximiza las ventajas de rostros ovalados al resaltar sus contornos suaves.',
-        maintenance: 'La belleza de este estilo radica en su **bajo mantenimiento**. Cuanto más desordenado, mejor. Sin embargo, la hidratación es clave para prevenir una apariencia de \"paja\".'
+        maintenance: 'La belleza de este estilo radica en su **bajo mantenimiento**. Cuanto más desordenado, mejor. Sin embargo, la hidratación es clave para prevenir una apariencia de "paja".'
       },
       styleVariations: {
         chic: 'El Chic Estructurado',

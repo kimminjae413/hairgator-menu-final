@@ -1,4 +1,6 @@
 // ========== HAIRGATOR 메뉴 시스템 - 헤어체험 연동 최종 버전 ==========
+/* eslint-disable no-unused-vars */
+// deductLookbookCreditFromMenu: 레거시 호환성을 위해 유지
 
 // ⭐ 모달 슬라이딩용 전역 변수
 let currentCategoryStyles = [];  // 현재 카테고리의 모든 스타일
@@ -114,7 +116,7 @@ let currentStyleIndex = 0;       // 현재 표시 중인 스타일 인덱스
             state.lastTime = currentTime;
         }, { passive: true });
 
-        container.addEventListener('touchend', function(e) {
+        container.addEventListener('touchend', function(_e) {
             if (!state.isTracking) return;
             state.isTracking = false;
 
@@ -264,7 +266,7 @@ async function deductHairTryTokens(metadata = {}) {
 
 
 // 레거시 함수 (호환성 유지)
-function deductLookbookCreditFromMenu(creditCost) {
+function deductLookbookCreditFromMenu(_creditCost) {
     console.log('⚠️ 레거시 함수 호출됨: deductLookbookCreditFromMenu - 새 토큰 시스템으로 대체됨');
     // 새 토큰 시스템으로 자동 전환
     deductLookbookTokens({ legacyCall: true });
@@ -910,7 +912,7 @@ async function loadStyles() {
 }
 
 // 스타일 카드 생성 (NEW 표시 + 스태거 애니메이션 포함)
-function createStyleCard(style, index = 0) {
+function createStyleCard(style, _index = 0) {
     const card = document.createElement('div');
     card.className = 'style-card';
 

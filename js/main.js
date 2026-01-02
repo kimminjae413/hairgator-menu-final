@@ -1,4 +1,9 @@
 // HAIRGATOR Main Application - 최종 버전 (goBack display:none 추가)
+/* eslint-disable no-unused-vars */
+// HTML onclick 핸들러로 사용되는 함수들: goBack, showHistoryPanel, startNewChat, clearChat,
+// selectImageAction, selectGender, selectService, selectCategory, triggerImageUpload,
+// handleImageSelect, quickAction, searchStylesDemo, hideCanvas, saveResult, shareResult,
+// fetchImageAsBase64, showInsufficientTokenModal, isGenderSelectionVisible, handleLogout
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🦎 HAIRGATOR 메인 앱 시작...');
@@ -410,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             style = { ...doc.data(), id: doc.id };
                             console.log('✅ document ID로 스타일 로드:', style.name);
                         }
-                    } catch (e) {
+                    } catch (_e) {
                         console.log('📂 document ID 조회 실패, 필드 검색 시도...');
                     }
 
@@ -703,7 +708,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const parsed = JSON.parse(stored);
                             if (parsed?.plan) userPlan = parsed.plan;
                         }
-                    } catch(e) {}
+                    } catch(_e) {}
                 }
 
                 const isAllowed = ALLOWED_PLANS.includes(userPlan);
@@ -758,7 +763,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const parsed = JSON.parse(stored);
                             if (parsed?.plan) userPlan = parsed.plan;
                         }
-                    } catch(e) {}
+                    } catch(_e) {}
                 }
 
                 const isAllowed = ALLOWED_PLANS.includes(userPlan);
@@ -3698,7 +3703,7 @@ function getReadNotices() {
     try {
         const stored = localStorage.getItem('hairgator_read_notices');
         return stored ? JSON.parse(stored) : [];
-    } catch (e) {
+    } catch (_e) {
         return [];
     }
 }
@@ -3960,7 +3965,7 @@ async function updateMypageNoticeBadge() {
 
         badge.style.display = hasUnread ? 'inline' : 'none';
 
-    } catch (error) {
+    } catch (_error) {
         badge.style.display = 'none';
     }
 }

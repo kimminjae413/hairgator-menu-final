@@ -2,8 +2,13 @@
 // HAIRGATOR Personal Color Pro - 통합 버전
 // AI 모드 + 전문가 드래이핑 모드 + Personal Analysis
 // ==========================================
-/* eslint-disable no-dupe-keys */
-// 다국어 색상명 매핑에서 중복 키 허용 (동일 색상명이 여러 언어에서 사용됨)
+/* eslint-disable no-dupe-keys, no-unused-vars */
+// no-dupe-keys: 다국어 색상명 매핑에서 중복 키 허용
+// no-unused-vars: HTML onclick 핸들러 (selectMode, openDrapingGuide, closeDrapingGuide,
+//   closePersonalColor, startAICamera, captureAndAnalyze, retryCapture, getSeasonDescription,
+//   getSeasonColorPalette, getPersonalColorSeason, getSeasonRecommendations, clearSkinToneDisplay,
+//   startDrapingCamera, toggleCompareMode, selectCompareColor, resetCompareMode, adjustColor,
+//   saveCurrentColor, paGenerateAnalysisResult, paDisplayResult)
 
         // 현재 언어 가져오기 (부모 창 우선, 그 다음 localStorage)
         function getCurrentLanguage() {
@@ -17,7 +22,7 @@
                     const parentLang = parent.localStorage.getItem('hairgator_language');
                     if (parentLang) return parentLang;
                 }
-            } catch (e) {
+            } catch (_e) {
                 // cross-origin 접근 오류 무시
             }
             // 3. 현재 창의 localStorage 확인
@@ -175,7 +180,7 @@
             if (!koreanName) return koreanName;
 
             // i18n에서 번역 조회
-            const key = `personalColor.hairColors.${koreanName.replace(/\s+/g, '_').replace(/[\/\\]/g, '_')}`;
+            const key = `personalColor.hairColors.${koreanName.replace(/\s+/g, '_').replace(/[/\\]/g, '_')}`;
             const translated = t(key);
             if (translated && translated !== key) return translated;
 
@@ -3573,7 +3578,7 @@
 
         async function loadExternalHairColorData() {
             try {
-                await new Promise((resolve, reject) => {
+                await new Promise((resolve, _reject) => {
                     const script = document.createElement('script');
                     script.src = 'hair-color-data.js';
                     script.onload = () => {
@@ -3917,7 +3922,7 @@
                                     if (faceDetectionInstance && videoElement && videoElement.readyState === 4) {
                                         try {
                                             await faceDetectionInstance.send({ image: videoElement });
-                                        } catch (e) {
+                                        } catch (_e) {
                                             // send 실패 시 무시 (카메라 중지 시 발생 가능)
                                         }
                                     }
@@ -4472,7 +4477,7 @@
             }
 
             // 레시피 카드 HTML 생성 (폰트 크기 확대)
-            const recipeCardsHTML = feedback.recipes ? feedback.recipes.map((recipe, idx) => `
+            const recipeCardsHTML = feedback.recipes ? feedback.recipes.map((recipe, _idx) => `
                 <div style="background: linear-gradient(135deg, rgba(0,150,136,0.1), rgba(0,188,212,0.05)); padding: 18px; border-radius: 12px; margin-bottom: 14px; border: 1px solid rgba(0,150,136,0.3);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                         <div style="font-size: 19px; color: #00897B; font-weight: bold;">
@@ -4753,7 +4758,7 @@
             ];
 
             ctx.fillStyle = '#00FF88';
-            landmarks.forEach((landmark, index) => {
+            landmarks.forEach((landmark, _index) => {
                 // 좌우 반전 (거울 모드)
                 const x = (1 - landmark.x) * canvasElement.width;
                 const y = landmark.y * canvasElement.height;
@@ -5410,7 +5415,7 @@
                             audio: false
                         });
                         break;
-                    } catch (e) {
+                    } catch (_e) {
                         continue;
                     }
                 }
@@ -5514,7 +5519,7 @@
                     if (drapingFaceMesh) {
                         try {
                             await drapingFaceMesh.send({ image: drapingVideo });
-                        } catch (e) {
+                        } catch (_e) {
                             // send 실패 시 무시
                         }
                     }
@@ -7769,7 +7774,7 @@ function generateIntegratedAnalysis(mediaPipeData) {
 }
 
 // ========== 통합 분석 결과 HTML 생성 (오른쪽 패널) ==========
-function generateIntegratedResultHTML(integrated, personalColor) {
+function generateIntegratedResultHTML(integrated, _personalColor) {
   if (!integrated || !customerProfile.analysisComplete) {
     return ''; // 고객 정보 미입력 시 빈 문자열 반환
   }
@@ -7919,7 +7924,7 @@ function generateIntegratedResultHTML(integrated, personalColor) {
 }
 
 // 얼굴형 분석 결과 HTML (통합 결과용)
-function generateFaceGeometryIntegratedHTML(faceGeometry, themeColor) {
+function generateFaceGeometryIntegratedHTML(faceGeometry, _themeColor) {
   if (!faceGeometry) {
     return ''; // 측정 데이터 없으면 빈 문자열
   }
@@ -7967,7 +7972,7 @@ function generateFaceGeometryIntegratedHTML(faceGeometry, themeColor) {
 }
 
 // 컬 추천 텍스트 생성 (다국어 지원)
-function getCurlRecommendation(curlPref, season) {
+function getCurlRecommendation(curlPref, _season) {
   const curlDesc = {
     straight: t('personalColor.aiMode.result.curlStraightDesc') || '스트레이트로 깔끔하고 단정한 이미지 연출',
     C: t('personalColor.aiMode.result.curlCDesc') || 'C컬로 자연스러운 볼륨감과 여성스러운 분위기',

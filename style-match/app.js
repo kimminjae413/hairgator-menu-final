@@ -2,6 +2,9 @@
 // AI Style Match - MediaPipe Face Mesh 분석
 // 얼굴형 기반 헤어스타일 추천 시스템
 // ==========================================
+/* eslint-disable no-unused-vars */
+// HTML onclick 핸들러: goToProductsPage, getAIPrescription, generateCategoryReasonLegacy
+
 
 // ========== 전역 변수 ==========
 let faceMesh = null;
@@ -390,7 +393,7 @@ function inheritTheme() {
         if (parent && parent.document && parent.document.body.classList.contains('light-theme')) {
             document.body.classList.add('light-theme');
         }
-    } catch (e) {
+    } catch (_e) {
         // cross-origin 무시
     }
 }
@@ -411,7 +414,7 @@ function t(key) {
             }
         }
         return typeof result === 'string' ? result : null;
-    } catch (e) {
+    } catch (_e) {
         return null;
     }
 }
@@ -423,7 +426,7 @@ function getCurrentLanguage() {
             const parentLang = parent.localStorage.getItem('hairgator_language');
             if (parentLang) return parentLang;
         }
-    } catch (e) {}
+    } catch (_e) {}
     return localStorage.getItem('hairgator_language') || 'ko';
 }
 
@@ -537,7 +540,7 @@ async function detectFacesLoop(video) {
 
     try {
         await cameraFaceMesh.send({ image: video });
-    } catch (e) {
+    } catch (_e) {
         // 무시
     }
 
@@ -2564,7 +2567,7 @@ function generateCategoryReasonWithPrescription(category, analysis, topStyles, p
 }
 
 // ========== 결과 표시 ==========
-function displayAnalysisResults(ratios, analysis, eyebrowAnalysis = null) {
+function displayAnalysisResults(ratios, analysis, _eyebrowAnalysis = null) {
     // 카메라 종료 (결과 화면에서는 카메라 불필요)
     stopCamera();
 
@@ -2720,7 +2723,7 @@ async function loadStyles() {
                 allStyles = parent.HAIRGATOR_STYLES;
                 console.log('✅ 메인 앱에서 스타일 로드');
             }
-        } catch (e) {}
+        } catch (_e) {}
         if (stylesLoadedResolve) stylesLoadedResolve(); // 폴백 후에도 resolve
     }
 }
@@ -3600,7 +3603,7 @@ function generateStyleReason(style, analysis, ratios, score = 50) {
 }
 
 // 카테고리 카드 생성
-function createCategoryCard(category, reason, styles, ratios) {
+function createCategoryCard(category, reason, styles, _ratios) {
     const card = document.createElement('div');
     card.className = 'category-card';
 
@@ -4285,7 +4288,7 @@ window.goBack = function() {
         } else {
             window.history.back();
         }
-    } catch (e) {
+    } catch (_e) {
         window.history.back();
     }
 };
@@ -4293,7 +4296,7 @@ window.goBack = function() {
 // ========== 카메라 종료 이벤트 (강화) ==========
 
 // 페이지 종료 시
-window.addEventListener('beforeunload', function(e) {
+window.addEventListener('beforeunload', function(_e) {
     console.log('📤 beforeunload 이벤트');
     stopCamera();
 });

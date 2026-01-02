@@ -15,7 +15,7 @@ function buildFemaleRecipePrompt(params, diagrams, theoryContext = null, languag
     .map(shape => langTerms.faceShapeDesc[shape] || shape)
     .join(', ');
 
-  const diagramsContext = diagrams.map((d, idx) =>
+  const diagramsContext = diagrams.map((d, _idx) =>
     `Step ${d.step_number}: ${d.style_id}\n` +
     `  - Lifting: ${d.lifting || 'N/A'}\n` +
     `  - Direction: ${d.direction || 'N/A'}\n` +

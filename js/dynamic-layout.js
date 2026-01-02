@@ -1,5 +1,6 @@
 // HAIRGATOR Dynamic Layout System - 정석적 CSS-first 접근법
 // Version: 3.0 - DOM 조작 최소화, CSS 제어 우선
+/* eslint-disable no-unused-vars */
 
 (function () {
     'use strict';

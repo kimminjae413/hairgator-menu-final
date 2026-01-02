@@ -1,5 +1,6 @@
 // lib/embedding.js
 // 임베딩 생성 및 벡터 검색 모듈
+/* eslint-disable no-unused-vars */
 
 const { cosineSimilarity, getLengthPrefix } = require('./utils');
 
