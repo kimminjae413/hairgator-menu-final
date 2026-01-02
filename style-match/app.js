@@ -594,34 +594,44 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, scanLineY - 20, w, 40);
 
-    // 1. 얼굴 윤곽선 (네온 효과) - 전체 얼굴 영역 표시
-    // 헤어라인~턱까지 전체를 감싸는 타원형 윤곽선
+    // 1. 얼굴 윤곽선 (실제 측정 포인트 기반)
     const glabellaY = landmarks[keyPoints.glabella].y;
     const chinY = landmarks[keyPoints.chin].y;
     const faceHeight = chinY - glabellaY;
-    const hairlineOffset = faceHeight * 0.4; // 40% 위로 확장
+    const hairlineOffset = faceHeight * 0.35; // 헤어라인 보정
 
-    // 얼굴 중심점 계산
-    const centerX = landmarks[keyPoints.noseTip].x * w;
-    const topY = Math.max(10, (landmarks[10].y - hairlineOffset) * h);
-    const bottomY = (landmarks[keyPoints.chin].y + 0.02) * h; // 턱 아래 2% 여유
-    const leftX = landmarks[keyPoints.leftZygoma].x * w - 10;
-    const rightX = landmarks[keyPoints.rightZygoma].x * w + 10;
+    // 실제 측정에 사용되는 포인트들로 윤곽선 구성
+    // 보정된 헤어라인 (상단)
+    const correctedHairlineX = landmarks[10].x * w;
+    const correctedHairlineY = Math.max(10, (landmarks[10].y - hairlineOffset) * h);
+
+    // 실제 측정 포인트들
+    const leftZygomaX = landmarks[keyPoints.leftZygoma].x * w;
+    const leftZygomaY = landmarks[keyPoints.leftZygoma].y * h;
+    const rightZygomaX = landmarks[keyPoints.rightZygoma].x * w;
+    const rightZygomaY = landmarks[keyPoints.rightZygoma].y * h;
+    const leftGonionX = landmarks[keyPoints.leftGonion].x * w;
+    const leftGonionY = landmarks[keyPoints.leftGonion].y * h;
+    const rightGonionX = landmarks[keyPoints.rightGonion].x * w;
+    const rightGonionY = landmarks[keyPoints.rightGonion].y * h;
+    const chinX = landmarks[keyPoints.chin].x * w;
+    const chinYPos = landmarks[keyPoints.chin].y * h;
 
     // 글로우 효과
     ctx.shadowColor = '#a855f7';
     ctx.shadowBlur = 10;
     ctx.beginPath();
-    ctx.strokeStyle = 'rgba(168, 85, 247, 0.6)';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(168, 85, 247, 0.7)';
+    ctx.lineWidth = 2.5;
 
-    // 타원형 얼굴 윤곽선 그리기
-    const radiusX = (rightX - leftX) / 2 + 15;
-    const radiusY = (bottomY - topY) / 2;
-    const ellipseCenterX = centerX;
-    const ellipseCenterY = (topY + bottomY) / 2;
-
-    ctx.ellipse(ellipseCenterX, ellipseCenterY, radiusX, radiusY, 0, 0, Math.PI * 2);
+    // 실제 측정 포인트를 연결하는 윤곽선
+    ctx.moveTo(correctedHairlineX, correctedHairlineY); // 헤어라인 (보정)
+    ctx.lineTo(rightZygomaX, rightZygomaY);             // 오른쪽 광대
+    ctx.lineTo(rightGonionX, rightGonionY);             // 오른쪽 턱각
+    ctx.lineTo(chinX, chinYPos);                         // 턱 끝
+    ctx.lineTo(leftGonionX, leftGonionY);               // 왼쪽 턱각
+    ctx.lineTo(leftZygomaX, leftZygomaY);               // 왼쪽 광대
+    ctx.closePath();                                     // 헤어라인으로 돌아감
     ctx.stroke();
     ctx.shadowBlur = 0;
 
