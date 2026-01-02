@@ -594,21 +594,24 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, scanLineY - 20, w, 40);
 
-    // 1. 얼굴 윤곽선 (MediaPipe Face Oval + 이마 확장)
-    // MediaPipe 얼굴 외곽선 (입 근처 뾰족한 포인트 제거)
-    const faceOvalIndices = [
-        10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288,
-        397, 152, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109
-    ];
-
-    // 상단 포인트 인덱스 (이마 영역 - 위로 확장 필요)
-    const topPointIndices = [10, 338, 297, 109, 67, 103, 54, 21, 162, 127, 332, 284, 251];
-
+    // 1. 얼굴 윤곽선 (주요 포인트만 사용 - 깔끔한 8각형)
     // 턱 끝(152) 기준으로 확장량 계산
     const chinY = landmarks[152].y;
     const foreheadY = landmarks[10].y;
     const faceHeight = chinY - foreheadY;
     const foreheadExtension = faceHeight * 0.25; // 얼굴 높이의 25%만큼 위로 확장
+
+    // 주요 포인트 좌표 (시계 방향: 이마 중앙 → 오른쪽 → 턱 → 왼쪽)
+    const outlinePoints = [
+        { x: landmarks[10].x * w, y: Math.max(5, (landmarks[10].y - foreheadExtension) * h) },   // 이마 중앙 (확장)
+        { x: landmarks[338].x * w, y: Math.max(5, (landmarks[338].y - foreheadExtension) * h) }, // 이마 오른쪽 (확장)
+        { x: landmarks[454].x * w, y: landmarks[454].y * h },   // 오른쪽 광대
+        { x: landmarks[288].x * w, y: landmarks[288].y * h },   // 오른쪽 턱각
+        { x: landmarks[152].x * w, y: landmarks[152].y * h },   // 턱 끝
+        { x: landmarks[58].x * w, y: landmarks[58].y * h },     // 왼쪽 턱각
+        { x: landmarks[234].x * w, y: landmarks[234].y * h },   // 왼쪽 광대
+        { x: landmarks[109].x * w, y: Math.max(5, (landmarks[109].y - foreheadExtension) * h) }  // 이마 왼쪽 (확장)
+    ];
 
     // 글로우 효과
     ctx.shadowColor = '#a855f7';
@@ -617,18 +620,10 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.strokeStyle = 'rgba(168, 85, 247, 0.7)';
     ctx.lineWidth = 2.5;
 
-    // 얼굴 외곽선 그리기 (상단만 위로 확장, 하단은 원래 위치)
-    const firstPoint = landmarks[faceOvalIndices[0]];
-    const isFirstTop = topPointIndices.includes(faceOvalIndices[0]);
-    let firstY = isFirstTop ? Math.max(5, (firstPoint.y - foreheadExtension) * h) : firstPoint.y * h;
-    ctx.moveTo(firstPoint.x * w, firstY);
-
-    for (let i = 1; i < faceOvalIndices.length; i++) {
-        const idx = faceOvalIndices[i];
-        const point = landmarks[idx];
-        const isTopPoint = topPointIndices.includes(idx);
-        const y = isTopPoint ? Math.max(5, (point.y - foreheadExtension) * h) : point.y * h;
-        ctx.lineTo(point.x * w, y);
+    // 윤곽선 그리기
+    ctx.moveTo(outlinePoints[0].x, outlinePoints[0].y);
+    for (let i = 1; i < outlinePoints.length; i++) {
+        ctx.lineTo(outlinePoints[i].x, outlinePoints[i].y);
     }
     ctx.closePath();
     ctx.stroke();
@@ -776,7 +771,7 @@ function drawMeasurementLineWithLabel(ctx, landmarks, idx1, idx2, w, h, color, l
     let labelY = midY;
 
     if (labelPos === 'top') labelY -= 12;
-    else if (labelPos === 'bottom') labelY += 35;
+    else if (labelPos === 'bottom') labelY += 60;
     else if (labelPos === 'left') { labelX = x1 - 35; labelY = midY; }
     else if (labelPos === 'right') { labelX = x2 + 35; labelY = midY; }
 
