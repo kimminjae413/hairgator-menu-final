@@ -10161,7 +10161,9 @@ async function getStylesForMatching(payload) {
           // 성별 필터링
           if (gender && docGender !== gender) return null;
 
-          const code = fields.code?.stringValue || doc.name.split('/').pop();
+          // 문서 ID를 우선 사용 (main.js에서 문서 ID로 조회하기 때문)
+          const docId = doc.name.split('/').pop();
+          const styleIdField = fields.styleId?.stringValue || fields.code?.stringValue || docId;
           const thumbnailUrl = fields.thumbnailUrl?.stringValue || '';
           const imageUrl = fields.imageUrl?.stringValue || '';
 
@@ -10201,13 +10203,15 @@ async function getStylesForMatching(payload) {
           }
 
           return {
-            styleId: code,
+            styleId: docId,  // 문서 ID를 styleId로 사용 (main.js에서 조회 시 사용)
+            docId: docId,    // 명시적 문서 ID
+            code: styleIdField,  // 원래 styleId/code 필드 값 (호환성 유지)
             name: fields.name?.stringValue || '',
             gender: docGender,
             mainCategory: fields.mainCategory?.stringValue || '',
             subCategory: fields.subCategory?.stringValue || '',
             type: 'cut',
-            series: code.substring(0, 2), // SF, SP, FU 등
+            series: styleIdField.substring(0, 2), // SF, SP, FU 등
             // 이미지 URL: thumbnailUrl 우선, 없으면 imageUrl
             resultImage: thumbnailUrl || imageUrl || '',
             // AI 분석 결과 (이미지 매칭용)
