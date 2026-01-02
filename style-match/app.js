@@ -1767,7 +1767,8 @@ function interpretAnalysis(ratios, eyebrowAnalysis = null) {
         eyebrowType,
         insights,
         recommendations,
-        avoidances
+        avoidances,
+        ratios  // 점수 계산에 필요
     };
 }
 
