@@ -3711,16 +3711,25 @@ window.goToHairTry = async function() {
     // 로딩 오버레이 표시
     showHairTryLoading(true, styleName);
 
+    let tempStoragePath = null; // 임시 파일 경로 저장
+
     try {
         console.log('💇 헤어체험 시작:', { styleName, gender, styleImageUrl });
 
-        // 1단계: Task 생성
+        // 1단계: 고객 사진을 Firebase Storage에 임시 업로드하여 URL 획득 (메인 서비스와 동일)
+        console.log('📤 고객 사진 임시 업로드 중...');
+        const uploadResult = await uploadCustomerPhotoToStorage(customerPhoto);
+        const customerPhotoUrl = uploadResult.url;
+        tempStoragePath = uploadResult.path;
+        console.log('✅ 고객 사진 URL:', customerPhotoUrl);
+
+        // 2단계: Task 생성
         const startResponse = await fetch('/.netlify/functions/hair-change', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 action: 'start',
-                customerPhotoUrl: customerPhoto,
+                customerPhotoUrl: customerPhotoUrl,
                 styleImageUrl: styleImageUrl,
                 gender: gender
             })
@@ -3752,10 +3761,12 @@ window.goToHairTry = async function() {
             });
 
             const statusResult = await statusResponse.json();
-            console.log(`📊 폴링 ${i + 1}/${maxPolls}:`, statusResult.status);
+            console.log(`📊 폴링 ${i + 1}/${maxPolls}:`, statusResult.status, statusResult.resultImageUrl ? '(이미지 있음)' : '');
 
-            if (statusResult.success && statusResult.resultImage) {
-                resultImage = statusResult.resultImage;
+            // resultImageUrl 필드명 사용 (서버와 일치)
+            if (statusResult.success && statusResult.resultImageUrl) {
+                resultImage = statusResult.resultImageUrl;
+                console.log('✅ 헤어체험 결과 수신!');
                 break;
             }
 
@@ -3783,9 +3794,14 @@ window.goToHairTry = async function() {
             }
         }
 
+        // 4단계: 임시 파일 삭제 (결과 받은 후 즉시)
+        if (tempStoragePath) {
+            deleteTemporaryFile(tempStoragePath);
+        }
+
         showHairTryLoading(false);
 
-        // 4단계: 결과 모달 표시
+        // 5단계: 결과 모달 표시
         showHairTryResult(resultImage, customerPhoto, styleName);
 
         // 사용 후 사진 삭제
@@ -3793,6 +3809,10 @@ window.goToHairTry = async function() {
         localStorage.removeItem('styleMatchPhoto');
 
     } catch (error) {
+        // 에러 발생 시에도 임시 파일 삭제 시도
+        if (tempStoragePath) {
+            deleteTemporaryFile(tempStoragePath);
+        }
         console.error('❌ 헤어체험 실패:', error);
         showHairTryLoading(false);
         alert(t('hairTry.error') || '헤어체험 중 오류가 발생했습니다. 다시 시도해주세요.');
@@ -4173,4 +4193,74 @@ window.resetAnalysis = function() {
     document.getElementById('analysisSection').style.display = 'none';
     document.getElementById('recommendationsSection').style.display = 'none';
 };
-// Force rebuild 2025년 12월 27일 토 오전 12:51:39
+
+// ========== Firebase Storage 업로드 함수 (클라이언트 측) ==========
+
+/**
+ * Base64 이미지를 Firebase Storage에 업로드하고 다운로드 URL 반환
+ * 메인 서비스(menu.js)와 동일한 방식
+ */
+async function uploadCustomerPhotoToStorage(base64Data) {
+    // Firebase Storage 참조 확인
+    if (typeof storage === 'undefined') {
+        throw new Error('Firebase Storage가 초기화되지 않았습니다');
+    }
+
+    // base64 데이터에서 Blob 생성
+    let base64Content = base64Data;
+    let mimeType = 'image/jpeg';
+
+    if (base64Data.includes(',')) {
+        const parts = base64Data.split(',');
+        const mimeMatch = parts[0].match(/data:([^;]+);/);
+        if (mimeMatch) {
+            mimeType = mimeMatch[1];
+        }
+        base64Content = parts[1];
+    }
+
+    // base64를 Blob으로 변환
+    const byteCharacters = atob(base64Content);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: mimeType });
+
+    // 고유한 파일명 생성 (임시 폴더에 저장)
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 8);
+    const extension = mimeType.split('/')[1] || 'jpg';
+    const filePath = `hair-try-temp/${timestamp}_${randomId}.${extension}`;
+
+    // Firebase Storage에 업로드
+    console.log('📤 클라이언트 업로드 시작...');
+    const storageRef = storage.ref().child(filePath);
+    const uploadTask = await storageRef.put(blob);
+    const downloadUrl = await uploadTask.ref.getDownloadURL();
+
+    console.log('✅ 클라이언트 업로드 완료:', filePath);
+    return { url: downloadUrl, path: filePath };
+}
+
+/**
+ * 임시 파일 삭제 (비동기, 실패해도 무시)
+ * 메인 서비스(menu.js)와 동일한 방식
+ */
+function deleteTemporaryFile(filePath) {
+    if (!filePath || typeof storage === 'undefined') return;
+
+    try {
+        const fileRef = storage.ref().child(filePath);
+        fileRef.delete().then(() => {
+            console.log('🗑️ 임시 파일 삭제 완료:', filePath);
+        }).catch((err) => {
+            console.warn('🗑️ 임시 파일 삭제 실패 (무시됨):', err.message);
+        });
+    } catch (e) {
+        console.warn('🗑️ 임시 파일 삭제 중 오류:', e);
+    }
+}
+
+// Force rebuild 2026년 1월 3일
