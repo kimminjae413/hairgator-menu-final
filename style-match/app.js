@@ -1049,6 +1049,16 @@ function onFaceMeshResults(results) {
     // 결과 저장
     analysisResults = { ratios, analysis, eyebrowAnalysis };
 
+    // 📸 헤어체험용 사진 저장 (sessionStorage)
+    if (uploadedImage) {
+        try {
+            sessionStorage.setItem('styleMatchPhoto', uploadedImage);
+            console.log('📸 헤어체험용 사진 저장 완료');
+        } catch (e) {
+            console.warn('사진 저장 실패 (용량 초과):', e);
+        }
+    }
+
     // UI 업데이트
     displayAnalysisResults(ratios, analysis, eyebrowAnalysis);
 

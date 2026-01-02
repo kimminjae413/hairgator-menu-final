@@ -2133,6 +2133,29 @@ function openAIPhotoModal(styleId, styleName, styleImageUrl) {
     // 헤어체험 모달 스타일 추가
     addHairUploadModalStyles();
 
+    // 📸 AI 스타일 매칭에서 저장된 사진 자동 불러오기
+    const savedPhoto = sessionStorage.getItem('styleMatchPhoto');
+    if (savedPhoto) {
+        console.log('📸 저장된 스타일 매칭 사진 발견 - 자동 적용');
+
+        // 전역 변수에 저장
+        window.uploadedCustomerPhoto = savedPhoto;
+
+        // 미리보기 표시
+        setTimeout(() => {
+            showCustomerPhotoPreview(savedPhoto);
+
+            // 처리 버튼 활성화
+            const processBtn = document.getElementById('processBtn');
+            if (processBtn) {
+                processBtn.disabled = false;
+            }
+        }, 100);
+
+        // 사용 후 삭제 (일회성)
+        sessionStorage.removeItem('styleMatchPhoto');
+    }
+
     console.log('헤어체험 업로드 모달 표시 완료');
 }
 

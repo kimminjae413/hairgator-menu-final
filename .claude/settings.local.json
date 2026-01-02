@@ -75,7 +75,8 @@
       "Bash(claude mcp list:*)",
       "Bash(mv:*)",
       "mcp__chrome-devtools__get_console_message",
-      "Bash(timeout /t 60 /nobreak)"
+      "Bash(timeout /t 60 /nobreak)",
+      "Bash(wmic process where \"processid=45640\" get name,status)"
     ],
     "deny": [],
     "ask": []
