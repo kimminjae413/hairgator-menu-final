@@ -594,17 +594,19 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, scanLineY - 20, w, 40);
 
-    // 1. 얼굴 윤곽선 (네온 효과) - 헤어라인 보정 적용
-    // MediaPipe 윤곽선에서 상단 포인트들을 위로 확장
+    // 1. 얼굴 윤곽선 (네온 효과) - 전체 얼굴 영역 표시
+    // 헤어라인~턱까지 전체를 감싸는 타원형 윤곽선
     const glabellaY = landmarks[keyPoints.glabella].y;
     const chinY = landmarks[keyPoints.chin].y;
     const faceHeight = chinY - glabellaY;
-    const hairlineOffset = faceHeight * 0.35; // 35% 위로 확장
+    const hairlineOffset = faceHeight * 0.4; // 40% 위로 확장
 
-    // 상단 포인트들 (헤어라인 주변)
-    const topPoints = [10, 338, 297, 109, 67, 103, 54, 21, 162, 127];
-    // 하단 포인트들 (원본 유지)
-    const bottomPoints = [332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234];
+    // 얼굴 중심점 계산
+    const centerX = landmarks[keyPoints.noseTip].x * w;
+    const topY = Math.max(10, (landmarks[10].y - hairlineOffset) * h);
+    const bottomY = (landmarks[keyPoints.chin].y + 0.02) * h; // 턱 아래 2% 여유
+    const leftX = landmarks[keyPoints.leftZygoma].x * w - 10;
+    const rightX = landmarks[keyPoints.rightZygoma].x * w + 10;
 
     // 글로우 효과
     ctx.shadowColor = '#a855f7';
@@ -613,35 +615,13 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.strokeStyle = 'rgba(168, 85, 247, 0.6)';
     ctx.lineWidth = 2;
 
-    // 보정된 윤곽선 그리기
-    // 시작: 보정된 헤어라인 중앙
-    const startX = landmarks[10].x * w;
-    const startY = Math.max(10, (landmarks[10].y - hairlineOffset) * h);
-    ctx.moveTo(startX, startY);
+    // 타원형 얼굴 윤곽선 그리기
+    const radiusX = (rightX - leftX) / 2 + 15;
+    const radiusY = (bottomY - topY) / 2;
+    const ellipseCenterX = centerX;
+    const ellipseCenterY = (topY + bottomY) / 2;
 
-    // 오른쪽 상단 (보정)
-    [338, 297].forEach(idx => {
-        const x = landmarks[idx].x * w;
-        const y = Math.max(10, (landmarks[idx].y - hairlineOffset * 0.7) * h);
-        ctx.lineTo(x, y);
-    });
-
-    // 오른쪽 하단 ~ 턱 ~ 왼쪽 하단 (원본)
-    [332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234].forEach(idx => {
-        const x = landmarks[idx].x * w;
-        const y = landmarks[idx].y * h;
-        ctx.lineTo(x, y);
-    });
-
-    // 왼쪽 상단 (보정)
-    [127, 162, 21, 54, 103, 67, 109].forEach(idx => {
-        const x = landmarks[idx].x * w;
-        const y = Math.max(10, (landmarks[idx].y - hairlineOffset * 0.7) * h);
-        ctx.lineTo(x, y);
-    });
-
-    // 시작점으로 돌아가기
-    ctx.lineTo(startX, startY);
+    ctx.ellipse(ellipseCenterX, ellipseCenterY, radiusX, radiusY, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.shadowBlur = 0;
 
