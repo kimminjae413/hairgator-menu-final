@@ -2587,11 +2587,12 @@ function calculateHairstyleScores(analysis, styles) {
         }
 
         // 4. AI 분석 데이터 매칭 (Gemini Vision 분석 결과 활용)
-        // ⭐ 가중치 우선순위:
-        //   1순위: 얼굴형 보정 (categoryBonus) = +30~50점
-        //   2순위: AI 얼굴형/실루엣 매칭 (aiBonus) = +15~25점
-        //   3순위: 이미지 타입 분위기 매칭 = +5~10점 (부가적)
+        // ⭐ 가중치 우선순위 (리밸런싱됨):
+        //   1순위: 얼굴형 보정 (categoryBonus) = -30~+50점 → 절대적 우선
+        //   2순위: AI 매칭 (aiBonus) = 최대 +25점으로 제한 → 부가적 역할
         let aiBonus = 0;
+        let rawAiScore = 0; // 원점수 누적 후 클램핑
+
         if (style.aiAnalysis) {
             const ai = style.aiAnalysis;
             const userImageType = analysis.imageType?.type; // 'warm', 'neutral', 'cool'
@@ -2599,86 +2600,72 @@ function calculateHairstyleScores(analysis, styles) {
             const userFaceType = analysis.faceType?.code; // 'oval', 'round', 'square', 'heart', 'long', 'diamond'
             const userEyebrowType = analysis.eyebrowType?.lineType; // 'arched', 'straight'
 
-            // 4-1. 이미지 타입 매칭 (웜/뉴트럴/쿨) - 부가적 가산 (낮은 가중치)
-            if (userImageType && ai.recommendedImageTypes && ai.recommendedImageTypes.includes(userImageType)) {
-                aiBonus += 8;  // 낮춤: 15 → 8
+            // 4-1. 이미지 타입 매칭 (웜/뉴트럴/쿨) - 부가적 (축소)
+            if (userImageType && ai.recommendedImageTypes?.includes(userImageType)) {
+                rawAiScore += 5;  // 축소: 8 → 5
             }
             if (userImageType && ai.imageType === userImageType) {
-                aiBonus += 5;  // 낮춤: 10 → 5 (분위기 매칭은 부가적)
+                rawAiScore += 3;  // 축소: 5 → 3
             }
 
-            // 4-2. 얼굴형 매칭 (AI가 분석한 추천/회피 얼굴형)
+            // 4-2. 얼굴형 매칭 (AI가 분석한 추천/회피 얼굴형) - 중요하므로 상대적으로 유지
             if (userFaceType) {
-                if (ai.recommendedFaceTypes && ai.recommendedFaceTypes.includes(userFaceType)) {
-                    aiBonus += 25;  // 높임: 20 → 25 (보정 효과)
+                if (ai.recommendedFaceTypes?.includes(userFaceType)) {
+                    rawAiScore += 10;  // 축소: 25 → 10
                 }
-                if (ai.avoidFaceTypes && ai.avoidFaceTypes.includes(userFaceType)) {
-                    aiBonus -= 30;  // 높임: -25 → -30 (보정 역효과)
+                if (ai.avoidFaceTypes?.includes(userFaceType)) {
+                    rawAiScore -= 15;  // 축소: -30 → -15 (비추천 강력 유지)
                 }
             }
 
-            // 4-3. 텍스쳐 매칭 (하드/소프트)
-            // 사용자: 'hard', 'soft', 'balanced' / AI: 'hard', 'soft', 'neutral'
+            // 4-3. 텍스쳐 매칭 (하드/소프트) - 축소
             if (userTexture && ai.texture) {
-                // balanced(사용자) = neutral(AI) 동일 취급
                 const normalizedUserTexture = userTexture === 'balanced' ? 'neutral' : userTexture;
-
                 if (normalizedUserTexture === ai.texture) {
-                    aiBonus += 10;
-                } else if (normalizedUserTexture === 'hard' && ai.texture === 'soft') {
-                    aiBonus -= 5; // 미스매치 시 약간 감점
-                } else if (normalizedUserTexture === 'soft' && ai.texture === 'hard') {
-                    aiBonus -= 5;
+                    rawAiScore += 3;  // 축소: 10 → 3
                 }
-                // neutral/balanced는 hard/soft 어느쪽과도 감점 없음 (중간값)
+                // 미스매치 감점은 제거 (너무 세부적)
             }
 
-            // 4-4. 눈썹 라인 매칭
+            // 4-4. 눈썹 라인 매칭 - 축소
             if (userEyebrowType && ai.lineCharacter) {
-                if (userEyebrowType === 'arched' && ai.lineCharacter.archBrowMatch) {
-                    aiBonus += 10;
-                }
-                if (userEyebrowType === 'straight' && ai.lineCharacter.straightBrowMatch) {
-                    aiBonus += 10;
+                if ((userEyebrowType === 'arched' && ai.lineCharacter.archBrowMatch) ||
+                    (userEyebrowType === 'straight' && ai.lineCharacter.straightBrowMatch)) {
+                    rawAiScore += 3;  // 축소: 10 → 3
                 }
             }
 
-            // 4-5. 커버 영역 매칭 (이마 넓으면 forehead 커버 스타일 가산)
-            if (isWideForehead && ai.coverArea && ai.coverArea.includes('forehead')) {
-                aiBonus += 10;
+            // 4-5. 커버 영역 매칭 - 축소
+            if (isWideForehead && ai.coverArea?.includes('forehead')) {
+                rawAiScore += 3;  // 축소: 10 → 3
             }
 
-            // 4-5-1. 좁은 이마 + 앞머리 있는 스타일 감점 (스타일별 개별 적용)
+            // 4-5-1. 좁은 이마 + 앞머리 (스타일별 개별 적용) - 축소
             const styleHasBangs = ai.styleFeatures?.hasBangs;
-            // hasBangs가 명시적으로 true/false일 때만 점수 반영 (undefined 무시)
             if (isNarrowForehead && styleHasBangs === true) {
-                // 앞머리가 이마를 가리면 좁은 이마가 더 좁아 보임
-                aiBonus -= 20;
-                console.log(`👁️ ${style.styleId}: 좁은 이마 + 앞머리 있음 → -20점`);
+                rawAiScore -= 8;  // 축소: -20 → -8
             }
             if (isNarrowForehead && styleHasBangs === false) {
-                // 이마를 드러내는 스타일은 좁은 이마에 가산
-                aiBonus += 15;
-                console.log(`👁️ ${style.styleId}: 좁은 이마 + 앞머리 없음 → +15점`);
+                rawAiScore += 5;  // 축소: 15 → 5
             }
 
-            // 4-6. 실루엣/볼륨 매칭
+            // 4-6. 실루엣/볼륨 매칭 - 축소
             if (ai.silhouette) {
-                if (isLongFace && ai.silhouette === 'curved') {
-                    aiBonus += 10; // 긴 얼굴에 곡선 실루엣
-                }
-                if (isShortFace && ai.silhouette === 'straight') {
-                    aiBonus += 10; // 짧은 얼굴에 직선 실루엣
+                if ((isLongFace && ai.silhouette === 'curved') ||
+                    (isShortFace && ai.silhouette === 'straight')) {
+                    rawAiScore += 3;  // 축소: 10 → 3
                 }
             }
             if (ai.volumePosition) {
-                if (isLongFace && ai.volumePosition === 'side') {
-                    aiBonus += 10; // 긴 얼굴에 사이드 볼륨
-                }
-                if (isShortFace && ai.volumePosition === 'top') {
-                    aiBonus += 10; // 짧은 얼굴에 탑 볼륨
+                if ((isLongFace && ai.volumePosition === 'side') ||
+                    (isShortFace && ai.volumePosition === 'top')) {
+                    rawAiScore += 3;  // 축소: 10 → 3
                 }
             }
+
+            // ⭐ [핵심] aiBonus 최종 클램핑 (최대 +25점, 최저 -20점)
+            // Category Bonus를 절대로 뒤집지 못하게 제한
+            aiBonus = Math.min(25, Math.max(-20, rawAiScore));
         }
 
         // 최종 점수 합산 (0~100 범위)
