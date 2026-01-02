@@ -6065,14 +6065,33 @@
         function showVideoPreview() {
             if (!videoData) return;
             const preview = document.getElementById('videoPreview');
-            preview.style.display = 'flex';
+            preview.style.display = 'block';
+
+            // 자동재생 파라미터 추가 (음소거 필수 - 브라우저 정책)
+            let embedUrl = videoData.embedUrl;
+            if (videoData.platform === 'youtube') {
+                embedUrl += '?autoplay=1&mute=1&loop=1&playlist=' + videoData.videoId;
+            } else if (videoData.platform === 'vimeo') {
+                embedUrl += '?autoplay=1&muted=1&loop=1';
+            } else if (videoData.platform === 'instagram') {
+                // Instagram은 embed에서 자동재생 제한적
+            }
+
             preview.innerHTML = `
-                ${videoData.thumbnailUrl ? `<img src="${videoData.thumbnailUrl}" alt="Video thumbnail">` : '<div style="width:80px;height:60px;background:var(--bg-hover);border-radius:6px;display:flex;align-items:center;justify-content:center;">🎬</div>'}
-                <div style="flex:1;">
-                    <div style="font-size:13px;font-weight:500;">${videoData.platform.toUpperCase()}</div>
-                    <div style="font-size:11px;color:var(--text-muted);">${videoData.videoId}</div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                    <div style="flex:1;">
+                        <div style="font-size:13px;font-weight:500;">${videoData.platform.toUpperCase()}</div>
+                        <div style="font-size:11px;color:var(--text-muted);">ID: ${videoData.videoId}</div>
+                    </div>
+                    <button class="preview-btn delete" onclick="clearVideoUrl()" title="삭제" style="background: var(--danger); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer;">✕ 삭제</button>
                 </div>
-                <button class="preview-btn delete" onclick="clearVideoUrl()" title="삭제">✕</button>
+                <div style="position: relative; width: 100%; padding-top: 56.25%; border-radius: 8px; overflow: hidden; background: #000;">
+                    <iframe src="${embedUrl}"
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
+                        allow="autoplay; encrypted-media"
+                        allowfullscreen>
+                    </iframe>
+                </div>
             `;
         }
 
