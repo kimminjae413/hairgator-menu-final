@@ -421,18 +421,18 @@ C:\hairgator_flutter_app\
 - GitHub: `kimminjae413/hairgator-menu-final`
 - Netlify: 자동 배포 (push하면 1-2분 후 적용)
 
-## 다국어 지원 (5개국어)
-- 지원 언어: 한국어(ko), 영어(en), 일본어(ja), 중국어(zh), 베트남어(vi)
+## 다국어 지원 (7개국어)
+- 지원 언어: 한국어(ko), 영어(en), 일본어(ja), 중국어(zh), 베트남어(vi), 인도네시아어(id), 스페인어(es)
 - `detectLanguage()` 함수: 사용자 입력 언어 자동 감지 (fallback용)
 - **클라이언트 language 파라미터 우선**: ai-studio.js에서 `localStorage.getItem('hairgator_language')` 값을 서버로 전송 → 서버에서 우선 사용 (ko→korean 매핑)
 - `buildGeminiSystemPrompt()`: 각 언어별 전체 시스템 프롬프트 존재
-- 인사말/보안 응답 메시지: 5개국어 전체 지원
-- 인사말 키워드: 안녕, hello, こんにちは, 你好, xin chào 등
+- 인사말/보안 응답 메시지: 7개국어 전체 지원
+- 인사말 키워드: 안녕, hello, こんにちは, 你好, xin chào, halo, hola 등
 
 ### 다국어 수정 시 필수 작업 순서
-1. **js/i18n.js** - 번역 키 추가 (5개국어 모두 동일한 키 추가 필수)
+1. **js/i18n.js** - 번역 키 추가 (7개국어 모두 동일한 키 추가 필수)
    - 구조: `HAIRGATOR_I18N.{lang}.personalColor.personalAnalysis.{키}`
-   - 언어별 위치: ko(~600라인), en(~1200라인), ja(~1800라인), zh(~2400라인), vi(~3000라인)
+   - 언어별 위치: ko(~600라인), en(~1200라인), ja(~1800라인), zh(~2400라인), vi(~3000라인), id(~3600라인), es(~4200라인)
 2. **HTML 파일** - `data-i18n` 또는 `data-i18n-html` 속성 추가
    - 텍스트: `data-i18n="personalColor.personalAnalysis.키"`
    - HTML 포함: `data-i18n-html="personalColor.personalAnalysis.키"`
@@ -443,7 +443,7 @@ C:\hairgator_flutter_app\
 5. **주의사항**:
    - 템플릿 리터럴(`${...}`)을 일반 문자열('')안에 넣지 말 것
    - i18n.js에서 섹션 추가 시 앞 섹션 끝에 콤마(,) 확인
-   - 한 언어만 추가하면 안됨 - 반드시 5개국어 모두 추가
+   - 한 언어만 추가하면 안됨 - 반드시 7개국어 모두 추가
 
 ## scripts 폴더 (로컬 전용, .gitignore됨)
 - `upload-all-to-file-search.py`: Gemini File Search Store에 PDF 업로드
@@ -611,12 +611,12 @@ Then: [동작] (예: 기존 데이터를 수정)
   | 챗봇 | 3~30 | `js/ai-studio.js` sendMessage() | ✅ 추가됨 |
   | 룩북 | 200 | `js/menu.js` + `lookbook.html` | ✅ 추가됨 |
   | 헤어체험 | 350 | `js/menu.js` | ✅ 이미 있었음 |
-  | 레시피 보기 | 무료 | - | N/A |
+  | 레시피 보기 | 30 | `js/menu.js` navigateToRecipe() | ✅ 추가됨 |
 
   ### 토큰 부족 모달 함수
   - `showInsufficientTokenModal()` - ai-studio.js (챗봇용)
   - `showLookbookInsufficientTokenModal()` - lookbook.html (룩북용)
-  - 5개국어 지원 (ko, en, ja, zh, vi)
+  - 7개국어 지원 (ko, en, ja, zh, vi, id, es)
   - "요금제 보기" 버튼 → `/#products` 이동
 
   ### 사이드바 메뉴 순서 변경
@@ -879,12 +879,12 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 펌 인덱스 RAG 업로드, 다국어 버그 수정
 - 헤어체험 504 타임아웃 해결, 룩북 매거진 스타일
 - 커트↔펌 양방향 연결, Vision 매칭 활성화
-- RAG 커트/펌 자막 통합, 5개국어 지원 완료
+- RAG 커트/펌 자막 통합, 7개국어 지원 완료
 
 ## 핵심 함수 위치 (chatbot-api.js)
 - `generateGeminiFileSearchResponse()`: 라인 ~2834 (비스트리밍 RAG 응답)
 - `generateGeminiFileSearchResponseStream()`: 라인 ~2962 (스트리밍 RAG 응답)
-- `buildGeminiSystemPrompt()`: 라인 ~2500 (5개국어 시스템 프롬프트)
+- `buildGeminiSystemPrompt()`: 라인 ~2500 (7개국어 시스템 프롬프트)
 - `detectLanguage()`: 라인 ~2277 (언어 감지)
 - `detectTheoryImageForQuery()`: 라인 ~3404 (이미지 매칭, 다중 반환)
 - `calculateTechniqueMatchScore()`: 라인 ~6423 (캡션 기반 기법 매칭 점수)

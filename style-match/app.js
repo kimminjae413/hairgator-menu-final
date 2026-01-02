@@ -85,6 +85,18 @@ function showInsufficientTokenModal(requiredTokens, featureName) {
             message: `Bạn cần ${requiredTokens} token để sử dụng ${featureName}.`,
             upgrade: 'Xem gói',
             cancel: 'Hủy'
+        },
+        id: {
+            title: 'Token tidak cukup',
+            message: `Anda memerlukan ${requiredTokens} token untuk menggunakan ${featureName}.`,
+            upgrade: 'Lihat Paket',
+            cancel: 'Batal'
+        },
+        es: {
+            title: 'Tokens insuficientes',
+            message: `Necesitas ${requiredTokens} tokens para usar ${featureName}.`,
+            upgrade: 'Ver Planes',
+            cancel: 'Cancelar'
         }
     };
 
@@ -130,13 +142,13 @@ function showInsufficientTokenModal(requiredTokens, featureName) {
     });
 }
 
-// 기능명 번역
+// 기능명 번역 (7개국어)
 function getFeatureName(feature) {
     const lang = localStorage.getItem('hairgator_language') || 'ko';
     const names = {
-        lookbook: { ko: '룩북', en: 'Lookbook', ja: 'ルックブック', zh: '造型手册', vi: 'Lookbook' },
-        hairTry: { ko: '헤어체험', en: 'Hair Try-on', ja: 'ヘア体験', zh: '发型体验', vi: 'Thử tóc' },
-        recipe: { ko: '레시피', en: 'Recipe', ja: 'レシピ', zh: '配方', vi: 'Công thức' }
+        lookbook: { ko: '룩북', en: 'Lookbook', ja: 'ルックブック', zh: '造型手册', vi: 'Lookbook', id: 'Lookbook', es: 'Lookbook' },
+        hairTry: { ko: '헤어체험', en: 'Hair Try-on', ja: 'ヘア体験', zh: '发型体验', vi: 'Thử tóc', id: 'Coba Rambut', es: 'Prueba de Cabello' },
+        recipe: { ko: '레시피', en: 'Recipe', ja: 'レシピ', zh: '配方', vi: 'Công thức', id: 'Resep', es: 'Receta' }
     };
     return names[feature]?.[lang] || names[feature]?.ko || feature;
 }
