@@ -605,11 +605,15 @@ function drawLandmarksOnCanvas(landmarks, video) {
     // 상단 포인트 인덱스 (이마 영역 - 위로 확장 필요)
     const topPointIndices = [10, 338, 297, 109, 67, 103, 54, 21, 162, 127, 332, 284, 251];
 
-    // 턱 끝(152) 기준으로 이마 확장량 계산
+    // 하단 포인트 인덱스 (턱 영역 - 아래로 확장 필요)
+    const bottomPointIndices = [152, 148, 176, 149, 150, 136, 172, 58, 377, 378, 379, 365, 397, 288, 361, 323];
+
+    // 턱 끝(152) 기준으로 확장량 계산
     const chinY = landmarks[152].y;
     const foreheadY = landmarks[10].y;
     const faceHeight = chinY - foreheadY;
     const foreheadExtension = faceHeight * 0.50; // 얼굴 높이의 50%만큼 위로 확장
+    const chinExtension = faceHeight * 0.15; // 얼굴 높이의 15%만큼 아래로 확장
 
     // 글로우 효과
     ctx.shadowColor = '#a855f7';
@@ -618,17 +622,23 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.strokeStyle = 'rgba(168, 85, 247, 0.7)';
     ctx.lineWidth = 2.5;
 
-    // 얼굴 외곽선 그리기 (상단은 위로 확장)
+    // 얼굴 외곽선 그리기 (상단은 위로, 하단은 아래로 확장)
     const firstPoint = landmarks[faceOvalIndices[0]];
     const isFirstTop = topPointIndices.includes(faceOvalIndices[0]);
-    const firstY = isFirstTop ? Math.max(5, (firstPoint.y - foreheadExtension) * h) : firstPoint.y * h;
+    const isFirstBottom = bottomPointIndices.includes(faceOvalIndices[0]);
+    let firstY = firstPoint.y * h;
+    if (isFirstTop) firstY = Math.max(5, (firstPoint.y - foreheadExtension) * h);
+    if (isFirstBottom) firstY = Math.min(h - 5, (firstPoint.y + chinExtension) * h);
     ctx.moveTo(firstPoint.x * w, firstY);
 
     for (let i = 1; i < faceOvalIndices.length; i++) {
         const idx = faceOvalIndices[i];
         const point = landmarks[idx];
         const isTopPoint = topPointIndices.includes(idx);
-        const y = isTopPoint ? Math.max(5, (point.y - foreheadExtension) * h) : point.y * h;
+        const isBottomPoint = bottomPointIndices.includes(idx);
+        let y = point.y * h;
+        if (isTopPoint) y = Math.max(5, (point.y - foreheadExtension) * h);
+        if (isBottomPoint) y = Math.min(h - 5, (point.y + chinExtension) * h);
         ctx.lineTo(point.x * w, y);
     }
     ctx.closePath();
