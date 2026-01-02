@@ -1092,9 +1092,36 @@ function calculateFaceRatios(landmarks) {
     const rightEyeOuter = landmarks[263];  // 우안 외측 (외안각)
 
     // 수직 거리
-    const upperFace = distance(hairline, glabella);  // 상안부
+    // ⭐ [헤어라인 보정] MediaPipe가 앞머리/조명 때문에 헤어라인을 낮게 잡는 문제 해결
+    // 중안부+하안부 길이를 기준으로 전체 얼굴 길이를 추정하고 15% 위로 보정
     const middleFace = distance(glabella, noseTip);  // 중안부
     const lowerFace = distance(noseTip, chin);       // 하안부
+
+    // 보정 로직: 미간~턱 거리로 전체 얼굴 높이 추정
+    const lowerFaceHeight = distance(glabella, chin);
+    const estimatedFaceHeight = lowerFaceHeight * 1.5; // 상안부는 대략 33%
+
+    // 원본 상안부 계산
+    const rawUpperFace = distance(hairline, glabella);
+
+    // 보정된 헤어라인 Y좌표 (15% 위로 올림)
+    // Y좌표는 위로 갈수록 0에 가까워지므로 빼줘야 함
+    const correctionAmount = estimatedFaceHeight * 0.15;
+    const adjustedHairlineY = hairline.y - correctionAmount;
+
+    // 보정된 상안부 = |보정된 헤어라인Y - 미간Y| (정규화된 좌표 사용)
+    const correctedUpperFace = Math.abs(adjustedHairlineY - glabella.y);
+
+    // 최종 상안부: 보정값과 원본 중 더 큰 값 사용 (너무 작게 나오는 것 방지)
+    const upperFace = Math.max(rawUpperFace, correctedUpperFace);
+
+    console.log('📏 헤어라인 보정:', {
+        raw: rawUpperFace.toFixed(4),
+        corrected: correctedUpperFace.toFixed(4),
+        final: upperFace.toFixed(4),
+        correction: '15%'
+    });
+
     const totalHeight = upperFace + middleFace + lowerFace;
 
     // 가로 거리
