@@ -1687,8 +1687,8 @@ function interpretAnalysis(ratios, eyebrowAnalysis = null) {
     // 5. 얼굴형 타입 결정
     let faceType = determineFaceType(ratios);
 
-    // 6. 이미지 타입 결정 (웜계/뉴트럴/쿨계)
-    let imageType = determineImageType(ratios);
+    // 6. 이미지 타입 결정 (웜계/뉴트럴/쿨계) - 눈썹 분석 포함
+    let imageType = determineImageType(ratios, eyebrowAnalysis);
 
     // 7. 눈썹 분석 통합
     let eyebrowType = null;
@@ -1785,35 +1785,107 @@ function determineFaceType(ratios) {
 }
 
 // ========== 이미지 타입 결정 (웜계/뉴트럴/쿨계) ==========
-// 눈 사이 거리 비율 + 얼굴형을 기반으로 이미지 무드 결정
-function determineImageType(ratios) {
+// 이미지 매칭 이론 기반 다중 요소 분석:
+// - 눈 사이 거리: 넓음=웜, 좁음=쿨
+// - 눈썹 라인: 아치형=웜, 일자형=쿨
+// - 턱선: 사각=하드, 부드러움=소프트
+// - 눈~입 거리: 길음=쿨, 짧음=웜
+function determineImageType(ratios, eyebrowAnalysis = null) {
     const { raw, cheekJawRatio } = ratios;
-    const { eyeDistanceRatio, eyeToFaceRatio } = raw;
+    const { eyeDistanceRatio, eyeToFaceRatio, eyeToLipRatio } = raw;
 
-    // 이미지 타입 결정 로직
-    // eyeDistanceRatio: 눈 사이 거리 / 눈 너비 (이상적 = 1.0)
-    // - 1.1 이상: 눈이 멀리 떨어짐 → 웜계 (또렷함, 시원함)
-    // - 0.9 이하: 눈이 가까움 → 쿨계 (부드러움, 집중감)
-    // - 0.9 ~ 1.1: 균형 → 뉴트럴
+    // 점수 기반 이미지 타입 결정 (warm=양수, cool=음수)
+    let warmScore = 0;
+    let hardScore = 0;
+    const factors = [];
 
-    let type = 'neutral';
-    let subType = 'balanced'; // hard or soft
+    // 1. 눈 사이 거리 (가중치: 40%)
+    // - 1.1 이상: 웜계 (눈이 멀리 → 시원한 인상)
+    // - 0.9 이하: 쿨계 (눈이 가까움 → 집중된 인상)
+    if (eyeDistanceRatio >= 1.15) {
+        warmScore += 40;
+        factors.push({ factor: '눈 사이 거리', value: '넓음', effect: 'warm' });
+    } else if (eyeDistanceRatio >= 1.05) {
+        warmScore += 20;
+        factors.push({ factor: '눈 사이 거리', value: '약간 넓음', effect: 'warm' });
+    } else if (eyeDistanceRatio <= 0.85) {
+        warmScore -= 40;
+        factors.push({ factor: '눈 사이 거리', value: '좁음', effect: 'cool' });
+    } else if (eyeDistanceRatio <= 0.95) {
+        warmScore -= 20;
+        factors.push({ factor: '눈 사이 거리', value: '약간 좁음', effect: 'cool' });
+    }
 
-    // 1차: 눈 사이 거리로 기본 타입 결정
-    if (eyeDistanceRatio >= 1.1) {
-        type = 'warm';  // 웜계: 눈이 멀리 → 또렷하고 시원한 인상
-    } else if (eyeDistanceRatio <= 0.9) {
-        type = 'cool';  // 쿨계: 눈이 가까움 → 집중된 부드러운 인상
+    // 2. 눈썹 라인 (가중치: 30%)
+    // - 아치형(arched): 웜계 (곡선적)
+    // - 일자형(straight): 쿨계 (직선적)
+    if (eyebrowAnalysis && eyebrowAnalysis.line) {
+        const { lineType, archRatio } = eyebrowAnalysis.line;
+        if (lineType === 'arched') {
+            warmScore += 30;
+            factors.push({ factor: '눈썹 라인', value: '아치형', effect: 'warm' });
+        } else if (lineType === 'straight') {
+            warmScore -= 30;
+            factors.push({ factor: '눈썹 라인', value: '일자형', effect: 'cool' });
+        }
+
+        // 눈썹 텍스쳐도 하드/소프트에 반영
+        if (eyebrowAnalysis.texture) {
+            const { textureType, density } = eyebrowAnalysis.texture;
+            if (textureType === 'hard' || density > 0.7) {
+                hardScore += 20;
+                factors.push({ factor: '눈썹 농도', value: '진함', effect: 'hard' });
+            } else if (textureType === 'soft' || density < 0.4) {
+                hardScore -= 20;
+                factors.push({ factor: '눈썹 농도', value: '연함', effect: 'soft' });
+            }
+        }
+    }
+
+    // 3. 눈~입 거리 (가중치: 15%)
+    // - eyeToLipRatio: 눈~입 거리 / 얼굴 높이
+    // - 길면 쿨계, 짧으면 웜계
+    if (eyeToLipRatio) {
+        if (eyeToLipRatio > 0.42) {
+            warmScore -= 15;
+            factors.push({ factor: '눈~입 거리', value: '길음', effect: 'cool' });
+        } else if (eyeToLipRatio < 0.35) {
+            warmScore += 15;
+            factors.push({ factor: '눈~입 거리', value: '짧음', effect: 'warm' });
+        }
+    }
+
+    // 4. 턱선으로 하드/소프트 결정 (가중치: 30%)
+    // 사각형 턱(cheekJawRatio < 1.15) → 하드
+    // 부드러운 턱(cheekJawRatio > 1.25) → 소프트
+    if (cheekJawRatio < 1.12) {
+        hardScore += 30;
+        factors.push({ factor: '턱선', value: '각진', effect: 'hard' });
+    } else if (cheekJawRatio < 1.20) {
+        hardScore += 15;
+        factors.push({ factor: '턱선', value: '약간 각진', effect: 'hard' });
+    } else if (cheekJawRatio > 1.30) {
+        hardScore -= 30;
+        factors.push({ factor: '턱선', value: '부드러움', effect: 'soft' });
+    } else if (cheekJawRatio > 1.22) {
+        hardScore -= 15;
+        factors.push({ factor: '턱선', value: '약간 부드러움', effect: 'soft' });
+    }
+
+    // 점수 기반 타입 결정
+    let type, subType;
+
+    if (warmScore >= 30) {
+        type = 'warm';
+    } else if (warmScore <= -30) {
+        type = 'cool';
     } else {
         type = 'neutral';
     }
 
-    // 2차: 얼굴형으로 하드/소프트 결정
-    // 사각형 턱(cheekJawRatio < 1.15) → 하드
-    // 부드러운 턱(cheekJawRatio > 1.25) → 소프트
-    if (cheekJawRatio < 1.15) {
+    if (hardScore >= 20) {
         subType = 'hard';
-    } else if (cheekJawRatio > 1.25) {
+    } else if (hardScore <= -20) {
         subType = 'soft';
     } else {
         subType = 'balanced';
@@ -1844,6 +1916,9 @@ function determineImageType(ratios) {
         'balanced': { ko: '밸런스', desc: '다양한 질감 소화 가능' }
     };
 
+    // 분석 로그
+    console.log('🎨 이미지 타입 분석:', { warmScore, hardScore, type, subType, factors });
+
     return {
         type,           // 'warm', 'neutral', 'cool'
         subType,        // 'hard', 'soft', 'balanced'
@@ -1855,6 +1930,10 @@ function determineImageType(ratios) {
         subDescription: subTypeNames[subType].desc,
         // 스타일 매칭용 키워드
         styleKeywords: getImageTypeStyleKeywords(type, subType),
+        // 분석 상세 (디버그/투명성)
+        warmScore,
+        hardScore,
+        factors,
         // 원본 비율 (디버그용)
         eyeDistanceRatio: ratios.eyeDistanceRatio,
         eyeToFaceRatio: ratios.eyeToFaceRatio
