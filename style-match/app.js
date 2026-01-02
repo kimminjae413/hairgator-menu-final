@@ -346,16 +346,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         fileInput.addEventListener('change', handleFileUpload);
     }
 
-    // MediaPipe 초기화
-    await initFaceMesh();
-
-    // Firestore에서 스타일 로드
-    await loadStyles();
-
-    // 번역 적용
+    // 번역 적용 (먼저 UI 표시)
     applyTranslations();
 
-    // 카메라 모드로 시작
+    // 카메라 모드로 시작 (UI 즉시 준비)
     const uploadTab = document.querySelector('.mode-tab[data-mode="upload"]');
     const cameraTab = document.querySelector('.mode-tab[data-mode="camera"]');
     if (cameraTab) cameraTab.classList.add('active');
@@ -365,8 +359,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (cameraArea) cameraArea.style.display = 'block';
     if (uploadArea) uploadArea.style.display = 'none';
 
-    // 카메라 자동 시작
-    startCamera();
+    // ⚡ 병렬 로딩: 카메라, MediaPipe, 스타일 동시 시작
+    console.log('⚡ 병렬 초기화 시작...');
+    const startTime = Date.now();
+
+    // 카메라 먼저 시작 (사용자에게 빠른 피드백)
+    const cameraPromise = startCamera();
+
+    // MediaPipe와 스타일 로드 병렬 실행
+    await Promise.all([
+        initFaceMesh(),
+        loadStyles()
+    ]);
+
+    // 카메라도 완료 대기
+    await cameraPromise;
+
+    console.log(`⚡ 초기화 완료: ${Date.now() - startTime}ms`);
 });
 
 // 테마 상속

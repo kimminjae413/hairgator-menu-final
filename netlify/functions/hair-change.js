@@ -5,6 +5,85 @@
 // 1. action: 'start' - vModel Task 생성 후 taskId 반환 (빠름)
 // 2. action: 'status' - taskId로 상태 확인, 성공 시 Gemini 후처리
 
+const admin = require('firebase-admin');
+
+// Firebase Admin 초기화 함수
+function initializeFirebaseAdmin() {
+    if (admin.apps.length) {
+        return admin.apps[0];
+    }
+
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+    if (!projectId || !clientEmail || !privateKey) {
+        console.error('Firebase 환경변수 누락');
+        return null;
+    }
+
+    return admin.initializeApp({
+        credential: admin.credential.cert({
+            projectId,
+            clientEmail,
+            privateKey: privateKey.replace(/\\n/g, '\n')
+        }),
+        storageBucket: `${projectId}.firebasestorage.app`
+    });
+}
+
+/**
+ * Base64 이미지를 Firebase Storage에 업로드하고 공개 URL 반환
+ * @param {string} base64Data - data:image/jpeg;base64,... 형식
+ * @returns {Promise<string>} - 공개 접근 가능한 URL
+ */
+async function uploadBase64ToStorage(base64Data) {
+    try {
+        const app = initializeFirebaseAdmin();
+        if (!app) {
+            throw new Error('Firebase 초기화 실패');
+        }
+
+        const bucket = admin.storage().bucket();
+
+        // base64 데이터 추출
+        const matches = base64Data.match(/^data:image\/(\w+);base64,(.+)$/);
+        if (!matches) {
+            throw new Error('Invalid base64 image format');
+        }
+
+        const imageType = matches[1]; // jpeg, png, etc.
+        const imageData = matches[2];
+        const buffer = Buffer.from(imageData, 'base64');
+
+        // 고유 파일명 생성
+        const fileName = `hair-try-temp/${Date.now()}_${Math.random().toString(36).substring(7)}.${imageType}`;
+        const file = bucket.file(fileName);
+
+        // 업로드
+        await file.save(buffer, {
+            metadata: {
+                contentType: `image/${imageType}`,
+                metadata: {
+                    firebaseStorageDownloadTokens: 'public'
+                }
+            }
+        });
+
+        // 공개 URL 생성 (Firebase Storage 형식)
+        const projectId = process.env.FIREBASE_PROJECT_ID;
+        const encodedFileName = encodeURIComponent(fileName);
+        const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${projectId}.firebasestorage.app/o/${encodedFileName}?alt=media`;
+
+        console.log('📤 이미지 업로드 완료:', publicUrl);
+        return publicUrl;
+
+    } catch (error) {
+        console.error('❌ 이미지 업로드 실패:', error.message);
+        throw error;
+    }
+}
+
 const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -68,12 +147,20 @@ exports.handler = async (event) => {
             }
 
             console.log('💇 헤어체험 Task 생성 시작');
-            console.log('📋 고객 사진:', customerPhotoUrl);
+            console.log('📋 고객 사진 길이:', customerPhotoUrl.length, '(base64:', customerPhotoUrl.startsWith('data:image'), ')');
             console.log('📋 스타일 이미지:', styleImageUrl);
             console.log('📋 성별:', gender);
 
+            // base64 이미지인 경우 Firebase Storage에 업로드
+            let finalCustomerPhotoUrl = customerPhotoUrl;
+            if (customerPhotoUrl.startsWith('data:image')) {
+                console.log('📤 base64 이미지를 Firebase Storage에 업로드 중...');
+                finalCustomerPhotoUrl = await uploadBase64ToStorage(customerPhotoUrl);
+                console.log('✅ 업로드 완료:', finalCustomerPhotoUrl);
+            }
+
             // vModel Task 생성
-            const taskId = await createTask(customerPhotoUrl, styleImageUrl, VMODEL_KEY);
+            const taskId = await createTask(finalCustomerPhotoUrl, styleImageUrl, VMODEL_KEY);
             console.log('📝 Task 생성됨:', taskId);
 
             return {
