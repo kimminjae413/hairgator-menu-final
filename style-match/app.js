@@ -613,8 +613,15 @@ function drawLandmarksOnCanvas(landmarks, video) {
     ctx.shadowBlur = 0;
 
     // 2. 측정선들 (라벨 포함)
-    // 세로선: 이마 ~ 턱 (보라색)
-    drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.hairline, keyPoints.chin, w, h, '#a855f7', 'HEIGHT', 'left');
+    // 세로선: 이마 ~ 턱 (보라색) - 헤어라인 15% 보정 적용
+    // MediaPipe hairline(10)이 실제보다 낮으므로 보정된 위치 사용
+    const glabellaY = landmarks[keyPoints.glabella].y;
+    const chinY = landmarks[keyPoints.chin].y;
+    const lowerFaceHeight = chinY - glabellaY;
+    const correctedHairlineY = landmarks[keyPoints.hairline].y - (lowerFaceHeight * 0.3); // 30% 위로 (시각적으로 더 명확하게)
+
+    // 보정된 헤어라인 위치로 HEIGHT 선 그리기
+    drawCorrectedHeightLine(ctx, landmarks, keyPoints, correctedHairlineY, w, h, '#a855f7', 'HEIGHT');
 
     // 광대 너비 (시안)
     drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.leftZygoma, keyPoints.rightZygoma, w, h, '#22d3ee', 'CHEEKBONE', 'top');
@@ -636,8 +643,16 @@ function drawLandmarksOnCanvas(landmarks, video) {
 
     // 3. 주요 포인트 (펄스 애니메이션 효과)
     const pulseRadius = 4 + Math.sin(Date.now() / 200) * 2;
+
+    // 보정된 헤어라인 포인트 추가 (별도 처리)
+    const correctedHairlinePoint = {
+        x: landmarks[keyPoints.hairline].x * w,
+        y: Math.max(0, correctedHairlineY * h),
+        color: '#a855f7'
+    };
+
     const importantPoints = [
-        { idx: keyPoints.hairline, color: '#a855f7' },
+        // hairline은 보정 위치 사용하므로 제외
         { idx: keyPoints.chin, color: '#a855f7' },
         { idx: keyPoints.leftZygoma, color: '#22d3ee' },
         { idx: keyPoints.rightZygoma, color: '#22d3ee' },
@@ -647,6 +662,9 @@ function drawLandmarksOnCanvas(landmarks, video) {
         { idx: keyPoints.leftEyebrowOuter, color: '#ec4899' },
         { idx: keyPoints.rightEyebrowOuter, color: '#ec4899' }
     ];
+
+    // 보정된 헤어라인 포인트 그리기
+    drawSinglePoint(ctx, correctedHairlinePoint.x, correctedHairlinePoint.y, correctedHairlinePoint.color, pulseRadius);
 
     importantPoints.forEach(({ idx, color }) => {
         const x = landmarks[idx].x * w;
@@ -742,6 +760,88 @@ function drawMeasurementLineWithLabel(ctx, landmarks, idx1, idx2, w, h, color, l
     // 라벨 텍스트
     ctx.fillStyle = color;
     ctx.fillText(label, labelX, labelY + 2);
+}
+
+// 보정된 헤어라인으로 HEIGHT 선 그리기
+function drawCorrectedHeightLine(ctx, landmarks, keyPoints, correctedHairlineY, w, h, color, label) {
+    const hairlineX = landmarks[keyPoints.hairline].x * w;
+    const y1 = Math.max(0, correctedHairlineY * h); // 화면 밖으로 나가지 않도록
+    const chinX = landmarks[keyPoints.chin].x * w;
+    const y2 = landmarks[keyPoints.chin].y * h;
+
+    // 중앙 X 좌표 (헤어라인과 턱의 평균)
+    const centerX = (hairlineX + chinX) / 2;
+
+    // 글로우 효과
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8;
+
+    // 선
+    ctx.beginPath();
+    ctx.setLineDash([8, 4]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.moveTo(centerX, y1);
+    ctx.lineTo(centerX, y2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.shadowBlur = 0;
+
+    // 끝점 마커
+    [{ x: centerX, y: y1 }, { x: centerX, y: y2 }].forEach(pt => {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+    });
+
+    // 라벨
+    const midY = (y1 + y2) / 2;
+
+    ctx.font = 'bold 10px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+
+    const labelX = centerX - 35;
+
+    // 라벨 배경
+    const textWidth = ctx.measureText(label).width + 8;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(labelX - textWidth/2, midY - 8, textWidth, 14);
+
+    // 라벨 텍스트
+    ctx.fillStyle = color;
+    ctx.fillText(label, labelX, midY + 2);
+}
+
+// 단일 포인트 그리기 (보정된 위치용)
+function drawSinglePoint(ctx, x, y, color, pulseRadius) {
+    // hex to rgba
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+
+    // 외곽 글로우
+    ctx.beginPath();
+    ctx.arc(x, y, pulseRadius + 4, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.3)`;
+    ctx.fill();
+
+    // 내부 점
+    ctx.beginPath();
+    ctx.arc(x, y, pulseRadius, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    // 중심점
+    ctx.beginPath();
+    ctx.arc(x, y, 2, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
 }
 
 function drawCornerFrame(ctx, w, h) {
