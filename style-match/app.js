@@ -153,6 +153,30 @@ function getFeatureName(feature) {
     return names[feature]?.[lang] || names[feature]?.ko || feature;
 }
 
+// 이미지 압축 함수
+function compressImage(dataUrl, maxWidth, quality) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth) {
+                height = (height * maxWidth) / width;
+                width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = dataUrl;
+    });
+}
+
 // 카메라 관련
 let cameraStream = null;
 let cameraFaceMesh = null;
@@ -1117,6 +1141,123 @@ function clearLandmarkCanvas() {
     if (display) display.remove();
 }
 
+// ========== 업로드 이미지용 랜드마크 시각화 ==========
+function drawLandmarksOnUploadedImage(landmarks, canvas) {
+    if (!canvas || !landmarks) return;
+
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // 주요 랜드마크 인덱스
+    const keyPoints = {
+        hairline: 10,
+        glabella: 9,
+        noseTip: 1,
+        chin: 152,
+        leftZygoma: 234,
+        rightZygoma: 454,
+        leftGonion: 58,
+        rightGonion: 288,
+        leftEyebrowOuter: 70,
+        rightEyebrowOuter: 300,
+        leftEyebrowInner: 107,
+        rightEyebrowInner: 336,
+        leftMouth: 61,
+        rightMouth: 291,
+        foreheadLeft: 71,
+        foreheadRight: 301
+    };
+
+    // 얼굴 윤곽선 (8각형)
+    const chinY = landmarks[152].y;
+    const foreheadY = landmarks[10].y;
+    const faceHeight = chinY - foreheadY;
+    const foreheadExtension = faceHeight * 0.25;
+
+    const outlinePoints = [
+        { x: landmarks[10].x * w, y: Math.max(5, (landmarks[10].y - foreheadExtension) * h) },
+        { x: landmarks[338].x * w, y: Math.max(5, (landmarks[338].y - foreheadExtension) * h) },
+        { x: landmarks[454].x * w, y: landmarks[454].y * h },
+        { x: landmarks[288].x * w, y: landmarks[288].y * h },
+        { x: landmarks[152].x * w, y: landmarks[152].y * h },
+        { x: landmarks[58].x * w, y: landmarks[58].y * h },
+        { x: landmarks[234].x * w, y: landmarks[234].y * h },
+        { x: landmarks[109].x * w, y: Math.max(5, (landmarks[109].y - foreheadExtension) * h) }
+    ];
+
+    // 글로우 효과
+    ctx.shadowColor = '#a855f7';
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(168, 85, 247, 0.7)';
+    ctx.lineWidth = 2.5;
+
+    ctx.moveTo(outlinePoints[0].x, outlinePoints[0].y);
+    for (let i = 1; i < outlinePoints.length; i++) {
+        ctx.lineTo(outlinePoints[i].x, outlinePoints[i].y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // 측정선들
+    const glabellaYPos = landmarks[keyPoints.glabella].y;
+    const chinYPos = landmarks[keyPoints.chin].y;
+    const measureFaceHeight = chinYPos - glabellaYPos;
+    const hairlineOffset = measureFaceHeight * 0.15;
+    const correctedHairlineYRatio = landmarks[keyPoints.hairline].y - hairlineOffset;
+
+    // HEIGHT 선
+    drawCorrectedHeightLine(ctx, landmarks, keyPoints, correctedHairlineYRatio, w, h, '#a855f7', 'HEIGHT');
+
+    // 광대 너비
+    drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.leftZygoma, keyPoints.rightZygoma, w, h, '#22d3ee', 'CHEEKBONE', 'top');
+
+    // 턱 너비
+    drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.leftGonion, keyPoints.rightGonion, w, h, '#fbbf24', 'JAW', 'bottom');
+
+    // 눈썹 너비
+    drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.leftEyebrowOuter, keyPoints.rightEyebrowOuter, w, h, '#ec4899', 'EYEBROW', 'top');
+
+    // 미간 거리
+    drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.leftEyebrowInner, keyPoints.rightEyebrowInner, w, h, '#22c55e', 'GLABELLA', 'bottom');
+
+    // 입술 너비
+    drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.leftMouth, keyPoints.rightMouth, w, h, '#f97316', 'LIPS', 'bottom');
+
+    // 이마 너비
+    drawMeasurementLineWithLabel(ctx, landmarks, keyPoints.foreheadLeft, keyPoints.foreheadRight, w, h, '#c084fc', 'FOREHEAD', 'top');
+
+    // 주요 포인트 (정적)
+    const pointRadius = 5;
+    const hairlineTopY = Math.max(10, (landmarks[10].y - hairlineOffset) * h);
+
+    drawSinglePoint(ctx, landmarks[keyPoints.hairline].x * w, hairlineTopY, '#a855f7', pointRadius);
+
+    const importantPoints = [
+        { idx: keyPoints.chin, color: '#a855f7' },
+        { idx: keyPoints.leftZygoma, color: '#22d3ee' },
+        { idx: keyPoints.rightZygoma, color: '#22d3ee' },
+        { idx: keyPoints.leftGonion, color: '#fbbf24' },
+        { idx: keyPoints.rightGonion, color: '#fbbf24' },
+        { idx: keyPoints.glabella, color: '#22c55e' },
+        { idx: keyPoints.leftEyebrowOuter, color: '#ec4899' },
+        { idx: keyPoints.rightEyebrowOuter, color: '#ec4899' }
+    ];
+
+    importantPoints.forEach(({ idx, color }) => {
+        const x = landmarks[idx].x * w;
+        const y = landmarks[idx].y * h;
+        drawSinglePoint(ctx, x, y, color, pointRadius);
+    });
+
+    // 코너 프레임
+    drawCornerFrame(ctx, w, h);
+
+    console.log('📸 업로드 이미지에 랜드마크 그리기 완료');
+}
+
 // 카메라에서 캡처
 window.captureFromCamera = function() {
     if (!lastFaceResults || !isFaceDetected) {
@@ -1277,7 +1418,7 @@ window.startAnalysis = async function() {
 };
 
 // ========== MediaPipe 결과 처리 ==========
-function onFaceMeshResults(results) {
+async function onFaceMeshResults(results) {
     showLoading(false);
 
     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
@@ -1287,6 +1428,12 @@ function onFaceMeshResults(results) {
 
     const landmarks = results.multiFaceLandmarks[0];
     console.log('🎯 랜드마크 감지:', landmarks.length, '포인트');
+
+    // 📸 업로드된 이미지에도 랜드마크 그리기
+    const faceCanvas = document.getElementById('faceCanvas');
+    if (faceCanvas && uploadedImage) {
+        drawLandmarksOnUploadedImage(landmarks, faceCanvas);
+    }
 
     // 비율 계산
     const ratios = calculateFaceRatios(landmarks);
@@ -1318,10 +1465,29 @@ function onFaceMeshResults(results) {
     // 📸 헤어체험용 사진 저장 (sessionStorage)
     if (uploadedImage) {
         try {
-            sessionStorage.setItem('styleMatchPhoto', uploadedImage);
+            // 이미지 크기 확인 (디버깅용)
+            const sizeKB = Math.round(uploadedImage.length / 1024);
+            console.log(`📸 이미지 크기: ${sizeKB}KB`);
+
+            // 이미지가 너무 크면 압축
+            let photoToSave = uploadedImage;
+            if (sizeKB > 500) {
+                console.log('📸 이미지 압축 중...');
+                photoToSave = await compressImage(uploadedImage, 800, 0.7);
+                console.log(`📸 압축 후 크기: ${Math.round(photoToSave.length / 1024)}KB`);
+            }
+
+            sessionStorage.setItem('styleMatchPhoto', photoToSave);
             console.log('📸 헤어체험용 사진 저장 완료');
         } catch (e) {
-            console.warn('사진 저장 실패 (용량 초과):', e);
+            console.error('❌ 사진 저장 실패:', e);
+            // localStorage로 폴백 시도
+            try {
+                localStorage.setItem('styleMatchPhoto', uploadedImage);
+                console.log('📸 localStorage에 저장됨 (폴백)');
+            } catch (e2) {
+                console.error('❌ localStorage 저장도 실패:', e2);
+            }
         }
     }
 
