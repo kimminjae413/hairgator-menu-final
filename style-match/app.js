@@ -1564,15 +1564,25 @@ function interpretAnalysis(ratios, eyebrowAnalysis = null) {
             solution: '가로 볼륨으로 세로 길이를 상쇄하는 스타일이 어울립니다'
         });
         if (selectedGender === 'female') {
+            // ⭐ 보정 우선 로직: 긴 얼굴은 가로 볼륨이 핵심
             recommendations.push({
                 mainCategory: ['C LENGTH', 'D LENGTH', 'E LENGTH', 'F LENGTH'],
                 score: 40,
                 reason: '가로 볼륨으로 세로 비율 보정'
             });
+            // 긴 기장도 웨이브가 있으면 추천 (보정 효과)
+            recommendations.push({
+                mainCategory: ['A LENGTH', 'B LENGTH'],
+                score: 30,
+                reason: '긴 기장 + 웨이브로 가로 볼륨 연출 (웨이브 필수!)',
+                condition: 'hasWave'  // 스타일 매칭 시 웨이브 체크
+            });
+            // 생머리 긴 기장만 회피
             avoidances.push({
                 mainCategory: ['A LENGTH', 'B LENGTH'],
-                score: -20,
-                reason: '긴 기장이 얼굴을 더 길어 보이게 함'
+                score: -25,
+                reason: '생머리 긴 기장은 얼굴을 더 길어 보이게 함',
+                condition: 'noWave'  // 스타일 매칭 시 웨이브 없으면 적용
             });
         } else {
             // 긴 얼굴 남자: 사이드 볼륨 추천
@@ -2460,16 +2470,30 @@ function calculateHairstyleScores(analysis, styles) {
         const name = (style.name || '').toLowerCase();
 
         // 1. 카테고리(기장)별 점수 - 여자
+        // ⭐ 보정(Correction) 우선 로직: 얼굴형 단점 보완이 1순위
         if (selectedGender === 'female') {
+            // 웨이브/컬 여부 확인 (aiAnalysis 또는 스타일 이름에서)
+            const ai = style.aiAnalysis;
+            const hasWaveStyle = (ai?.styleFeatures?.hasWave || ai?.styleFeatures?.hasCurl) ||
+                name.includes('웨이브') || name.includes('wave') || name.includes('컬') ||
+                name.includes('curl') || name.includes('펌');
+
             if (isLongFace) {
-                // 긴 얼굴: 긴 머리 감점, 중단발~세미롱 가산점
+                // 긴 얼굴: 기장별 세분화된 보정 로직
                 if (['A LENGTH', 'B LENGTH'].includes(cat)) {
-                    categoryBonus -= 20;
+                    if (hasWaveStyle) {
+                        // ✅ 긴 기장 + 웨이브 = 가로 볼륨으로 얼굴 길이 보정 (추천!)
+                        categoryBonus += 30;
+                    } else {
+                        // ❌ 긴 기장 + 생머리 = 세로 라인 강조 (비추천)
+                        categoryBonus -= 25;
+                    }
                 } else if (['C LENGTH', 'D LENGTH', 'E LENGTH', 'F LENGTH'].includes(cat)) {
-                    categoryBonus += 40; // 기획서대로 +40점
+                    // 중단발~세미롱: 가장 이상적인 보정 기장
+                    categoryBonus += 40;
                 }
             } else if (isShortFace) {
-                // 짧은 얼굴: 긴 머리 추천
+                // 짧은 얼굴: 긴 머리 추천 (세로 연장 효과)
                 if (['A LENGTH', 'B LENGTH', 'C LENGTH'].includes(cat)) {
                     categoryBonus += 35;
                 }
@@ -2534,6 +2558,10 @@ function calculateHairstyleScores(analysis, styles) {
         }
 
         // 4. AI 분석 데이터 매칭 (Gemini Vision 분석 결과 활용)
+        // ⭐ 가중치 우선순위:
+        //   1순위: 얼굴형 보정 (categoryBonus) = +30~50점
+        //   2순위: AI 얼굴형/실루엣 매칭 (aiBonus) = +15~25점
+        //   3순위: 이미지 타입 분위기 매칭 = +5~10점 (부가적)
         let aiBonus = 0;
         if (style.aiAnalysis) {
             const ai = style.aiAnalysis;
@@ -2542,21 +2570,21 @@ function calculateHairstyleScores(analysis, styles) {
             const userFaceType = analysis.faceType?.code; // 'oval', 'round', 'square', 'heart', 'long', 'diamond'
             const userEyebrowType = analysis.eyebrowType?.lineType; // 'arched', 'straight'
 
-            // 4-1. 이미지 타입 매칭 (웜/뉴트럴/쿨)
+            // 4-1. 이미지 타입 매칭 (웜/뉴트럴/쿨) - 부가적 가산 (낮은 가중치)
             if (userImageType && ai.recommendedImageTypes && ai.recommendedImageTypes.includes(userImageType)) {
-                aiBonus += 15;
+                aiBonus += 8;  // 낮춤: 15 → 8
             }
             if (userImageType && ai.imageType === userImageType) {
-                aiBonus += 10; // 스타일 자체가 같은 이미지 타입이면 추가 보너스
+                aiBonus += 5;  // 낮춤: 10 → 5 (분위기 매칭은 부가적)
             }
 
-            // 4-2. 얼굴형 매칭
+            // 4-2. 얼굴형 매칭 (AI가 분석한 추천/회피 얼굴형)
             if (userFaceType) {
                 if (ai.recommendedFaceTypes && ai.recommendedFaceTypes.includes(userFaceType)) {
-                    aiBonus += 20;
+                    aiBonus += 25;  // 높임: 20 → 25 (보정 효과)
                 }
                 if (ai.avoidFaceTypes && ai.avoidFaceTypes.includes(userFaceType)) {
-                    aiBonus -= 25;
+                    aiBonus -= 30;  // 높임: -25 → -30 (보정 역효과)
                 }
             }
 
@@ -2733,7 +2761,7 @@ function generateCategoryReason(category, analysis, topStyles) {
             return '누구에게나 잘 어울리는 <strong>황금 비율 기장</strong>입니다.';
         }
         if (['A LENGTH', 'B LENGTH'].includes(category)) {
-            if (isLongFace) return '얼굴이 길어 보일 수 있어 <strong>볼륨이나 웨이브</strong>가 필수입니다. (-20점)';
+            if (isLongFace) return '웨이브가 있으면 <strong>가로 볼륨으로 보정 효과</strong> (+30점), 생머리는 피하세요 (-25점)';
             if (isShortFace) return '세로 라인을 강조해 얼굴을 <strong>갸름하게</strong> 보이게 합니다. (+35점)';
             return '긴 기장으로 우아한 분위기 연출';
         }
