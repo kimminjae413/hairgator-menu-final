@@ -3817,8 +3817,8 @@ window.goToHairTry = async function() {
 
         showHairTryLoading(false);
 
-        // 5단계: 결과 모달 표시
-        showHairTryResult(resultImage, customerPhoto, styleName);
+        // 5단계: 결과 모달 표시 (스타일 이미지 포함)
+        showHairTryResult(resultImage, customerPhoto, styleName, styleImageUrl, gender);
 
         // 사용 후 사진 삭제
         sessionStorage.removeItem('styleMatchPhoto');
@@ -3860,44 +3860,75 @@ function showHairTryLoading(show, styleName = '') {
     }
 }
 
-// 헤어체험 결과 모달
-function showHairTryResult(resultImage, originalPhoto, styleName) {
+// 헤어체험 결과 모달 (메인 서비스와 동일한 구조)
+function showHairTryResult(resultImage, originalPhoto, styleName, styleImage, gender) {
     const existingModal = document.getElementById('hairTryResultModal');
     if (existingModal) existingModal.remove();
+
+    const disclaimerText = t('hairTry.disclaimer') || '가상 결과입니다. 헤어 느낌을 미리 파악해보는 정도의 의미로만 사용해 주세요. 실제와 다를 수 있습니다.';
+    const beforeText = t('hairTry.before') || 'BEFORE';
+    const afterText = t('hairTry.after') || 'AFTER';
+    const styleText = t('hairTry.style') || 'STYLE';
 
     const modal = document.createElement('div');
     modal.id = 'hairTryResultModal';
     modal.innerHTML = `
-        <div class="hairtry-result-overlay" onclick="closeHairTryResult()"></div>
         <div class="hairtry-result-content">
-            <button class="hairtry-close-btn" onclick="closeHairTryResult()">×</button>
-            <h3 class="hairtry-result-title">✨ ${t('hairTry.resultTitle') || '헤어체험 결과'}</h3>
-            <p class="hairtry-result-style">${styleName}</p>
+            <div class="hairtry-result-header">
+                <h3>✨ ${t('hairTry.result') || '체험 결과'}</h3>
+                <p>${styleName}</p>
+                <button class="close-result-btn" onclick="closeHairTryResult()">×</button>
+            </div>
 
-            <div class="hairtry-comparison">
-                <div class="hairtry-before">
-                    <p>${t('hairTry.before') || 'Before'}</p>
-                    <img src="${originalPhoto}" alt="Before">
+            <div class="hairtry-result-body">
+                <!-- 전/후 비교 컨테이너 -->
+                <div class="hairtry-comparison">
+                    <div class="comparison-left-stack">
+                        ${styleImage ? `
+                        <div class="comparison-style">
+                            <span class="comparison-label">${styleText}</span>
+                            <img src="${styleImage}" alt="Style" class="comparison-image">
+                        </div>
+                        ` : ''}
+                        <div class="comparison-before">
+                            <span class="comparison-label">${beforeText}</span>
+                            <img src="${originalPhoto}" alt="Before" class="comparison-image">
+                        </div>
+                    </div>
+                    <div class="comparison-divider">
+                        <span class="divider-arrow">→</span>
+                    </div>
+                    <div class="comparison-after">
+                        <span class="comparison-label">${afterText}</span>
+                        <img src="${resultImage}" alt="After" class="comparison-image" crossorigin="anonymous">
+                    </div>
                 </div>
-                <div class="hairtry-arrow">→</div>
-                <div class="hairtry-after">
-                    <p>${t('hairTry.after') || 'After'}</p>
-                    <img src="${resultImage}" alt="After">
+
+                <div class="hairtry-disclaimer">
+                    <span class="disclaimer-icon">ℹ️</span>
+                    <span>${disclaimerText}</span>
                 </div>
             </div>
 
-            <div class="hairtry-actions">
-                <button class="hairtry-action-btn download" onclick="downloadHairTryResult('${resultImage}')">
-                    📥 ${t('hairTry.download') || '저장하기'}
+            <div class="hairtry-result-actions">
+                <button class="result-action-btn retry-btn" onclick="retryHairTry()">
+                    <span>🔄</span>
+                    <span>${t('hairTry.retry') || '다시 시도'}</span>
                 </button>
-                <button class="hairtry-action-btn close" onclick="closeHairTryResult()">
-                    ${t('ui.close') || '닫기'}
+                <button class="result-action-btn save-btn" onclick="downloadHairTryResult('${resultImage}')">
+                    <span>💾</span>
+                    <span>${t('hairTry.save') || '저장하기'}</span>
                 </button>
             </div>
         </div>
+        <div class="hairtry-result-overlay" onclick="closeHairTryResult()"></div>
     `;
+
+    // 성별 기반 스타일 추가
+    addHairTryResultStyles(gender);
+
     document.body.appendChild(modal);
-    addHairTryResultStyles();
+    document.body.style.overflow = 'hidden';
 
     setTimeout(() => modal.classList.add('active'), 10);
 }
@@ -3906,7 +3937,19 @@ window.closeHairTryResult = function() {
     const modal = document.getElementById('hairTryResultModal');
     if (modal) {
         modal.classList.remove('active');
-        setTimeout(() => modal.remove(), 300);
+        setTimeout(() => {
+            modal.remove();
+            document.body.style.overflow = '';
+        }, 300);
+    }
+};
+
+window.retryHairTry = function() {
+    closeHairTryResult();
+    // 현재 스타일로 다시 헤어체험 시도
+    if (currentModalStyle) {
+        // 모달 다시 열기
+        openStyleModal(currentModalStyle);
     }
 };
 
@@ -3944,7 +3987,7 @@ function addHairTryLoadingStyles() {
             width: 60px;
             height: 60px;
             border: 3px solid rgba(255,255,255,0.2);
-            border-top-color: #E91E63;
+            border-top-color: #4A90E2;
             border-radius: 50%;
             margin: 0 auto 20px;
             animation: spin 1s linear infinite;
@@ -3959,7 +4002,7 @@ function addHairTryLoadingStyles() {
         }
         .hairtry-loading-style {
             font-size: 16px;
-            color: #E91E63;
+            color: #4A90E2;
             margin-bottom: 16px;
         }
         .hairtry-loading-hint {
@@ -3970,9 +4013,17 @@ function addHairTryLoadingStyles() {
     document.head.appendChild(style);
 }
 
-// 헤어체험 결과 스타일
-function addHairTryResultStyles() {
-    if (document.getElementById('hairTryResultStyles')) return;
+// 헤어체험 결과 스타일 (메인 서비스와 동일, 성별 기반 테마)
+function addHairTryResultStyles(gender) {
+    // 기존 스타일 제거 후 재생성
+    const existingStyle = document.getElementById('hairTryResultStyles');
+    if (existingStyle) existingStyle.remove();
+
+    // 성별에 따른 테마 색상 (남자: 파란색, 여자: 핑크색)
+    const isMale = gender === 'male';
+    const primaryColor = isMale ? '#4A90E2' : '#E91E63';
+    const primaryDark = isMale ? '#3A7BC8' : '#C2185B';
+    const primaryRgb = isMale ? '74, 144, 226' : '233, 30, 99';
 
     const style = document.createElement('style');
     style.id = 'hairTryResultStyles';
@@ -3981,112 +4032,210 @@ function addHairTryResultStyles() {
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10001;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10000;
             opacity: 0;
-            transition: opacity 0.3s;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
         #hairTryResultModal.active {
             opacity: 1;
+            visibility: visible;
         }
         .hairtry-result-overlay {
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(0, 0, 0, 0.85);
+            z-index: -1;
         }
         .hairtry-result-content {
             position: relative;
-            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            background: #ffffff;
             border-radius: 20px;
-            padding: 24px;
-            max-width: 500px;
-            width: 95%;
+            max-width: 90vw;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid #eee;
         }
-        .hairtry-close-btn {
+        .hairtry-result-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+        .hairtry-result-header h3 {
+            margin: 0 0 5px 0;
+            color: #333;
+            font-size: 20px;
+        }
+        .hairtry-result-header p {
+            margin: 0;
+            color: ${primaryColor};
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .close-result-btn {
             position: absolute;
-            top: 12px;
-            right: 12px;
+            top: 15px;
+            right: 15px;
             background: none;
             border: none;
-            color: white;
-            font-size: 28px;
+            color: #888;
+            font-size: 24px;
             cursor: pointer;
-            opacity: 0.7;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .hairtry-close-btn:hover { opacity: 1; }
-        .hairtry-result-title {
-            text-align: center;
-            color: white;
-            font-size: 22px;
-            margin-bottom: 8px;
-        }
-        .hairtry-result-style {
-            text-align: center;
-            color: #E91E63;
-            font-size: 16px;
-            margin-bottom: 20px;
+        .close-result-btn:hover { color: #333; }
+        .hairtry-result-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
         }
         .hairtry-comparison {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        .hairtry-before, .hairtry-after {
-            flex: 1;
-            text-align: center;
-        }
-        .hairtry-before p, .hairtry-after p {
-            color: rgba(255,255,255,0.7);
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-        .hairtry-before img, .hairtry-after img {
+            gap: 15px;
             width: 100%;
-            max-width: 180px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
-        .hairtry-arrow {
-            font-size: 24px;
-            color: #E91E63;
-        }
-        .hairtry-actions {
+        .comparison-left-stack {
             display: flex;
-            gap: 12px;
+            flex-direction: column;
+            gap: 10px;
+            flex: 0 0 auto;
+            max-width: 140px;
+        }
+        .comparison-style, .comparison-before, .comparison-after {
+            position: relative;
+        }
+        .comparison-after {
+            flex: 1;
+            max-width: 380px;
+        }
+        .comparison-label {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            z-index: 2;
+        }
+        .comparison-style .comparison-label {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        }
+        .comparison-before .comparison-label {
+            background: rgba(100, 100, 100, 0.8);
+        }
+        .comparison-after .comparison-label {
+            background: linear-gradient(135deg, ${primaryColor} 0%, ${primaryDark} 100%);
+        }
+        .comparison-image {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        .comparison-style .comparison-image { max-height: 20vh; }
+        .comparison-before .comparison-image { max-height: 20vh; opacity: 0.85; }
+        .comparison-after .comparison-image { max-height: 55vh; }
+        .comparison-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .divider-arrow {
+            font-size: 24px;
+            color: ${primaryColor};
+            animation: pulseArrow 1.5s ease-in-out infinite;
+        }
+        @keyframes pulseArrow {
+            0%, 100% { opacity: 0.5; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(5px); }
+        }
+        .hairtry-disclaimer {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            background: #FFF3CD;
+            border: 1px solid #FFD93D;
+            border-radius: 10px;
+            padding: 12px 15px;
+            max-width: 100%;
+        }
+        .hairtry-disclaimer .disclaimer-icon { flex-shrink: 0; font-size: 16px; }
+        .hairtry-disclaimer span:last-child {
+            font-size: 12px;
+            color: #664D03;
+            line-height: 1.5;
+        }
+        .hairtry-result-actions {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            border-top: 1px solid #eee;
             justify-content: center;
         }
-        .hairtry-action-btn {
-            padding: 12px 24px;
-            border-radius: 10px;
+        .result-action-btn {
+            padding: 14px 28px;
             border: none;
-            font-size: 15px;
+            border-radius: 25px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
         }
-        .hairtry-action-btn:hover {
-            transform: scale(1.02);
-        }
-        .hairtry-action-btn.download {
-            background: linear-gradient(135deg, #E91E63, #9C27B0);
+        .retry-btn {
+            background: #666;
             color: white;
         }
-        .hairtry-action-btn.close {
-            background: rgba(255,255,255,0.1);
+        .retry-btn:hover {
+            background: #888;
+            transform: translateY(-2px);
+        }
+        .save-btn {
+            background: linear-gradient(135deg, ${primaryColor} 0%, ${primaryDark} 100%);
             color: white;
-            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(${primaryRgb}, 0.4);
+        }
+        @media (max-width: 767px) {
+            .hairtry-result-content { max-width: 95vw; }
+            .comparison-left-stack { max-width: 100px; }
+            .comparison-after { max-width: 200px; }
+            .comparison-style .comparison-image, .comparison-before .comparison-image { max-height: 15vh; }
+            .comparison-after .comparison-image { max-height: 40vh; }
+            .hairtry-result-actions { flex-direction: column; gap: 10px; }
+            .result-action-btn { width: 100%; justify-content: center; }
         }
     `;
     document.head.appendChild(style);
