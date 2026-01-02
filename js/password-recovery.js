@@ -480,27 +480,23 @@
 
         // 로그인 시도 횟수 관리 (기존 함수들)
         async checkLoginAttempts(name, phone) {
-            try {
-                const key = `${name}_${phone}`;
-                const attempts = JSON.parse(localStorage.getItem('hairgator_login_attempts') || '{}');
-                const userAttempts = attempts[key];
+            const key = `${name}_${phone}`;
+            const attempts = JSON.parse(localStorage.getItem('hairgator_login_attempts') || '{}');
+            const userAttempts = attempts[key];
 
-                if (userAttempts && userAttempts.count >= this.maxLoginAttempts) {
-                    const timeSinceLock = Date.now() - userAttempts.lockedAt;
-                    
-                    if (timeSinceLock < this.lockoutDuration) {
-                        const remainingTime = Math.ceil((this.lockoutDuration - timeSinceLock) / 1000 / 60);
-                        throw new Error(`계정이 일시적으로 잠겼습니다.\n${remainingTime}분 후 다시 시도해주세요.`);
-                    } else {
-                        delete attempts[key];
-                        localStorage.setItem('hairgator_login_attempts', JSON.stringify(attempts));
-                    }
+            if (userAttempts && userAttempts.count >= this.maxLoginAttempts) {
+                const timeSinceLock = Date.now() - userAttempts.lockedAt;
+
+                if (timeSinceLock < this.lockoutDuration) {
+                    const remainingTime = Math.ceil((this.lockoutDuration - timeSinceLock) / 1000 / 60);
+                    throw new Error(`계정이 일시적으로 잠겼습니다.\n${remainingTime}분 후 다시 시도해주세요.`);
+                } else {
+                    delete attempts[key];
+                    localStorage.setItem('hairgator_login_attempts', JSON.stringify(attempts));
                 }
-
-                return true;
-            } catch (error) {
-                throw error;
             }
+
+            return true;
         }
 
         incrementLoginAttempts(name, phone) {

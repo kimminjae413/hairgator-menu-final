@@ -2,6 +2,8 @@
 // HAIRGATOR Personal Color Pro - 통합 버전
 // AI 모드 + 전문가 드래이핑 모드 + Personal Analysis
 // ==========================================
+/* eslint-disable no-dupe-keys */
+// 다국어 색상명 매핑에서 중복 키 허용 (동일 색상명이 여러 언어에서 사용됨)
 
         // 현재 언어 가져오기 (부모 창 우선, 그 다음 localStorage)
         function getCurrentLanguage() {

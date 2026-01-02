@@ -74,7 +74,7 @@ class MediaViewer {
                 </div>
                 
                 <!-- 썸네일 갤러리 -->
-                ${false ? this.generateThumbnailGalleryHTML() : ''}
+                ${''/* TODO: 썸네일 갤러리 기능 비활성화됨 */}
                 
                 
             </div>

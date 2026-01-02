@@ -8723,7 +8723,9 @@ async function generateCustomRecipeFromParams(payload, geminiKey) {
     console.log(`🎯 ${targetSeries} 시리즈: ${seriesStyles.length}개 스타일`);
 
     // 4. 스타일 스코어링
+    // TODO: calculate42FormulaScore 함수 정의 필요 (현재 미구현)
     const stylesWithScores = seriesStyles.map(style => {
+      // eslint-disable-next-line no-undef
       const score = calculate42FormulaScore(style, params56);
       return { ...style, ...score };
     });

@@ -128,7 +128,7 @@ exports.handler = async (event) => {
         }
 
         const viewAngles = { front: 0, right: 90, back: 180, left: 270 };
-        if (!viewAngles.hasOwnProperty(viewKey)) {
+        if (!Object.prototype.hasOwnProperty.call(viewAngles, viewKey)) {
             return {
                 statusCode: 400,
                 headers,

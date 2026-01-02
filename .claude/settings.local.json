@@ -76,7 +76,9 @@
       "Bash(mv:*)",
       "mcp__chrome-devtools__get_console_message",
       "Bash(timeout /t 60 /nobreak)",
-      "Bash(wmic process where \"processid=45640\" get name,status)"
+      "Bash(wmic process where \"processid=45640\" get name,status)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint:*)"
     ],
     "deny": [],
     "ask": []

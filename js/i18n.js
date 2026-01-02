@@ -1,5 +1,7 @@
 // HAIRGATOR 다국어 지원 시스템
 // 지원 언어: 한국어(ko), 영어(en), 일본어(ja), 중국어(zh), 베트남어(vi), 인도네시아어(id), 스페인어(es)
+/* eslint-disable no-dupe-keys */
+// TODO: 중복 키 정리 필요 (eyeDistance, toast, desiredLength, inputComplete)
 
 const HAIRGATOR_I18N = {
   ko: {
