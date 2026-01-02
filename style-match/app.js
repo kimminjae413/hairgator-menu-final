@@ -612,7 +612,7 @@ function drawLandmarksOnCanvas(landmarks, video) {
     const chinY = landmarks[152].y;
     const foreheadY = landmarks[10].y;
     const faceHeight = chinY - foreheadY;
-    const foreheadExtension = faceHeight * 0.50; // 얼굴 높이의 50%만큼 위로 확장
+    const foreheadExtension = faceHeight * 0.25; // 얼굴 높이의 25%만큼 위로 확장
     const chinExtension = faceHeight * 0.15; // 얼굴 높이의 15%만큼 아래로 확장
 
     // 글로우 효과
