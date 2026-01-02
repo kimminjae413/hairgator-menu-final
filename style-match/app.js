@@ -2453,26 +2453,105 @@ function calculateHairstyleScores(analysis, styles) {
             }
         }
 
+        // 4. AI 분석 데이터 매칭 (Gemini Vision 분석 결과 활용)
+        let aiBonus = 0;
+        if (style.aiAnalysis) {
+            const ai = style.aiAnalysis;
+            const userImageType = analysis.imageType?.type; // 'warm', 'neutral', 'cool'
+            const userTexture = analysis.imageType?.subType; // 'hard', 'soft', 'balanced'
+            const userFaceType = analysis.faceType?.code; // 'oval', 'round', 'square', 'heart', 'long', 'diamond'
+            const userEyebrowType = analysis.eyebrowType?.lineType; // 'arched', 'straight'
+
+            // 4-1. 이미지 타입 매칭 (웜/뉴트럴/쿨)
+            if (userImageType && ai.recommendedImageTypes && ai.recommendedImageTypes.includes(userImageType)) {
+                aiBonus += 15;
+            }
+            if (userImageType && ai.imageType === userImageType) {
+                aiBonus += 10; // 스타일 자체가 같은 이미지 타입이면 추가 보너스
+            }
+
+            // 4-2. 얼굴형 매칭
+            if (userFaceType) {
+                if (ai.recommendedFaceTypes && ai.recommendedFaceTypes.includes(userFaceType)) {
+                    aiBonus += 20;
+                }
+                if (ai.avoidFaceTypes && ai.avoidFaceTypes.includes(userFaceType)) {
+                    aiBonus -= 25;
+                }
+            }
+
+            // 4-3. 텍스쳐 매칭 (하드/소프트)
+            if (userTexture && ai.texture) {
+                if (userTexture === ai.texture) {
+                    aiBonus += 10;
+                } else if (userTexture === 'hard' && ai.texture === 'soft') {
+                    aiBonus -= 5; // 미스매치 시 약간 감점
+                } else if (userTexture === 'soft' && ai.texture === 'hard') {
+                    aiBonus -= 5;
+                }
+            }
+
+            // 4-4. 눈썹 라인 매칭
+            if (userEyebrowType && ai.lineCharacter) {
+                if (userEyebrowType === 'arched' && ai.lineCharacter.archBrowMatch) {
+                    aiBonus += 10;
+                }
+                if (userEyebrowType === 'straight' && ai.lineCharacter.straightBrowMatch) {
+                    aiBonus += 10;
+                }
+            }
+
+            // 4-5. 커버 영역 매칭 (이마 넓으면 forehead 커버 스타일 가산)
+            if (isWideForehead && ai.coverArea && ai.coverArea.includes('forehead')) {
+                aiBonus += 10;
+            }
+
+            // 4-6. 실루엣/볼륨 매칭
+            if (ai.silhouette) {
+                if (isLongFace && ai.silhouette === 'curved') {
+                    aiBonus += 10; // 긴 얼굴에 곡선 실루엣
+                }
+                if (isShortFace && ai.silhouette === 'straight') {
+                    aiBonus += 10; // 짧은 얼굴에 직선 실루엣
+                }
+            }
+            if (ai.volumePosition) {
+                if (isLongFace && ai.volumePosition === 'side') {
+                    aiBonus += 10; // 긴 얼굴에 사이드 볼륨
+                }
+                if (isShortFace && ai.volumePosition === 'top') {
+                    aiBonus += 10; // 짧은 얼굴에 탑 볼륨
+                }
+            }
+        }
+
         // 최종 점수 합산 (0~100 범위)
-        score += categoryBonus + styleBonus;
+        score += categoryBonus + styleBonus + aiBonus;
         score = Math.min(100, Math.max(0, score));
 
-        // 추천 사유 생성
-        const reason = generateSimpleStyleReason(style, score, { isLongFace, isShortFace, isSquareJaw, isWideForehead }, ratios);
+        // AI 분석 활용 여부 로깅 (디버그용)
+        if (aiBonus !== 0) {
+            console.log(`🤖 ${style.styleId}: aiBonus=${aiBonus} (total=${score})`);
+        }
+
+        // 추천 사유 생성 (AI 분석 정보 포함)
+        const reason = generateSimpleStyleReason(style, score, { isLongFace, isShortFace, isSquareJaw, isWideForehead }, ratios, aiBonus);
 
         return {
             ...style,
             score: score,
-            reason: reason
+            reason: reason,
+            aiBonus: aiBonus // 디버그용
         };
     });
 }
 
 // ========== 간소화된 스타일 추천 사유 생성 ==========
-function generateSimpleStyleReason(style, score, faceFlags, ratios) {
+function generateSimpleStyleReason(style, score, faceFlags, ratios, aiBonus = 0) {
     const { isLongFace, isShortFace, isSquareJaw, isWideForehead } = faceFlags;
     const name = (style.name || '').toLowerCase();
     const subCat = (style.subCategory || '').toUpperCase();
+    const ai = style.aiAnalysis;
 
     // 스타일 특성 파악
     const hasWave = name.includes('웨이브') || name.includes('wave') || name.includes('컬') || name.includes('curl');
@@ -2481,21 +2560,33 @@ function generateSimpleStyleReason(style, score, faceFlags, ratios) {
 
     let parts = [];
 
+    // AI 분석 기반 스타일 특성 (aiAnalysis가 있을 때)
+    const aiHasWave = ai?.styleFeatures?.hasWave || ai?.styleFeatures?.hasCurl;
+    const aiHasBangs = ai?.styleFeatures?.hasBangs;
+    const aiSilhouette = ai?.silhouette;
+    const aiVolumePos = ai?.volumePosition;
+
     // === 고득점 (80점 이상) ===
     if (score >= 80) {
-        if (isLongFace) {
-            if (hasWave) {
+        // AI 분석으로 고득점일 때 더 정확한 사유 제공
+        if (aiBonus >= 20 && ai) {
+            if (ai.imageType) {
+                const imageTypeKo = { warm: '웜계', neutral: '뉴트럴', cool: '쿨계' }[ai.imageType] || ai.imageType;
+                parts.push(`✓ ${imageTypeKo} 스타일이 이미지 타입과 조화`);
+            }
+        } else if (isLongFace) {
+            if (hasWave || aiHasWave) {
                 parts.push('✓ 웨이브가 시선을 가로로 분산시켜 긴 얼굴형을 완벽하게 보완');
-            } else if (hasVolume) {
+            } else if (hasVolume || aiVolumePos === 'side') {
                 parts.push('✓ 풍성한 볼륨이 얼굴의 가로 비율을 채워 밸런스 최적화');
             } else {
                 parts.push('✓ 얼굴형의 단점을 커버하고 장점을 극대화하는 베스트 스타일');
             }
         } else if (isShortFace) {
             parts.push('✓ 세로 라인을 연장해 갸름한 인상 연출');
-        } else if (isSquareJaw && hasWave) {
+        } else if (isSquareJaw && (hasWave || aiSilhouette === 'curved')) {
             parts.push('✓ 부드러운 질감이 각진 턱선을 자연스럽게 소프닝');
-        } else if (isWideForehead && hasBang) {
+        } else if (isWideForehead && (hasBang || aiHasBangs)) {
             parts.push('✓ 앞머리가 넓은 이마를 커버하여 이상적인 비율 완성');
         } else {
             parts.push('✓ 얼굴형과 아주 이상적인 조화를 이루는 스타일');

@@ -10161,6 +10161,41 @@ async function getStylesForMatching(payload) {
           const thumbnailUrl = fields.thumbnailUrl?.stringValue || '';
           const imageUrl = fields.imageUrl?.stringValue || '';
 
+          // aiAnalysis 필드 파싱 (Gemini Vision 분석 결과)
+          let aiAnalysis = null;
+          if (fields.aiAnalysis?.mapValue?.fields) {
+            const af = fields.aiAnalysis.mapValue.fields;
+            aiAnalysis = {
+              imageType: af.imageType?.stringValue || null,
+              texture: af.texture?.stringValue || null,
+              silhouette: af.silhouette?.stringValue || null,
+              volumePosition: af.volumePosition?.stringValue || null,
+              coverArea: af.coverArea?.arrayValue?.values?.map(v => v.stringValue) || [],
+              recommendedFaceTypes: af.recommendedFaceTypes?.arrayValue?.values?.map(v => v.stringValue) || [],
+              avoidFaceTypes: af.avoidFaceTypes?.arrayValue?.values?.map(v => v.stringValue) || [],
+              recommendedImageTypes: af.recommendedImageTypes?.arrayValue?.values?.map(v => v.stringValue) || [],
+              tags: af.tags?.arrayValue?.values?.map(v => v.stringValue) || [],
+              lineCharacter: af.lineCharacter?.mapValue?.fields ? {
+                archBrowMatch: af.lineCharacter.mapValue.fields.archBrowMatch?.booleanValue || false,
+                straightBrowMatch: af.lineCharacter.mapValue.fields.straightBrowMatch?.booleanValue || false,
+                roundEyeMatch: af.lineCharacter.mapValue.fields.roundEyeMatch?.booleanValue || false,
+                sharpEyeMatch: af.lineCharacter.mapValue.fields.sharpEyeMatch?.booleanValue || false,
+                highNoseMatch: af.lineCharacter.mapValue.fields.highNoseMatch?.booleanValue || false,
+                lowNoseMatch: af.lineCharacter.mapValue.fields.lowNoseMatch?.booleanValue || false,
+                fullLipMatch: af.lineCharacter.mapValue.fields.fullLipMatch?.booleanValue || false,
+                thinLipMatch: af.lineCharacter.mapValue.fields.thinLipMatch?.booleanValue || false
+              } : null,
+              styleFeatures: af.styleFeatures?.mapValue?.fields ? {
+                hasWave: af.styleFeatures.mapValue.fields.hasWave?.booleanValue || false,
+                hasCurl: af.styleFeatures.mapValue.fields.hasCurl?.booleanValue || false,
+                hasLayer: af.styleFeatures.mapValue.fields.hasLayer?.booleanValue || false,
+                hasBangs: af.styleFeatures.mapValue.fields.hasBangs?.booleanValue || false,
+                bangsType: af.styleFeatures.mapValue.fields.bangsType?.stringValue || 'none',
+                partingType: af.styleFeatures.mapValue.fields.partingType?.stringValue || 'none'
+              } : null
+            };
+          }
+
           return {
             styleId: code,
             name: fields.name?.stringValue || '',
@@ -10170,7 +10205,9 @@ async function getStylesForMatching(payload) {
             type: 'cut',
             series: code.substring(0, 2), // SF, SP, FU 등
             // 이미지 URL: thumbnailUrl 우선, 없으면 imageUrl
-            resultImage: thumbnailUrl || imageUrl || ''
+            resultImage: thumbnailUrl || imageUrl || '',
+            // AI 분석 결과 (이미지 매칭용)
+            aiAnalysis: aiAnalysis
           };
         }).filter(s => s !== null);
 
