@@ -2532,7 +2532,7 @@ function calculateHairstyleScores(analysis, styles) {
         }
 
         // 앞머리(대분류)별 점수 - 남자
-        if (!isFemale) {
+        if (selectedGender !== 'female') {
             if (isWideForehead) {
                 // 넓은 이마 → 앞머리 있는 스타일 추천
                 if (['SIDE FRINGE'].includes(cat)) {
