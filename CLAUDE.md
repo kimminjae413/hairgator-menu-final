@@ -131,6 +131,38 @@ client.file_search_stores.import_file(
 **Store ID**: `fileSearchStores/hairgator-theory-final-2025-kkb6n1ftfbf2`
 **참고 스크립트**: `scripts/upload-*-to-rag.py`
 
+### 10. style-match 페이지 vs 메인 서비스 (menu.js) ⚠️ 중요!
+
+**style-match는 독립 페이지!** (iframe 아님, 전체 페이지 이동)
+- 메인 서비스: `index.html` + `menu.js` (allStyles 이미 로드됨)
+- style-match: `/style-match/index.html` + `app.js` (스타일을 API로 별도 로드)
+
+**기능 복사 시 주의사항:**
+| 항목 | 메인 서비스 (menu.js) | style-match (app.js) |
+|------|----------------------|---------------------|
+| 스타일 데이터 | 페이지 로드 시 이미 있음 | API로 별도 로드 필요 |
+| Firebase Storage | `storage` 전역 변수 | SDK 별도 초기화 필요 |
+| 헤어체험 사진 | 바로 사용 가능 | sessionStorage로 전달 |
+
+**헤어체험 구현 시 필수 확인:**
+1. **vModel API는 HTTP URL만 받음** - base64 `data:image/...` 안 됨
+2. **클라이언트에서 Firebase Storage 업로드 먼저** → URL 획득 → API 호출
+3. **API 응답 필드명**: `resultImageUrl` (resultImage 아님!)
+4. **스타일 로드 타이밍**: `generateRecommendations()` 호출 전 스타일 로드 완료 대기 필요
+
+**메인 서비스에서 복사할 함수들:**
+```javascript
+// menu.js에서 그대로 가져올 것
+uploadCustomerPhotoToStorage(base64Data)  // Firebase Storage 업로드
+deleteTemporaryFile(filePath)              // 임시 파일 삭제
+pollHairChangeStatus(taskId, gender)       // 상태 폴링
+```
+
+**절대 하지 말 것:**
+- ❌ 메인 서비스 코드 안 보고 직접 구현
+- ❌ API 응답 필드명 추측
+- ❌ 서버 측에서 해결하려고 시도 (클라이언트 업로드가 정답)
+
 ---
 
 ## Google Play Console 계정 (앱 출시용)
