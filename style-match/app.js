@@ -10,6 +10,137 @@ let uploadedImage = null;
 let analysisResults = null;
 let allStyles = [];
 
+// ========== 토큰 비용 상수 ==========
+const TOKEN_COSTS = {
+    lookbook: 200,
+    hairTry: 350,
+    recipe: 30
+};
+
+// ========== 토큰 잔액 조회 ==========
+async function getTokenBalance() {
+    try {
+        const auth = firebase.auth();
+        const user = auth.currentUser;
+
+        if (!user) {
+            console.warn('⚠️ 로그인 필요');
+            return { balance: 0, plan: 'free' };
+        }
+
+        const db = firebase.firestore();
+        const email = user.email;
+        const docId = email.replace(/@/g, '_').replace(/\./g, '_');
+
+        const doc = await db.collection('users').doc(docId).get();
+        if (doc.exists) {
+            const data = doc.data();
+            return {
+                balance: data.tokenBalance || 0,
+                plan: data.plan || 'free'
+            };
+        }
+        return { balance: 0, plan: 'free' };
+    } catch (e) {
+        console.error('토큰 잔액 조회 실패:', e);
+        return { balance: 0, plan: 'free' };
+    }
+}
+
+// ========== 토큰 부족 모달 ==========
+function showInsufficientTokenModal(requiredTokens, featureName) {
+    // 기존 모달 제거
+    const existing = document.getElementById('insufficientTokenModal');
+    if (existing) existing.remove();
+
+    const lang = localStorage.getItem('hairgator_language') || 'ko';
+
+    const messages = {
+        ko: {
+            title: '토큰이 부족합니다',
+            message: `${featureName} 기능을 사용하려면 ${requiredTokens} 토큰이 필요합니다.`,
+            upgrade: '요금제 보기',
+            cancel: '취소'
+        },
+        en: {
+            title: 'Insufficient Tokens',
+            message: `You need ${requiredTokens} tokens to use ${featureName}.`,
+            upgrade: 'View Plans',
+            cancel: 'Cancel'
+        },
+        ja: {
+            title: 'トークンが不足しています',
+            message: `${featureName}機能を使用するには${requiredTokens}トークンが必要です。`,
+            upgrade: '料金プランを見る',
+            cancel: 'キャンセル'
+        },
+        zh: {
+            title: '代币不足',
+            message: `使用${featureName}功能需要${requiredTokens}代币。`,
+            upgrade: '查看方案',
+            cancel: '取消'
+        },
+        vi: {
+            title: 'Không đủ token',
+            message: `Bạn cần ${requiredTokens} token để sử dụng ${featureName}.`,
+            upgrade: 'Xem gói',
+            cancel: 'Hủy'
+        }
+    };
+
+    const t = messages[lang] || messages.ko;
+
+    const modal = document.createElement('div');
+    modal.id = 'insufficientTokenModal';
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.7); z-index: 10000;
+        display: flex; align-items: center; justify-content: center;
+    `;
+
+    modal.innerHTML = `
+        <div style="
+            background: #1a1a2e; border-radius: 16px; padding: 24px;
+            max-width: 320px; width: 90%; text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        ">
+            <div style="font-size: 48px; margin-bottom: 16px;">💰</div>
+            <h3 style="color: #fff; margin: 0 0 12px; font-size: 18px;">${t.title}</h3>
+            <p style="color: #aaa; margin: 0 0 20px; font-size: 14px; line-height: 1.5;">${t.message}</p>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="document.getElementById('insufficientTokenModal').remove()" style="
+                    flex: 1; padding: 12px; border: 1px solid rgba(255,255,255,0.2);
+                    background: transparent; color: #fff; border-radius: 8px;
+                    cursor: pointer; font-size: 14px;
+                ">${t.cancel}</button>
+                <button onclick="window.location.href='/#products'" style="
+                    flex: 1; padding: 12px; border: none;
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    color: #fff; border-radius: 8px; cursor: pointer; font-size: 14px;
+                ">${t.upgrade}</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // 배경 클릭 시 닫기
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+}
+
+// 기능명 번역
+function getFeatureName(feature) {
+    const lang = localStorage.getItem('hairgator_language') || 'ko';
+    const names = {
+        lookbook: { ko: '룩북', en: 'Lookbook', ja: 'ルックブック', zh: '造型手册', vi: 'Lookbook' },
+        hairTry: { ko: '헤어체험', en: 'Hair Try-on', ja: 'ヘア体験', zh: '发型体验', vi: 'Thử tóc' },
+        recipe: { ko: '레시피', en: 'Recipe', ja: 'レシピ', zh: '配方', vi: 'Công thức' }
+    };
+    return names[feature]?.[lang] || names[feature]?.ko || feature;
+}
+
 // 카메라 관련
 let cameraStream = null;
 let cameraFaceMesh = null;
@@ -3491,8 +3622,17 @@ window.closeStyleModal = function() {
 };
 
 // 룩북으로 이동
-window.goToLookbook = function() {
+window.goToLookbook = async function() {
     if (!currentModalStyle) return;
+
+    // 토큰 잔액 체크
+    const cost = TOKEN_COSTS.lookbook;
+    const { balance } = await getTokenBalance();
+
+    if (balance < cost) {
+        showInsufficientTokenModal(cost, getFeatureName('lookbook'));
+        return;
+    }
 
     // 스타일 정보를 먼저 저장 (closeStyleModal이 null로 만들기 전에)
     const styleId = currentModalStyle.styleId;
@@ -3511,8 +3651,17 @@ window.goToLookbook = function() {
 };
 
 // 헤어 체험으로 이동
-window.goToHairTry = function() {
+window.goToHairTry = async function() {
     if (!currentModalStyle) return;
+
+    // 토큰 잔액 체크
+    const cost = TOKEN_COSTS.hairTry;
+    const { balance } = await getTokenBalance();
+
+    if (balance < cost) {
+        showInsufficientTokenModal(cost, getFeatureName('hairTry'));
+        return;
+    }
 
     // 스타일 정보를 먼저 저장
     const styleId = currentModalStyle.styleId;
@@ -3531,8 +3680,17 @@ window.goToHairTry = function() {
 };
 
 // 레시피 보기
-window.goToRecipe = function() {
+window.goToRecipe = async function() {
     if (!currentModalStyle) return;
+
+    // 토큰 잔액 체크
+    const cost = TOKEN_COSTS.recipe;
+    const { balance } = await getTokenBalance();
+
+    if (balance < cost) {
+        showInsufficientTokenModal(cost, getFeatureName('recipe'));
+        return;
+    }
 
     // 스타일 정보를 먼저 저장
     const styleId = currentModalStyle.styleId;
