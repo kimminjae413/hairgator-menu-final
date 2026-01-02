@@ -10,6 +10,12 @@ let uploadedImage = null;
 let analysisResults = null;
 let allStyles = [];
 
+// 스타일 로드 완료 Promise (타이밍 문제 해결용)
+let stylesLoadedResolve = null;
+const stylesLoadedPromise = new Promise(resolve => {
+    stylesLoadedResolve = resolve;
+});
+
 // 이미지 압축 함수
 function compressImage(dataUrl, maxWidth, quality) {
     return new Promise((resolve) => {
@@ -1360,8 +1366,8 @@ async function onFaceMeshResults(results) {
     // UI 업데이트
     displayAnalysisResults(ratios, analysis, eyebrowAnalysis);
 
-    // 스타일 추천
-    generateRecommendations(analysis);
+    // 스타일 추천 (스타일 로드 완료 대기)
+    await generateRecommendations(analysis);
 }
 
 // ========== 비율 계산 ==========
@@ -2701,8 +2707,10 @@ async function loadStyles() {
         if (data.success && data.styles) {
             allStyles = data.styles;
             console.log(`✅ ${allStyles.length}개 스타일 로드 완료`);
+            if (stylesLoadedResolve) stylesLoadedResolve();
         } else {
             console.error('스타일 로드 실패:', data.error);
+            if (stylesLoadedResolve) stylesLoadedResolve(); // 실패해도 resolve
         }
     } catch (error) {
         console.error('스타일 로드 실패:', error);
@@ -2713,13 +2721,21 @@ async function loadStyles() {
                 console.log('✅ 메인 앱에서 스타일 로드');
             }
         } catch (e) {}
+        if (stylesLoadedResolve) stylesLoadedResolve(); // 폴백 후에도 resolve
     }
 }
 
 // ========== 추천 생성 (리팩토링됨) ==========
-function generateRecommendations(analysis) {
+async function generateRecommendations(analysis) {
     const container = document.getElementById('recommendationsContainer');
     container.innerHTML = '';
+
+    // 스타일이 아직 로드되지 않았으면 대기
+    if (allStyles.length === 0) {
+        console.log('⏳ 스타일 로드 대기 중...');
+        await stylesLoadedPromise;
+        console.log('✅ 스타일 로드 완료, 추천 생성 진행');
+    }
 
     const categories = selectedGender === 'female' ? FEMALE_CATEGORIES : MALE_CATEGORIES;
 
