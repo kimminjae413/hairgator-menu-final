@@ -456,18 +456,6 @@ body::after {
     pointer-events: none;
 }
 
-.face-guide {
-    width: 70%;
-    max-width: 200px;
-    color: var(--accent-secondary);
-    opacity: 0.6;
-}
-
-.face-guide svg {
-    width: 100%;
-    height: auto;
-}
-
 .camera-hint {
     position: absolute;
     bottom: 60px;
