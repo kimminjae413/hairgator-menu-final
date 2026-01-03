@@ -4056,11 +4056,11 @@ body.light-theme .plan-card {
     font-weight: 700;
     text-align: center;
     margin: 8px 0;
-    color: #fff;
+    color: #E91E63;
 }
 
 body.light-theme .plan-name {
-    color: #222;
+    color: #E91E63;
 }
 
 .plan-price {
