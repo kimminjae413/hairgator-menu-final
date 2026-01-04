@@ -1794,7 +1794,7 @@ function getEyebrowRecommendations(eyebrowAnalysis, gender) {
             recommendations.push({
                 subCategories: ['EB', 'E'],
                 score: 20,
-                reason: '눈썹 산을 살짝 가려 인상을 부드럽게'
+                reason: '눈썹 산을 살짝 가려 인상을 부드럽게 연출'
             });
         }
     } else if (line.lineType === 'straight') {
@@ -2057,7 +2057,7 @@ function interpretAnalysis(ratios, eyebrowAnalysis = null) {
                 value: `아치비: ${(line.archRatio * 100).toFixed(1)}%`,
                 description: t('styleMatch.insight.eyebrowArched') || `아치형 눈썹 (곡선미 강조, 원계)`,
                 issue: t('styleMatch.issue.eyebrowArched') || '강한 눈썹 산',
-                solution: t('styleMatch.solution.eyebrowArched') || '앞머리로 눈썹 산을 살짝 가려 부드럽게'
+                solution: t('styleMatch.solution.eyebrowArched') || '앞머리로 눈썹 산을 살짝 가려 부드럽게 연출'
             });
         } else if (line.lineType === 'straight') {
             insights.push({
