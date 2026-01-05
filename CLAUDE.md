@@ -79,10 +79,15 @@
 3. 도해도/레시피 → styles 컬렉션 (styles/SP0001)
 ```
 
-**styles 컬렉션 현황 (2026-01-05 확인):**
-- 남자 69개: SF(14), SP(25), FU(7), PB(9), BZ(5), CP(4), MC(5)
-- 여자: FAL, FBL, FCL 등 (수백 개)
+**styles 컬렉션 현황 (2026-01-05 확인, 총 209개):**
+- **여자 커트 70개**: FAL~FHL 시리즈
+- **남자 커트 69개**: SF(14), SP(25), FU(7), PB(9), BZ(5), CP(4), MC(5)
+- **여자 펌 70개**: FALP(7), FBLP(13), FCLP(6), FDLP(8), FELP(9), FFLP(9), FGLP(9), FHLP(9)
 - 모든 문서에 `diagrams`, `textRecipe` 필드 존재
+
+**펌 조회 시 주의:**
+- ❌ `hairstyles` 컬렉션에는 펌 스타일 없음!
+- ✅ 펌은 반드시 `styles` 컬렉션에서 조회 (`type === 'perm'`)
 
 ---
 
