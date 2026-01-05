@@ -93,25 +93,38 @@
             }
         };
 
-        // 계절별 색상 팔레트
+        // 계절별 색상 팔레트 (colors만 유지, characteristics는 i18n에서 가져옴)
         const SeasonPalettes = {
             spring: {
-                colors: ['#FFB6C1', '#FFA07A', '#F0E68C', '#98FB98', '#FFE4B5', '#DDA0DD'],
-                characteristics: ['밝고 따뜻한 색상', '높은 채도', '노란 언더톤']
+                colors: ['#FFB6C1', '#FFA07A', '#F0E68C', '#98FB98', '#FFE4B5', '#DDA0DD']
             },
             summer: {
-                colors: ['#B0E0E6', '#DDA0DD', '#C8B2DB', '#AFEEEE', '#F0F8FF', '#E6E6FA'],
-                characteristics: ['부드럽고 차가운 색상', '중간 채도', '파란 언더톤']
+                colors: ['#B0E0E6', '#DDA0DD', '#C8B2DB', '#AFEEEE', '#F0F8FF', '#E6E6FA']
             },
             autumn: {
-                colors: ['#D2691E', '#CD853F', '#A0522D', '#8B4513', '#B22222', '#800000'],
-                characteristics: ['깊고 따뜻한 색상', '낮은 채도', '노란 언더톤']
+                colors: ['#D2691E', '#CD853F', '#A0522D', '#8B4513', '#B22222', '#800000']
             },
             winter: {
-                colors: ['#000080', '#4B0082', '#8B008B', '#191970', '#2F4F4F', '#708090'],
-                characteristics: ['진하고 차가운 색상', '높은 대비', '파란 언더톤']
+                colors: ['#000080', '#4B0082', '#8B008B', '#191970', '#2F4F4F', '#708090']
             }
         };
+
+        // 계절 특성 가져오기 (i18n 기반)
+        function getSeasonCharacteristics(season) {
+            const key = season.toLowerCase().replace(/\s+/g, '');
+            const seasonKey = key.replace('웜톤', '').replace('쿨톤', '').replace('warm', '').replace('cool', '');
+            const i18nKey = `personalColor.seasonCharacteristics.${seasonKey}`;
+            const chars = t(i18nKey);
+            if (Array.isArray(chars)) return chars;
+            // fallback
+            const fallback = {
+                spring: ['밝고 따뜻한 색상', '높은 채도', '노란 언더톤'],
+                summer: ['부드럽고 차가운 색상', '중간 채도', '파란 언더톤'],
+                autumn: ['깊고 따뜻한 색상', '낮은 채도', '노란 언더톤'],
+                winter: ['진하고 차가운 색상', '높은 대비', '파란 언더톤']
+            };
+            return fallback[seasonKey] || [];
+        }
 
         // ========================================
         // 🌐 다국어 시즌명 헬퍼 함수
@@ -6317,14 +6330,24 @@
 
         // 유틸리티 함수들
         function generateExpertAnalysis(season) {
-            const analyses = {
-                '봄 웜톤': ExpertKnowledge.colorMatching.warm + " 밝고 선명한 색상이 잘 어울립니다.",
-                '여름 쿨톤': ExpertKnowledge.skinAnalysis.principle + " 부드러운 파스텔 톤을 추천합니다.",
-                '가을 웜톤': "깊고 따뜻한 색상이 적합합니다. 리치한 브라운 계열을 권장합니다.",
-                '겨울 쿨톤': ExpertKnowledge.colorMatching.cool + " 진하고 선명한 색상이 적합합니다."
+            // 계절 키 매핑 (한국어 → 영어 키)
+            const seasonKeyMap = {
+                '봄 웜톤': 'springWarm',
+                '여름 쿨톤': 'summerCool',
+                '가을 웜톤': 'autumnWarm',
+                '겨울 쿨톤': 'winterCool',
+                // 영어 키도 직접 지원
+                'springWarm': 'springWarm',
+                'summerCool': 'summerCool',
+                'autumnWarm': 'autumnWarm',
+                'winterCool': 'winterCool'
             };
 
-            return analyses[season] || 'Generating expert analysis...';
+            const key = seasonKeyMap[season];
+            if (key) {
+                return t(`personalColor.expertAnalysis.${key}`) || 'Generating expert analysis...';
+            }
+            return 'Generating expert analysis...';
         }
 
         function showToast(message, type = 'info', duration = 3000) {

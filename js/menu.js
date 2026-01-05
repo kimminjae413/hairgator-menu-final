@@ -1407,7 +1407,7 @@ async function openStyleModal(style) {
     const modal = document.getElementById('styleModal');
     if (!modal) {
         console.error('❌ styleModal 요소를 찾을 수 없습니다');
-        alert('모달을 열 수 없습니다');
+        alert(t('hairTry.modalError') || '모달을 열 수 없습니다');
         return;
     }
 
@@ -1658,10 +1658,11 @@ async function openStyleModal(style) {
                 console.error('📖 Lookbook 분석 실패:', error);
                 loadingOverlay.remove();
 
+                const errorMsg = t('hairTry.analysisError') || '분석 중 오류가 발생했습니다. 다시 시도해주세요.';
                 if (typeof showToast === 'function') {
-                    showToast('분석 중 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+                    showToast(errorMsg, 'error');
                 } else {
-                    alert('분석 중 오류가 발생했습니다. 다시 시도해주세요.');
+                    alert(errorMsg);
                 }
             }
         };
@@ -2057,7 +2058,7 @@ async function startCamera(facingMode = 'user') {
 
     } catch (error) {
         console.error('카메라 접근 오류:', error);
-        showToast('카메라에 접근할 수 없습니다. 권한을 확인해주세요.', 'error');
+        showToast(t('hairTry.cameraError') || '카메라에 접근할 수 없습니다. 권한을 확인해주세요.', 'error');
         closeCameraModal();
     }
 }
@@ -2090,7 +2091,7 @@ function capturePhoto() {
     }
 
     console.log('📸 사진 촬영 완료');
-    showToast('사진이 촬영되었습니다', 'success');
+    showToast(t('hairTry.photoTaken') || '사진이 촬영되었습니다', 'success');
 }
 
 // 카메라 모달 닫기
@@ -2367,13 +2368,13 @@ function addCameraModalStyles() {
 function handleCustomerPhotoUpload(file) {
     // 파일 형식 검증
     if (!file.type.startsWith('image/')) {
-        showToast('이미지 파일만 업로드 가능합니다', 'error');
+        showToast(t('hairTry.imageOnly') || '이미지 파일만 업로드 가능합니다', 'error');
         return;
     }
 
     // 파일 크기 검증 (10MB 제한)
     if (file.size > 10 * 1024 * 1024) {
-        showToast('파일 크기는 10MB 이하로 제한됩니다', 'error');
+        showToast(t('hairTry.fileSizeLimit') || '파일 크기는 10MB 이하로 제한됩니다', 'error');
         return;
     }
 
@@ -2397,7 +2398,7 @@ function handleCustomerPhotoUpload(file) {
     };
 
     reader.onerror = function () {
-        showToast('이미지 읽기 중 오류가 발생했습니다', 'error');
+        showToast(t('hairTry.readError') || '이미지 읽기 중 오류가 발생했습니다', 'error');
     };
 
     reader.readAsDataURL(file);
@@ -2570,7 +2571,8 @@ async function pollHairChangeStatus(taskId, gender, loadingOverlay) {
         // 로딩 메시지 업데이트
         const progressText = loadingOverlay.querySelector('.loading-progress');
         if (progressText) {
-            progressText.textContent = `AI 처리 중... (${attempt + 1}/${maxAttempts})`;
+            const progressMsg = (t('hairTry.processingProgress') || 'AI 처리 중... ({n}/{total})').replace('{n}', attempt + 1).replace('{total}', maxAttempts);
+            progressText.textContent = progressMsg;
         }
 
         const response = await fetch('/.netlify/functions/hair-change', {
@@ -2865,7 +2867,7 @@ async function saveHairTryResult(imageUrl) {
 
     if (!imageUrl) {
         console.error('이미지 URL이 없습니다');
-        showToast('이미지를 저장할 수 없습니다', 'error');
+        showToast(t('hairTry.cannotSave') || '이미지를 저장할 수 없습니다', 'error');
         return;
     }
 

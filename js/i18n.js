@@ -344,7 +344,16 @@ const HAIRGATOR_I18N = {
       saved: '이미지가 저장되었습니다',
       saveError: '저장 중 오류가 발생했습니다',
       saveManual: '새 탭에서 이미지를 길게 눌러 저장하세요',
-      saveGuide: '이미지를 길게 눌러 저장하세요'
+      saveGuide: '이미지를 길게 눌러 저장하세요',
+      modalError: '모달을 열 수 없습니다',
+      analysisError: '분석 중 오류가 발생했습니다. 다시 시도해주세요.',
+      cameraError: '카메라에 접근할 수 없습니다. 권한을 확인해주세요.',
+      photoTaken: '사진이 촬영되었습니다',
+      imageOnly: '이미지 파일만 업로드 가능합니다',
+      fileSizeLimit: '파일 크기는 10MB 이하로 제한됩니다',
+      readError: '이미지 읽기 중 오류가 발생했습니다',
+      processingProgress: 'AI 처리 중... ({n}/{total})',
+      cannotSave: '이미지를 저장할 수 없습니다'
     },
 
     // ========== 룩북 (Lookbook) ==========
@@ -703,6 +712,22 @@ const HAIRGATOR_I18N = {
         vividRedWarning: '선명한 레드, 오렌지 계열은 피할 것',
         neutralRecommend: '너무 극단적인 웜/쿨 톤보다는 뉴트럴 계열 추천',
         vividColorWarning: '채도가 너무 높은 비비드 컬러는 피부톤과 충돌할 수 있음'
+      },
+
+      // 전문가 분석 텍스트
+      expertAnalysis: {
+        springWarm: '아이보리 피부에는 코토리베이지나 오렌지브라운이 잘 어울립니다. 밝고 선명한 색상이 잘 어울립니다.',
+        summerCool: '명도와 채도의 조합이 색상 이름보다 중요합니다. 부드러운 파스텔 톤을 추천합니다.',
+        autumnWarm: '깊고 따뜻한 색상이 적합합니다. 리치한 브라운 계열을 권장합니다.',
+        winterCool: '화이트 피부에는 블루블랙이나 애쉬블루가 적합합니다. 진하고 선명한 색상이 적합합니다.'
+      },
+
+      // 계절 특성
+      seasonCharacteristics: {
+        spring: ['밝고 따뜻한 색상', '높은 채도', '노란 언더톤'],
+        summer: ['부드럽고 차가운 색상', '중간 채도', '파란 언더톤'],
+        autumn: ['깊고 따뜻한 색상', '낮은 채도', '노란 언더톤'],
+        winter: ['진하고 차가운 색상', '높은 대비', '파란 언더톤']
       },
 
       // 드래이핑 모드
@@ -1492,7 +1517,16 @@ const HAIRGATOR_I18N = {
       saved: 'Image saved successfully',
       saveError: 'Error saving image',
       saveManual: 'Long press on image in new tab to save',
-      saveGuide: 'Long press on image to save'
+      saveGuide: 'Long press on image to save',
+      modalError: 'Cannot open modal',
+      analysisError: 'An error occurred during analysis. Please try again.',
+      cameraError: 'Cannot access camera. Please check permissions.',
+      photoTaken: 'Photo captured',
+      imageOnly: 'Only image files can be uploaded',
+      fileSizeLimit: 'File size is limited to 10MB',
+      readError: 'An error occurred while reading the image',
+      processingProgress: 'AI processing... ({n}/{total})',
+      cannotSave: 'Cannot save image'
     },
 
     // ========== Lookbook ==========
@@ -1839,6 +1873,20 @@ const HAIRGATOR_I18N = {
         vividRedWarning: 'Avoid vivid red or orange tones',
         neutralRecommend: 'Neutral tones recommended rather than extreme warm/cool tones',
         vividColorWarning: 'Highly saturated vivid colors may clash with your skin tone'
+      },
+
+      expertAnalysis: {
+        springWarm: 'Ivory skin looks great with caramel beige or orange brown. Bright, vivid colors suit you best.',
+        summerCool: 'The combination of lightness and saturation matters more than color names. Soft pastel tones recommended.',
+        autumnWarm: 'Deep, warm colors are ideal. Rich brown shades are recommended.',
+        winterCool: 'White skin pairs well with blue-black or ash-blue. Deep, vivid colors suit you best.'
+      },
+
+      seasonCharacteristics: {
+        spring: ['Bright, warm colors', 'High saturation', 'Yellow undertone'],
+        summer: ['Soft, cool colors', 'Medium saturation', 'Blue undertone'],
+        autumn: ['Deep, warm colors', 'Low saturation', 'Yellow undertone'],
+        winter: ['Deep, cool colors', 'High contrast', 'Blue undertone']
       },
 
       drapingMode: {
@@ -2608,7 +2656,16 @@ const HAIRGATOR_I18N = {
       saved: '画像が保存されました',
       saveError: '保存中にエラーが発生しました',
       saveManual: '新しいタブで画像を長押しして保存してください',
-      saveGuide: '画像を長押しして保存してください'
+      saveGuide: '画像を長押しして保存してください',
+      modalError: 'モーダルを開けません',
+      analysisError: '分析中にエラーが発生しました。もう一度お試しください。',
+      cameraError: 'カメラにアクセスできません。権限を確認してください。',
+      photoTaken: '写真が撮影されました',
+      imageOnly: '画像ファイルのみアップロードできます',
+      fileSizeLimit: 'ファイルサイズは10MB以下に制限されています',
+      readError: '画像の読み込み中にエラーが発生しました',
+      processingProgress: 'AI処理中... ({n}/{total})',
+      cannotSave: '画像を保存できません'
     },
 
     // ========== Lookbook (Japanese) ==========
@@ -2953,6 +3010,20 @@ const HAIRGATOR_I18N = {
         vividRedWarning: '鮮やかなレッドやオレンジ系は避けてください',
         neutralRecommend: '極端なウォーム/クールトーンよりニュートラル系がおすすめ',
         vividColorWarning: '彩度が高すぎるビビッドカラーは肌のトーンと衝突する可能性があります'
+      },
+
+      expertAnalysis: {
+        springWarm: 'アイボリー肌にはキャラメルベージュやオレンジブラウンが似合います。明るく鮮やかな色が似合います。',
+        summerCool: '明度と彩度の組み合わせが色名より重要です。柔らかいパステルトーンがおすすめです。',
+        autumnWarm: '深く暖かい色が適しています。リッチなブラウン系をおすすめします。',
+        winterCool: '白い肌にはブルーブラックやアッシュブルーが適しています。深く鮮やかな色が似合います。'
+      },
+
+      seasonCharacteristics: {
+        spring: ['明るく暖かい色', '高彩度', 'イエローアンダートーン'],
+        summer: ['柔らかく冷たい色', '中彩度', 'ブルーアンダートーン'],
+        autumn: ['深く暖かい色', '低彩度', 'イエローアンダートーン'],
+        winter: ['深く冷たい色', '高コントラスト', 'ブルーアンダートーン']
       },
 
       drapingMode: {
@@ -3720,7 +3791,16 @@ const HAIRGATOR_I18N = {
       saved: '图片已保存',
       saveError: '保存时出错',
       saveManual: '在新标签页长按图片保存',
-      saveGuide: '长按图片保存'
+      saveGuide: '长按图片保存',
+      modalError: '无法打开弹窗',
+      analysisError: '分析时出错，请重试。',
+      cameraError: '无法访问相机，请检查权限。',
+      photoTaken: '照片已拍摄',
+      imageOnly: '只能上传图片文件',
+      fileSizeLimit: '文件大小限制为10MB以下',
+      readError: '读取图片时出错',
+      processingProgress: 'AI处理中... ({n}/{total})',
+      cannotSave: '无法保存图片'
     },
 
     // ========== Lookbook (Chinese) ==========
@@ -4068,6 +4148,20 @@ const HAIRGATOR_I18N = {
         vividRedWarning: '避免鲜艳的红色或橙色系',
         neutralRecommend: '推荐中性色调，避免过于极端的暖/冷色调',
         vividColorWarning: '过于鲜艳的高饱和度颜色可能与肤色冲突'
+      },
+
+      expertAnalysis: {
+        springWarm: '象牙色肌肤适合焦糖米色或橘棕色。明亮鲜艳的颜色非常适合您。',
+        summerCool: '明度和饱和度的搭配比颜色名称更重要。推荐柔和的粉彩色调。',
+        autumnWarm: '深沉温暖的颜色很适合您。推荐浓郁的棕色系。',
+        winterCool: '白皙肌肤适合蓝黑色或灰蓝色。深沉鲜艳的颜色非常适合您。'
+      },
+
+      seasonCharacteristics: {
+        spring: ['明亮温暖的颜色', '高饱和度', '黄色底调'],
+        summer: ['柔和冷调的颜色', '中饱和度', '蓝色底调'],
+        autumn: ['深沉温暖的颜色', '低饱和度', '黄色底调'],
+        winter: ['深沉冷调的颜色', '高对比度', '蓝色底调']
       },
 
       drapingMode: {
@@ -4835,7 +4929,16 @@ const HAIRGATOR_I18N = {
       saved: 'Hình ảnh đã được lưu',
       saveError: 'Lỗi khi lưu',
       saveManual: 'Nhấn giữ hình ảnh trong tab mới để lưu',
-      saveGuide: 'Nhấn giữ hình ảnh để lưu'
+      saveGuide: 'Nhấn giữ hình ảnh để lưu',
+      modalError: 'Không thể mở modal',
+      analysisError: 'Đã xảy ra lỗi khi phân tích. Vui lòng thử lại.',
+      cameraError: 'Không thể truy cập camera. Vui lòng kiểm tra quyền.',
+      photoTaken: 'Đã chụp ảnh',
+      imageOnly: 'Chỉ có thể tải lên tệp hình ảnh',
+      fileSizeLimit: 'Kích thước tệp giới hạn dưới 10MB',
+      readError: 'Đã xảy ra lỗi khi đọc hình ảnh',
+      processingProgress: 'AI đang xử lý... ({n}/{total})',
+      cannotSave: 'Không thể lưu hình ảnh'
     },
 
     // ========== Lookbook (Vietnamese) ==========
@@ -5170,6 +5273,20 @@ const HAIRGATOR_I18N = {
         vividRedWarning: 'Tránh các tông đỏ hoặc cam rực rỡ',
         neutralRecommend: 'Đề xuất tông trung tính thay vì tông ấm/lạnh quá cực đoan',
         vividColorWarning: 'Màu rực rỡ độ bão hòa cao có thể xung đột với tông da'
+      },
+
+      expertAnalysis: {
+        springWarm: 'Da ngà hợp với màu be caramel hoặc nâu cam. Màu sáng và rực rỡ rất phù hợp với bạn.',
+        summerCool: 'Sự kết hợp độ sáng và độ bão hòa quan trọng hơn tên màu. Khuyên dùng tông pastel nhẹ nhàng.',
+        autumnWarm: 'Màu ấm sâu rất phù hợp với bạn. Khuyên dùng tông nâu đậm.',
+        winterCool: 'Da trắng hợp với màu xanh đen hoặc xanh tro. Màu sâu và rực rỡ rất phù hợp với bạn.'
+      },
+
+      seasonCharacteristics: {
+        spring: ['Màu sáng và ấm', 'Độ bão hòa cao', 'Undertone vàng'],
+        summer: ['Màu nhẹ và lạnh', 'Độ bão hòa trung bình', 'Undertone xanh'],
+        autumn: ['Màu sâu và ấm', 'Độ bão hòa thấp', 'Undertone vàng'],
+        winter: ['Màu sâu và lạnh', 'Độ tương phản cao', 'Undertone xanh']
       },
 
       drapingMode: {
@@ -5910,7 +6027,16 @@ const HAIRGATOR_I18N = {
       saved: 'Gambar berhasil disimpan',
       saveError: 'Gagal menyimpan',
       saveManual: 'Tekan lama gambar di tab baru untuk menyimpan',
-      saveGuide: 'Tekan lama gambar untuk menyimpan'
+      saveGuide: 'Tekan lama gambar untuk menyimpan',
+      modalError: 'Tidak dapat membuka modal',
+      analysisError: 'Terjadi kesalahan saat analisis. Silakan coba lagi.',
+      cameraError: 'Tidak dapat mengakses kamera. Silakan periksa izin.',
+      photoTaken: 'Foto telah diambil',
+      imageOnly: 'Hanya file gambar yang dapat diunggah',
+      fileSizeLimit: 'Ukuran file dibatasi hingga 10MB',
+      readError: 'Terjadi kesalahan saat membaca gambar',
+      processingProgress: 'AI sedang memproses... ({n}/{total})',
+      cannotSave: 'Tidak dapat menyimpan gambar'
     },
 
     // ========== Lookbook ==========
@@ -6217,6 +6343,20 @@ const HAIRGATOR_I18N = {
         vividRedWarning: 'Hindari tone merah atau oranye cerah',
         neutralRecommend: 'Direkomendasikan tone netral daripada tone hangat/dingin ekstrem',
         vividColorWarning: 'Warna saturasi tinggi cerah dapat bentrok dengan tone kulit'
+      },
+
+      expertAnalysis: {
+        springWarm: 'Kulit gading cocok dengan caramel beige atau orange brown. Warna cerah dan vivid sangat cocok untuk Anda.',
+        summerCool: 'Kombinasi kecerahan dan saturasi lebih penting dari nama warna. Disarankan tone pastel lembut.',
+        autumnWarm: 'Warna hangat yang dalam sangat cocok untuk Anda. Disarankan tone brown yang kaya.',
+        winterCool: 'Kulit putih cocok dengan biru hitam atau abu biru. Warna dalam dan vivid sangat cocok untuk Anda.'
+      },
+
+      seasonCharacteristics: {
+        spring: ['Warna cerah dan hangat', 'Saturasi tinggi', 'Undertone kuning'],
+        summer: ['Warna lembut dan dingin', 'Saturasi sedang', 'Undertone biru'],
+        autumn: ['Warna dalam dan hangat', 'Saturasi rendah', 'Undertone kuning'],
+        winter: ['Warna dalam dan dingin', 'Kontras tinggi', 'Undertone biru']
       },
 
       drapingMode: {
@@ -6953,7 +7093,16 @@ const HAIRGATOR_I18N = {
       saved: 'Imagen guardada con éxito',
       saveError: 'Error al guardar',
       saveManual: 'Mantén presionada la imagen en la nueva pestaña para guardar',
-      saveGuide: 'Mantén presionada la imagen para guardar'
+      saveGuide: 'Mantén presionada la imagen para guardar',
+      modalError: 'No se puede abrir el modal',
+      analysisError: 'Ocurrió un error durante el análisis. Por favor intenta de nuevo.',
+      cameraError: 'No se puede acceder a la cámara. Por favor verifica los permisos.',
+      photoTaken: 'Foto capturada',
+      imageOnly: 'Solo se pueden subir archivos de imagen',
+      fileSizeLimit: 'El tamaño del archivo está limitado a 10MB',
+      readError: 'Ocurrió un error al leer la imagen',
+      processingProgress: 'AI procesando... ({n}/{total})',
+      cannotSave: 'No se puede guardar la imagen'
     },
 
     // ========== Lookbook ==========
@@ -7317,6 +7466,20 @@ const HAIRGATOR_I18N = {
         vividRedWarning: 'Evita colores vivos de rojo y naranja',
         neutralRecommend: 'Se recomiendan tonos neutros en lugar de extremos cálidos/fríos',
         vividColorWarning: 'Los colores muy saturados pueden chocar con tu tono de piel'
+      },
+
+      expertAnalysis: {
+        springWarm: 'La piel marfil combina bien con beige caramelo o marrón anaranjado. Los colores brillantes y vivos te quedan muy bien.',
+        summerCool: 'La combinación de luminosidad y saturación importa más que el nombre del color. Se recomiendan tonos pastel suaves.',
+        autumnWarm: 'Los colores cálidos profundos son ideales para ti. Se recomiendan tonos marrones ricos.',
+        winterCool: 'La piel blanca combina bien con negro azulado o azul ceniza. Los colores profundos y vivos te quedan muy bien.'
+      },
+
+      seasonCharacteristics: {
+        spring: ['Colores brillantes y cálidos', 'Alta saturación', 'Subtono amarillo'],
+        summer: ['Colores suaves y fríos', 'Saturación media', 'Subtono azul'],
+        autumn: ['Colores profundos y cálidos', 'Baja saturación', 'Subtono amarillo'],
+        winter: ['Colores profundos y fríos', 'Alto contraste', 'Subtono azul']
       },
 
       expertGuide: {
