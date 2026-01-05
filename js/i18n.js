@@ -865,6 +865,7 @@ const HAIRGATOR_I18N = {
         springWarmLight: '맑고 청순한 이미지! 연하고 부드러운 웜톤 컬러가 잘 어울립니다.',
         autumnWarmDeep: '깊고 고급스러운 이미지! 진하고 풍부한 웜톤 컬러가 잘 어울립니다.',
         autumnWarmMuted: '내추럴하고 세련된 이미지! 차분하고 자연스러운 웜톤 컬러가 잘 어울립니다.',
+        autumnWarmSoft: '부드럽고 따뜻한 이미지! 은은하고 자연스러운 웜톤 컬러가 잘 어울립니다.',
         summerCoolBright: '청아하고 시원한 이미지! 선명하고 깨끗한 쿨톤 컬러가 잘 어울립니다.',
         summerCoolLight: '우아하고 부드러운 이미지! 파스텔톤의 쿨 컬러가 잘 어울립니다.',
         winterCoolDeep: '강렬하고 도시적인 이미지! 선명하고 진한 쿨톤 컬러가 잘 어울립니다.',
@@ -879,12 +880,36 @@ const HAIRGATOR_I18N = {
         springWarmLight: '💄 추천 컬러: 살구색, 라이트 코랄, 아이보리, 크림\n💎 추천 메탈: 로즈골드, 샴페인 골드',
         autumnWarmDeep: '💄 추천 컬러: 버건디, 초콜릿브라운, 딥 테라코타\n💎 추천 메탈: 앤틱 골드, 브론즈',
         autumnWarmMuted: '💄 추천 컬러: 머스타드, 올리브, 카키, 테라코타\n💎 추천 메탈: 골드, 브라스',
+        autumnWarmSoft: '💄 추천 컬러: 카멜, 살몬, 소프트 코랄, 모카\n💎 추천 메탈: 로즈골드, 앤틱 골드',
         summerCoolBright: '💄 추천 컬러: 로즈핑크, 라벤더, 스카이블루\n💎 추천 메탈: 화이트골드, 로즈골드',
         summerCoolLight: '💄 추천 컬러: 소프트 핑크, 라일락, 파우더블루\n💎 추천 메탈: 실버, 화이트골드',
         winterCoolDeep: '💄 추천 컬러: 와인, 로얄블루, 에메랄드, 블랙\n💎 추천 메탈: 플래티넘, 화이트골드',
         winterCoolMuted: '💄 추천 컬러: 차콜, 네이비, 버건디, 다크그레이\n💎 추천 메탈: 실버, 건메탈',
         neutralLight: '💄 추천 컬러: 더스티 핑크, 소프트 베이지, 라이트 모브\n💎 추천 메탈: 로즈골드, 소프트 실버',
         neutralDeep: '💄 추천 컬러: 토프, 머브, 다크브라운, 올리브\n💎 추천 메탈: 혼합 메탈, 앤틱 실버'
+      },
+
+      // AI 분석 단계 메시지
+      aiSteps: {
+        step1: '얼굴 영역 감지 중...',
+        step2: '피부톤 색상 분석 중...',
+        step3: 'Delta E 2000 계산 중...',
+        step4: '최종 결과 생성 중...'
+      },
+
+      // 색상 팔레트 이름
+      colorNames: {
+        tomato: '토마토', coral: '코랄', gold: '골드', turquoise: '터콰이즈', hotPink: '핫핑크',
+        peach: '피치', moccasin: '모카신', wheat: '밀색', mint: '민트', lightPink: '라이트핑크',
+        saddleBrown: '새들브라운', sienna: '시에나', maroon: '마룬', olive: '올리브', darkRed: '다크레드',
+        peru: '페루', chocolate: '초콜릿', khaki: '카키', rosyBrown: '로지브라운',
+        tan: '탄', tan2: '탠', burlywood: '벌리우드', buff: '버프', cocoa: '코코아',
+        purple: '퍼플', cyan: '시안', teal: '틸', orchid: '오키드',
+        lavender: '라벤더', thistle: '시슬', powderBlue: '파우더블루', paleTurquoise: '페일터콰이즈',
+        navy: '네이비', darkMagenta: '다크마젠타', darkGreen: '다크그린', magenta: '마젠타', black: '블랙',
+        slate: '슬레이트', lightSlate: '라이트슬레이트', darkSlate: '다크슬레이트', dimGray: '딤그레이', steelBlue: '스틸블루',
+        plum: '플럼', cherryBlossom: '체리블로섬', navajoWhite: '나바호화이트',
+        royalBlue: '로얄블루', oliveDrab: '올리브드랍', darkSlateBlue: '다크슬레이트블루'
       },
 
       // 전문가 가이드 UI
@@ -2060,6 +2085,7 @@ const HAIRGATOR_I18N = {
         springWarmLight: 'Clear and pure image! Soft and gentle warm colors suit you best.',
         autumnWarmDeep: 'Deep and luxurious image! Rich and deep warm colors suit you best.',
         autumnWarmMuted: 'Natural and sophisticated image! Calm and natural warm colors suit you best.',
+        autumnWarmSoft: 'Soft and warm image! Subtle and natural warm colors suit you best.',
         summerCoolBright: 'Fresh and cool image! Vivid and clean cool colors suit you best.',
         summerCoolLight: 'Elegant and soft image! Pastel cool colors suit you best.',
         winterCoolDeep: 'Bold and urban image! Vivid and deep cool colors suit you best.',
@@ -2073,12 +2099,36 @@ const HAIRGATOR_I18N = {
         springWarmLight: '💄 Colors: Apricot, Light Coral, Ivory, Cream\n💎 Metals: Rose Gold, Champagne Gold',
         autumnWarmDeep: '💄 Colors: Burgundy, Chocolate Brown, Deep Terracotta\n💎 Metals: Antique Gold, Bronze',
         autumnWarmMuted: '💄 Colors: Mustard, Olive, Khaki, Terracotta\n💎 Metals: Gold, Brass',
+        autumnWarmSoft: '💄 Colors: Camel, Salmon, Soft Coral, Mocha\n💎 Metals: Rose Gold, Antique Gold',
         summerCoolBright: '💄 Colors: Rose Pink, Lavender, Sky Blue\n💎 Metals: White Gold, Rose Gold',
         summerCoolLight: '💄 Colors: Soft Pink, Lilac, Powder Blue\n💎 Metals: Silver, White Gold',
         winterCoolDeep: '💄 Colors: Wine, Royal Blue, Emerald, Black\n💎 Metals: Platinum, White Gold',
         winterCoolMuted: '💄 Colors: Charcoal, Navy, Burgundy, Dark Gray\n💎 Metals: Silver, Gunmetal',
         neutralLight: '💄 Colors: Dusty Pink, Soft Beige, Light Mauve\n💎 Metals: Rose Gold, Soft Silver',
         neutralDeep: '💄 Colors: Taupe, Mauve, Dark Brown, Olive\n💎 Metals: Mixed Metals, Antique Silver'
+      },
+
+      // AI analysis step messages
+      aiSteps: {
+        step1: 'Detecting face region...',
+        step2: 'Analyzing skin tone colors...',
+        step3: 'Calculating Delta E 2000...',
+        step4: 'Generating final results...'
+      },
+
+      // Color palette names
+      colorNames: {
+        tomato: 'Tomato', coral: 'Coral', gold: 'Gold', turquoise: 'Turquoise', hotPink: 'Hot Pink',
+        peach: 'Peach', moccasin: 'Moccasin', wheat: 'Wheat', mint: 'Mint', lightPink: 'Light Pink',
+        saddleBrown: 'Saddle Brown', sienna: 'Sienna', maroon: 'Maroon', olive: 'Olive', darkRed: 'Dark Red',
+        peru: 'Peru', chocolate: 'Chocolate', khaki: 'Khaki', rosyBrown: 'Rosy Brown',
+        tan: 'Tan', tan2: 'Tan', burlywood: 'Burlywood', buff: 'Buff', cocoa: 'Cocoa',
+        purple: 'Purple', cyan: 'Cyan', teal: 'Teal', orchid: 'Orchid',
+        lavender: 'Lavender', thistle: 'Thistle', powderBlue: 'Powder Blue', paleTurquoise: 'Pale Turquoise',
+        navy: 'Navy', darkMagenta: 'Dark Magenta', darkGreen: 'Dark Green', magenta: 'Magenta', black: 'Black',
+        slate: 'Slate', lightSlate: 'Light Slate', darkSlate: 'Dark Slate', dimGray: 'Dim Gray', steelBlue: 'Steel Blue',
+        plum: 'Plum', cherryBlossom: 'Cherry Blossom', navajoWhite: 'Navajo White',
+        royalBlue: 'Royal Blue', oliveDrab: 'Olive Drab', darkSlateBlue: 'Dark Slate Blue'
       },
 
       // Expert Guide UI
@@ -3234,6 +3284,7 @@ const HAIRGATOR_I18N = {
         springWarmLight: '澄んで清楚なイメージ！淡く柔らかいウォームカラーがお似合いです。',
         autumnWarmDeep: '深みのある高級感のあるイメージ！濃厚で豊かなウォームカラーがお似合いです。',
         autumnWarmMuted: 'ナチュラルで洗練されたイメージ！落ち着いた自然なウォームカラーがお似合いです。',
+        autumnWarmSoft: '柔らかく温かいイメージ！穏やかで自然なウォームカラーがお似合いです。',
         summerCoolBright: '爽やかで涼しげなイメージ！鮮明できれいなクールカラーがお似合いです。',
         summerCoolLight: '優雅で柔らかいイメージ！パステルトーンのクールカラーがお似合いです。',
         winterCoolDeep: '強烈で都会的なイメージ！鮮やかで深いクールカラーがお似合いです。',
@@ -3247,12 +3298,36 @@ const HAIRGATOR_I18N = {
         springWarmLight: '💄 おすすめカラー: アプリコット、ライトコーラル、アイボリー、クリーム\n💎 おすすめメタル: ローズゴールド、シャンパンゴールド',
         autumnWarmDeep: '💄 おすすめカラー: バーガンディ、チョコレートブラウン、ディープテラコッタ\n💎 おすすめメタル: アンティークゴールド、ブロンズ',
         autumnWarmMuted: '💄 おすすめカラー: マスタード、オリーブ、カーキ、テラコッタ\n💎 おすすめメタル: ゴールド、ブラス',
+        autumnWarmSoft: '💄 おすすめカラー: キャメル、サーモン、ソフトコーラル、モカ\n💎 おすすめメタル: ローズゴールド、アンティークゴールド',
         summerCoolBright: '💄 おすすめカラー: ローズピンク、ラベンダー、スカイブルー\n💎 おすすめメタル: ホワイトゴールド、ローズゴールド',
         summerCoolLight: '💄 おすすめカラー: ソフトピンク、ライラック、パウダーブルー\n💎 おすすめメタル: シルバー、ホワイトゴールド',
         winterCoolDeep: '💄 おすすめカラー: ワイン、ロイヤルブルー、エメラルド、ブラック\n💎 おすすめメタル: プラチナ、ホワイトゴールド',
         winterCoolMuted: '💄 おすすめカラー: チャコール、ネイビー、バーガンディ、ダークグレー\n💎 おすすめメタル: シルバー、ガンメタル',
         neutralLight: '💄 おすすめカラー: ダスティピンク、ソフトベージュ、ライトモーヴ\n💎 おすすめメタル: ローズゴールド、ソフトシルバー',
         neutralDeep: '💄 おすすめカラー: トープ、モーヴ、ダークブラウン、オリーブ\n💎 おすすめメタル: ミックスメタル、アンティークシルバー'
+      },
+
+      // AI分析ステップメッセージ
+      aiSteps: {
+        step1: '顔領域を検出中...',
+        step2: '肌の色を分析中...',
+        step3: 'Delta E 2000を計算中...',
+        step4: '最終結果を生成中...'
+      },
+
+      // カラーパレット名
+      colorNames: {
+        tomato: 'トマト', coral: 'コーラル', gold: 'ゴールド', turquoise: 'ターコイズ', hotPink: 'ホットピンク',
+        peach: 'ピーチ', moccasin: 'モカシン', wheat: '小麦色', mint: 'ミント', lightPink: 'ライトピンク',
+        saddleBrown: 'サドルブラウン', sienna: 'シエナ', maroon: 'マルーン', olive: 'オリーブ', darkRed: 'ダークレッド',
+        peru: 'ペルー', chocolate: 'チョコレート', khaki: 'カーキ', rosyBrown: 'ロージーブラウン',
+        tan: 'タン', tan2: 'タン', burlywood: 'バーリーウッド', buff: 'バフ', cocoa: 'ココア',
+        purple: 'パープル', cyan: 'シアン', teal: 'ティール', orchid: 'オーキッド',
+        lavender: 'ラベンダー', thistle: 'シスル', powderBlue: 'パウダーブルー', paleTurquoise: 'ペールターコイズ',
+        navy: 'ネイビー', darkMagenta: 'ダークマゼンタ', darkGreen: 'ダークグリーン', magenta: 'マゼンタ', black: 'ブラック',
+        slate: 'スレート', lightSlate: 'ライトスレート', darkSlate: 'ダークスレート', dimGray: 'ディムグレー', steelBlue: 'スチールブルー',
+        plum: 'プラム', cherryBlossom: '桜', navajoWhite: 'ナバホホワイト',
+        royalBlue: 'ロイヤルブルー', oliveDrab: 'オリーブドラブ', darkSlateBlue: 'ダークスレートブルー'
       },
 
       // エキスパートガイドUI
@@ -4411,6 +4486,7 @@ const HAIRGATOR_I18N = {
         springWarmLight: '清新纯净的形象！柔和淡雅的暖色调最适合您。',
         autumnWarmDeep: '深沉高贵的形象！浓郁丰富的暖色调最适合您。',
         autumnWarmMuted: '自然精致的形象！沉稳自然的暖色调最适合您。',
+        autumnWarmSoft: '柔和温暖的形象！柔和自然的暖色调最适合您。',
         summerCoolBright: '清爽凉爽的形象！鲜明清透的冷色调最适合您。',
         summerCoolLight: '优雅柔和的形象！粉彩冷色调最适合您。',
         winterCoolDeep: '强烈都市的形象！鲜艳深沉的冷色调最适合您。',
@@ -4424,12 +4500,36 @@ const HAIRGATOR_I18N = {
         springWarmLight: '💄 推荐颜色: 杏色、浅珊瑚色、象牙白、奶油色\n💎 推荐金属: 玫瑰金、香槟金',
         autumnWarmDeep: '💄 推荐颜色: 酒红、巧克力棕、深陶土色\n💎 推荐金属: 古金、青铜',
         autumnWarmMuted: '💄 推荐颜色: 芥末黄、橄榄绿、卡其、陶土色\n💎 推荐金属: 金色、黄铜',
+        autumnWarmSoft: '💄 推荐颜色: 驼色、三文鱼色、柔珊瑚、摩卡\n💎 推荐金属: 玫瑰金、古金',
         summerCoolBright: '💄 推荐颜色: 玫瑰粉、薰衣草紫、天蓝\n💎 推荐金属: 白金、玫瑰金',
         summerCoolLight: '💄 推荐颜色: 柔粉、丁香紫、粉蓝\n💎 推荐金属: 银色、白金',
         winterCoolDeep: '💄 推荐颜色: 酒红、皇家蓝、祖母绿、黑色\n💎 推荐金属: 铂金、白金',
         winterCoolMuted: '💄 推荐颜色: 炭灰、海军蓝、酒红、深灰\n💎 推荐金属: 银色、枪色',
         neutralLight: '💄 推荐颜色: 灰粉、柔和米色、浅紫\n💎 推荐金属: 玫瑰金、柔银',
         neutralDeep: '💄 推荐颜色: 灰褐、紫红、深棕、橄榄\n💎 推荐金属: 混合金属、古银'
+      },
+
+      // AI分析步骤消息
+      aiSteps: {
+        step1: '检测面部区域...',
+        step2: '分析肤色...',
+        step3: '计算Delta E 2000...',
+        step4: '生成最终结果...'
+      },
+
+      // 颜色名称
+      colorNames: {
+        tomato: '番茄', coral: '珊瑚', gold: '金色', turquoise: '绿松石', hotPink: '亮粉',
+        peach: '桃色', moccasin: '鹿皮色', wheat: '小麦色', mint: '薄荷', lightPink: '浅粉',
+        saddleBrown: '鞍褐', sienna: '赭色', maroon: '栗色', olive: '橄榄', darkRed: '深红',
+        peru: '秘鲁色', chocolate: '巧克力', khaki: '卡其', rosyBrown: '玫瑰棕',
+        tan: '棕褐', tan2: '棕褐', burlywood: '硬木', buff: '浅黄', cocoa: '可可',
+        purple: '紫色', cyan: '青色', teal: '蓝绿', orchid: '兰花紫',
+        lavender: '薰衣草', thistle: '蓟色', powderBlue: '粉蓝', paleTurquoise: '淡绿松石',
+        navy: '海军蓝', darkMagenta: '深洋红', darkGreen: '深绿', magenta: '洋红', black: '黑色',
+        slate: '石板灰', lightSlate: '浅石板灰', darkSlate: '深石板灰', dimGray: '暗灰', steelBlue: '钢蓝',
+        plum: '李子色', cherryBlossom: '樱花粉', navajoWhite: '纳瓦霍白',
+        royalBlue: '皇家蓝', oliveDrab: '橄榄褐', darkSlateBlue: '深石板蓝'
       },
 
       // 专家指南UI
@@ -5575,6 +5675,7 @@ const HAIRGATOR_I18N = {
         springWarmLight: 'Hình ảnh trong sáng và thuần khiết! Màu ấm nhẹ nhàng phù hợp nhất với bạn.',
         autumnWarmDeep: 'Hình ảnh sâu lắng và sang trọng! Màu ấm đậm và phong phú phù hợp nhất với bạn.',
         autumnWarmMuted: 'Hình ảnh tự nhiên và tinh tế! Màu ấm trầm và tự nhiên phù hợp nhất với bạn.',
+        autumnWarmSoft: 'Hình ảnh mềm mại và ấm áp! Màu ấm nhẹ nhàng và tự nhiên phù hợp nhất với bạn.',
         summerCoolBright: 'Hình ảnh tươi mát và trong trẻo! Màu lạnh sáng và sạch phù hợp nhất với bạn.',
         summerCoolLight: 'Hình ảnh thanh lịch và dịu dàng! Màu pastel lạnh phù hợp nhất với bạn.',
         winterCoolDeep: 'Hình ảnh mạnh mẽ và đô thị! Màu lạnh sáng và đậm phù hợp nhất với bạn.',
@@ -5588,12 +5689,36 @@ const HAIRGATOR_I18N = {
         springWarmLight: '💄 Màu: Mơ, San hô nhạt, Ngà, Kem\n💎 Kim loại: Vàng hồng, Vàng champagne',
         autumnWarmDeep: '💄 Màu: Đỏ rượu, Nâu sôcôla, Đất nung đậm\n💎 Kim loại: Vàng cổ, Đồng',
         autumnWarmMuted: '💄 Màu: Mù tạt, Oliu, Kaki, Đất nung\n💎 Kim loại: Vàng, Đồng thau',
+        autumnWarmSoft: '💄 Màu: Lạc đà, Cá hồi, San hô mềm, Mocha\n💎 Kim loại: Vàng hồng, Vàng cổ',
         summerCoolBright: '💄 Màu: Hồng hoa hồng, Oải hương, Xanh da trời\n💎 Kim loại: Vàng trắng, Vàng hồng',
         summerCoolLight: '💄 Màu: Hồng nhạt, Tử đinh hương, Xanh phấn\n💎 Kim loại: Bạc, Vàng trắng',
         winterCoolDeep: '💄 Màu: Rượu vang, Xanh hoàng gia, Ngọc lục bảo, Đen\n💎 Kim loại: Bạch kim, Vàng trắng',
         winterCoolMuted: '💄 Màu: Than, Hải quân, Đỏ rượu, Xám đậm\n💎 Kim loại: Bạc, Kim loại súng',
         neutralLight: '💄 Màu: Hồng bụi, Beige nhạt, Tím nhạt\n💎 Kim loại: Vàng hồng, Bạc mềm',
         neutralDeep: '💄 Màu: Nâu xám, Tím, Nâu đậm, Oliu\n💎 Kim loại: Kim loại hỗn hợp, Bạc cổ'
+      },
+
+      // Tin nhắn bước phân tích AI
+      aiSteps: {
+        step1: 'Đang phát hiện vùng mặt...',
+        step2: 'Đang phân tích màu da...',
+        step3: 'Đang tính Delta E 2000...',
+        step4: 'Đang tạo kết quả cuối cùng...'
+      },
+
+      // Tên màu
+      colorNames: {
+        tomato: 'Cà chua', coral: 'San hô', gold: 'Vàng', turquoise: 'Ngọc lam', hotPink: 'Hồng nóng',
+        peach: 'Đào', moccasin: 'Mocasin', wheat: 'Lúa mì', mint: 'Bạc hà', lightPink: 'Hồng nhạt',
+        saddleBrown: 'Nâu yên', sienna: 'Siena', maroon: 'Hạt dẻ', olive: 'Oliu', darkRed: 'Đỏ đậm',
+        peru: 'Peru', chocolate: 'Sô cô la', khaki: 'Kaki', rosyBrown: 'Nâu hồng',
+        tan: 'Nâu rám', tan2: 'Nâu rám', burlywood: 'Gỗ sồi', buff: 'Da bò', cocoa: 'Ca cao',
+        purple: 'Tím', cyan: 'Lục lam', teal: 'Mòng két', orchid: 'Lan',
+        lavender: 'Oải hương', thistle: 'Cây kế', powderBlue: 'Xanh phấn', paleTurquoise: 'Ngọc lam nhạt',
+        navy: 'Hải quân', darkMagenta: 'Đỏ tía đậm', darkGreen: 'Xanh đậm', magenta: 'Đỏ tía', black: 'Đen',
+        slate: 'Đá phiến', lightSlate: 'Đá phiến nhạt', darkSlate: 'Đá phiến đậm', dimGray: 'Xám mờ', steelBlue: 'Xanh thép',
+        plum: 'Mận', cherryBlossom: 'Hoa anh đào', navajoWhite: 'Trắng Navajo',
+        royalBlue: 'Xanh hoàng gia', oliveDrab: 'Oliu xám', darkSlateBlue: 'Xanh đá đậm'
       },
 
       // Hướng dẫn chuyên gia UI
@@ -6698,6 +6823,7 @@ const HAIRGATOR_I18N = {
         springWarmLight: 'Tampilan murni dan bersih! Warna hangat lembut paling cocok untuk Anda.',
         autumnWarmDeep: 'Tampilan dalam dan mewah! Warna hangat kaya dan dalam paling cocok untuk Anda.',
         autumnWarmMuted: 'Tampilan alami dan halus! Warna hangat natural dan redup paling cocok untuk Anda.',
+        autumnWarmSoft: 'Tampilan lembut dan hangat! Warna hangat halus dan alami paling cocok untuk Anda.',
         summerCoolBright: 'Tampilan segar dan jernih! Warna sejuk cerah dan bersih paling cocok untuk Anda.',
         summerCoolLight: 'Tampilan elegan dan lembut! Warna pastel sejuk paling cocok untuk Anda.',
         winterCoolDeep: 'Tampilan kuat dan urban! Warna sejuk cerah dan dalam paling cocok untuk Anda.',
@@ -6711,12 +6837,36 @@ const HAIRGATOR_I18N = {
         springWarmLight: '💄 Warna: Apricot, Coral terang, Ivory, Cream\n💎 Metal: Rose gold, Champagne gold',
         autumnWarmDeep: '💄 Warna: Merah anggur, Coklat cokelat, Terracotta dalam\n💎 Metal: Emas antik, Tembaga',
         autumnWarmMuted: '💄 Warna: Mustard, Olive, Khaki, Terracotta\n💎 Metal: Emas, Kuningan',
+        autumnWarmSoft: '💄 Warna: Camel, Salmon, Soft coral, Mocha\n💎 Metal: Rose gold, Emas antik',
         summerCoolBright: '💄 Warna: Rose pink, Lavender, Sky blue\n💎 Metal: White gold, Rose gold',
         summerCoolLight: '💄 Warna: Pink terang, Lilac, Blue pastel\n💎 Metal: Perak, White gold',
         winterCoolDeep: '💄 Warna: Wine, Royal blue, Emerald, Hitam\n💎 Metal: Platinum, White gold',
         winterCoolMuted: '💄 Warna: Charcoal, Navy, Burgundy, Abu tua\n💎 Metal: Perak, Gunmetal',
         neutralLight: '💄 Warna: Dusty pink, Light beige, Soft violet\n💎 Metal: Rose gold, Perak lembut',
         neutralDeep: '💄 Warna: Brown grey, Purple, Deep brown, Olive\n💎 Metal: Mixed metal, Perak antik'
+      },
+
+      // Pesan langkah analisis AI
+      aiSteps: {
+        step1: 'Mendeteksi area wajah...',
+        step2: 'Menganalisis warna kulit...',
+        step3: 'Menghitung Delta E 2000...',
+        step4: 'Menghasilkan hasil akhir...'
+      },
+
+      // Nama warna
+      colorNames: {
+        tomato: 'Tomat', coral: 'Koral', gold: 'Emas', turquoise: 'Pirus', hotPink: 'Hot Pink',
+        peach: 'Peach', moccasin: 'Mokasin', wheat: 'Gandum', mint: 'Mint', lightPink: 'Pink Muda',
+        saddleBrown: 'Coklat Sadel', sienna: 'Siena', maroon: 'Marun', olive: 'Olive', darkRed: 'Merah Tua',
+        peru: 'Peru', chocolate: 'Cokelat', khaki: 'Khaki', rosyBrown: 'Coklat Rosy',
+        tan: 'Tan', tan2: 'Tan', burlywood: 'Kayu', buff: 'Buff', cocoa: 'Kakao',
+        purple: 'Ungu', cyan: 'Sian', teal: 'Teal', orchid: 'Anggrek',
+        lavender: 'Lavender', thistle: 'Thistle', powderBlue: 'Biru Bubuk', paleTurquoise: 'Pirus Pucat',
+        navy: 'Navy', darkMagenta: 'Magenta Tua', darkGreen: 'Hijau Tua', magenta: 'Magenta', black: 'Hitam',
+        slate: 'Slate', lightSlate: 'Slate Muda', darkSlate: 'Slate Tua', dimGray: 'Abu Redup', steelBlue: 'Biru Baja',
+        plum: 'Plum', cherryBlossom: 'Bunga Sakura', navajoWhite: 'Putih Navajo',
+        royalBlue: 'Biru Royal', oliveDrab: 'Olive Drab', darkSlateBlue: 'Biru Slate Tua'
       },
 
       expertGuide: {
@@ -7801,6 +7951,59 @@ const HAIRGATOR_I18N = {
         mediumTip: 'Puede requerir decoloración ligera',
         hard: 'Difícil',
         hardTip: 'Requiere decoloración profesional'
+      },
+
+      // Descripciones de temporada
+      seasonDescriptions: {
+        springWarmBright: '¡Imagen vibrante y radiante! Los colores cálidos vivos y brillantes te quedan mejor.',
+        springWarmLight: '¡Imagen clara y pura! Los colores cálidos suaves y delicados te quedan mejor.',
+        autumnWarmDeep: '¡Imagen profunda y lujosa! Los colores cálidos ricos y profundos te quedan mejor.',
+        autumnWarmMuted: '¡Imagen natural y sofisticada! Los colores cálidos neutros y naturales te quedan mejor.',
+        autumnWarmSoft: '¡Imagen suave y cálida! Los colores cálidos sutiles y naturales te quedan mejor.',
+        summerCoolBright: '¡Imagen fresca y vibrante! Los colores fríos vivos y limpios te quedan mejor.',
+        summerCoolLight: '¡Imagen elegante y suave! Los colores pastel fríos te quedan mejor.',
+        winterCoolDeep: '¡Imagen audaz y urbana! Los colores fríos vivos y profundos te quedan mejor.',
+        winterCoolMuted: '¡Imagen tranquila y refinada! Los colores acromáticos y de baja saturación te quedan mejor.',
+        neutralLight: '¡Tipo versátil! Se recomiendan colores claros y suaves.',
+        neutralDeep: '¡Tipo versátil! Se recomiendan colores profundos y sofisticados.'
+      },
+
+      // Recomendaciones de temporada
+      seasonRecommendations: {
+        springWarmBright: '💄 Colores: Coral vivo, Rojo naranja, Melocotón brillante\n💎 Metales: Oro amarillo, Oro brillante',
+        springWarmLight: '💄 Colores: Albaricoque, Coral claro, Marfil, Crema\n💎 Metales: Oro rosa, Oro champán',
+        autumnWarmDeep: '💄 Colores: Burdeos, Marrón chocolate, Terracota profundo\n💎 Metales: Oro antiguo, Bronce',
+        autumnWarmMuted: '💄 Colores: Mostaza, Oliva, Caqui, Terracota\n💎 Metales: Oro, Latón',
+        autumnWarmSoft: '💄 Colores: Camel, Salmón, Coral suave, Moca\n💎 Metales: Oro rosa, Oro antiguo',
+        summerCoolBright: '💄 Colores: Rosa rosado, Lavanda, Azul cielo\n💎 Metales: Oro blanco, Oro rosa',
+        summerCoolLight: '💄 Colores: Rosa suave, Lila, Azul polvo\n💎 Metales: Plata, Oro blanco',
+        winterCoolDeep: '💄 Colores: Vino, Azul real, Esmeralda, Negro\n💎 Metales: Platino, Oro blanco',
+        winterCoolMuted: '💄 Colores: Carbón, Azul marino, Burdeos, Gris oscuro\n💎 Metales: Plata, Gunmetal',
+        neutralLight: '💄 Colores: Rosa polvo, Beige suave, Malva claro\n💎 Metales: Oro rosa, Plata suave',
+        neutralDeep: '💄 Colores: Topo, Malva, Marrón oscuro, Oliva\n💎 Metales: Metales mixtos, Plata antigua'
+      },
+
+      // Mensajes de pasos de análisis AI
+      aiSteps: {
+        step1: 'Detectando área facial...',
+        step2: 'Analizando tono de piel...',
+        step3: 'Calculando Delta E 2000...',
+        step4: 'Generando resultados finales...'
+      },
+
+      // Nombres de colores
+      colorNames: {
+        tomato: 'Tomate', coral: 'Coral', gold: 'Oro', turquoise: 'Turquesa', hotPink: 'Rosa fuerte',
+        peach: 'Melocotón', moccasin: 'Mocasín', wheat: 'Trigo', mint: 'Menta', lightPink: 'Rosa claro',
+        saddleBrown: 'Marrón silla', sienna: 'Siena', maroon: 'Granate', olive: 'Oliva', darkRed: 'Rojo oscuro',
+        peru: 'Perú', chocolate: 'Chocolate', khaki: 'Caqui', rosyBrown: 'Marrón rosado',
+        tan: 'Bronceado', tan2: 'Bronceado', burlywood: 'Madera', buff: 'Ante', cocoa: 'Cacao',
+        purple: 'Púrpura', cyan: 'Cian', teal: 'Verde azulado', orchid: 'Orquídea',
+        lavender: 'Lavanda', thistle: 'Cardo', powderBlue: 'Azul polvo', paleTurquoise: 'Turquesa pálido',
+        navy: 'Azul marino', darkMagenta: 'Magenta oscuro', darkGreen: 'Verde oscuro', magenta: 'Magenta', black: 'Negro',
+        slate: 'Pizarra', lightSlate: 'Pizarra claro', darkSlate: 'Pizarra oscuro', dimGray: 'Gris tenue', steelBlue: 'Azul acero',
+        plum: 'Ciruela', cherryBlossom: 'Flor de cerezo', navajoWhite: 'Blanco navajo',
+        royalBlue: 'Azul real', oliveDrab: 'Verde oliva', darkSlateBlue: 'Azul pizarra oscuro'
       }
     },
 

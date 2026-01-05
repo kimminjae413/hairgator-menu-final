@@ -4647,7 +4647,7 @@
             // 영어 키로 i18n 조회
             const englishKey = keyMapping[season];
             if (englishKey) {
-                const translated = t(`personalColor.aiMode.result.seasonDesc.${englishKey}`);
+                const translated = t(`personalColor.seasonDescriptions.${englishKey}`);
                 if (translated) return translated;
             }
 
@@ -4668,97 +4668,100 @@
             return defaultDescriptions[season] || '';
         }
 
-        // 시즌별 컬러 팔레트 (개선된 8타입) - 색상명 포함
+        // 시즌별 컬러 팔레트 (개선된 8타입) - 색상명 i18n 지원
         function getSeasonColorPalette(season) {
+            // 색상명 헬퍼 함수
+            const cn = (key, fallback) => t(`personalColor.colorNames.${key}`) || fallback;
+
             const palettes = {
                 // 봄 웜
                 '봄 웜 브라이트': [
-                    { hex: '#FF6347', name: '토마토' },
-                    { hex: '#FF7F50', name: '코랄' },
-                    { hex: '#FFD700', name: '골드' },
-                    { hex: '#00CED1', name: '터콰이즈' },
-                    { hex: '#FF69B4', name: '핫핑크' }
+                    { hex: '#FF6347', key: 'tomato', fallback: '토마토' },
+                    { hex: '#FF7F50', key: 'coral', fallback: '코랄' },
+                    { hex: '#FFD700', key: 'gold', fallback: '골드' },
+                    { hex: '#00CED1', key: 'turquoise', fallback: '터콰이즈' },
+                    { hex: '#FF69B4', key: 'hotPink', fallback: '핫핑크' }
                 ],
                 '봄 웜 라이트': [
-                    { hex: '#FFDAB9', name: '피치' },
-                    { hex: '#FFE4B5', name: '모카신' },
-                    { hex: '#F5DEB3', name: '밀색' },
-                    { hex: '#98FB98', name: '민트' },
-                    { hex: '#FFB6C1', name: '라이트핑크' }
+                    { hex: '#FFDAB9', key: 'peach', fallback: '피치' },
+                    { hex: '#FFE4B5', key: 'moccasin', fallback: '모카신' },
+                    { hex: '#F5DEB3', key: 'wheat', fallback: '밀색' },
+                    { hex: '#98FB98', key: 'mint', fallback: '민트' },
+                    { hex: '#FFB6C1', key: 'lightPink', fallback: '라이트핑크' }
                 ],
                 // 가을 웜
                 '가을 웜 딥': [
-                    { hex: '#8B4513', name: '새들브라운' },
-                    { hex: '#A0522D', name: '시에나' },
-                    { hex: '#800000', name: '마룬' },
-                    { hex: '#556B2F', name: '올리브' },
-                    { hex: '#8B0000', name: '다크레드' }
+                    { hex: '#8B4513', key: 'saddleBrown', fallback: '새들브라운' },
+                    { hex: '#A0522D', key: 'sienna', fallback: '시에나' },
+                    { hex: '#800000', key: 'maroon', fallback: '마룬' },
+                    { hex: '#556B2F', key: 'olive', fallback: '올리브' },
+                    { hex: '#8B0000', key: 'darkRed', fallback: '다크레드' }
                 ],
                 '가을 웜 뮤트': [
-                    { hex: '#CD853F', name: '페루' },
-                    { hex: '#D2691E', name: '초콜릿' },
-                    { hex: '#BDB76B', name: '카키' },
-                    { hex: '#808000', name: '올리브' },
-                    { hex: '#BC8F8F', name: '로지브라운' }
+                    { hex: '#CD853F', key: 'peru', fallback: '페루' },
+                    { hex: '#D2691E', key: 'chocolate', fallback: '초콜릿' },
+                    { hex: '#BDB76B', key: 'khaki', fallback: '카키' },
+                    { hex: '#808000', key: 'olive', fallback: '올리브' },
+                    { hex: '#BC8F8F', key: 'rosyBrown', fallback: '로지브라운' }
                 ],
                 '가을 웜 소프트': [
-                    { hex: '#C4A484', name: '탄' },
-                    { hex: '#D2B48C', name: '탠' },
-                    { hex: '#DEB887', name: '벌리우드' },
-                    { hex: '#8B7355', name: '버프' },
-                    { hex: '#A67B5B', name: '코코아' }
+                    { hex: '#C4A484', key: 'tan', fallback: '탄' },
+                    { hex: '#D2B48C', key: 'tan2', fallback: '탠' },
+                    { hex: '#DEB887', key: 'burlywood', fallback: '벌리우드' },
+                    { hex: '#8B7355', key: 'buff', fallback: '버프' },
+                    { hex: '#A67B5B', key: 'cocoa', fallback: '코코아' }
                 ],
                 // 여름 쿨
                 '여름 쿨 브라이트': [
-                    { hex: '#FF69B4', name: '핫핑크' },
-                    { hex: '#9370DB', name: '퍼플' },
-                    { hex: '#00CED1', name: '시안' },
-                    { hex: '#20B2AA', name: '틸' },
-                    { hex: '#BA55D3', name: '오키드' }
+                    { hex: '#FF69B4', key: 'hotPink', fallback: '핫핑크' },
+                    { hex: '#9370DB', key: 'purple', fallback: '퍼플' },
+                    { hex: '#00CED1', key: 'cyan', fallback: '시안' },
+                    { hex: '#20B2AA', key: 'teal', fallback: '틸' },
+                    { hex: '#BA55D3', key: 'orchid', fallback: '오키드' }
                 ],
                 '여름 쿨 라이트': [
-                    { hex: '#E6E6FA', name: '라벤더' },
-                    { hex: '#D8BFD8', name: '시슬' },
-                    { hex: '#B0E0E6', name: '파우더블루' },
-                    { hex: '#AFEEEE', name: '페일터콰이즈' },
-                    { hex: '#FFB6C1', name: '라이트핑크' }
+                    { hex: '#E6E6FA', key: 'lavender', fallback: '라벤더' },
+                    { hex: '#D8BFD8', key: 'thistle', fallback: '시슬' },
+                    { hex: '#B0E0E6', key: 'powderBlue', fallback: '파우더블루' },
+                    { hex: '#AFEEEE', key: 'paleTurquoise', fallback: '페일터콰이즈' },
+                    { hex: '#FFB6C1', key: 'lightPink', fallback: '라이트핑크' }
                 ],
                 // 겨울 쿨
                 '겨울 쿨 딥': [
-                    { hex: '#000080', name: '네이비' },
-                    { hex: '#8B008B', name: '다크마젠타' },
-                    { hex: '#006400', name: '다크그린' },
-                    { hex: '#C71585', name: '마젠타' },
-                    { hex: '#000000', name: '블랙' }
+                    { hex: '#000080', key: 'navy', fallback: '네이비' },
+                    { hex: '#8B008B', key: 'darkMagenta', fallback: '다크마젠타' },
+                    { hex: '#006400', key: 'darkGreen', fallback: '다크그린' },
+                    { hex: '#C71585', key: 'magenta', fallback: '마젠타' },
+                    { hex: '#000000', key: 'black', fallback: '블랙' }
                 ],
                 '겨울 쿨 뮤트': [
-                    { hex: '#708090', name: '슬레이트' },
-                    { hex: '#778899', name: '라이트슬레이트' },
-                    { hex: '#2F4F4F', name: '다크슬레이트' },
-                    { hex: '#696969', name: '딤그레이' },
-                    { hex: '#4682B4', name: '스틸블루' }
+                    { hex: '#708090', key: 'slate', fallback: '슬레이트' },
+                    { hex: '#778899', key: 'lightSlate', fallback: '라이트슬레이트' },
+                    { hex: '#2F4F4F', key: 'darkSlate', fallback: '다크슬레이트' },
+                    { hex: '#696969', key: 'dimGray', fallback: '딤그레이' },
+                    { hex: '#4682B4', key: 'steelBlue', fallback: '스틸블루' }
                 ],
                 // 뉴트럴
                 '뉴트럴 라이트': [
-                    { hex: '#DDA0DD', name: '플럼' },
-                    { hex: '#FFB7C5', name: '체리블로섬' },
-                    { hex: '#E6E6FA', name: '라벤더' },
-                    { hex: '#FFDEAD', name: '나바호화이트' },
-                    { hex: '#B0E0E6', name: '파우더블루' }
+                    { hex: '#DDA0DD', key: 'plum', fallback: '플럼' },
+                    { hex: '#FFB7C5', key: 'cherryBlossom', fallback: '체리블로섬' },
+                    { hex: '#E6E6FA', key: 'lavender', fallback: '라벤더' },
+                    { hex: '#FFDEAD', key: 'navajoWhite', fallback: '나바호화이트' },
+                    { hex: '#B0E0E6', key: 'powderBlue', fallback: '파우더블루' }
                 ],
                 '뉴트럴 딥': [
-                    { hex: '#8B4513', name: '새들브라운' },
-                    { hex: '#4169E1', name: '로얄블루' },
-                    { hex: '#556B2F', name: '올리브드랍' },
-                    { hex: '#800000', name: '마룬' },
-                    { hex: '#483D8B', name: '다크슬레이트블루' }
+                    { hex: '#8B4513', key: 'saddleBrown', fallback: '새들브라운' },
+                    { hex: '#4169E1', key: 'royalBlue', fallback: '로얄블루' },
+                    { hex: '#556B2F', key: 'oliveDrab', fallback: '올리브드랍' },
+                    { hex: '#800000', key: 'maroon', fallback: '마룬' },
+                    { hex: '#483D8B', key: 'darkSlateBlue', fallback: '다크슬레이트블루' }
                 ]
             };
             const colors = palettes[season] || [];
             return colors.map(c => `
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 3px;">
                     <div style="width: 32px; height: 32px; background: ${c.hex}; border-radius: 8px; border: 2px solid rgba(255,255,255,0.3);"></div>
-                    <span style="font-size: 9px; color: #aaa;">${c.name}</span>
+                    <span style="font-size: 9px; color: #aaa;">${cn(c.key, c.fallback)}</span>
                 </div>
             `).join('');
         }
@@ -5337,10 +5340,10 @@
 
         async function performAIAnalysisSteps() {
             const steps = [
-                { id: 'ai-step-1', message: '얼굴 영역 감지 중...' },
-                { id: 'ai-step-2', message: '피부톤 색상 분석 중...' },
-                { id: 'ai-step-3', message: 'Delta E 2000 계산 중...' },
-                { id: 'ai-step-4', message: '최종 결과 생성 중...' }
+                { id: 'ai-step-1', message: t('personalColor.aiSteps.step1') || '얼굴 영역 감지 중...' },
+                { id: 'ai-step-2', message: t('personalColor.aiSteps.step2') || '피부톤 색상 분석 중...' },
+                { id: 'ai-step-3', message: t('personalColor.aiSteps.step3') || 'Delta E 2000 계산 중...' },
+                { id: 'ai-step-4', message: t('personalColor.aiSteps.step4') || '최종 결과 생성 중...' }
             ];
 
             for (let i = 0; i < steps.length; i++) {
