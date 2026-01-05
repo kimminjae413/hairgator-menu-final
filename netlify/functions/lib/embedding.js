@@ -36,8 +36,10 @@ async function generateEmbedding(text, geminiKey) {
 }
 
 // ==================== Firestore REST API 스타일 가져오기 ====================
-async function getFirestoreStyles(collection = 'styles') {
-  const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/${collection}`;
+// ⚠️ 올바른 컬렉션: hairstyles (styles, men_styles 사용 금지!)
+async function getFirestoreStyles(genderFilter = null) {
+  // 항상 hairstyles 컬렉션 사용
+  const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/hairstyles`;
 
   try {
     const response = await fetch(url);
@@ -52,6 +54,12 @@ async function getFirestoreStyles(collection = 'styles') {
       for (const doc of data.documents) {
         const fields = doc.fields;
         const styleId = doc.name.split('/').pop();
+        const gender = fields.gender?.stringValue || '';
+
+        // gender 필터 적용
+        if (genderFilter && gender !== genderFilter) {
+          continue;
+        }
 
         // 임베딩 배열 추출
         let embedding = null;
@@ -80,6 +88,7 @@ async function getFirestoreStyles(collection = 'styles') {
           styleId: styleId,
           series: fields.series?.stringValue || '',
           seriesName: fields.seriesName?.stringValue || '',
+          gender: gender,
           resultImage: fields.resultImage?.stringValue || null,
           diagrams: diagrams,
           diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
@@ -89,7 +98,8 @@ async function getFirestoreStyles(collection = 'styles') {
       }
     }
 
-    console.log(`📚 Firestore ${collection}에서 ${styles.length}개 로드`);
+    const filterLabel = genderFilter ? `(gender=${genderFilter})` : '(전체)';
+    console.log(`📚 Firestore hairstyles${filterLabel}에서 ${styles.length}개 로드`);
     return styles;
 
   } catch (error) {
@@ -98,14 +108,14 @@ async function getFirestoreStyles(collection = 'styles') {
   }
 }
 
-// ==================== 남자 스타일 가져오기 (men_styles 컬렉션) ====================
+// ==================== 남자 스타일 가져오기 (hairstyles에서 gender='male' 필터) ====================
 async function getMenStyles() {
-  return await getFirestoreStyles('men_styles');
+  return await getFirestoreStyles('male');
 }
 
-// ==================== 여자 스타일 가져오기 (styles 컬렉션) ====================
+// ==================== 여자 스타일 가져오기 (hairstyles에서 gender='female' 필터) ====================
 async function getWomenStyles() {
-  return await getFirestoreStyles('styles');
+  return await getFirestoreStyles('female');
 }
 
 // ==================== 임베딩 기반 Top-K 검색 ====================

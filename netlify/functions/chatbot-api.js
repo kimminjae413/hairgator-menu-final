@@ -4508,9 +4508,10 @@ const FIREBASE_PROJECT_ID = 'hairgatormenu-4a43e';
 
 /**
  * Firestore REST API로 모든 스타일 가져오기
+ * ⚠️ 올바른 컬렉션: hairstyles (styles, men_styles 사용 금지!)
  */
 async function getFirestoreStyles() {
-  const baseUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/styles`;
+  const baseUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/hairstyles`;
   const styles = [];
   let nextPageToken = null;
 
@@ -8704,7 +8705,7 @@ async function generateCustomRecipeFromParams(payload, geminiKey) {
       : `F${lengthCode}L`;
 
     // 2. Firestore에서 해당 시리즈 스타일 검색
-    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/styles`;
+    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/hairstyles`;
     const firebaseKey = process.env.FIREBASE_API_KEY || geminiKey;
 
     const response = await fetch(`${url}?key=${firebaseKey}`, {
@@ -8793,57 +8794,62 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
     const styleCode = series || category || 'SF'; // 사용자가 선택한 스타일
     console.log(`⏱️ [1] 사용자 선택 스타일: ${styleCode} (${Date.now() - t1}ms)`);
 
-    // 2. Firestore men_styles 컬렉션에서 검색
+    // 2. Firestore hairstyles 컬렉션에서 남자 스타일 검색 (gender='male')
     const t2 = Date.now();
-    const menStylesUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/men_styles`;
+    const hairstylesUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/hairstyles`;
 
-    const firebaseResponse = await fetch(menStylesUrl);
+    const firebaseResponse = await fetch(hairstylesUrl);
     if (!firebaseResponse.ok) {
-      throw new Error(`Firestore men_styles 조회 실패: ${firebaseResponse.status}`);
+      throw new Error(`Firestore hairstyles 조회 실패: ${firebaseResponse.status}`);
     }
 
     const firebaseData = await firebaseResponse.json();
-    const allMenStyles = (firebaseData.documents || []).map(doc => {
-      const fields = doc.fields || {};
-      const styleId = doc.name.split('/').pop();
+    // hairstyles 컬렉션에서 gender='male'인 것만 필터링
+    const allMenStyles = (firebaseData.documents || [])
+      .map(doc => {
+        const fields = doc.fields || {};
+        const styleId = doc.name.split('/').pop();
+        const gender = fields.gender?.stringValue || '';
 
-      let embedding = null;
-      if (fields.embedding?.arrayValue?.values) {
-        embedding = fields.embedding.arrayValue.values.map(v => parseFloat(v.doubleValue || 0));
-      }
+        let embedding = null;
+        if (fields.embedding?.arrayValue?.values) {
+          embedding = fields.embedding.arrayValue.values.map(v => parseFloat(v.doubleValue || 0));
+        }
 
-      let diagrams = [];
-      if (fields.diagrams?.arrayValue?.values) {
-        diagrams = fields.diagrams.arrayValue.values.map(v => {
-          const map = v.mapValue?.fields || {};
-          return {
-            step: parseInt(map.step?.integerValue || 0),
-            url: map.url?.stringValue || '',
-            lifting: map.lifting?.stringValue || null,
-            direction: map.direction?.stringValue || null,
-            section: map.section?.stringValue || null,
-            zone: map.zone?.stringValue || null,
-            cutting_method: map.cutting_method?.stringValue || null
-          };
-        });
-      }
+        let diagrams = [];
+        if (fields.diagrams?.arrayValue?.values) {
+          diagrams = fields.diagrams.arrayValue.values.map(v => {
+            const map = v.mapValue?.fields || {};
+            return {
+              step: parseInt(map.step?.integerValue || 0),
+              url: map.url?.stringValue || '',
+              lifting: map.lifting?.stringValue || null,
+              direction: map.direction?.stringValue || null,
+              section: map.section?.stringValue || null,
+              zone: map.zone?.stringValue || null,
+              cutting_method: map.cutting_method?.stringValue || null
+            };
+          });
+        }
 
-      return {
-        styleId,
-        series: fields.series?.stringValue || '',
-        seriesName: fields.seriesName?.stringValue || '',
-        resultImage: fields.resultImage?.stringValue || null,
-        diagrams,
-        diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
-        captionUrl: fields.captionUrl?.stringValue || null,
-        textRecipe: fields.textRecipe?.stringValue || null,
-        embedding,
-        // 페이드 레벨 정보 추가
-        fadeLevel: fields.fadeLevel?.stringValue || 'none'
-      };
-    });
+        return {
+          styleId,
+          gender,
+          series: fields.series?.stringValue || '',
+          seriesName: fields.seriesName?.stringValue || '',
+          resultImage: fields.resultImage?.stringValue || null,
+          diagrams,
+          diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
+          captionUrl: fields.captionUrl?.stringValue || null,
+          textRecipe: fields.textRecipe?.stringValue || null,
+          embedding,
+          // 페이드 레벨 정보 추가
+          fadeLevel: fields.fadeLevel?.stringValue || 'none'
+        };
+      })
+      .filter(s => s.gender === 'male'); // 남자 스타일만 필터링
 
-    console.log(`⏱️ [2] Firestore men_styles 조회: ${Date.now() - t2}ms (${allMenStyles.length}개)`);
+    console.log(`⏱️ [2] Firestore hairstyles(male) 조회: ${Date.now() - t2}ms (${allMenStyles.length}개)`);
 
     // 3. 스타일 코드로 필터링
     const filteredStylesAll = allMenStyles.filter(s =>
@@ -9534,7 +9540,7 @@ async function regenerateFemaleRecipeWithStyle(payload, geminiKey) {
 
     // 2. Firestore에서 여자 스타일 가져오기
     const targetSeries = `F${length_code}L`;
-    const stylesUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles`;
+    const stylesUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles`;
     const stylesResponse = await fetch(stylesUrl);
     const stylesData = await stylesResponse.json();
 
@@ -9721,7 +9727,7 @@ async function regeneratePermRecipeWithStyle(payload, geminiKey) {
     const targetSeries = `F${length_code}LP`;
 
     // 3. Firestore에서 펌 스타일 가져오기 (페이지네이션 포함)
-    const baseUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles`;
+    const baseUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles`;
     const allStyles = [];
     let nextPageToken = null;
 
@@ -9878,7 +9884,7 @@ async function getPermRecipeByStyle(payload) {
 
   try {
     // Firestore에서 해당 펌 스타일 조회
-    const docUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles/${perm_style_id}`;
+    const docUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles/${perm_style_id}`;
     const response = await fetch(docUrl);
 
     if (!response.ok) {
@@ -9897,7 +9903,7 @@ async function getPermRecipeByStyle(payload) {
       const targetSeries = seriesMatch[1];
 
       // 해당 시리즈의 펌 스타일 검색
-      const searchUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles?pageSize=50`;
+      const searchUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles?pageSize=50`;
       const searchResponse = await fetch(searchUrl);
       const searchData = await searchResponse.json();
 
@@ -9987,7 +9993,7 @@ async function getCutRecipeByStyle(payload) {
 
   try {
     // Firestore에서 해당 커트 스타일 조회
-    const docUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles/${cut_style_id}`;
+    const docUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles/${cut_style_id}`;
     const response = await fetch(docUrl);
 
     if (!response.ok) {
@@ -10006,7 +10012,7 @@ async function getCutRecipeByStyle(payload) {
       const targetSeries = seriesMatch[1];
 
       // 해당 시리즈의 커트 스타일 검색
-      const searchUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles?pageSize=100`;
+      const searchUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles?pageSize=100`;
       const searchResponse = await fetch(searchUrl);
       const searchData = await searchResponse.json();
 
@@ -10273,49 +10279,53 @@ async function regenerateMaleRecipeWithStyle(payload, geminiKey) {
       sub_style: subStyleName
     };
 
-    // 2. Firestore에서 남자 스타일 가져오기
-    const menStylesUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/men_styles`;
-    const menStylesResponse = await fetch(menStylesUrl);
-    const menStylesData = await menStylesResponse.json();
+    // 2. Firestore hairstyles에서 남자 스타일 가져오기 (gender='male')
+    const hairstylesUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles`;
+    const hairstylesResponse = await fetch(hairstylesUrl);
+    const hairstylesData = await hairstylesResponse.json();
 
-    const allMenStyles = (menStylesData.documents || []).map(doc => {
-      const fields = doc.fields;
-      const styleId = doc.name.split('/').pop();
+    const allMenStyles = (hairstylesData.documents || [])
+      .map(doc => {
+        const fields = doc.fields;
+        const styleId = doc.name.split('/').pop();
+        const gender = fields.gender?.stringValue || '';
 
-      let embedding = null;
-      if (fields.embedding?.arrayValue?.values) {
-        embedding = fields.embedding.arrayValue.values.map(v => parseFloat(v.doubleValue || 0));
-      }
+        let embedding = null;
+        if (fields.embedding?.arrayValue?.values) {
+          embedding = fields.embedding.arrayValue.values.map(v => parseFloat(v.doubleValue || 0));
+        }
 
-      let diagrams = [];
-      if (fields.diagrams?.arrayValue?.values) {
-        diagrams = fields.diagrams.arrayValue.values.map(v => {
-          const map = v.mapValue?.fields || {};
-          return {
-            step: parseInt(map.step?.integerValue || 0),
-            url: map.url?.stringValue || '',
-            lifting: map.lifting?.stringValue || null,
-            direction: map.direction?.stringValue || null,
-            section: map.section?.stringValue || null,
-            zone: map.zone?.stringValue || null,
-            cutting_method: map.cutting_method?.stringValue || null
-          };
-        });
-      }
+        let diagrams = [];
+        if (fields.diagrams?.arrayValue?.values) {
+          diagrams = fields.diagrams.arrayValue.values.map(v => {
+            const map = v.mapValue?.fields || {};
+            return {
+              step: parseInt(map.step?.integerValue || 0),
+              url: map.url?.stringValue || '',
+              lifting: map.lifting?.stringValue || null,
+              direction: map.direction?.stringValue || null,
+              section: map.section?.stringValue || null,
+              zone: map.zone?.stringValue || null,
+              cutting_method: map.cutting_method?.stringValue || null
+            };
+          });
+        }
 
-      return {
-        styleId,
-        series: fields.series?.stringValue || '',
-        seriesName: fields.seriesName?.stringValue || '',
-        type: fields.type?.stringValue || null,  // ⭐ 펌/커트 구분
-        resultImage: fields.resultImage?.stringValue || null,
-        diagrams,
-        diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
-        captionUrl: fields.captionUrl?.stringValue || null,
-        textRecipe: fields.textRecipe?.stringValue || null,
-        embedding
-      };
-    });
+        return {
+          styleId,
+          gender,
+          series: fields.series?.stringValue || '',
+          seriesName: fields.seriesName?.stringValue || '',
+          type: fields.type?.stringValue || null,  // ⭐ 펌/커트 구분
+          resultImage: fields.resultImage?.stringValue || null,
+          diagrams,
+          diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
+          captionUrl: fields.captionUrl?.stringValue || null,
+          textRecipe: fields.textRecipe?.stringValue || null,
+          embedding
+        };
+      })
+      .filter(s => s.gender === 'male'); // 남자 스타일만 필터링
 
     // 3. 새 스타일 코드로 필터링
     const filteredStyles = allMenStyles.filter(s =>

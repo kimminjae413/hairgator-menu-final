@@ -421,17 +421,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // 2. styleId 필드로 쿼리
                     if (!style) {
-                        let snapshot = await window.db.collection('styles')
+                        const snapshot = await window.db.collection('hairstyles')
                             .where('styleId', '==', styleId)
                             .limit(1)
                             .get();
-
-                        if (snapshot.empty) {
-                            snapshot = await window.db.collection('hairstyles')
-                                .where('styleId', '==', styleId)
-                                .limit(1)
-                                .get();
-                        }
 
                         if (!snapshot.empty) {
                             const doc = snapshot.docs[0];

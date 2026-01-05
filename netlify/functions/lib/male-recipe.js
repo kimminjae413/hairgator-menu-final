@@ -194,7 +194,7 @@ async function generateMaleRecipe(params, geminiKey, language = 'ko') {
     const searchQuery = searchParts.join(' ') || 'Side Fringe Medium';
     console.log(`🔍 검색 쿼리: "${searchQuery}"`);
 
-    // 3. Firestore men_styles에서 검색
+    // 3. Firestore hairstyles에서 남자 스타일 검색 (gender='male')
     const matchedStyles = await searchFirestoreStyles(searchQuery, geminiKey, 'male', 5);
     console.log(`📊 매칭된 스타일: ${matchedStyles.length}개`);
 
