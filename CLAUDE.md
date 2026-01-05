@@ -56,6 +56,36 @@
 
 ---
 
+## 🚫 절대 하면 안 되는 것 (2026-01-05 추가)
+
+### 컬렉션 통일 금지!
+
+**hairstyles ≠ styles 컬렉션은 용도가 완전히 다르다!**
+
+| 컬렉션 | 용도 | diagrams | textRecipe | 문서ID |
+|--------|------|:--------:|:----------:|--------|
+| `hairstyles` | 메뉴판/목록 | ❌ 없음 | ❌ 없음 | 랜덤 (`13JrTDK...`) |
+| `styles` | 레시피/도해도 | ✅ 있음 | ✅ 있음 | 구조화 (`SP0001`) |
+
+**절대 하지 말 것:**
+- ❌ `styles` → `hairstyles`로 통일하면 **레시피/도해도 못 가져옴**
+- ❌ `hairstyles`에서 `diagrams` 필드 찾으려고 하지 마 (없음!)
+- ❌ `hairstyles`에서 `textRecipe` 필드 찾으려고 하지 마 (없음!)
+
+**올바른 데이터 흐름:**
+```
+1. Vision 매칭 → hairstyles 컬렉션 (스타일 목록)
+2. styleCode 추출 (SF, SP, BZ 등)
+3. 도해도/레시피 → styles 컬렉션 (styles/SP0001)
+```
+
+**styles 컬렉션 현황 (2026-01-05 확인):**
+- 남자 69개: SF(14), SP(25), FU(7), PB(9), BZ(5), CP(4), MC(5)
+- 여자: FAL, FBL, FCL 등 (수백 개)
+- 모든 문서에 `diagrams`, `textRecipe` 필드 존재
+
+---
+
 ## 🔴 자주 헷갈리는 것들 (Claude 필독!)
 
 ### 1. main.js vs menu.js 구분
