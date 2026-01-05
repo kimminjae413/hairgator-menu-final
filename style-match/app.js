@@ -2852,7 +2852,18 @@ async function generateRecommendations(analysis) {
     });
 }
 
-// ========== 스타일 점수 계산 로직 (신규 추가) ==========
+// ========== 스타일 점수 계산 로직 (v2.0 - 2026-01-05 리밸런싱) ==========
+// 설계 원칙:
+// 1. Category Bonus (형태): 가장 큰 비중 - "형태가 틀리면 질감이 좋아도 망한 머리"
+// 2. Style Bonus (디테일): 웨이브/볼륨 위치 등 세부 조정
+// 3. AI Bonus (검증): 과락(Fatal Mismatch) 제도로 치명적 오추천 방지
+//
+// 점수 해석 가이드:
+// - 85~100: 찰떡 매칭 (Best Choice)
+// - 70~84: 추천 (Good)
+// - 50~69: 무난함 (Normal)
+// - 0~49: 비추천 (Not Recommended)
+
 function calculateHairstyleScores(analysis, styles) {
     const { ratios } = analysis;
     if (!ratios || !ratios.raw) {
@@ -2861,147 +2872,201 @@ function calculateHairstyleScores(analysis, styles) {
 
     const { lowerRatio, middleRatio, cheekJawRatio, upperRatio } = ratios.raw;
 
-    // 얼굴형 판단 (통일된 기준)
+    // 얼굴형 판단 (RAG 이론 기반 임계값)
     const isLongFace = lowerRatio > 0.36 || lowerRatio > middleRatio * 1.12;
     const isShortFace = lowerRatio < 0.28;
     const isSquareJaw = cheekJawRatio < 1.15;
     const isWideForehead = upperRatio > 0.36;
-    const isNarrowForehead = upperRatio < 0.25;  // 좁은 이마 (25% 미만)
+    const isNarrowForehead = upperRatio < 0.25;
+
+    // 🚨 심각도 판정 (Fatal Mismatch용)
+    const isSevereWideForehead = upperRatio > 0.40;  // 매우 넓은 이마
+    const isSevereLongFace = lowerRatio > 0.40;      // 매우 긴 얼굴
+    const isSevereSquareJaw = cheekJawRatio < 1.05;  // 매우 사각턱
 
     console.log('🔍 얼굴형 분석:', { isLongFace, isShortFace, isSquareJaw, isWideForehead, isNarrowForehead });
+    console.log('🚨 심각도:', { isSevereWideForehead, isSevereLongFace, isSevereSquareJaw });
 
     return styles.map(style => {
         let score = 50; // 기본 점수
         let categoryBonus = 0;
         let styleBonus = 0;
+        let fatalPenalty = 0; // 🚨 과락 페널티
 
         // 카테고리 대문자 변환
         const cat = (style.mainCategory || '').toUpperCase();
         const subCat = (style.subCategory || '').toUpperCase();
         const name = (style.name || '').toLowerCase();
 
-        // 1. 카테고리(기장)별 점수 - 여자
-        // ⭐ 보정(Correction) 우선 로직: 얼굴형 단점 보완이 1순위
-        if (selectedGender === 'female') {
-            // 웨이브/컬 여부 확인 (aiAnalysis 또는 스타일 이름에서)
-            const ai = style.aiAnalysis;
-            const hasWaveStyle = (ai?.styleFeatures?.hasWave || ai?.styleFeatures?.hasCurl) ||
-                name.includes('웨이브') || name.includes('wave') || name.includes('컬') ||
-                name.includes('curl') || name.includes('펌');
+        // 웨이브/볼륨 여부 판단 (aiAnalysis + 스타일명)
+        const ai = style.aiAnalysis;
+        const hasWaveStyle = (ai?.styleFeatures?.hasWave || ai?.styleFeatures?.hasCurl) ||
+            name.includes('웨이브') || name.includes('wave') || name.includes('컬') ||
+            name.includes('curl') || name.includes('펌');
+        const hasSideVolume = ai?.volumePosition === 'side' ||
+            name.includes('사이드') || name.includes('side') || name.includes('볼륨');
+        const isStraightStyle = (!hasWaveStyle && !hasSideVolume) ||
+            name.includes('매직') || name.includes('스트레이트') || name.includes('straight') ||
+            name.includes('생머리');
+        const hasNoBangs = ['N', 'NONE', ''].includes(subCat) || ai?.styleFeatures?.hasBangs === false;
 
+        // ================================================================
+        // 1. 카테고리 보너스 (Category Bonus) - 형태/기장 기반
+        // ================================================================
+
+        if (selectedGender === 'female') {
+            // ===== 여자 긴 얼굴형 =====
             if (isLongFace) {
-                // 긴 얼굴: 기장별 세분화된 보정 로직
                 if (['A LENGTH', 'B LENGTH'].includes(cat)) {
-                    if (hasWaveStyle) {
-                        // ✅ 긴 기장 + 웨이브 = 가로 볼륨으로 얼굴 길이 보정 (추천!)
-                        categoryBonus += 30;
+                    // 긴 기장: 웨이브 유무에 따라 극명하게 갈림
+                    if (hasWaveStyle || hasSideVolume) {
+                        categoryBonus += 30; // ✅ 긴 기장 + 웨이브 = 가로 볼륨 OK
                     } else {
-                        // ❌ 긴 기장 + 생머리 = 세로 라인 강조 (비추천)
-                        categoryBonus -= 25;
+                        categoryBonus -= 25; // ❌ 긴 기장 + 생머리 = 세로 강조 NG
+                        if (isSevereLongFace) fatalPenalty = -30; // 🚨 과락
                     }
                 } else if (['C LENGTH', 'D LENGTH', 'E LENGTH', 'F LENGTH'].includes(cat)) {
-                    // 중단발~세미롱: 가장 이상적인 보정 기장
-                    categoryBonus += 40;
+                    // 중단발~세미롱: 조건부 점수 (v2.0 핵심 수정)
+                    if (hasWaveStyle || hasSideVolume) {
+                        categoryBonus += 45; // ✅ Best: 중단발 + 웨이브/볼륨
+                    } else if (isStraightStyle) {
+                        categoryBonus -= 10; // ⚠️ 주의: 중단발 + 생머리
+                    } else {
+                        categoryBonus += 20; // ➡️ 무난: 중단발 (텍스처 불명)
+                    }
                 }
-            } else if (isShortFace) {
-                // 짧은 얼굴: 긴 머리 추천 (세로 연장 효과)
+            }
+            // ===== 여자 짧은 얼굴형 =====
+            else if (isShortFace) {
                 if (['A LENGTH', 'B LENGTH', 'C LENGTH'].includes(cat)) {
-                    categoryBonus += 35;
+                    categoryBonus += 35; // 세로 라인 연장
+                }
+            }
+
+            // ===== 여자 사각턱 (RAG 이론 추가) =====
+            if (isSquareJaw) {
+                if (['A LENGTH', 'B LENGTH', 'C LENGTH', 'D LENGTH'].includes(cat)) {
+                    categoryBonus += 30; // 부드러운 웨이브로 턱선 보완
+                } else if (['F LENGTH', 'G LENGTH', 'H LENGTH'].includes(cat)) {
+                    categoryBonus -= 40; // 턱선 강조됨
+                    if (isSevereSquareJaw) fatalPenalty = -30; // 🚨 과락
                 }
             }
         } else {
-            // 남자 카테고리별 점수
+            // ===== 남자 긴 얼굴형 =====
             if (isLongFace) {
                 if (['SIDE PART', 'SIDE FRINGE'].includes(cat)) {
                     categoryBonus += 50; // 사이드 볼륨 강력 추천
                 } else if (['FRINGE UP', 'PUSHED BACK', 'MOHICAN'].includes(cat)) {
                     categoryBonus -= 30; // 탑 볼륨 감점
+                    if (isSevereLongFace) fatalPenalty = -30; // 🚨 과락
                 }
-            } else if (isShortFace) {
+            }
+            // ===== 남자 짧은 얼굴형 =====
+            else if (isShortFace) {
                 if (['FRINGE UP', 'PUSHED BACK', 'MOHICAN'].includes(cat)) {
                     categoryBonus += 40; // 탑 볼륨 추천
                 }
             }
-        }
 
-        // 앞머리(subCategory)별 점수 - 여자
-        if (isWideForehead) {
-            // 넓은 이마 → 앞머리로 커버 추천
-            if (['EB', 'EYE BROW', 'E', 'EYE', 'FH', 'FORE HEAD'].includes(subCat)) {
-                categoryBonus += 30; // 앞머리로 이마 커버
-            } else if (['N', 'NONE', ''].includes(subCat)) {
-                categoryBonus -= 20; // 이마 노출 감점
-            }
-        } else if (isNarrowForehead) {
-            // 좁은 이마 → 이마 드러내기 OR 볼륨 앞머리 추천
-            if (['N', 'NONE', ''].includes(subCat) || ['FH', 'FORE HEAD'].includes(subCat)) {
-                categoryBonus += 20; // 이마 드러내거나 짧은 앞머리로 볼륨감
-            } else if (['E', 'EYE', 'CB', 'CHEEKBONE'].includes(subCat)) {
-                categoryBonus -= 15; // 긴 앞머리는 이마를 더 좁아 보이게 함
+            // ===== 남자 사각턱 (RAG 이론 추가) =====
+            if (isSquareJaw) {
+                if (['SIDE FRINGE', 'SIDE PART'].includes(cat)) {
+                    categoryBonus += 25; // 사이드 볼륨으로 턱선 완화
+                } else if (['BUZZ', 'CROP'].includes(cat)) {
+                    categoryBonus -= 30; // 각진 인상 강조
+                    if (isSevereSquareJaw) fatalPenalty = -30; // 🚨 과락
+                }
             }
         }
 
-        // 앞머리(대분류)별 점수 - 남자
+        // ===== 앞머리(subCategory) 점수 - 여자 =====
+        if (selectedGender === 'female') {
+            if (isWideForehead) {
+                if (['EB', 'EYE BROW', 'E', 'EYE', 'FH', 'FORE HEAD'].includes(subCat)) {
+                    categoryBonus += 30; // 앞머리로 이마 커버
+                } else if (hasNoBangs) {
+                    categoryBonus -= 20;
+                    if (isSevereWideForehead) fatalPenalty = -30; // 🚨 과락: 극심한 넓은 이마 + 깐머리
+                }
+            } else if (isNarrowForehead) {
+                if (hasNoBangs || ['FH', 'FORE HEAD'].includes(subCat)) {
+                    categoryBonus += 20; // 이마 드러내기 추천
+                } else if (['E', 'EYE', 'CB', 'CHEEKBONE'].includes(subCat)) {
+                    categoryBonus -= 15; // 긴 앞머리는 이마를 더 좁아 보이게 함
+                }
+            }
+        }
+
+        // ===== 앞머리(대분류) 점수 - 남자 =====
         if (selectedGender !== 'female') {
             if (isWideForehead) {
-                // 넓은 이마 → 앞머리 있는 스타일 추천
                 if (['SIDE FRINGE'].includes(cat)) {
                     categoryBonus += 25; // 사이드 프린지로 이마 커버
                 } else if (['FRINGE UP', 'PUSHED BACK'].includes(cat)) {
-                    categoryBonus -= 20; // 이마 완전 노출 감점
+                    categoryBonus -= 20;
+                    if (isSevereWideForehead) fatalPenalty = -30; // 🚨 과락
                 }
             } else if (isNarrowForehead) {
-                // 좁은 이마 → 이마 드러내기 추천
                 if (['FRINGE UP', 'PUSHED BACK'].includes(cat)) {
                     categoryBonus += 25; // 이마 노출로 시원한 인상
                 } else if (['SIDE FRINGE'].includes(cat)) {
-                    // 사이드 프린지는 중립 (앞머리가 있어도 옆으로 넘기면 OK)
-                    categoryBonus += 5;
+                    categoryBonus += 5; // 중립
                 }
             }
         }
 
-        // 2. 스타일 태그/특성별 점수
+        // ================================================================
+        // 2. 스타일 보너스 (Style Bonus) - 디테일/텍스처 기반
+        // ================================================================
+
+        // 긴 얼굴형: 가로 볼륨 키워드 강화
         if (isLongFace) {
-            // 웨이브, 컬, 볼륨 선호
-            if (name.includes('웨이브') || name.includes('wave') || name.includes('컬') || name.includes('curl') || name.includes('펌')) {
+            if (hasWaveStyle) styleBonus += 15; // v2.0: 10→15 강화
+            if (hasSideVolume) styleBonus += 15; // 사이드 볼륨 중요도 상향
+            if (name.includes('레이어')) styleBonus += 10;
+            if (isStraightStyle) styleBonus -= 15; // 생머리 페널티 강화
+        }
+
+        // 짧은 얼굴형: 탑 볼륨, 세로 라인 키워드
+        if (isShortFace) {
+            if (name.includes('업스타일') || name.includes('up') || name.includes('탑')) {
+                styleBonus += 15;
+            }
+            if (ai?.volumePosition === 'top') styleBonus += 10;
+        }
+
+        // 사각턱: 곡선/소프트 키워드
+        if (isSquareJaw) {
+            if (hasWaveStyle) styleBonus += 15;
+            if (name.includes('레이어') || name.includes('소프트') || name.includes('soft')) {
                 styleBonus += 10;
             }
-            if (name.includes('볼륨') || name.includes('volume') || name.includes('레이어')) {
-                styleBonus += 10;
-            }
-            // 생머리, 슬릭 기피
-            if (name.includes('매직') || name.includes('스트레이트') || name.includes('straight')) {
+            // 직선/슬릭 기피
+            if (name.includes('슬릭') || name.includes('slick') || name.includes('단발')) {
                 styleBonus -= 10;
             }
         }
 
-        if (isSquareJaw) {
-            // 부드러운 스타일 선호
-            if (name.includes('웨이브') || name.includes('레이어') || name.includes('소프트')) {
-                styleBonus += 15;
-            }
-        }
-
-        // 3. 이미지 타입 매칭 (analysis에서 가져옴)
+        // 이미지 타입 매칭 (웜/쿨/뉴트럴) - RAG 기준 +10점
         if (analysis.imageType && analysis.imageType.styleKeywords) {
             const searchText = name + ' ' + (style.textRecipe || '').toLowerCase();
             const { boost, penalty } = analysis.imageType.styleKeywords;
 
             if (boost.some(kw => searchText.includes(kw.toLowerCase()))) {
-                styleBonus += 15;
+                styleBonus += 10; // v2.0: 15→10 (RAG 기준)
             }
             if (penalty.some(kw => searchText.includes(kw.toLowerCase()))) {
                 styleBonus -= 10;
             }
         }
 
-        // 4. AI 분석 데이터 매칭 (Gemini Vision 분석 결과 활용)
-        // ⭐ 가중치 우선순위 (리밸런싱됨):
-        //   1순위: 얼굴형 보정 (categoryBonus) = -30~+50점 → 절대적 우선
-        //   2순위: AI 매칭 (aiBonus) = 최대 +25점으로 제한 → 부가적 역할
+        // ================================================================
+        // 3. AI 보너스 (AI Bonus) - Gemini Vision 분석 결과 활용
+        // ================================================================
+        // 설계 원칙: 과락(Fatal Mismatch) 가능, 최대 +25/-20 (카테고리 보완)
         let aiBonus = 0;
-        let rawAiScore = 0; // 원점수 누적 후 클램핑
+        let rawAiScore = 0;
 
         if (style.aiAnalysis) {
             const ai = style.aiAnalysis;
@@ -3074,13 +3139,30 @@ function calculateHairstyleScores(analysis, styles) {
             }
 
             // ⭐ [핵심] aiBonus 최종 클램핑 (최대 +25점, 최저 -20점)
-            // Category Bonus를 절대로 뒤집지 못하게 제한
             aiBonus = Math.min(25, Math.max(-20, rawAiScore));
+
+            // 🚨 AI 기반 Fatal Mismatch 추가 감지
+            // AI가 분석한 avoidFaceTypes와 사용자 얼굴형이 일치하면 과락
+            if (userFaceType && ai.avoidFaceTypes?.includes(userFaceType)) {
+                // 이미 rawAiScore에서 -15 적용됨, 추가 과락은 심각한 경우만
+                if (ai.avoidFaceTypes.length === 1 && ai.avoidFaceTypes[0] === userFaceType) {
+                    // 단 하나의 회피 얼굴형과 정확히 일치 = 치명적
+                    fatalPenalty = Math.min(fatalPenalty, -30);
+                }
+            }
         }
 
-        // 최종 점수 합산 (0~100 범위)
-        score += categoryBonus + styleBonus + aiBonus;
+        // ================================================================
+        // 4. 최종 점수 합산
+        // ================================================================
+        // 공식: 기본(50) + 카테고리 + 스타일 + AI + 과락페널티
+        score += categoryBonus + styleBonus + aiBonus + fatalPenalty;
         score = Math.min(100, Math.max(0, score));
+
+        // 디버그 로깅 (개선된 버전)
+        if (categoryBonus !== 0 || fatalPenalty !== 0) {
+            console.log(`📊 ${style.styleId}: cat=${categoryBonus}, style=${styleBonus}, ai=${aiBonus}, fatal=${fatalPenalty} → ${score}점`);
+        }
 
         // AI 분석 활용 여부 로깅 (디버그용)
         if (aiBonus !== 0) {
@@ -3099,8 +3181,13 @@ function calculateHairstyleScores(analysis, styles) {
     });
 }
 
-// ========== 간소화된 스타일 추천 사유 생성 ==========
-function generateSimpleStyleReason(style, score, faceFlags, ratios, aiBonus = 0) {
+// ========== 스타일 추천 사유 생성 (v2.0 - 점수 구간 조정) ==========
+// 점수 해석 가이드:
+// - 85~100: 찰떡 매칭 (Best Choice)
+// - 70~84: 추천 (Good)
+// - 50~69: 무난함 (Normal)
+// - 0~49: 비추천 (Not Recommended)
+function generateSimpleStyleReason(style, score, faceFlags, _ratios, aiBonus = 0) {
     const { isLongFace, isShortFace, isSquareJaw, isWideForehead, isNarrowForehead } = faceFlags;
     const name = (style.name || '').toLowerCase();
     const subCat = (style.subCategory || '').toUpperCase();
@@ -3113,79 +3200,96 @@ function generateSimpleStyleReason(style, score, faceFlags, ratios, aiBonus = 0)
 
     let parts = [];
 
-    // AI 분석 기반 스타일 특성 (aiAnalysis가 있을 때)
+    // AI 분석 기반 스타일 특성
     const aiHasWave = ai?.styleFeatures?.hasWave || ai?.styleFeatures?.hasCurl;
     const aiHasBangs = ai?.styleFeatures?.hasBangs;
     const aiSilhouette = ai?.silhouette;
     const aiVolumePos = ai?.volumePosition;
 
-    // === 고득점 (80점 이상) ===
-    if (score >= 80) {
-        // AI 분석으로 고득점일 때 더 정확한 사유 제공
-        if (aiBonus >= 20 && ai) {
-            if (ai.imageType) {
-                const imageTypeKo = { warm: '웜계', neutral: '뉴트럴', cool: '쿨계' }[ai.imageType] || ai.imageType;
-                parts.push(`✓ ${imageTypeKo} 스타일이 이미지 타입과 조화`);
-            }
+    // === 찰떡 매칭 (85점 이상) ===
+    if (score >= 85) {
+        if (aiBonus >= 20 && ai?.imageType) {
+            const imageTypeKo = { warm: '웜계', neutral: '뉴트럴', cool: '쿨계' }[ai.imageType] || ai.imageType;
+            parts.push(`✓ ${imageTypeKo} 스타일이 이미지 타입과 완벽 조화`);
         } else if (isLongFace) {
             if (hasWave || aiHasWave) {
                 parts.push('✓ 웨이브가 시선을 가로로 분산시켜 긴 얼굴형을 완벽하게 보완');
             } else if (hasVolume || aiVolumePos === 'side') {
-                parts.push('✓ 풍성한 볼륨이 얼굴의 가로 비율을 채워 밸런스 최적화');
+                parts.push('✓ 풍성한 사이드 볼륨이 얼굴 비율을 최적화');
             } else {
-                parts.push('✓ 얼굴형의 단점을 커버하고 장점을 극대화하는 베스트 스타일');
+                parts.push('✓ 얼굴형 단점을 커버하고 장점을 극대화하는 베스트 스타일');
             }
         } else if (isShortFace) {
-            parts.push('✓ 세로 라인을 연장해 갸름한 인상 연출');
+            parts.push('✓ 세로 라인을 연장해 갸름하고 세련된 인상');
         } else if (isSquareJaw && (hasWave || aiSilhouette === 'curved')) {
-            parts.push('✓ 부드러운 질감이 각진 턱선을 자연스럽게 소프닝');
+            parts.push('✓ 부드러운 곡선이 각진 턱선을 자연스럽게 소프닝');
         } else if (isWideForehead && (hasBang || aiHasBangs)) {
-            parts.push('✓ 앞머리가 넓은 이마를 커버하여 이상적인 비율 완성');
+            parts.push('✓ 앞머리가 넓은 이마를 커버하여 황금비율 완성');
         } else if (isNarrowForehead && !hasBang) {
-            parts.push('✓ 이마를 드러내 시원한 인상과 이상적인 밸런스 완성');
+            parts.push('✓ 이마를 드러내 시원하고 이상적인 밸런스');
         } else {
-            parts.push('✓ 얼굴형과 아주 이상적인 조화를 이루는 스타일');
+            parts.push('✓ 얼굴형과 완벽하게 조화되는 베스트 스타일');
         }
     }
-    // === 중립/평범 (41 ~ 79점) ===
-    else if (score > 40) {
-        if (hasWave) {
-            parts.push('곡선감으로 부드러운 인상 연출');
-        } else if (hasVolume) {
-            parts.push('볼륨감으로 자연스러운 분위기');
+    // === 추천 (70~84점) ===
+    else if (score >= 70) {
+        if (isLongFace && (hasWave || aiHasWave || hasVolume)) {
+            parts.push('가로 볼륨으로 긴 얼굴형 보완');
+        } else if (isSquareJaw && hasWave) {
+            parts.push('곡선감이 턱선을 부드럽게 연출');
+        } else if (isWideForehead && hasBang) {
+            parts.push('앞머리가 이마를 커버');
+        } else if (hasWave) {
+            parts.push('곡선미로 부드러운 인상 연출');
         } else {
-            parts.push('깔끔하고 단정한 무드 연출');
+            parts.push('얼굴형에 잘 어울리는 스타일');
+        }
+        parts.push('자연스럽게 소화 가능');
+    }
+    // === 무난함 (50~69점) ===
+    else if (score >= 50) {
+        if (hasWave) {
+            parts.push('곡선감으로 부드러운 분위기');
+        } else if (hasVolume) {
+            parts.push('볼륨감이 있는 스타일');
+        } else {
+            parts.push('깔끔하고 단정한 무드');
         }
 
         // 개선 조언
-        if (isLongFace && score < 70) {
-            parts.push('옆볼륨을 더 살리면 비율이 좋아짐');
+        if (isLongFace) {
+            parts.push('옆볼륨 추가 시 비율 UP');
         } else if (isSquareJaw) {
-            parts.push('레이어드 추가 시 소프닝 효과 UP');
+            parts.push('레이어드 추가로 소프닝 효과');
         } else {
-            parts.push('무난하게 소화 가능한 스타일');
+            parts.push('디자이너 역량으로 완성도 향상 가능');
         }
     }
-    // === 저득점 (40점 이하) ===
+    // === 비추천 (49점 이하) ===
     else {
         if (isLongFace) {
-            parts.push('⚠️ 세로 라인이 강조되어 얼굴이 더 길어 보일 수 있음');
-            parts.push('뿌리 볼륨이나 웨이브 추가를 추천');
+            parts.push('⚠️ 세로 라인이 강조되어 얼굴이 더 길어 보일 위험');
+            parts.push('웨이브나 뿌리 볼륨 펌 강력 추천');
         } else if (isShortFace) {
             parts.push('⚠️ 가로 라인이 강조되어 얼굴이 더 짧아 보일 수 있음');
+            parts.push('탑 볼륨 연출 추천');
+        } else if (isSquareJaw) {
+            parts.push('⚠️ 각진 턱선이 강조될 수 있음');
+            parts.push('부드러운 웨이브 추가 권장');
         } else if (isWideForehead && !hasBang) {
-            parts.push('⚠️ 넓은 이마가 노출되어 밸런스 주의 필요');
+            parts.push('⚠️ 넓은 이마가 노출되어 밸런스 주의');
+            parts.push('앞머리나 볼륨 연출 필요');
         } else if (isNarrowForehead && hasBang) {
-            parts.push('⚠️ 긴 앞머리가 좁은 이마를 더 좁아 보이게 함');
+            parts.push('⚠️ 긴 앞머리가 이마를 더 좁아 보이게 함');
         } else {
-            parts.push('⚠️ 얼굴형의 단점이 부각될 수 있어 스타일링 주의 필요');
+            parts.push('⚠️ 얼굴형과 맞지 않아 스타일링 주의 필요');
         }
     }
 
     return [...new Set(parts)].slice(0, 2).join(' / ');
 }
 
-// 카테고리별 추천 이유 생성 (개선됨 - 얼굴형 직접 판단)
+// 카테고리별 추천 이유 생성 (v2.0 - 사각턱 로직 추가)
 function generateCategoryReason(category, analysis, topStyles) {
     const { ratios } = analysis;
 
@@ -3194,42 +3298,49 @@ function generateCategoryReason(category, analysis, topStyles) {
         return '얼굴형 분석 기반 추천';
     }
 
-    const { lowerRatio, middleRatio } = ratios.raw;
+    const { lowerRatio, middleRatio, cheekJawRatio, upperRatio } = ratios.raw;
     const isLongFace = lowerRatio > 0.36 || lowerRatio > middleRatio * 1.12;
     const isShortFace = lowerRatio < 0.28;
+    const isSquareJaw = cheekJawRatio < 1.15;
+    const isNarrowForehead = upperRatio < 0.25;
+    const isWideForehead = upperRatio > 0.36;
 
     // 카테고리별 동적 멘트 생성
     if (selectedGender === 'female') {
         if (['C LENGTH', 'D LENGTH', 'E LENGTH', 'F LENGTH'].includes(category)) {
-            if (isLongFace) return '긴 얼굴형을 보완하는 <strong>가장 이상적인 기장</strong>입니다. (+40점)';
+            if (isLongFace) return '웨이브와 함께할 때 <strong>긴 얼굴형을 완벽하게 보정</strong>합니다. (+45점)';
+            if (isSquareJaw && ['C LENGTH', 'D LENGTH'].includes(category)) {
+                return '부드러운 웨이브로 <strong>턱선을 자연스럽게 커버</strong>합니다. (+30점)';
+            }
             return '누구에게나 잘 어울리는 <strong>황금 비율 기장</strong>입니다.';
         }
         if (['A LENGTH', 'B LENGTH'].includes(category)) {
-            if (isLongFace) return '웨이브가 있으면 <strong>가로 볼륨으로 보정 효과</strong> (+30점), 생머리는 피하세요 (-25점)';
+            if (isLongFace) return '웨이브 필수! <strong>가로 볼륨으로 보정</strong> (+30점), 생머리는 ⚠️ 주의 (-25점)';
             if (isShortFace) return '세로 라인을 강조해 얼굴을 <strong>갸름하게</strong> 보이게 합니다. (+35점)';
+            if (isSquareJaw) return '부드러운 웨이브로 <strong>각진 턱선 보완</strong>에 효과적입니다. (+30점)';
             return '긴 기장으로 우아한 분위기 연출';
         }
-        if (['G LENGTH', 'H LENGTH'].includes(category)) {
+        if (['F LENGTH', 'G LENGTH', 'H LENGTH'].includes(category)) {
+            if (isSquareJaw) return '⚠️ 턱선이 강조되어 <strong>각진 인상이 부각</strong>될 수 있습니다. (-40점)';
             return '짧은 기장으로 산뜻하고 활동적인 이미지';
         }
     } else {
         // 남성
-        const isNarrowForehead = ratios?.raw?.upperRatio < 0.25;
-        const isWideForehead = ratios?.raw?.upperRatio > 0.36;
-
         if (['SIDE FRINGE', 'SIDE PART'].includes(category)) {
             if (isLongFace) return '가로 볼륨으로 <strong>얼굴 길이를 효과적으로 보정</strong>합니다. (+50점)';
+            if (isSquareJaw) return '사이드 볼륨으로 <strong>각진 턱선을 부드럽게</strong> 완화합니다. (+25점)';
             if (isWideForehead && category === 'SIDE FRINGE') return '앞머리로 <strong>넓은 이마를 자연스럽게 커버</strong>합니다. (+25점)';
             return '자연스러운 사이드 라인이 특징';
         }
         if (['FRINGE UP', 'PUSHED BACK', 'MOHICAN'].includes(category)) {
-            if (isLongFace) return '탑 볼륨이 얼굴을 <strong>더 길어 보이게</strong> 할 수 있습니다. (-30점)';
+            if (isLongFace) return '⚠️ 탑 볼륨이 얼굴을 <strong>더 길어 보이게</strong> 합니다. (-30점)';
             if (isShortFace) return '이마를 드러내 <strong>시원하고 갸름한 인상</strong>을 줍니다. (+40점)';
             if (isNarrowForehead) return '이마를 드러내 <strong>좁은 이마가 시원하게 보이는 효과</strong>. (+25점)';
-            if (isWideForehead) return '이마가 완전 노출되어 <strong>밸런스 주의</strong> 필요. (-20점)';
+            if (isWideForehead) return '⚠️ 이마가 완전 노출되어 <strong>밸런스 주의</strong> 필요. (-20점)';
             return '시원하게 올린 스타일로 깔끔한 인상';
         }
         if (['BUZZ', 'CROP'].includes(category)) {
+            if (isSquareJaw) return '⚠️ 얼굴 윤곽이 그대로 드러나 <strong>각진 인상이 강조</strong>됩니다. (-30점)';
             return '짧고 깔끔한 스타일로 관리가 편함';
         }
     }
