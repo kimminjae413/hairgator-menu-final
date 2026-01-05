@@ -9065,12 +9065,13 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
     // ⭐⭐⭐ Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
     const top1Params = extractRecipeParamsFromStyle(top1);
 
-    // ⭐⭐⭐ styles 컬렉션에서 도해도 가져오기 (hairstyles에는 diagrams 없음!)
+    // ⭐⭐⭐ styles 컬렉션에서 도해도 + textRecipe 가져오기 (hairstyles에는 둘 다 없음!)
     // 직접 문서 ID로 조회 (pageSize 제한 회피)
     let maleDiagrams = [];
+    let stylesTextRecipe = '';  // styles 컬렉션의 textRecipe
     try {
       const possibleDocIds = [`${styleCode}1001`, `${styleCode}0001`, `${styleCode}001`];
-      console.log(`🔍 남자 도해도 조회 시도: ${possibleDocIds.join(', ')}`);
+      console.log(`🔍 남자 도해도/레시피 조회 시도: ${possibleDocIds.join(', ')}`);
 
       for (const docId of possibleDocIds) {
         const docUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/styles/${docId}`;
@@ -9078,6 +9079,8 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
 
         if (docResponse.ok) {
           const docData = await docResponse.json();
+
+          // 도해도 추출
           if (docData.fields?.diagrams?.arrayValue?.values) {
             maleDiagrams = docData.fields.diagrams.arrayValue.values.map(v => {
               const map = v.mapValue?.fields || {};
@@ -9087,6 +9090,15 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
               };
             }).filter(d => d.url);
             console.log(`✅ styles/${docId}에서 도해도 ${maleDiagrams.length}개 로드`);
+          }
+
+          // textRecipe 추출 (originalRecipe가 비어있을 때 사용)
+          if (docData.fields?.textRecipe?.stringValue) {
+            stylesTextRecipe = docData.fields.textRecipe.stringValue;
+            console.log(`✅ styles/${docId}에서 textRecipe ${stylesTextRecipe.length}자 로드`);
+          }
+
+          if (maleDiagrams.length > 0 || stylesTextRecipe) {
             break;  // 찾으면 종료
           }
         }
@@ -9096,7 +9108,19 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
         console.log(`⚠️ ${styleCode}로 시작하는 도해도 문서 없음 (시도: ${possibleDocIds.join(', ')})`);
       }
     } catch (diagramErr) {
-      console.error('⚠️ styles 컬렉션 도해도 조회 실패:', diagramErr.message);
+      console.error('⚠️ styles 컬렉션 조회 실패:', diagramErr.message);
+    }
+
+    // ⭐ originalRecipe가 비어있으면 styles 컬렉션의 textRecipe 사용
+    if (!originalRecipe && stylesTextRecipe) {
+      console.log(`✅ hairstyles에 레시피 없음, styles 컬렉션 textRecipe 사용`);
+      originalRecipe = stylesTextRecipe
+        .replace(/\[?[FM]?[A-Z]{2,3}\d{4}\]?/g, '')
+        .replace(/\[\s*\]/g, '')
+        .replace(/ {2,}/g, ' ')
+        .trim();
+      originalRecipe = normalizeRecipeFormat(originalRecipe);
+      originalRecipe = formatRecipeSentences(originalRecipe);
     }
 
     // ⭐ 남자 스타일 코드 기반 어울리는 얼굴형 분석 (이론 기반)
