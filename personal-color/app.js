@@ -3976,30 +3976,30 @@
                 const isIOSEnv = typeof DeviceDetection !== 'undefined' && DeviceDetection.isIOS();
                 const isWebViewEnv = typeof DeviceDetection !== 'undefined' && DeviceDetection.isWebView();
 
-                let userMessage = '카메라에 접근할 수 없습니다.';
+                let userMessage = t('personalColor.cameraErrors.generic') || '카메라에 접근할 수 없습니다.';
 
                 if (error.name === 'NotAllowedError' || error.message.includes('PERMISSION_DENIED')) {
                     if (isAndroidEnv) {
-                        userMessage = '카메라 권한이 거부되었습니다.\n\n설정 > 앱 > HAIRGATOR > 권한 > 카메라를 허용해주세요.';
+                        userMessage = t('personalColor.cameraErrors.permissionDeniedAndroid') || '카메라 권한이 거부되었습니다.\n\n설정 > 앱 > HAIRGATOR > 권한 > 카메라를 허용해주세요.';
                     } else if (isIOSEnv) {
-                        userMessage = '카메라 권한이 거부되었습니다.\n\n설정 > HAIRGATOR > 카메라를 허용해주세요.';
+                        userMessage = t('personalColor.cameraErrors.permissionDeniedIOS') || '카메라 권한이 거부되었습니다.\n\n설정 > HAIRGATOR > 카메라를 허용해주세요.';
                     } else {
-                        userMessage = '카메라 권한이 거부되었습니다.\n\n브라우저 설정에서 카메라 권한을 허용해주세요.';
+                        userMessage = t('personalColor.cameraErrors.permissionDeniedBrowser') || '카메라 권한이 거부되었습니다.\n\n브라우저 설정에서 카메라 권한을 허용해주세요.';
                     }
                 } else if (error.name === 'NotFoundError') {
-                    userMessage = '카메라를 찾을 수 없습니다.\n\n기기에 카메라가 있는지 확인해주세요.';
+                    userMessage = t('personalColor.cameraErrors.notFound') || '카메라를 찾을 수 없습니다.\n\n기기에 카메라가 있는지 확인해주세요.';
                 } else if (error.name === 'NotReadableError') {
-                    userMessage = '카메라가 다른 앱에서 사용 중입니다.\n\n다른 앱을 종료하고 다시 시도해주세요.';
+                    userMessage = t('personalColor.cameraErrors.inUse') || '카메라가 다른 앱에서 사용 중입니다.\n\n다른 앱을 종료하고 다시 시도해주세요.';
                 } else if (error.message.includes('NOT_SUPPORTED')) {
                     if (isWebViewEnv) {
-                        userMessage = 'WebView에서는 카메라가 지원되지 않을 수 있습니다.\n\nChrome 브라우저에서 열어주세요.';
+                        userMessage = t('personalColor.toast.webviewFaceLimit') || 'WebView에서는 카메라가 지원되지 않을 수 있습니다.\n\nChrome 브라우저에서 열어주세요.';
                     } else {
-                        userMessage = '이 환경에서는 카메라를 지원하지 않습니다.';
+                        userMessage = t('personalColor.cameraErrors.notSupported') || '이 환경에서는 카메라를 지원하지 않습니다.';
                     }
                 } else if (error.name === 'OverconstrainedError') {
-                    userMessage = '카메라 설정 오류입니다. 다시 시도해주세요.';
+                    userMessage = t('personalColor.cameraErrors.overConstrained') || '카메라 설정 오류입니다. 다시 시도해주세요.';
                 } else if (error.name === 'SecurityError') {
-                    userMessage = '보안 오류가 발생했습니다.\n\nHTTPS 환경에서만 카메라를 사용할 수 있습니다.';
+                    userMessage = t('personalColor.cameraErrors.securityError') || '보안 오류가 발생했습니다.\n\nHTTPS 환경에서만 카메라를 사용할 수 있습니다.';
                 }
 
                 console.log('📱 카메라 오류 환경:', { isAndroidEnv, isIOSEnv, isWebViewEnv, errorName: error.name });
@@ -5497,20 +5497,20 @@
                 const isIOSEnv = typeof DeviceDetection !== 'undefined' && DeviceDetection.isIOS();
                 const isWebViewEnv = typeof DeviceDetection !== 'undefined' && DeviceDetection.isWebView();
 
-                let userMessage = t('personalColor.toast.cameraAccessDenied') || '카메라에 접근할 수 없습니다';
+                let userMessage = t('personalColor.cameraErrors.generic') || '카메라에 접근할 수 없습니다';
 
                 if (error.name === 'NotAllowedError') {
                     if (isAndroidEnv) {
-                        userMessage = '카메라 권한이 필요합니다.\n\n설정 > 앱 > HAIRGATOR > 권한에서 카메라를 허용해주세요.';
+                        userMessage = t('personalColor.cameraErrors.permissionDeniedAndroid') || '카메라 권한이 필요합니다.\n\n설정 > 앱 > HAIRGATOR > 권한에서 카메라를 허용해주세요.';
                     } else if (isIOSEnv) {
-                        userMessage = '카메라 권한이 필요합니다.\n\n설정 > HAIRGATOR > 카메라를 허용해주세요.';
+                        userMessage = t('personalColor.cameraErrors.permissionDeniedIOS') || '카메라 권한이 필요합니다.\n\n설정 > HAIRGATOR > 카메라를 허용해주세요.';
                     } else {
-                        userMessage = '카메라 권한이 필요합니다.\n\n브라우저에서 카메라 권한을 허용해주세요.';
+                        userMessage = t('personalColor.cameraErrors.permissionDeniedBrowser') || '카메라 권한이 필요합니다.\n\n브라우저에서 카메라 권한을 허용해주세요.';
                     }
                 } else if (error.name === 'NotFoundError') {
-                    userMessage = '카메라를 찾을 수 없습니다.';
+                    userMessage = t('personalColor.cameraErrors.notFound') || '카메라를 찾을 수 없습니다.';
                 } else if (error.name === 'NotReadableError') {
-                    userMessage = '카메라가 다른 앱에서 사용 중입니다.';
+                    userMessage = t('personalColor.cameraErrors.inUse') || '카메라가 다른 앱에서 사용 중입니다.';
                 }
 
                 showToast(userMessage, 'error');
@@ -5639,31 +5639,48 @@
         let compareIndex = 0;
         let seasonScores = { spring: 0, summer: 0, autumn: 0, winter: 0 };
 
+        // 시즌 라벨 번역 함수
+        function getDrapingLabel(season) {
+            const labelKeys = {
+                'spring': 'springWarm',
+                'summer': 'summerCool',
+                'autumn': 'autumnWarm',
+                'winter': 'winterCool'
+            };
+            const fallbacks = {
+                'spring': '봄 웜',
+                'summer': '여름 쿨',
+                'autumn': '가을 웜',
+                'winter': '겨울 쿨'
+            };
+            return t(`personalColor.drapingLabels.${labelKeys[season]}`) || fallbacks[season];
+        }
+
         // 극단적 색상 비교 프리셋
         const comparePresets = [
             {
-                left: { hex: '#FF8C00', name: '오렌지', season: 'spring', label: '봄 웜' },
-                right: { hex: '#FF1493', name: '핫핑크', season: 'winter', label: '겨울 쿨' }
+                left: { hex: '#FF8C00', name: '오렌지', season: 'spring' },
+                right: { hex: '#FF1493', name: '핫핑크', season: 'winter' }
             },
             {
-                left: { hex: '#6B8E23', name: '카키', season: 'autumn', label: '가을 웜' },
-                right: { hex: '#87CEEB', name: '스카이블루', season: 'summer', label: '여름 쿨' }
+                left: { hex: '#6B8E23', name: '카키', season: 'autumn' },
+                right: { hex: '#87CEEB', name: '스카이블루', season: 'summer' }
             },
             {
-                left: { hex: '#FFD700', name: '골드', season: 'spring', label: '봄 웜' },
-                right: { hex: '#C0C0C0', name: '실버그레이', season: 'winter', label: '겨울 쿨' }
+                left: { hex: '#FFD700', name: '골드', season: 'spring' },
+                right: { hex: '#C0C0C0', name: '실버그레이', season: 'winter' }
             },
             {
-                left: { hex: '#E2725B', name: '테라코타', season: 'autumn', label: '가을 웜' },
-                right: { hex: '#E6E6FA', name: '라벤더', season: 'summer', label: '여름 쿨' }
+                left: { hex: '#E2725B', name: '테라코타', season: 'autumn' },
+                right: { hex: '#E6E6FA', name: '라벤더', season: 'summer' }
             },
             {
-                left: { hex: '#FF6347', name: '토마토레드', season: 'spring', label: '봄 웜' },
-                right: { hex: '#4169E1', name: '로얄블루', season: 'winter', label: '겨울 쿨' }
+                left: { hex: '#FF6347', name: '토마토레드', season: 'spring' },
+                right: { hex: '#4169E1', name: '로얄블루', season: 'winter' }
             },
             {
-                left: { hex: '#D2691E', name: '초콜릿브라운', season: 'autumn', label: '가을 웜' },
-                right: { hex: '#DDA0DD', name: '플럼', season: 'summer', label: '여름 쿨' }
+                left: { hex: '#D2691E', name: '초콜릿브라운', season: 'autumn' },
+                right: { hex: '#DDA0DD', name: '플럼', season: 'summer' }
             }
         ];
 
@@ -5698,11 +5715,11 @@
             // 좌우 색상 스와치 업데이트
             document.getElementById('compare-left-swatch').style.background = preset.left.hex;
             document.getElementById('compare-left-name').textContent = preset.left.name;
-            document.getElementById('compare-left-season').textContent = preset.left.label;
+            document.getElementById('compare-left-season').textContent = getDrapingLabel(preset.left.season);
 
             document.getElementById('compare-right-swatch').style.background = preset.right.hex;
             document.getElementById('compare-right-name').textContent = preset.right.name;
-            document.getElementById('compare-right-season').textContent = preset.right.label;
+            document.getElementById('compare-right-season').textContent = getDrapingLabel(preset.right.season);
 
             // 진행 상황 업데이트
             document.getElementById('compare-progress').textContent = `${compareIndex + 1}/${comparePresets.length}`;
@@ -5800,7 +5817,7 @@
             document.getElementById('score-autumn').textContent = seasonScores.autumn;
             document.getElementById('score-winter').textContent = seasonScores.winter;
 
-            showToast(`${selectedName}(${side === 'left' ? preset.left.label : preset.right.label}) ${t('personalColor.toast.selected') || '선택!'}`, 'success');
+            showToast(`${selectedName}(${getDrapingLabel(side === 'left' ? preset.left.season : preset.right.season)}) ${t('personalColor.toast.selected') || '선택!'}`, 'success');
 
             // 다음 비교로
             compareIndex++;

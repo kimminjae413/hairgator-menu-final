@@ -817,6 +817,27 @@ const HAIRGATOR_I18N = {
         compareRestart: '비교를 다시 시작합니다!'
       },
 
+      // 카메라 권한 에러 메시지
+      cameraErrors: {
+        permissionDeniedAndroid: '카메라 권한이 거부되었습니다.\n\n설정 > 앱 > HAIRGATOR > 권한 > 카메라를 허용해주세요.',
+        permissionDeniedIOS: '카메라 권한이 거부되었습니다.\n\n설정 > HAIRGATOR > 카메라를 허용해주세요.',
+        permissionDeniedBrowser: '카메라 권한이 거부되었습니다.\n\n브라우저 설정에서 카메라 권한을 허용해주세요.',
+        notFound: '카메라를 찾을 수 없습니다.\n\n기기에 카메라가 있는지 확인해주세요.',
+        inUse: '카메라가 다른 앱에서 사용 중입니다.\n\n다른 앱을 종료하고 다시 시도해주세요.',
+        notSupported: '이 환경에서는 카메라를 지원하지 않습니다.',
+        overConstrained: '카메라 설정 오류입니다. 다시 시도해주세요.',
+        securityError: '보안 오류가 발생했습니다.\n\nHTTPS 환경에서만 카메라를 사용할 수 있습니다.',
+        generic: '카메라에 접근할 수 없습니다.'
+      },
+
+      // 드레이프 모드 색상 라벨
+      drapingLabels: {
+        springWarm: '봄 웜',
+        summerCool: '여름 쿨',
+        autumnWarm: '가을 웜',
+        winterCool: '겨울 쿨'
+      },
+
       // 언더톤
       undertones: {
         warm: '웜톤 (따뜻한 톤)',
@@ -1996,6 +2017,25 @@ const HAIRGATOR_I18N = {
         compareRestart: 'Restarting comparison!'
       },
 
+      cameraErrors: {
+        permissionDeniedAndroid: 'Camera permission denied.\n\nGo to Settings > Apps > HAIRGATOR > Permissions > Camera to allow.',
+        permissionDeniedIOS: 'Camera permission denied.\n\nGo to Settings > HAIRGATOR > Camera to allow.',
+        permissionDeniedBrowser: 'Camera permission denied.\n\nPlease allow camera permission in browser settings.',
+        notFound: 'Camera not found.\n\nPlease check if your device has a camera.',
+        inUse: 'Camera is being used by another app.\n\nClose other apps and try again.',
+        notSupported: 'Camera is not supported in this environment.',
+        overConstrained: 'Camera settings error. Please try again.',
+        securityError: 'Security error.\n\nCamera can only be used in HTTPS environment.',
+        generic: 'Cannot access camera.'
+      },
+
+      drapingLabels: {
+        springWarm: 'Spring Warm',
+        summerCool: 'Summer Cool',
+        autumnWarm: 'Autumn Warm',
+        winterCool: 'Winter Cool'
+      },
+
       undertones: {
         warm: 'Warm Tone',
         cool: 'Cool Tone',
@@ -3149,6 +3189,25 @@ const HAIRGATOR_I18N = {
         selected: '選択！',
         compareResult: '比較結果',
         compareRestart: '比較を再開します！'
+      },
+
+      cameraErrors: {
+        permissionDeniedAndroid: 'カメラ権限が拒否されました。\n\n設定 > アプリ > HAIRGATOR > 権限 > カメラを許可してください。',
+        permissionDeniedIOS: 'カメラ権限が拒否されました。\n\n設定 > HAIRGATOR > カメラを許可してください。',
+        permissionDeniedBrowser: 'カメラ権限が拒否されました。\n\nブラウザ設定でカメラ権限を許可してください。',
+        notFound: 'カメラが見つかりません。\n\nデバイスにカメラがあるか確認してください。',
+        inUse: 'カメラは他のアプリで使用中です。\n\n他のアプリを終了してから再試行してください。',
+        notSupported: 'この環境ではカメラはサポートされていません。',
+        overConstrained: 'カメラ設定エラー。再試行してください。',
+        securityError: 'セキュリティエラー。\n\nカメラはHTTPS環境でのみ使用できます。',
+        generic: 'カメラにアクセスできません。'
+      },
+
+      drapingLabels: {
+        springWarm: 'スプリングウォーム',
+        summerCool: 'サマークール',
+        autumnWarm: 'オータムウォーム',
+        winterCool: 'ウィンタークール'
       },
 
       undertones: {
@@ -4309,6 +4368,25 @@ const HAIRGATOR_I18N = {
         compareRestart: '重新开始比较！'
       },
 
+      cameraErrors: {
+        permissionDeniedAndroid: '相机权限被拒绝。\n\n请前往 设置 > 应用 > HAIRGATOR > 权限 > 相机 以允许访问。',
+        permissionDeniedIOS: '相机权限被拒绝。\n\n请前往 设置 > HAIRGATOR > 相机 以允许访问。',
+        permissionDeniedBrowser: '相机权限被拒绝。\n\n请在浏览器设置中允许相机权限。',
+        notFound: '未找到相机。\n\n请检查您的设备是否有相机。',
+        inUse: '相机正被其他应用使用。\n\n请关闭其他应用后重试。',
+        notSupported: '此环境不支持相机。',
+        overConstrained: '相机设置错误。请重试。',
+        securityError: '安全错误。\n\n相机只能在HTTPS环境下使用。',
+        generic: '无法访问相机。'
+      },
+
+      drapingLabels: {
+        springWarm: '春季暖色',
+        summerCool: '夏季冷色',
+        autumnWarm: '秋季暖色',
+        winterCool: '冬季冷色'
+      },
+
       undertones: {
         warm: '暖色调',
         cool: '冷色调',
@@ -5454,6 +5532,25 @@ const HAIRGATOR_I18N = {
         compareRestart: 'Bắt đầu lại so sánh!'
       },
 
+      cameraErrors: {
+        permissionDeniedAndroid: 'Quyền camera bị từ chối.\n\nVào Cài đặt > Ứng dụng > HAIRGATOR > Quyền > Camera để cho phép.',
+        permissionDeniedIOS: 'Quyền camera bị từ chối.\n\nVào Cài đặt > HAIRGATOR > Camera để cho phép.',
+        permissionDeniedBrowser: 'Quyền camera bị từ chối.\n\nVui lòng cho phép quyền camera trong cài đặt trình duyệt.',
+        notFound: 'Không tìm thấy camera.\n\nVui lòng kiểm tra thiết bị của bạn có camera không.',
+        inUse: 'Camera đang được sử dụng bởi ứng dụng khác.\n\nĐóng ứng dụng khác và thử lại.',
+        notSupported: 'Camera không được hỗ trợ trong môi trường này.',
+        overConstrained: 'Lỗi cài đặt camera. Vui lòng thử lại.',
+        securityError: 'Lỗi bảo mật.\n\nCamera chỉ có thể sử dụng trong môi trường HTTPS.',
+        generic: 'Không thể truy cập camera.'
+      },
+
+      drapingLabels: {
+        springWarm: 'Xuân Ấm',
+        summerCool: 'Hạ Lạnh',
+        autumnWarm: 'Thu Ấm',
+        winterCool: 'Đông Lạnh'
+      },
+
       undertones: {
         warm: 'Tông ấm',
         cool: 'Tông lạnh',
@@ -6558,6 +6655,25 @@ const HAIRGATOR_I18N = {
         selectPhoto: 'Pilih foto untuk memulai analisis AI!'
       },
 
+      cameraErrors: {
+        permissionDeniedAndroid: 'Izin kamera ditolak.\n\nPergi ke Pengaturan > Aplikasi > HAIRGATOR > Izin > Kamera untuk mengizinkan.',
+        permissionDeniedIOS: 'Izin kamera ditolak.\n\nPergi ke Pengaturan > HAIRGATOR > Kamera untuk mengizinkan.',
+        permissionDeniedBrowser: 'Izin kamera ditolak.\n\nSilakan izinkan kamera di pengaturan browser.',
+        notFound: 'Kamera tidak ditemukan.\n\nSilakan periksa apakah perangkat Anda memiliki kamera.',
+        inUse: 'Kamera sedang digunakan oleh aplikasi lain.\n\nTutup aplikasi lain dan coba lagi.',
+        notSupported: 'Kamera tidak didukung di lingkungan ini.',
+        overConstrained: 'Kesalahan pengaturan kamera. Silakan coba lagi.',
+        securityError: 'Kesalahan keamanan.\n\nKamera hanya dapat digunakan di lingkungan HTTPS.',
+        generic: 'Tidak dapat mengakses kamera.'
+      },
+
+      drapingLabels: {
+        springWarm: 'Spring Hangat',
+        summerCool: 'Summer Sejuk',
+        autumnWarm: 'Autumn Hangat',
+        winterCool: 'Winter Sejuk'
+      },
+
       undertones: {
         warm: 'Tone Hangat',
         cool: 'Tone Sejuk',
@@ -7479,6 +7595,52 @@ const HAIRGATOR_I18N = {
         whichSuits: '¿Cuál te queda mejor?',
         currentScore: '📊 Puntuación Actual',
         points: 'pts'
+      },
+
+      toast: {
+        returningHome: 'Volviendo a inicio',
+        aiModeActivated: 'Modo de análisis de color personal IA activado',
+        drapingModeActivated: 'Modo de drapeado experto activado',
+        checkingPermission: 'Verificando permiso de cámara...',
+        cameraStarted: '¡Cámara iniciada!',
+        faceRecognitionEnabled: 'Reconocimiento facial habilitado',
+        basicCameraMode: 'Iniciando en modo de cámara básico',
+        aiCameraStopped: 'Cámara IA detenida',
+        startCameraFirst: 'Por favor inicia la cámara primero',
+        startingAiAnalysis: 'Iniciando análisis IA...',
+        aiAnalysisComplete: 'Análisis IA completo',
+        startingDrapingCamera: 'Iniciando cámara de drapeado...',
+        drapingCameraStarted: 'Cámara de drapeado iniciada',
+        cameraAccessDenied: 'No se puede acceder a la cámara',
+        drapingCameraStopped: 'Cámara de drapeado detenida',
+        seasonSelected: 'Color de temporada seleccionado',
+        selectColorFirst: 'Por favor selecciona un color primero',
+        colorSaved: 'Color actual guardado',
+        webviewFaceLimit: 'Reconocimiento facial limitado en WebView. Por favor usa Chrome.',
+        webviewNoFace: 'WebView no soporta reconocimiento facial',
+        compareModeStarted: 'Modo comparación iniciado. ¡Elige el color que te quede mejor!',
+        selected: '¡Seleccionado!',
+        compareResult: 'Resultado de comparación',
+        compareRestart: '¡Reiniciando comparación!'
+      },
+
+      cameraErrors: {
+        permissionDeniedAndroid: 'Permiso de cámara denegado.\n\nVe a Ajustes > Apps > HAIRGATOR > Permisos > Cámara para permitir.',
+        permissionDeniedIOS: 'Permiso de cámara denegado.\n\nVe a Ajustes > HAIRGATOR > Cámara para permitir.',
+        permissionDeniedBrowser: 'Permiso de cámara denegado.\n\nPor favor permite la cámara en los ajustes del navegador.',
+        notFound: 'Cámara no encontrada.\n\nPor favor verifica si tu dispositivo tiene cámara.',
+        inUse: 'La cámara está siendo usada por otra aplicación.\n\nCierra otras apps e intenta de nuevo.',
+        notSupported: 'La cámara no es compatible en este entorno.',
+        overConstrained: 'Error de configuración de cámara. Por favor intenta de nuevo.',
+        securityError: 'Error de seguridad.\n\nLa cámara solo puede usarse en entorno HTTPS.',
+        generic: 'No se puede acceder a la cámara.'
+      },
+
+      drapingLabels: {
+        springWarm: 'Primavera Cálida',
+        summerCool: 'Verano Frío',
+        autumnWarm: 'Otoño Cálido',
+        winterCool: 'Invierno Frío'
       },
 
       undertones: {
