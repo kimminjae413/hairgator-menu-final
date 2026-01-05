@@ -9051,6 +9051,34 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
     // ⭐⭐⭐ Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
     const top1Params = extractRecipeParamsFromStyle(top1);
 
+    // ⭐⭐⭐ styles 컬렉션에서 도해도 가져오기 (hairstyles에는 diagrams 없음!)
+    let maleDiagrams = [];
+    try {
+      const stylesUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/styles?pageSize=100`;
+      const stylesResponse = await fetch(stylesUrl);
+      if (stylesResponse.ok) {
+        const stylesData = await stylesResponse.json();
+        // styleCode(SF, SP 등)로 시작하는 스타일 찾기
+        const matchingStyle = (stylesData.documents || []).find(doc => {
+          const docStyleId = doc.name.split('/').pop();
+          return docStyleId.startsWith(styleCode) && doc.fields?.diagrams?.arrayValue?.values;
+        });
+
+        if (matchingStyle && matchingStyle.fields?.diagrams?.arrayValue?.values) {
+          maleDiagrams = matchingStyle.fields.diagrams.arrayValue.values.map(v => {
+            const map = v.mapValue?.fields || {};
+            return {
+              step: parseInt(map.step?.integerValue || 0),
+              url: map.url?.stringValue || ''
+            };
+          }).filter(d => d.url);
+          console.log(`✅ styles 컬렉션에서 ${styleCode} 도해도 ${maleDiagrams.length}개 로드`);
+        }
+      }
+    } catch (diagramErr) {
+      console.error('⚠️ styles 컬렉션 도해도 조회 실패:', diagramErr.message);
+    }
+
     // ⭐ 남자 스타일 코드 기반 어울리는 얼굴형 분석 (이론 기반)
     const maleFaceShapeMatch = getMaleSuitableFaceShapes(styleCode);
     console.log(`👤 남자 어울리는 얼굴형: ${maleFaceShapeMatch.faceShapes.join(', ')}`);
@@ -9103,8 +9131,8 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
             series: top1.series,
             seriesName: top1.seriesName,
             resultImage: top1.resultImage,
-            diagrams: top1.diagrams,
-            diagramCount: top1.diagramCount,
+            diagrams: maleDiagrams,
+            diagramCount: maleDiagrams.length,
             visionConfidence: visionResult.confidence,
             visionReason: visionResult.reason
           },
@@ -9112,19 +9140,16 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
           referenceStyles: [{
             styleId: top1.styleId,
             resultImage: top1.resultImage,
-            diagrams: top1.diagrams.slice(0, 10),
-            diagramCount: top1.diagramCount
+            diagrams: maleDiagrams.slice(0, 10),
+            diagramCount: maleDiagrams.length
           }],
           // ⭐⭐⭐ 원본 레시피 그대로 반환 (보충 없음)
           recipe: originalRecipe,
-          // 도해도 (Top-1 스타일의 도해도만)
-          diagrams: top1.diagrams.map((d, idx) => ({
+          // 도해도 (styles 컬렉션에서 가져온 도해도)
+          diagrams: maleDiagrams.map((d, idx) => ({
             step: d.step || idx + 1,
             url: d.url,
-            styleId: top1.styleId,
-            lifting: d.lifting,
-            section: d.section,
-            direction: d.direction
+            styleId: styleCode
           })),
           processingTime: Date.now() - startTime,
           params56: maleParams
@@ -10456,8 +10481,33 @@ async function regenerateMaleRecipeWithStyle(payload, geminiKey) {
     // 5. 레시피 재생성
     const maleRecipe = await generateMaleCustomRecipe(maleParams, top3, geminiKey);
 
-    // 6. 도해도 선별
-    const selectedDiagrams = selectMaleDiagramsByTechnique(top3, maleParams, 15);
+    // 6. styles 컬렉션에서 도해도 가져오기
+    let selectedDiagrams = [];
+    try {
+      const stylesUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/styles?pageSize=100`;
+      const stylesResponse = await fetch(stylesUrl);
+      if (stylesResponse.ok) {
+        const stylesData = await stylesResponse.json();
+        const matchingStyle = (stylesData.documents || []).find(doc => {
+          const docStyleId = doc.name.split('/').pop();
+          return docStyleId.startsWith(style_code) && doc.fields?.diagrams?.arrayValue?.values;
+        });
+
+        if (matchingStyle && matchingStyle.fields?.diagrams?.arrayValue?.values) {
+          selectedDiagrams = matchingStyle.fields.diagrams.arrayValue.values.map(v => {
+            const map = v.mapValue?.fields || {};
+            return {
+              step: parseInt(map.step?.integerValue || 0),
+              url: map.url?.stringValue || '',
+              styleId: style_code
+            };
+          }).filter(d => d.url);
+          console.log(`✅ 재분석: styles 컬렉션에서 ${style_code} 도해도 ${selectedDiagrams.length}개 로드`);
+        }
+      }
+    } catch (diagramErr) {
+      console.error('⚠️ 재분석 도해도 조회 실패:', diagramErr.message);
+    }
 
     console.log(`⏱️ 재분석 완료: ${Date.now() - startTime}ms`);
 
