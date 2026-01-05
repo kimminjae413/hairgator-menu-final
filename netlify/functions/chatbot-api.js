@@ -3735,12 +3735,24 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
 
     console.log(`✅ [Fallback 완료] 일반 Gemini 응답 (${fallbackAnswer.length}자)`);
 
+    // 🚨 Fallback 경고 문구 (언어별) - 책임 소재 명확화
+    const fallbackWarnings = {
+      korean: '⚠️ 공식 이론서(2WayCut)에는 없는 내용입니다. 일반적인 미용 지식으로 답변드립니다.\n\n',
+      english: '⚠️ This is not from official theory. Answering based on general hairstyling knowledge.\n\n',
+      japanese: '⚠️ 公式理論書にはない内容です。一般的な美容知識でお答えします。\n\n',
+      chinese: '⚠️ 官方理论书中没有此内容。根据一般美发知识回答。\n\n',
+      vietnamese: '⚠️ Nội dung này không có trong lý thuyết chính thức. Trả lời dựa trên kiến thức làm tóc chung.\n\n',
+      indonesian: '⚠️ Ini bukan dari teori resmi. Menjawab berdasarkan pengetahuan tata rambut umum.\n\n',
+      spanish: '⚠️ Esto no está en la teoría oficial. Respondiendo con conocimientos generales de peluquería.\n\n'
+    };
+    const warningPrefix = fallbackWarnings[userLanguage] || fallbackWarnings.korean;
+
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
         success: true,
-        data: fallbackAnswer,
+        data: warningPrefix + fallbackAnswer,
         method: 'gemini_fallback',
         validation: 'rag_insufficient'
       })
