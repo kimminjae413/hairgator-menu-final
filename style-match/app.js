@@ -1401,7 +1401,12 @@ async function onFaceMeshResults(results) {
     displayAnalysisResults(ratios, analysis, eyebrowAnalysis);
 
     // 스타일 추천 (스타일 로드 완료 대기)
-    await generateRecommendations(analysis);
+    try {
+        await generateRecommendations(analysis);
+    } finally {
+        // 로딩 오버레이 숨김
+        showLoading(false);
+    }
 }
 
 // ========== 비율 계산 ==========
