@@ -3065,36 +3065,67 @@ function calculateHairstyleScores(analysis, styles) {
         }
 
         // ================================================================
-        // 2. 스타일 보너스 (Style Bonus) - 디테일/텍스처 기반
+        // 2. 스타일 보너스 (Style Bonus) - 디테일/텍스처 기반 (v2.1 강화)
         // ================================================================
 
+        // ===== 2-1. 스타일 특성 기반 다양성 보너스 =====
+        // 같은 카테고리 내에서도 개별 스타일 차별화
+
+        // 펌/웨이브 스타일 추가 가산
+        if (name.includes('펌') || name.includes('perm')) styleBonus += 8;
+        if (name.includes('웨이브') || name.includes('wave')) styleBonus += 5;
+        if (name.includes('컬') || name.includes('curl')) styleBonus += 5;
+
+        // 트렌디 키워드 가산
+        if (name.includes('시스루') || name.includes('see-through')) styleBonus += 6;
+        if (name.includes('레이어') || name.includes('layer')) styleBonus += 4;
+        if (name.includes('텍스쳐') || name.includes('texture')) styleBonus += 4;
+
+        // 클래식 키워드 가산
+        if (name.includes('클래식') || name.includes('classic')) styleBonus += 3;
+        if (name.includes('내추럴') || name.includes('natural')) styleBonus += 3;
+
+        // 길이 기반 세분화 (남자)
+        if (selectedGender !== 'female') {
+            if (name.includes('숏') || name.includes('short')) styleBonus += 2;
+            if (name.includes('미디엄') || name.includes('medium')) styleBonus += 3;
+            if (name.includes('롱') || name.includes('long')) styleBonus += 2;
+        }
+
+        // ===== 2-2. 얼굴형 매칭 보너스 =====
         // 긴 얼굴형: 가로 볼륨 키워드 강화
         if (isLongFace) {
-            if (hasWaveStyle) styleBonus += 15; // v2.0: 10→15 강화
-            if (hasSideVolume) styleBonus += 15; // 사이드 볼륨 중요도 상향
-            if (name.includes('레이어')) styleBonus += 10;
-            if (isStraightStyle) styleBonus -= 15; // 생머리 페널티 강화
+            if (hasWaveStyle) styleBonus += 12;
+            if (hasSideVolume) styleBonus += 12;
+            if (name.includes('레이어')) styleBonus += 8;
+            if (isStraightStyle) styleBonus -= 12;
         }
 
         // 짧은 얼굴형: 탑 볼륨, 세로 라인 키워드
         if (isShortFace) {
             if (name.includes('업스타일') || name.includes('up') || name.includes('탑')) {
-                styleBonus += 15;
+                styleBonus += 12;
             }
-            if (ai?.volumePosition === 'top') styleBonus += 10;
+            if (ai?.volumePosition === 'top') styleBonus += 8;
         }
 
         // 사각턱: 곡선/소프트 키워드
         if (isSquareJaw) {
-            if (hasWaveStyle) styleBonus += 15;
+            if (hasWaveStyle) styleBonus += 12;
             if (name.includes('레이어') || name.includes('소프트') || name.includes('soft')) {
-                styleBonus += 10;
+                styleBonus += 8;
             }
             // 직선/슬릭 기피
             if (name.includes('슬릭') || name.includes('slick') || name.includes('단발')) {
-                styleBonus -= 10;
+                styleBonus -= 8;
             }
         }
+
+        // ===== 2-3. 다양성 랜덤 보너스 (±5점) =====
+        // 동점 스타일 간 순서 다양화
+        const styleHash = (style.styleId || style.name || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+        const diversityBonus = (styleHash % 11) - 5; // -5 ~ +5
+        styleBonus += diversityBonus;
 
         // 이미지 타입 매칭 (웜/쿨/뉴트럴) - RAG 기준 +10점
         if (analysis.imageType && analysis.imageType.styleKeywords) {
