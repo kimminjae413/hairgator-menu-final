@@ -4244,10 +4244,26 @@
                     </div>
                 </div>
                 ` : ''}
+
+                <!-- 알림 기록 섹션 -->
+                <div style="margin-top: 16px; background: #FDF4FF; border-radius: 8px; padding: 12px; border: 1px solid #D946EF;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <div style="font-size: 11px; color: #86198F; font-weight: 600;">🔔 알림 기록</div>
+                        <button class="btn btn-sm" style="background: #D946EF; color: white; font-size: 10px; padding: 4px 8px;" onclick="sendManualNotification('${user.id}')">
+                            알림 보내기
+                        </button>
+                    </div>
+                    <div id="userNotificationsList" style="max-height: 150px; overflow-y: auto; font-size: 11px;">
+                        <div style="color: #A855F7; text-align: center; padding: 8px;">불러오는 중...</div>
+                    </div>
+                </div>
             `;
 
             document.getElementById('userDetailEditBtn').onclick = () => quickEditUser(userId);
             openModal('userDetailModal');
+
+            // 알림 기록 로드
+            loadUserNotifications(userId);
         }
 
         // 카드 브랜드명 한글 변환
@@ -4306,6 +4322,77 @@
                     bgColor: '#ECFDF5', borderColor: '#10B981', textColor: '#065F46',
                     valueColor: '#047857', btnColor: '#10B981', statusText: `${daysRemaining}일 남음`
                 };
+            }
+        }
+
+        // 사용자 알림 기록 로드
+        async function loadUserNotifications(userId) {
+            const listEl = document.getElementById('userNotificationsList');
+            if (!listEl) return;
+
+            try {
+                const snapshot = await db.collection('notifications')
+                    .where('userId', '==', userId)
+                    .orderBy('createdAt', 'desc')
+                    .limit(10)
+                    .get();
+
+                if (snapshot.empty) {
+                    listEl.innerHTML = '<div style="color: #A855F7; text-align: center; padding: 8px;">알림 기록이 없습니다</div>';
+                    return;
+                }
+
+                let html = '';
+                snapshot.forEach(doc => {
+                    const notif = doc.data();
+                    const date = notif.createdAt?.toDate ? notif.createdAt.toDate().toLocaleString('ko-KR') : '-';
+                    const readBadge = notif.read
+                        ? '<span style="background: #D1D5DB; color: #374151; padding: 1px 4px; border-radius: 3px; font-size: 9px;">읽음</span>'
+                        : '<span style="background: #FEE2E2; color: #DC2626; padding: 1px 4px; border-radius: 3px; font-size: 9px;">미읽음</span>';
+                    const typeIcon = notif.type?.includes('expir') ? '📅' : '🔔';
+
+                    html += `
+                        <div style="padding: 6px 0; border-bottom: 1px solid #F3E8FF;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>${typeIcon} ${notif.message || notif.type}</span>
+                                ${readBadge}
+                            </div>
+                            <div style="color: #A855F7; font-size: 10px; margin-top: 2px;">${date}</div>
+                        </div>
+                    `;
+                });
+
+                listEl.innerHTML = html;
+            } catch (error) {
+                console.error('알림 로드 실패:', error);
+                listEl.innerHTML = '<div style="color: #DC2626; text-align: center; padding: 8px;">로드 실패</div>';
+            }
+        }
+
+        // 수동 알림 발송
+        async function sendManualNotification(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            const message = prompt(`${user.displayName || user.email}님에게 보낼 알림 메시지를 입력하세요:`);
+            if (!message || !message.trim()) return;
+
+            try {
+                await db.collection('notifications').add({
+                    userId: userId,
+                    userEmail: user.email || '',
+                    type: 'admin_manual',
+                    message: message.trim(),
+                    read: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    sentBy: currentAdmin?.email || 'admin'
+                });
+
+                showToast('알림이 발송되었습니다', 'success');
+                loadUserNotifications(userId);
+            } catch (error) {
+                console.error('알림 발송 실패:', error);
+                showToast('알림 발송 실패: ' + error.message, 'error');
             }
         }
 

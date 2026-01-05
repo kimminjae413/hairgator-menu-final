@@ -246,27 +246,34 @@
                     const notification = doc.data();
                     const notifId = doc.id;
 
-                    // 알림 타입에 따라 표시
-                    if (notification.type.startsWith('plan_expir')) {
+                    // 알림 타입에 따라 아이콘/색상 결정
+                    let toastType = 'info';
+                    let icon = '🔔';
+
+                    if (notification.type?.startsWith('plan_expir')) {
                         const isUrgent = notification.type.includes('1day') || notification.type === 'plan_expired';
-                        const toastType = isUrgent ? 'error' : 'warning';
-                        const icon = isUrgent ? '⚠️' : '📅';
-
-                        if (typeof showToast === 'function') {
-                            showToast(`${icon} ${notification.message}`, toastType, 6000);
-                        } else {
-                            alert(notification.message);
-                        }
-
-                        // 알림 읽음 처리
-                        await db.collection('notifications').doc(notifId).update({
-                            read: true,
-                            readAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-
-                        // 한 번에 하나씩만 표시 (3초 간격)
-                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        toastType = isUrgent ? 'error' : 'warning';
+                        icon = isUrgent ? '⚠️' : '📅';
+                    } else if (notification.type === 'admin_manual') {
+                        toastType = 'info';
+                        icon = '📢';
                     }
+
+                    // 토스트 표시
+                    if (typeof showToast === 'function') {
+                        showToast(`${icon} ${notification.message}`, toastType, 6000);
+                    } else {
+                        alert(notification.message);
+                    }
+
+                    // 알림 읽음 처리
+                    await db.collection('notifications').doc(notifId).update({
+                        read: true,
+                        readAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    // 한 번에 하나씩만 표시 (3초 간격)
+                    await new Promise(resolve => setTimeout(resolve, 3000));
                 }
 
             } catch (error) {
