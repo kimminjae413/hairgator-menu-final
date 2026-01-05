@@ -8933,7 +8933,8 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
           gender,
           series: fields.series?.stringValue || '',
           seriesName: fields.seriesName?.stringValue || '',
-          resultImage: fields.resultImage?.stringValue || null,
+          mainCategory: fields.mainCategory?.stringValue || '',  // ⭐ 추가
+          resultImage: fields.resultImage?.stringValue || fields.imageUrl?.stringValue || fields.thumbnailUrl?.stringValue || null,
           diagrams,
           diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
           captionUrl: fields.captionUrl?.stringValue || null,
@@ -8947,10 +8948,23 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
 
     console.log(`⏱️ [2] Firestore hairstyles(male) 조회: ${Date.now() - t2}ms (${allMenStyles.length}개)`);
 
-    // 3. 스타일 코드로 필터링
+    // 3. 스타일 코드로 필터링 (mainCategory 매핑 사용)
+    // ⭐ styleCode → mainCategory 매핑
+    const STYLE_CODE_TO_CATEGORY = {
+      'SF': 'SIDE FRINGE',
+      'SP': 'SIDE PART',
+      'FU': 'FRINGE UP',
+      'PB': 'PUSHED BACK',
+      'BZ': 'BUZZ',
+      'CP': 'CROP',
+      'MC': 'MOHICAN'
+    };
+    const targetCategory = STYLE_CODE_TO_CATEGORY[styleCode] || styleCode;
+
     const filteredStylesAll = allMenStyles.filter(s =>
-      s.styleId.startsWith(styleCode) || s.series === styleCode
+      s.mainCategory === targetCategory || s.styleId.startsWith(styleCode) || s.series === styleCode
     );
+    console.log(`🔍 ${styleCode} → mainCategory: "${targetCategory}" 필터링`);
 
     // 대표이미지가 있는 스타일
     const filteredStylesWithImage = filteredStylesAll.filter(s => s.resultImage);
