@@ -4669,8 +4669,84 @@ async function getPermStylesFromStyles(targetSeries) {
 }
 
 /**
- * Firestore REST API로 모든 스타일 가져오기
- * ⚠️ 올바른 컬렉션: hairstyles (styles, men_styles 사용 금지!)
+ * styles 컬렉션에서 커트 스타일 가져오기
+ * ⭐ 커트 레시피/도해도는 styles 컬렉션에 있음! (hairstyles는 메뉴판용)
+ * ⭐ 여자 커트/펌은 대표이미지(resultImage)가 동일함
+ */
+async function getCutStylesFromStyles(targetSeries) {
+  const baseUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/styles`;
+  const styles = [];
+
+  try {
+    let nextPageToken = null;
+    do {
+      const url = nextPageToken
+        ? `${baseUrl}?pageSize=300&pageToken=${nextPageToken}`
+        : `${baseUrl}?pageSize=300`;
+
+      const response = await fetch(url);
+      if (!response.ok) break;
+
+      const data = await response.json();
+      nextPageToken = data.nextPageToken || null;
+
+      if (data.documents) {
+        for (const doc of data.documents) {
+          const fields = doc.fields;
+          const styleId = doc.name.split('/').pop();
+          const type = fields.type?.stringValue || 'cut';
+          const series = fields.series?.stringValue || '';
+
+          // 커트 타입이고 해당 시리즈인 것만 (type 없으면 커트로 간주)
+          const isCut = type === 'cut' || !type;
+          if (isCut && (series === targetSeries || styleId.startsWith(targetSeries))) {
+            // 도해도 추출
+            let diagrams = [];
+            if (fields.diagrams?.arrayValue?.values) {
+              diagrams = fields.diagrams.arrayValue.values.map(v => {
+                const map = v.mapValue?.fields || {};
+                return {
+                  step: parseInt(map.step?.integerValue || 0),
+                  url: map.url?.stringValue || ''
+                };
+              }).filter(d => d.url);
+            }
+
+            // 임베딩 추출
+            let embedding = null;
+            if (fields.embedding?.arrayValue?.values) {
+              embedding = fields.embedding.arrayValue.values.map(v => parseFloat(v.doubleValue || 0));
+            }
+
+            styles.push({
+              styleId,
+              series,
+              type: 'cut',
+              gender: fields.gender?.stringValue || 'female',
+              resultImage: fields.resultImage?.stringValue || null,
+              textRecipe: fields.textRecipe?.stringValue || '',
+              captionUrl: fields.captionUrl?.stringValue || null,
+              diagrams,
+              diagramCount: diagrams.length,
+              embedding
+            });
+          }
+        }
+      }
+    } while (nextPageToken);
+
+    console.log(`✅ styles 컬렉션 커트 조회: ${targetSeries} → ${styles.length}개`);
+    return styles;
+  } catch (err) {
+    console.error('❌ styles 컬렉션 커트 조회 실패:', err.message);
+    return [];
+  }
+}
+
+/**
+ * Firestore REST API로 모든 스타일 가져오기 (메뉴판 표시용)
+ * ⚠️ hairstyles = 메뉴판용 (diagrams/textRecipe 없음)
+ * ⚠️ styles = 레시피용 (diagrams/textRecipe 있음)
  */
 async function getFirestoreStyles() {
   const baseUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/hairstyles`;
@@ -7510,18 +7586,16 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
 
     let seriesStylesAll = [];
 
-    // ⭐⭐⭐ 펌은 styles 컬렉션에서 조회! (hairstyles에는 펌 없음)
+    // ⭐⭐⭐ 펌/커트 모두 styles 컬렉션에서 조회! (hairstyles에는 diagrams/textRecipe 없음)
     if (serviceType === 'perm') {
       const permStyles = await getPermStylesFromStyles(targetSeriesCode);
       seriesStylesAll = permStyles;
       console.log(`📚 styles 컬렉션에서 펌 ${targetSeriesCode} 시리즈: ${seriesStylesAll.length}개`);
     } else {
-      // 커트는 hairstyles에서 조회
-      const allStyles = await getFirestoreStyles();
-      seriesStylesAll = allStyles.filter(s => {
-        const matchesSeries = s.series === targetSeriesCode || s.styleId.startsWith(targetSeriesCode);
-        return matchesSeries && s.type === 'cut';
-      });
+      // ⭐ 커트도 styles 컬렉션에서 조회! (hairstyles는 랜덤ID라 series 매칭 안됨)
+      const cutStyles = await getCutStylesFromStyles(targetSeriesCode);
+      seriesStylesAll = cutStyles;
+      console.log(`📚 styles 컬렉션에서 커트 ${targetSeriesCode} 시리즈: ${seriesStylesAll.length}개`);
     }
 
     // 대표이미지가 있는 스타일 (펌은 대표이미지 없을 수 있음)
