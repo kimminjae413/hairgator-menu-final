@@ -215,6 +215,88 @@
         },
 
         /**
+         * 미읽은 알림 조회 및 표시
+         * - notifications 컬렉션에서 미읽은 알림 조회
+         * - 플랜 만료 관련 알림 우선 표시
+         */
+        async checkAndShowNotifications(docId) {
+            try {
+                if (!docId) {
+                    docId = await this.getUserDocId();
+                }
+                if (!docId) return;
+
+                // 미읽은 알림 조회 (최근 7일, 최대 5개)
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+                const notificationsSnapshot = await db.collection('notifications')
+                    .where('userId', '==', docId)
+                    .where('read', '==', false)
+                    .orderBy('createdAt', 'desc')
+                    .limit(5)
+                    .get();
+
+                if (notificationsSnapshot.empty) return;
+
+                console.log(`🔔 미읽은 알림: ${notificationsSnapshot.size}개`);
+
+                // 알림 표시 (가장 중요한 것부터)
+                for (const doc of notificationsSnapshot.docs) {
+                    const notification = doc.data();
+                    const notifId = doc.id;
+
+                    // 알림 타입에 따라 표시
+                    if (notification.type.startsWith('plan_expir')) {
+                        const isUrgent = notification.type.includes('1day') || notification.type === 'plan_expired';
+                        const toastType = isUrgent ? 'error' : 'warning';
+                        const icon = isUrgent ? '⚠️' : '📅';
+
+                        if (typeof showToast === 'function') {
+                            showToast(`${icon} ${notification.message}`, toastType, 6000);
+                        } else {
+                            alert(notification.message);
+                        }
+
+                        // 알림 읽음 처리
+                        await db.collection('notifications').doc(notifId).update({
+                            read: true,
+                            readAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+
+                        // 한 번에 하나씩만 표시 (3초 간격)
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                    }
+                }
+
+            } catch (error) {
+                console.error('❌ 알림 조회 실패:', error);
+            }
+        },
+
+        /**
+         * 알림 개수 조회 (뱃지 표시용)
+         */
+        async getUnreadNotificationCount(docId) {
+            try {
+                if (!docId) {
+                    docId = await this.getUserDocId();
+                }
+                if (!docId) return 0;
+
+                const snapshot = await db.collection('notifications')
+                    .where('userId', '==', docId)
+                    .where('read', '==', false)
+                    .get();
+
+                return snapshot.size;
+            } catch (error) {
+                console.error('❌ 알림 개수 조회 실패:', error);
+                return 0;
+            }
+        },
+
+        /**
          * 저장된 카드 정보 조회
          */
         async getSavedCard(docId) {

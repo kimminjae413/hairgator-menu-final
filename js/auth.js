@@ -239,6 +239,14 @@ async function handleUserLogin(user) {
             }
         }
 
+        // 인앱 알림 표시 (플랜 만료 예정 등)
+        if (window.FirebaseBridge && typeof window.FirebaseBridge.checkAndShowNotifications === 'function') {
+            // 약간의 지연 후 알림 표시 (UI 로딩 완료 후)
+            setTimeout(() => {
+                window.FirebaseBridge.checkAndShowNotifications(emailDocId);
+            }, 2000);
+        }
+
         // UI 업데이트
         updateUIAfterLogin(userData);
 
@@ -398,6 +406,13 @@ async function handleUserLoginByUid(user) {
                 window.currentDesigner.tokenBalance = 0;
                 localStorage.setItem('firebase_user', JSON.stringify(window.currentDesigner));
             }
+        }
+
+        // 인앱 알림 표시 (플랜 만료 예정 등)
+        if (window.FirebaseBridge && typeof window.FirebaseBridge.checkAndShowNotifications === 'function') {
+            setTimeout(() => {
+                window.FirebaseBridge.checkAndShowNotifications(finalDocId);
+            }, 2000);
         }
 
         updateUIAfterLogin(userData);

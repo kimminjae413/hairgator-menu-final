@@ -54,6 +54,14 @@
   node_bundler = "esbuild"
   schedule = "@daily"
 
+# ⭐ 플랜 만료 체크 스케줄 함수 (매일 KST 09:00 실행)
+# - 만료된 플랜 자동 다운그레이드 (free 전환, 토큰 초기화)
+# - 만료 임박 알림 생성 (7일, 3일, 1일 전)
+# - 인앱 알림 저장 (notifications 컬렉션)
+[functions."check-plan-expiration"]
+  node_bundler = "esbuild"
+  schedule = "@daily"
+
 # ========== 캐시 설정 (개발/업데이트 빈번) ==========
 # HTML 파일 - 캐시 비활성화
 [[headers]]
