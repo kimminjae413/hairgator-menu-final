@@ -163,6 +163,24 @@ pollHairChangeStatus(taskId, gender)       // 상태 폴링
 - ❌ API 응답 필드명 추측
 - ❌ 서버 측에서 해결하려고 시도 (클라이언트 업로드가 정답)
 
+### 11. kakao_flutter_sdk_user 버전 ⚠️ 절대 다운그레이드 금지!
+
+**반드시 1.10.0 이상 사용!** (1.9.x는 iPad 크래시 버그 있음)
+
+| 버전 | 상태 | 비고 |
+|------|------|------|
+| **1.10.0+** | ✅ 사용 | iPad 크래시 수정됨 |
+| 1.9.7+3 | ❌ 금지 | iPad에서 앱 시작 시 크래시 |
+| 1.9.x | ❌ 금지 | SwiftKakaoFlutterSdkPlugin.register 크래시 |
+
+**Dart SDK 호환성 문제 시:**
+- ❌ kakao SDK 다운그레이드 (iPad 크래시 발생)
+- ✅ Dart/Flutter SDK 업그레이드 (올바른 해결책)
+
+**현재 요구사항:**
+- `kakao_flutter_sdk_user: ^1.10.0` → Dart SDK ^3.6.0 필요
+- Flutter 3.38.5 이상 권장
+
 ---
 
 ## Google Play Console 계정 (앱 출시용)
@@ -632,6 +650,69 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 로그인 시 이메일 매칭으로 `users`로 복사
 
 ## 최근 작업 이력
+- 2026-01-05: iOS App Store 거부 해결 - iPad 크래시 수정
+
+  ### 거부 사유
+  - **문제**: iPad Air (M3, iPadOS 26.2)에서 앱 시작 시 크래시
+  - **에러**: EXC_BAD_ACCESS (SIGSEGV) at swift_getObjectType
+  - **크래시 위치**: `SwiftKakaoFlutterSdkPlugin.register(with:)` → Dart 코드 실행 전 네이티브 레벨 크래시
+
+  ### 근본 원인 (⚠️ 중요!)
+  - **kakao_flutter_sdk_user 1.9.7+3**에 iPad 크래시 버그 있음
+  - **1.10.0**에서 수정됨 (pubspec.yaml 주석에 "iPad 크래시 수정"이라고 적혀있었음)
+  - **2026-01-04에 1.10.0 → 1.9.7+3 다운그레이드**한 것이 원인
+    - 당시 이유: Dart SDK 3.5.4와 호환성 문제
+    - **실수**: 1.10.0이 iPad 크래시 수정 버전인지 확인하지 않고 다운그레이드
+
+  ### 해결책
+  - **Dart SDK 업그레이드**: ^3.5.4 → ^3.6.0
+  - **Flutter SDK 업그레이드**: 3.24.5 → 3.38.5
+  - **kakao_flutter_sdk_user**: 1.10.0 정상 설치 가능
+  - **버전**: 1.0.0+12
+
+  ### 교훈 (다시는 반복하지 말 것!)
+  - ❌ SDK 다운그레이드 시 해당 버전의 버그 히스토리 확인 필수
+  - ❌ pubspec.yaml 주석("iPad 크래시 수정")을 무시하지 말 것
+  - ✅ 호환성 문제는 SDK 버전 올려서 해결 (다운그레이드 X)
+
+  ### 수정된 파일
+  - `pubspec.yaml`: sdk ^3.6.0, version 1.0.0+12
+  - `lib/main.dart`: Kakao SDK 초기화 try-catch 추가
+  - `pubspec.lock`: 의존성 업데이트
+
+  ### 커밋
+  - `5f8be0e`: fix: iPad 크래시 수정 - Dart SDK 3.6.0 + kakao_flutter_sdk_user 1.10.0
+
+- 2026-01-04: Google Play 데이터 보안 거부 해결 + 키스토어 재설정
+
+  ### Google Play 거부 사유
+  - **문제**: 데이터 보안 양식에 "위치 정보 수집 안 함" 선언했으나, 앱에서 위치 권한 감지됨
+  - **원인**: Firebase SDK가 자동으로 위치 권한 추가
+  - **해결**: AndroidManifest.xml에 위치 권한 명시적 제거
+    ```xml
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" tools:node="remove" />
+    ```
+
+  ### Flutter 빌드 문제 해결
+  - **kakao SDK 다운그레이드**: `^1.10.0` → `^1.9.7+3` (Dart SDK 3.5.4 호환)
+  - **minSdk 변경**: 21 → 23 (Firebase Auth 요구사항)
+  - **빌드 성공**: `app-release.aab` (25.1MB), 버전 1.0.0+11
+
+  ### 키스토어 문제 (⚠️ 중요)
+  - **현상**: 새 AAB 업로드 시 "잘못된 키로 서명됨" 에러
+  - **원인**: 원본 키스토어 분실 (현재 키와 SHA1 불일치)
+  - **현재 키**: `EC:F0:E4:72:49:06:DB:83:D9:CB:86:E2:14:AA:B7:F7:05:80:FB:79`
+  - **Google 요구 키**: `F9:47:09:51:86:90:D3:67:1F:0B:28:42:FE:14:42:79:F9:96:83:3D`
+  - **조치**: Google Play Console에서 "업로드 키 재설정 요청" 제출 완료
+  - **대기 중**: Google 승인 (1~3 영업일 예상)
+  - **승인 후**: 현재 `upload-keystore.jks`로 서명한 AAB 업로드 가능
+
+  ### 수정된 파일
+  - `android/app/src/main/AndroidManifest.xml`: 위치 권한 제거
+  - `android/app/build.gradle`: minSdk 21 → 23
+  - `pubspec.yaml`: kakao_flutter_sdk_user 1.10.0 → 1.9.7+3, version 1.0.0+11
+
 - 2026-01-03: ESLint 경고 정리
 
   ### ESLint 경고 202개 → 0개 수정
