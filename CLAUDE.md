@@ -75,10 +75,36 @@
 ### 3. Firestore 컬렉션명 (정확히!)
 | 용도 | 올바른 컬렉션명 | 잘못된 예시 |
 |------|----------------|------------|
-| 헤어스타일 | `hairstyles` | ~~styles, men_styles~~ |
+| 헤어스타일 메뉴판 | `hairstyles` | ~~men_styles~~ |
+| 레시피/도해도 | `styles` | - |
 | 사용자 | `users` | ~~_users~~ |
 | 불나비 마이그레이션 | `bullnabi_users` | - |
 | 토큰 로그 | `credit_logs` | - |
+
+### 3-1. hairstyles vs styles 컬렉션 차이 ⚠️ 중요!
+
+**`hairstyles` 컬렉션** (메뉴판용):
+- 문서ID: 랜덤 문자열 (예: `13JrTDK2ueypVpvnCPdm`)
+- 필드: `gender`, `mainCategory`, `subCategory`, `name`, `imageUrl`, `thumbnailUrl`
+- **diagrams 필드 없음!**
+- 남자 카테고리: `mainCategory: "SIDE FRINGE"` (코드 아닌 전체 이름)
+
+**`styles` 컬렉션** (레시피/도해도용):
+- 문서ID: 구조화된 스타일ID (예: `SF1001`, `FAL0001`)
+- 필드: `styleId`, `series`, `gender`, `type`, `diagrams`, `diagramCount`, `textRecipe`
+- **diagrams 배열 있음!**
+- Firebase Storage 경로: `men_styles/{styleId}/diagrams/` 또는 `styles/{styleId}/diagrams/`
+
+**스타일 코드 → mainCategory 매핑:**
+| 코드 | mainCategory |
+|------|-------------|
+| SF | SIDE FRINGE |
+| SP | SIDE PART |
+| FU | FRINGE UP |
+| PB | PUSHED BACK |
+| BZ | BUZZ |
+| CP | CROP |
+| MC | MOHICAN |
 
 ### 4. Firestore 필드값 (대소문자 주의!)
 **남자 카테고리 (category):**
@@ -650,6 +676,32 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 로그인 시 이메일 매칭으로 `users`로 복사
 
 ## 최근 작업 이력
+- 2026-01-05: 남자 스타일 도해도 표시 안됨 버그 수정
+
+  ### 문제
+  - 남자 스타일 분석 시 "도해도가 없습니다" 표시
+  - API 로그: `🎯 SF 스타일: 전체 0개, 대표이미지 0개`
+
+  ### 원인 (⚠️ 컬렉션 구조 혼동)
+  - `hairstyles` 컬렉션: 메뉴판용, **diagrams 필드 없음**, styleId가 랜덤 문자열
+  - `styles` 컬렉션: 레시피/도해도용, **diagrams 있음**, styleId가 구조화된 코드
+  - API가 `hairstyles`에서 diagrams를 찾으려 함 → 당연히 없음
+
+  ### 해결책
+  1. Firebase Storage `men_styles/` 폴더 → Firestore `styles` 컬렉션에 69개 남자 도해도 동기화
+  2. API에서 `styles` 컬렉션에서 도해도 조회하도록 수정
+  3. 스타일 코드 → mainCategory 매핑 추가 (SF → SIDE FRINGE 등)
+  4. resultImage fallback: imageUrl, thumbnailUrl 순차 확인
+
+  ### 수정된 파일
+  - `netlify/functions/chatbot-api.js`: analyzeAndMatchMaleRecipe, regenerateMaleRecipeWithStyle
+  - `scripts/sync-male-diagrams.js`: Storage → Firestore 동기화 스크립트
+
+  ### 교훈
+  - 컬렉션 구조 확인 철저히 할 것
+  - `hairstyles`에는 diagrams 없음 (메뉴판 전용)
+  - `styles`에 diagrams 있음 (레시피/도해도 전용)
+
 - 2026-01-05: 플랜 만료 이메일 알림 시스템 구현
 
   ### 구현 내용

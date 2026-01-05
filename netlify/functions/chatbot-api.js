@@ -9066,28 +9066,34 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
     const top1Params = extractRecipeParamsFromStyle(top1);
 
     // ⭐⭐⭐ styles 컬렉션에서 도해도 가져오기 (hairstyles에는 diagrams 없음!)
+    // 직접 문서 ID로 조회 (pageSize 제한 회피)
     let maleDiagrams = [];
     try {
-      const stylesUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/styles?pageSize=100`;
-      const stylesResponse = await fetch(stylesUrl);
-      if (stylesResponse.ok) {
-        const stylesData = await stylesResponse.json();
-        // styleCode(SF, SP 등)로 시작하는 스타일 찾기
-        const matchingStyle = (stylesData.documents || []).find(doc => {
-          const docStyleId = doc.name.split('/').pop();
-          return docStyleId.startsWith(styleCode) && doc.fields?.diagrams?.arrayValue?.values;
-        });
+      const possibleDocIds = [`${styleCode}1001`, `${styleCode}0001`, `${styleCode}001`];
+      console.log(`🔍 남자 도해도 조회 시도: ${possibleDocIds.join(', ')}`);
 
-        if (matchingStyle && matchingStyle.fields?.diagrams?.arrayValue?.values) {
-          maleDiagrams = matchingStyle.fields.diagrams.arrayValue.values.map(v => {
-            const map = v.mapValue?.fields || {};
-            return {
-              step: parseInt(map.step?.integerValue || 0),
-              url: map.url?.stringValue || ''
-            };
-          }).filter(d => d.url);
-          console.log(`✅ styles 컬렉션에서 ${styleCode} 도해도 ${maleDiagrams.length}개 로드`);
+      for (const docId of possibleDocIds) {
+        const docUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/styles/${docId}`;
+        const docResponse = await fetch(docUrl);
+
+        if (docResponse.ok) {
+          const docData = await docResponse.json();
+          if (docData.fields?.diagrams?.arrayValue?.values) {
+            maleDiagrams = docData.fields.diagrams.arrayValue.values.map(v => {
+              const map = v.mapValue?.fields || {};
+              return {
+                step: parseInt(map.step?.integerValue || 0),
+                url: map.url?.stringValue || ''
+              };
+            }).filter(d => d.url);
+            console.log(`✅ styles/${docId}에서 도해도 ${maleDiagrams.length}개 로드`);
+            break;  // 찾으면 종료
+          }
         }
+      }
+
+      if (maleDiagrams.length === 0) {
+        console.log(`⚠️ ${styleCode}로 시작하는 도해도 문서 없음 (시도: ${possibleDocIds.join(', ')})`);
       }
     } catch (diagramErr) {
       console.error('⚠️ styles 컬렉션 도해도 조회 실패:', diagramErr.message);
@@ -10495,29 +10501,35 @@ async function regenerateMaleRecipeWithStyle(payload, geminiKey) {
     // 5. 레시피 재생성
     const maleRecipe = await generateMaleCustomRecipe(maleParams, top3, geminiKey);
 
-    // 6. styles 컬렉션에서 도해도 가져오기
+    // 6. styles 컬렉션에서 도해도 가져오기 (직접 문서 ID 조회)
     let selectedDiagrams = [];
     try {
-      const stylesUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/styles?pageSize=100`;
-      const stylesResponse = await fetch(stylesUrl);
-      if (stylesResponse.ok) {
-        const stylesData = await stylesResponse.json();
-        const matchingStyle = (stylesData.documents || []).find(doc => {
-          const docStyleId = doc.name.split('/').pop();
-          return docStyleId.startsWith(style_code) && doc.fields?.diagrams?.arrayValue?.values;
-        });
+      const possibleDocIds = [`${style_code}1001`, `${style_code}0001`, `${style_code}001`];
+      console.log(`🔍 재분석 도해도 조회 시도: ${possibleDocIds.join(', ')}`);
 
-        if (matchingStyle && matchingStyle.fields?.diagrams?.arrayValue?.values) {
-          selectedDiagrams = matchingStyle.fields.diagrams.arrayValue.values.map(v => {
-            const map = v.mapValue?.fields || {};
-            return {
-              step: parseInt(map.step?.integerValue || 0),
-              url: map.url?.stringValue || '',
-              styleId: style_code
-            };
-          }).filter(d => d.url);
-          console.log(`✅ 재분석: styles 컬렉션에서 ${style_code} 도해도 ${selectedDiagrams.length}개 로드`);
+      for (const docId of possibleDocIds) {
+        const docUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/styles/${docId}`;
+        const docResponse = await fetch(docUrl);
+
+        if (docResponse.ok) {
+          const docData = await docResponse.json();
+          if (docData.fields?.diagrams?.arrayValue?.values) {
+            selectedDiagrams = docData.fields.diagrams.arrayValue.values.map(v => {
+              const map = v.mapValue?.fields || {};
+              return {
+                step: parseInt(map.step?.integerValue || 0),
+                url: map.url?.stringValue || '',
+                styleId: style_code
+              };
+            }).filter(d => d.url);
+            console.log(`✅ 재분석: styles/${docId}에서 도해도 ${selectedDiagrams.length}개 로드`);
+            break;
+          }
         }
+      }
+
+      if (selectedDiagrams.length === 0) {
+        console.log(`⚠️ 재분석: ${style_code}로 시작하는 도해도 없음`);
       }
     } catch (diagramErr) {
       console.error('⚠️ 재분석 도해도 조회 실패:', diagramErr.message);
