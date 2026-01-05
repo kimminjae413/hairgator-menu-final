@@ -8,6 +8,7 @@
     padding: 0;
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
 }
 
 html {
@@ -17,6 +18,8 @@ html {
     height: -webkit-fill-available;
     overflow: hidden;
     background-color: #000000;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* ========== CSS 蹂???쒖뒪??(?ㅽ겕/?쇱씠???뚮쭏) ========== */
@@ -87,8 +90,34 @@ body {
     margin: 0;
     user-select: none;
     -webkit-user-select: none;
+    touch-action: manipulation;
+    overscroll-behavior: none;
     line-height: 1.4;
     transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 입력 필드는 선택 가능하게 */
+input, textarea, select, [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+}
+
+/* 네이티브 터치 피드백 */
+button, .btn, .card, .style-card, .category-tab, .sub-tab, [onclick] {
+    transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+button:active, .btn:active, .card:active, .style-card:active, .category-tab:active, .sub-tab:active, [onclick]:active {
+    transform: scale(0.97);
+    opacity: 0.8;
+}
+
+/* iOS 스타일 스크롤바 숨기기 */
+::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
 }
 
 /* Safe area for all devices and orientations */

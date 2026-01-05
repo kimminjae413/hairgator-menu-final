@@ -650,6 +650,31 @@ Then: [동작] (예: 기존 데이터를 수정)
 - 로그인 시 이메일 매칭으로 `users`로 복사
 
 ## 최근 작업 이력
+- 2026-01-05: 플랜 만료 이메일 알림 시스템 구현
+
+  ### 구현 내용
+  - **SendGrid 연동**: `@sendgrid/mail` 패키지 추가
+  - **이메일 발송 함수**: `sendExpirationEmail()` - 만료 7일/3일/1일 전 + 만료 시
+  - **HTML 이메일 템플릿**: 반응형 디자인, 긴급도별 색상 구분
+  - **통계 추가**: `emailsSent`, `emailsFailed` 카운트
+
+  ### 이메일 유형
+  | 시점 | 제목 | 색상 |
+  |------|------|------|
+  | 7일 전 | 플랜 갱신 안내 | 보라색 (기본) |
+  | 3일 전 | 플랜 만료 예정 | 주황색 |
+  | 1일 전 | ⚠️ 플랜이 내일 만료됩니다! | 빨간색 |
+  | 만료 | 플랜이 만료되었습니다 | 빨간색 |
+
+  ### 환경변수 필요
+  - `SENDGRID_API_KEY`: Netlify 환경변수에 추가 필요
+  - 설정 안 하면 이메일 발송 스킵됨 (인앱 알림만 작동)
+
+  ### 수정된 파일
+  - `package.json`: @sendgrid/mail 의존성 추가
+  - `netlify/functions/check-plan-expiration.js`: 이메일 발송 코드 활성화
+  - `CLAUDE.md`: SendGrid 설정 가이드 추가
+
 - 2026-01-05: iOS App Store 거부 해결 - iPad 크래시 수정
 
   ### 거부 사유
@@ -995,17 +1020,30 @@ Then: [동작] (예: 기존 데이터를 수정)
   | `GEMINI_API_KEY` | (비공개) | Gemini AI - 챗봇/RAG |
   | `GEMINI_API_KEY_ADMIN` | (비공개) | Gemini AI - 어드민용 |
 
-  **추가 필요 (2025-12-29 확인됨):**
+  **추가 필요 (2026-01-05 업데이트):**
   | 변수명 | 값 | 용도 |
   |--------|-----|------|
   | `KAKAO_REST_API_KEY` | `e085ad4b34b316bdd26d67bf620b2ec9` | 카카오 로그인 |
   | `VMODEL_API_KEY` | `Zqo2gbuOlkQW1hO7LezeOPboIutgLi6pjwXmB0NBRMQh1jAJ-au4f1H0OMcfvWAvwPR-xcKdCfMwsSIyueVu0A==` | 헤어체험 AI 합성 |
   | `PORTONE_API_SECRET` | `JEf3Ux7c+ixp74j1j4VxbMX12ww+zZYTUBx4GMCS6WHm/aNiVJbyHhUmTj7psIMI5u2nRE40meIkoh8ln6KS5w==` | 결제 검증 |
+  | `SENDGRID_API_KEY` | (신규 생성 필요) | 플랜 만료 이메일 알림 |
 
   **API 키 확인 위치:**
   - **KAKAO_REST_API_KEY**: https://developers.kakao.com → 앱 설정 → 앱 키 (앱 ID: 1298589)
   - **VMODEL_API_KEY**: https://www.vmodel.ai → Dashboard → API Keys
   - **PORTONE_API_SECRET**: https://admin.portone.io → 결제연동 → API 키 → V2 API Secret (이름: hairgator_pay)
+  - **SENDGRID_API_KEY**: https://app.sendgrid.com → Settings → API Keys → Create API Key
+
+  ### SendGrid 설정 방법 (이메일 알림용)
+  1. **SendGrid 가입**: https://signup.sendgrid.com/ (무료 플랜: 100통/일)
+  2. **API 키 생성**: Settings → API Keys → Create API Key (Full Access)
+  3. **발신자 인증**: Settings → Sender Authentication → Single Sender Verification
+     - From Email: `noreply@hairgator.kr`
+     - From Name: `HAIRGATOR`
+  4. **Netlify 환경변수 추가**: Site Settings → Environment Variables → Add a variable
+     - Key: `SENDGRID_API_KEY`
+     - Value: (생성한 API 키)
+  5. **도메인 인증 (선택)**: 대량 발송 시 Settings → Sender Authentication → Domain Authentication
 
   ### ⚠️ TODO: 불나비 사용자 일괄 마이그레이션 (1주일 내 실행 필요!)
 
