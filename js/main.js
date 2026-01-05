@@ -2513,14 +2513,25 @@ async function applyProfileImage() {
     try {
         let imageUrl = null;
 
-        // 1차: 카카오/구글 로그인 시 받은 photoURL 사용
+        // 1차: 카카오/구글 로그인 시 받은 photoURL 사용 (window.currentDesigner)
         if (window.currentDesigner?.photoURL) {
             // HTTP → HTTPS 변환 (Mixed Content 방지)
             imageUrl = window.currentDesigner.photoURL.replace(/^http:\/\//i, 'https://');
             console.log('👤 소셜 로그인 프로필 이미지 사용');
         }
 
-        // 2차: 없으면 Firebase brandSettings에서 커스텀 프로필 이미지 확인
+        // 2차: localStorage 캐시에서 확인 (언어 변경 시 window.currentDesigner가 없을 수 있음)
+        if (!imageUrl) {
+            try {
+                const cachedUser = JSON.parse(localStorage.getItem('firebase_user') || '{}');
+                if (cachedUser.photoURL) {
+                    imageUrl = cachedUser.photoURL.replace(/^http:\/\//i, 'https://');
+                    console.log('👤 localStorage 캐시 프로필 이미지 사용');
+                }
+            } catch (_e) { /* ignore parse errors */ }
+        }
+
+        // 3차: Firebase brandSettings에서 커스텀 프로필 이미지 확인
         if (!imageUrl && window.db) {
             const userInfo = getUserInfo();
             if (userInfo?.id) {
