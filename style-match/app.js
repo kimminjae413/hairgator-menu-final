@@ -1268,7 +1268,12 @@ function checkReadyState() {
 window.startAnalysis = async function() {
     if (!uploadedImage || !selectedGender) return;
 
-    showLoading(true);
+    // 로딩 표시하지 않고 먼저 페이스메쉬 분석 (랜드마크 표시를 위해)
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    if (analyzeBtn) {
+        analyzeBtn.disabled = true;
+        analyzeBtn.textContent = t('styleMatch.analyzing') || '분석 중...';
+    }
 
     try {
         // 이미지를 캔버스에 그리고 MediaPipe 분석
@@ -1281,22 +1286,42 @@ window.startAnalysis = async function() {
             canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
 
+            // 캔버스를 previewImage 위에 오버레이로 표시
+            const previewImg = document.getElementById('previewImage');
+            if (previewImg && canvas) {
+                canvas.style.display = 'block';
+                canvas.style.position = 'absolute';
+                canvas.style.top = '0';
+                canvas.style.left = '0';
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                canvas.style.objectFit = 'cover';
+                canvas.style.zIndex = '10';
+            }
+
             // MediaPipe 분석 실행
             await faceMesh.send({ image: canvas });
         };
         img.src = uploadedImage;
     } catch (error) {
         console.error('분석 오류:', error);
-        showLoading(false);
+        if (analyzeBtn) {
+            analyzeBtn.disabled = false;
+            analyzeBtn.textContent = t('styleMatch.analyze') || '분석하기';
+        }
         alert('분석 중 오류가 발생했습니다.');
     }
 };
 
 // ========== MediaPipe 결과 처리 ==========
 async function onFaceMeshResults(results) {
-    showLoading(false);
-
+    // 얼굴 감지 실패 시
     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        if (analyzeBtn) {
+            analyzeBtn.disabled = false;
+            analyzeBtn.textContent = t('styleMatch.analyze') || '분석하기';
+        }
         alert(t('styleMatch.noFaceDetected') || '얼굴을 감지할 수 없습니다. 정면 사진을 사용해주세요.');
         return;
     }
@@ -1308,7 +1333,13 @@ async function onFaceMeshResults(results) {
     const faceCanvas = document.getElementById('faceCanvas');
     if (faceCanvas && uploadedImage) {
         drawLandmarksOnUploadedImage(landmarks, faceCanvas);
+
+        // 🎬 랜드마크 표시를 1.5초간 보여준 후 결과 화면으로 전환
+        await new Promise(resolve => setTimeout(resolve, 1500));
     }
+
+    // 로딩 오버레이 표시 (추천 스타일 검색 중)
+    showLoading(true);
 
     // 비율 계산
     const ratios = calculateFaceRatios(landmarks);
@@ -2675,19 +2706,44 @@ function generateSummaryText(analysis) {
     const summaryEl = document.getElementById('summaryText');
     let summaryParts = [];
 
-    analysis.insights.forEach(insight => {
-        if (insight.issue) {
-            summaryParts.push(`${insight.description} ${insight.solution}`);
-        } else {
-            summaryParts.push(insight.description);
+    // 문장 끝에 마침표 추가 헬퍼 함수
+    const addPeriod = (text) => {
+        if (!text) return '';
+        text = text.trim();
+        // 이미 마침표가 있거나 한국어 종결어미로 끝나면 그대로
+        if (text.endsWith('.') || text.endsWith('。')) return text;
+        // 한국어 종결어미 체크 (ㅂ니다, 합니다, 습니다, 어요, 아요, 에요, 해요, 예요 등)
+        const koreanEndings = ['다', '요', '죠', '지'];
+        if (koreanEndings.some(end => text.endsWith(end))) {
+            return text + '.';
         }
+        // 괄호로 끝나는 경우 (예: "(곡선미 강조, 원계)")
+        if (text.endsWith(')')) {
+            return text + '.';
+        }
+        // 그 외 모든 경우 마침표 추가
+        return text + '.';
+    };
+
+    analysis.insights.forEach(insight => {
+        let text = '';
+        if (insight.issue) {
+            // 문제점 + 해결책을 각각 마침표로 끝내기
+            const desc = addPeriod(insight.description);
+            const sol = addPeriod(insight.solution);
+            text = `${desc} ${sol}`;
+        } else {
+            text = addPeriod(insight.description);
+        }
+        if (text) summaryParts.push(text);
     });
 
     if (summaryParts.length === 0) {
         summaryParts.push(t('styleMatch.summaryDefault') || '균형 잡힌 얼굴형으로 다양한 스타일이 어울립니다.');
     }
 
-    summaryEl.textContent = summaryParts.join(' ');
+    // 줄바꿈으로 문단 분리 (innerHTML 사용)
+    summaryEl.innerHTML = summaryParts.map(part => `<p style="margin: 0.5em 0;">${part}</p>`).join('');
 }
 
 // ========== 스타일 로드 (Netlify 함수 사용) ==========

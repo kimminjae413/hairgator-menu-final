@@ -78,7 +78,9 @@
       "Bash(timeout /t 60 /nobreak)",
       "Bash(wmic process where \"processid=45640\" get name,status)",
       "Bash(npm run lint)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(npx eslint:*)",
+      "Bash(claude plugin install:*)"
     ],
     "deny": [],
     "ask": []
