@@ -1867,13 +1867,13 @@ function getEyebrowRecommendations(eyebrowAnalysis, gender) {
                 categories: ['SIDE FRINGE'],
                 subCategories: ['EB', 'E'],
                 score: 25,
-                reason: '아치형 눈썹의 곡선미를 살리면서 자연스럽게 보완'
+                reason: t('styleMatch.reason.archEyebrowCurve') || '아치형 눈썹의 곡선미를 살리면서 자연스럽게 보완'
             });
         } else {
             recommendations.push({
                 subCategories: ['EB', 'E'],
                 score: 20,
-                reason: '눈썹 산을 살짝 가려 인상을 부드럽게 연출'
+                reason: t('styleMatch.reason.archEyebrowSoftCover') || '눈썹 산을 살짝 가려 인상을 부드럽게 연출'
             });
         }
     } else if (line.lineType === 'straight') {
@@ -1883,19 +1883,19 @@ function getEyebrowRecommendations(eyebrowAnalysis, gender) {
                 categories: ['FRINGE UP', 'PUSHED BACK'],
                 subCategories: ['N', 'FH'],
                 score: 30,
-                reason: '직선형 눈썹을 드러내 쿨하고 남성적인 인상 강조'
+                reason: t('styleMatch.reason.straightEyebrowShow') || '직선형 눈썹을 드러내 쿨하고 남성적인 인상 강조'
             });
             avoidances.push({
                 categories: ['SIDE FRINGE'],
                 subCategories: ['E', 'CB'],
                 score: -15,
-                reason: '눈썹을 가리면 직선미가 사라짐'
+                reason: t('styleMatch.reason.straightEyebrowHideAvoid') || '눈썹을 가리면 직선미가 사라짐'
             });
         } else {
             recommendations.push({
                 subCategories: ['N', 'FH'],
                 score: 20,
-                reason: '직선 눈썹을 살려 시크한 무드 연출'
+                reason: t('styleMatch.reason.straightEyebrowChic') || '직선 눈썹을 살려 시크한 무드 연출'
             });
         }
     }
@@ -1908,7 +1908,7 @@ function getEyebrowRecommendations(eyebrowAnalysis, gender) {
             recommendations.push({
                 categories: ['PUSHED BACK', 'FRINGE UP'],
                 score: 20,
-                reason: '진한 눈썹을 드러내 카리스마 있는 인상'
+                reason: t('styleMatch.reason.thickEyebrowShow') || '진한 눈썹을 드러내 카리스마 있는 인상'
             });
         }
     } else if (texture.textureType === 'soft') {
@@ -1918,13 +1918,13 @@ function getEyebrowRecommendations(eyebrowAnalysis, gender) {
                 categories: ['SIDE FRINGE', 'SIDE PART'],
                 subCategories: ['EB', 'FH'],
                 score: 15,
-                reason: '연한 눈썹을 보완하는 자연스러운 스타일'
+                reason: t('styleMatch.reason.thinEyebrowNatural') || '연한 눈썹을 보완하는 자연스러운 스타일'
             });
         } else {
             recommendations.push({
                 subCategories: ['EB', 'FH'],
                 score: 15,
-                reason: '앞머리로 부드러운 인상 연출'
+                reason: t('styleMatch.reason.thinEyebrowSoft') || '앞머리로 부드러운 인상 연출'
             });
         }
     }
@@ -1982,29 +1982,29 @@ function interpretAnalysis(ratios, eyebrowAnalysis = null) {
         insights.push({
             type: 'long_face',
             value: `${ratios.lowerRatio}%`,
-            description: `하안부가 평균(33%)보다 깁니다 (${ratios.lowerRatio}%)`,
-            issue: '긴 하관/긴 얼굴형',
-            solution: '가로 볼륨으로 세로 길이를 상쇄하는 스타일이 어울립니다'
+            description: t('styleMatch.insight.longFace') || `하안부가 평균(33%)보다 깁니다 (${ratios.lowerRatio}%)`,
+            issue: t('styleMatch.issue.longFace') || '긴 하관/긴 얼굴형',
+            solution: t('styleMatch.solution.longFace') || '가로 볼륨으로 세로 길이를 상쇄하는 스타일이 어울립니다'
         });
         if (selectedGender === 'female') {
             // ⭐ 보정 우선 로직: 긴 얼굴은 가로 볼륨이 핵심
             recommendations.push({
                 mainCategory: ['C LENGTH', 'D LENGTH', 'E LENGTH', 'F LENGTH'],
                 score: 40,
-                reason: '가로 볼륨으로 세로 비율 보정'
+                reason: t('styleMatch.reason.longFaceHorizontal') || '가로 볼륨으로 세로 비율 보정'
             });
             // 긴 기장도 웨이브가 있으면 추천 (보정 효과)
             recommendations.push({
                 mainCategory: ['A LENGTH', 'B LENGTH'],
                 score: 30,
-                reason: '긴 기장 + 웨이브로 가로 볼륨 연출 (웨이브 필수!)',
+                reason: t('styleMatch.reason.longFaceWave') || '긴 기장 + 웨이브로 가로 볼륨 연출 (웨이브 필수!)',
                 condition: 'hasWave'  // 스타일 매칭 시 웨이브 체크
             });
             // 생머리 긴 기장만 회피
             avoidances.push({
                 mainCategory: ['A LENGTH', 'B LENGTH'],
                 score: -25,
-                reason: '생머리 긴 기장은 얼굴을 더 길어 보이게 함',
+                reason: t('styleMatch.reason.longFaceStraightAvoid') || '생머리 긴 기장은 얼굴을 더 길어 보이게 함',
                 condition: 'noWave'  // 스타일 매칭 시 웨이브 없으면 적용
             });
         } else {
@@ -2012,13 +2012,13 @@ function interpretAnalysis(ratios, eyebrowAnalysis = null) {
             recommendations.push({
                 mainCategory: ['SIDE PART', 'SIDE FRINGE'],
                 score: 50,
-                reason: '사이드 볼륨으로 얼굴 길이 분산'
+                reason: t('styleMatch.reason.longFaceSideVolume') || '사이드 볼륨으로 얼굴 길이 분산'
             });
             // ⚠️ 긴 얼굴에 탑 볼륨 스타일은 감점!
             avoidances.push({
                 mainCategory: ['FRINGE UP', 'PUSHED BACK', 'MOHICAN'],
                 score: -30,
-                reason: '탑 볼륨이 얼굴을 더 길어 보이게 함 (주의)'
+                reason: t('styleMatch.reason.longFaceTopVolumeAvoid') || '탑 볼륨이 얼굴을 더 길어 보이게 함 (주의)'
             });
         }
     }
@@ -2028,22 +2028,22 @@ function interpretAnalysis(ratios, eyebrowAnalysis = null) {
         insights.push({
             type: 'short_face',
             value: `${ratios.lowerRatio}%`,
-            description: `하안부가 평균(33%)보다 짧습니다 (${ratios.lowerRatio}%)`,
-            issue: '짧은 얼굴형',
-            solution: '세로 길이를 연장하는 스타일이 어울립니다'
+            description: t('styleMatch.insight.shortFace') || `하안부가 평균(33%)보다 짧습니다 (${ratios.lowerRatio}%)`,
+            issue: t('styleMatch.issue.shortFace') || '짧은 얼굴형',
+            solution: t('styleMatch.solution.shortFace') || '세로 길이를 연장하는 스타일이 어울립니다'
         });
         if (selectedGender === 'female') {
             recommendations.push({
                 mainCategory: ['A LENGTH', 'B LENGTH', 'C LENGTH'],
                 score: 35,
-                reason: '긴 기장으로 세로 라인 연장'
+                reason: t('styleMatch.reason.shortFaceLongLength') || '긴 기장으로 세로 라인 연장'
             });
         } else {
             // ✅ 짧은 얼굴에만 탑 볼륨 추천!
             recommendations.push({
                 mainCategory: ['FRINGE UP', 'PUSHED BACK', 'MOHICAN'],
                 score: 30,
-                reason: '탑 볼륨으로 시선을 위로 끌어올려 얼굴이 갸름해 보임'
+                reason: t('styleMatch.reason.shortFaceTopVolume') || '탑 볼륨으로 시선을 위로 끌어올려 얼굴이 갸름해 보임'
             });
         }
     }
