@@ -796,6 +796,27 @@ Then: [동작] (예: 기존 데이터를 수정)
   ### 커밋
   - `5f8be0e`: fix: iPad 크래시 수정 - Dart SDK 3.6.0 + kakao_flutter_sdk_user 1.10.0
 
+- 2026-01-05: 퍼스널컬러 & 스타일매칭 i18n 완성
+
+  ### 작업 내용
+  - **시즌 분석 결과**: getSeasonDescription() i18n 경로 수정, autumnWarmSoft 7개국어 추가
+  - **스페인어 보완**: seasonDescriptions/seasonRecommendations 누락 섹션 추가
+  - **색상 팔레트**: getSeasonColorPalette() 45개 색상명 7개국어 i18n 적용
+  - **AI 분석 단계**: performAIAnalysisSteps() 4개 메시지 7개국어 i18n 적용
+  - **style-match alert**: 3개 alert 메시지 7개국어 i18n 적용
+    - alertFaceNotDetected: 얼굴 감지 실패
+    - alertAnalysisError: 분석 오류
+    - alertSelectPrescription: 처방 선택 안내
+
+  ### 수정된 파일
+  - `js/i18n.js`: colorNames, aiSteps, alert 키 7개국어 추가 (+225줄)
+  - `personal-color/app.js`: t() 함수 적용 + fallback 패턴
+  - `style-match/app.js`: alert 3개 i18n 적용
+
+  ### 커밋
+  - `b54036e`: feat: 퍼스널컬러 i18n 완성 (시즌/색상/AI단계)
+  - `764a6cb`: feat: style-match alert 메시지 7개국어 i18n 적용
+
 - 2026-01-04: Google Play 데이터 보안 거부 해결 + 키스토어 재설정
 
   ### Google Play 거부 사유
