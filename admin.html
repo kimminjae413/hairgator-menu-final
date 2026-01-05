@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HAIRGATOR Admin Console</title>
     <link rel="icon" type="image/png" href="/admin.png">
     <link rel="apple-touch-icon" href="/admin.png">
@@ -53,6 +53,13 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        html {
+            overscroll-behavior: none;
+            -webkit-overflow-scrolling: touch;
         }
 
         body {
@@ -62,6 +69,34 @@
             min-height: 100vh;
             display: flex;
             -webkit-font-smoothing: antialiased;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+            overscroll-behavior: none;
+        }
+
+        /* 입력 필드는 선택 가능하게 */
+        input, textarea, select, [contenteditable="true"] {
+            -webkit-user-select: text;
+            user-select: text;
+            -webkit-touch-callout: default;
+        }
+
+        /* 네이티브 터치 피드백 */
+        button, .btn, .nav-item, .card, [onclick] {
+            transition: transform 0.1s ease, opacity 0.1s ease;
+        }
+
+        button:active, .btn:active, .nav-item:active, [onclick]:active {
+            transform: scale(0.97);
+            opacity: 0.8;
+        }
+
+        /* iOS 스타일 스크롤바 숨기기 */
+        ::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+            display: none;
         }
 
         /* 사이드바 */
@@ -5104,8 +5139,8 @@
 
                     await userRef.update(updateData);
 
-                    // 5. 로그 기록
-                    await db.collection('token_logs').add({
+                    // 5. 로그 기록 (credit_logs 컬렉션 사용 - 메인 서비스와 일치)
+                    await db.collection('credit_logs').add({
                         userId: userId,
                         action: 'payment_cancelled',
                         tokensDeducted: tokens,

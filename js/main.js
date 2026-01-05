@@ -3266,8 +3266,10 @@ window.submitInquiry = async function() {
             imageUrl = await uploadInquiryImage(imageInput.files[0], user.uid);
         }
 
-        // 사용자 정보 가져오기
-        const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+        // 사용자 정보 가져오기 (이메일 기반 문서 ID 우선)
+        const emailDocId = user.email ? user.email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_') : null;
+        const docId = window.currentDesigner?.id || emailDocId || user.uid;
+        const userDoc = await firebase.firestore().collection('users').doc(docId).get();
         const userData = userDoc.exists ? userDoc.data() : {};
 
         const inquiryData = {
