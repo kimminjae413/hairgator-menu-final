@@ -2959,8 +2959,9 @@ function calculateHairstyleScores(analysis, styles) {
         const hasNoBangs = ['N', 'NONE', ''].includes(subCat) || ai?.styleFeatures?.hasBangs === false;
 
         // ================================================================
-        // 1. 카테고리 보너스 (Category Bonus) - 형태/기장 기반
+        // 1. 카테고리 보너스 (Category Bonus) - 형태/기장 기반 (v2.2 축소)
         // ================================================================
+        // v2.2: 최대 ±40점으로 축소 (AI 보너스 영향력 상향)
 
         if (selectedGender === 'female') {
             // ===== 여자 긴 얼굴형 =====
@@ -2968,62 +2969,62 @@ function calculateHairstyleScores(analysis, styles) {
                 if (['A LENGTH', 'B LENGTH'].includes(cat)) {
                     // 긴 기장: 웨이브 유무에 따라 극명하게 갈림
                     if (hasWaveStyle || hasSideVolume) {
-                        categoryBonus += 30; // ✅ 긴 기장 + 웨이브 = 가로 볼륨 OK
+                        categoryBonus += 24; // ✅ 긴 기장 + 웨이브 = 가로 볼륨 OK
                     } else {
-                        categoryBonus -= 25; // ❌ 긴 기장 + 생머리 = 세로 강조 NG
-                        if (isSevereLongFace) fatalPenalty = -30; // 🚨 과락
+                        categoryBonus -= 20; // ❌ 긴 기장 + 생머리 = 세로 강조 NG
+                        if (isSevereLongFace) fatalPenalty = -25; // 🚨 과락
                     }
                 } else if (['C LENGTH', 'D LENGTH', 'E LENGTH', 'F LENGTH'].includes(cat)) {
-                    // 중단발~세미롱: 조건부 점수 (v2.0 핵심 수정)
+                    // 중단발~세미롱: 조건부 점수
                     if (hasWaveStyle || hasSideVolume) {
-                        categoryBonus += 45; // ✅ Best: 중단발 + 웨이브/볼륨
+                        categoryBonus += 36; // ✅ Best: 중단발 + 웨이브/볼륨
                     } else if (isStraightStyle) {
-                        categoryBonus -= 10; // ⚠️ 주의: 중단발 + 생머리
+                        categoryBonus -= 8; // ⚠️ 주의: 중단발 + 생머리
                     } else {
-                        categoryBonus += 20; // ➡️ 무난: 중단발 (텍스처 불명)
+                        categoryBonus += 16; // ➡️ 무난: 중단발 (텍스처 불명)
                     }
                 }
             }
             // ===== 여자 짧은 얼굴형 =====
             else if (isShortFace) {
                 if (['A LENGTH', 'B LENGTH', 'C LENGTH'].includes(cat)) {
-                    categoryBonus += 35; // 세로 라인 연장
+                    categoryBonus += 28; // 세로 라인 연장
                 }
             }
 
-            // ===== 여자 사각턱 (RAG 이론 추가) =====
+            // ===== 여자 사각턱 =====
             if (isSquareJaw) {
                 if (['A LENGTH', 'B LENGTH', 'C LENGTH', 'D LENGTH'].includes(cat)) {
-                    categoryBonus += 30; // 부드러운 웨이브로 턱선 보완
+                    categoryBonus += 24; // 부드러운 웨이브로 턱선 보완
                 } else if (['F LENGTH', 'G LENGTH', 'H LENGTH'].includes(cat)) {
-                    categoryBonus -= 40; // 턱선 강조됨
-                    if (isSevereSquareJaw) fatalPenalty = -30; // 🚨 과락
+                    categoryBonus -= 32; // 턱선 강조됨
+                    if (isSevereSquareJaw) fatalPenalty = -25; // 🚨 과락
                 }
             }
         } else {
             // ===== 남자 긴 얼굴형 =====
             if (isLongFace) {
                 if (['SIDE PART', 'SIDE FRINGE'].includes(cat)) {
-                    categoryBonus += 50; // 사이드 볼륨 강력 추천
+                    categoryBonus += 40; // 사이드 볼륨 강력 추천
                 } else if (['FRINGE UP', 'PUSHED BACK', 'MOHICAN'].includes(cat)) {
-                    categoryBonus -= 30; // 탑 볼륨 감점
-                    if (isSevereLongFace) fatalPenalty = -30; // 🚨 과락
+                    categoryBonus -= 24; // 탑 볼륨 감점
+                    if (isSevereLongFace) fatalPenalty = -25; // 🚨 과락
                 }
             }
             // ===== 남자 짧은 얼굴형 =====
             else if (isShortFace) {
                 if (['FRINGE UP', 'PUSHED BACK', 'MOHICAN'].includes(cat)) {
-                    categoryBonus += 40; // 탑 볼륨 추천
+                    categoryBonus += 32; // 탑 볼륨 추천
                 }
             }
 
-            // ===== 남자 사각턱 (RAG 이론 추가) =====
+            // ===== 남자 사각턱 =====
             if (isSquareJaw) {
                 if (['SIDE FRINGE', 'SIDE PART'].includes(cat)) {
-                    categoryBonus += 25; // 사이드 볼륨으로 턱선 완화
+                    categoryBonus += 20; // 사이드 볼륨으로 턱선 완화
                 } else if (['BUZZ', 'CROP'].includes(cat)) {
-                    categoryBonus -= 30; // 각진 인상 강조
-                    if (isSevereSquareJaw) fatalPenalty = -30; // 🚨 과락
+                    categoryBonus -= 24; // 각진 인상 강조
+                    if (isSevereSquareJaw) fatalPenalty = -25; // 🚨 과락
                 }
             }
         }
@@ -3032,16 +3033,16 @@ function calculateHairstyleScores(analysis, styles) {
         if (selectedGender === 'female') {
             if (isWideForehead) {
                 if (['EB', 'EYE BROW', 'E', 'EYE', 'FH', 'FORE HEAD'].includes(subCat)) {
-                    categoryBonus += 30; // 앞머리로 이마 커버
+                    categoryBonus += 24; // 앞머리로 이마 커버
                 } else if (hasNoBangs) {
-                    categoryBonus -= 20;
-                    if (isSevereWideForehead) fatalPenalty = -30; // 🚨 과락: 극심한 넓은 이마 + 깐머리
+                    categoryBonus -= 16;
+                    if (isSevereWideForehead) fatalPenalty = -25; // 🚨 과락
                 }
             } else if (isNarrowForehead) {
                 if (hasNoBangs || ['FH', 'FORE HEAD'].includes(subCat)) {
-                    categoryBonus += 20; // 이마 드러내기 추천
+                    categoryBonus += 16; // 이마 드러내기 추천
                 } else if (['E', 'EYE', 'CB', 'CHEEKBONE'].includes(subCat)) {
-                    categoryBonus -= 15; // 긴 앞머리는 이마를 더 좁아 보이게 함
+                    categoryBonus -= 12; // 긴 앞머리는 이마를 더 좁아 보이게 함
                 }
             }
         }
@@ -3050,16 +3051,16 @@ function calculateHairstyleScores(analysis, styles) {
         if (selectedGender !== 'female') {
             if (isWideForehead) {
                 if (['SIDE FRINGE'].includes(cat)) {
-                    categoryBonus += 25; // 사이드 프린지로 이마 커버
+                    categoryBonus += 20; // 사이드 프린지로 이마 커버
                 } else if (['FRINGE UP', 'PUSHED BACK'].includes(cat)) {
-                    categoryBonus -= 20;
-                    if (isSevereWideForehead) fatalPenalty = -30; // 🚨 과락
+                    categoryBonus -= 16;
+                    if (isSevereWideForehead) fatalPenalty = -25; // 🚨 과락
                 }
             } else if (isNarrowForehead) {
                 if (['FRINGE UP', 'PUSHED BACK'].includes(cat)) {
-                    categoryBonus += 25; // 이마 노출로 시원한 인상
+                    categoryBonus += 20; // 이마 노출로 시원한 인상
                 } else if (['SIDE FRINGE'].includes(cat)) {
-                    categoryBonus += 5; // 중립
+                    categoryBonus += 4; // 중립
                 }
             }
         }
@@ -3141,9 +3142,9 @@ function calculateHairstyleScores(analysis, styles) {
         }
 
         // ================================================================
-        // 3. AI 보너스 (AI Bonus) - Gemini Vision 분석 결과 활용
+        // 3. AI 보너스 (AI Bonus) - Gemini Vision 분석 결과 활용 (v2.2 강화)
         // ================================================================
-        // 설계 원칙: 과락(Fatal Mismatch) 가능, 최대 +25/-20 (카테고리 보완)
+        // v2.2: 최대 +35/-25로 상향 (카테고리 보너스 축소에 따른 영향력 상향)
         let aiBonus = 0;
         let rawAiScore = 0;
 
@@ -3154,79 +3155,75 @@ function calculateHairstyleScores(analysis, styles) {
             const userFaceType = analysis.faceType?.code; // 'oval', 'round', 'square', 'heart', 'long', 'diamond'
             const userEyebrowType = analysis.eyebrowType?.lineType; // 'arched', 'straight'
 
-            // 4-1. 이미지 타입 매칭 (웜/뉴트럴/쿨) - 부가적 (축소)
+            // 4-1. 이미지 타입 매칭 (웜/뉴트럴/쿨) - v2.2 강화
             if (userImageType && ai.recommendedImageTypes?.includes(userImageType)) {
-                rawAiScore += 5;  // 축소: 8 → 5
+                rawAiScore += 8;  // v2.2: 5 → 8
             }
             if (userImageType && ai.imageType === userImageType) {
-                rawAiScore += 3;  // 축소: 5 → 3
+                rawAiScore += 5;  // v2.2: 3 → 5
             }
 
-            // 4-2. 얼굴형 매칭 (AI가 분석한 추천/회피 얼굴형) - 중요하므로 상대적으로 유지
+            // 4-2. 얼굴형 매칭 (AI가 분석한 추천/회피 얼굴형) - 핵심!
             if (userFaceType) {
                 if (ai.recommendedFaceTypes?.includes(userFaceType)) {
-                    rawAiScore += 10;  // 축소: 25 → 10
+                    rawAiScore += 15;  // v2.2: 10 → 15
                 }
                 if (ai.avoidFaceTypes?.includes(userFaceType)) {
-                    rawAiScore -= 15;  // 축소: -30 → -15 (비추천 강력 유지)
+                    rawAiScore -= 20;  // v2.2: -15 → -20
                 }
             }
 
-            // 4-3. 텍스쳐 매칭 (하드/소프트) - 축소
+            // 4-3. 텍스쳐 매칭 (하드/소프트) - v2.2 강화
             if (userTexture && ai.texture) {
                 const normalizedUserTexture = userTexture === 'balanced' ? 'neutral' : userTexture;
                 if (normalizedUserTexture === ai.texture) {
-                    rawAiScore += 3;  // 축소: 10 → 3
+                    rawAiScore += 6;  // v2.2: 3 → 6
                 }
-                // 미스매치 감점은 제거 (너무 세부적)
             }
 
-            // 4-4. 눈썹 라인 매칭 - 축소
+            // 4-4. 눈썹 라인 매칭 - v2.2 강화
             if (userEyebrowType && ai.lineCharacter) {
                 if ((userEyebrowType === 'arched' && ai.lineCharacter.archBrowMatch) ||
                     (userEyebrowType === 'straight' && ai.lineCharacter.straightBrowMatch)) {
-                    rawAiScore += 3;  // 축소: 10 → 3
+                    rawAiScore += 5;  // v2.2: 3 → 5
                 }
             }
 
-            // 4-5. 커버 영역 매칭 - 축소
+            // 4-5. 커버 영역 매칭 - v2.2 강화
             if (isWideForehead && ai.coverArea?.includes('forehead')) {
-                rawAiScore += 3;  // 축소: 10 → 3
+                rawAiScore += 6;  // v2.2: 3 → 6
             }
 
-            // 4-5-1. 좁은 이마 + 앞머리 (스타일별 개별 적용) - 축소
+            // 4-5-1. 좁은 이마 + 앞머리 (스타일별 개별 적용) - v2.2 강화
             const styleHasBangs = ai.styleFeatures?.hasBangs;
             if (isNarrowForehead && styleHasBangs === true) {
-                rawAiScore -= 8;  // 축소: -20 → -8
+                rawAiScore -= 12;  // v2.2: -8 → -12
             }
             if (isNarrowForehead && styleHasBangs === false) {
-                rawAiScore += 5;  // 축소: 15 → 5
+                rawAiScore += 8;  // v2.2: 5 → 8
             }
 
-            // 4-6. 실루엣/볼륨 매칭 - 축소
+            // 4-6. 실루엣/볼륨 매칭 - v2.2 강화
             if (ai.silhouette) {
                 if ((isLongFace && ai.silhouette === 'curved') ||
                     (isShortFace && ai.silhouette === 'straight')) {
-                    rawAiScore += 3;  // 축소: 10 → 3
+                    rawAiScore += 5;  // v2.2: 3 → 5
                 }
             }
             if (ai.volumePosition) {
                 if ((isLongFace && ai.volumePosition === 'side') ||
                     (isShortFace && ai.volumePosition === 'top')) {
-                    rawAiScore += 3;  // 축소: 10 → 3
+                    rawAiScore += 5;  // v2.2: 3 → 5
                 }
             }
 
-            // ⭐ [핵심] aiBonus 최종 클램핑 (최대 +25점, 최저 -20점)
-            aiBonus = Math.min(25, Math.max(-20, rawAiScore));
+            // ⭐ [핵심] aiBonus 최종 클램핑 (v2.2: 최대 +35점, 최저 -25점)
+            aiBonus = Math.min(35, Math.max(-25, rawAiScore));
 
             // 🚨 AI 기반 Fatal Mismatch 추가 감지
-            // AI가 분석한 avoidFaceTypes와 사용자 얼굴형이 일치하면 과락
             if (userFaceType && ai.avoidFaceTypes?.includes(userFaceType)) {
-                // 이미 rawAiScore에서 -15 적용됨, 추가 과락은 심각한 경우만
                 if (ai.avoidFaceTypes.length === 1 && ai.avoidFaceTypes[0] === userFaceType) {
-                    // 단 하나의 회피 얼굴형과 정확히 일치 = 치명적
-                    fatalPenalty = Math.min(fatalPenalty, -30);
+                    fatalPenalty = Math.min(fatalPenalty, -25);
                 }
             }
         }
