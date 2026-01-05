@@ -1179,7 +1179,7 @@ function drawLandmarksOnUploadedImage(landmarks, canvas) {
 // 카메라에서 캡처
 window.captureFromCamera = function() {
     if (!lastFaceResults || !isFaceDetected) {
-        alert('얼굴을 감지할 수 없습니다. 카메라를 정면으로 바라봐주세요.');
+        alert(t('styleMatch.alertFaceNotDetected') || '얼굴을 감지할 수 없습니다. 카메라를 정면으로 바라봐주세요.');
         return;
     }
 
@@ -1352,7 +1352,7 @@ window.startAnalysis = async function() {
             analyzeBtn.disabled = false;
             analyzeBtn.textContent = t('styleMatch.analyze') || '분석하기';
         }
-        alert('분석 중 오류가 발생했습니다.');
+        alert(t('styleMatch.alertAnalysisError') || '분석 중 오류가 발생했습니다.');
     }
 };
 
@@ -2444,7 +2444,7 @@ function getAIPrescription(ratios) {
 // 처방 확인 → 스타일 추천
 window.confirmPrescription = function() {
     if (!selectedPrescription) {
-        alert('처방을 선택해주세요');
+        alert(t('styleMatch.alertSelectPrescription') || '처방을 선택해주세요');
         return;
     }
 

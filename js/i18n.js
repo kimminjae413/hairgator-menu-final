@@ -458,6 +458,10 @@ const HAIRGATOR_I18N = {
       eyebrowThickness: '눈썹 두께',
       eyebrowDensity: '눈썹 밀도',
       eyebrowTail: '눈썹 꼬리',
+      // alert 메시지
+      alertFaceNotDetected: '얼굴을 감지할 수 없습니다. 카메라를 정면으로 바라봐주세요.',
+      alertAnalysisError: '분석 중 오류가 발생했습니다.',
+      alertSelectPrescription: '처방을 선택해주세요',
       // 얼굴형 타입
       faceType: {
         oval: '계란형',
@@ -1701,6 +1705,9 @@ const HAIRGATOR_I18N = {
       eyebrowThickness: 'Eyebrow Thickness',
       eyebrowDensity: 'Eyebrow Density',
       eyebrowTail: 'Eyebrow Tail',
+      alertFaceNotDetected: 'Could not detect face. Please face the camera directly.',
+      alertAnalysisError: 'An error occurred during analysis.',
+      alertSelectPrescription: 'Please select a prescription',
       faceType: {
         oval: 'Oval',
         square: 'Square',
@@ -2904,6 +2911,9 @@ const HAIRGATOR_I18N = {
       eyebrowThickness: '眉の太さ',
       eyebrowDensity: '眉の密度',
       eyebrowTail: '眉尾',
+      alertFaceNotDetected: '顔を検出できませんでした。カメラに向かってください。',
+      alertAnalysisError: '分析中にエラーが発生しました。',
+      alertSelectPrescription: '処方を選択してください',
       faceType: {
         oval: '卵型',
         square: '四角型',
@@ -4103,6 +4113,9 @@ const HAIRGATOR_I18N = {
       eyebrowThickness: '眉毛粗细',
       eyebrowDensity: '眉毛密度',
       eyebrowTail: '眉尾',
+      alertFaceNotDetected: '无法检测到面部。请面向摄像头。',
+      alertAnalysisError: '分析过程中发生错误。',
+      alertSelectPrescription: '请选择处方',
       faceType: {
         oval: '椭圆形',
         square: '方形',
@@ -5305,6 +5318,9 @@ const HAIRGATOR_I18N = {
       eyebrowThickness: 'Độ Dày Lông Mày',
       eyebrowDensity: 'Mật Độ Lông Mày',
       eyebrowTail: 'Đuôi Lông Mày',
+      alertFaceNotDetected: 'Không thể phát hiện khuôn mặt. Vui lòng nhìn thẳng vào camera.',
+      alertAnalysisError: 'Đã xảy ra lỗi trong quá trình phân tích.',
+      alertSelectPrescription: 'Vui lòng chọn một đơn thuốc',
       faceType: {
         oval: 'Hình trái xoan',
         square: 'Hình vuông',
@@ -6467,6 +6483,9 @@ const HAIRGATOR_I18N = {
       eyebrowThickness: 'Ketebalan Alis',
       eyebrowDensity: 'Kepadatan Alis',
       eyebrowTail: 'Ekor Alis',
+      alertFaceNotDetected: 'Tidak dapat mendeteksi wajah. Harap hadap kamera secara langsung.',
+      alertAnalysisError: 'Terjadi kesalahan saat analisis.',
+      alertSelectPrescription: 'Silakan pilih resep',
       faceType: {
         oval: 'Oval',
         square: 'Persegi',
@@ -7597,6 +7616,9 @@ const HAIRGATOR_I18N = {
       eyebrowThickness: 'Grosor de Ceja',
       eyebrowDensity: 'Densidad de Ceja',
       eyebrowTail: 'Cola de Ceja',
+      alertFaceNotDetected: 'No se pudo detectar el rostro. Por favor, mire directamente a la cámara.',
+      alertAnalysisError: 'Se produjo un error durante el análisis.',
+      alertSelectPrescription: 'Por favor seleccione una prescripción',
       faceType: {
         oval: 'Ovalado',
         square: 'Cuadrado',
