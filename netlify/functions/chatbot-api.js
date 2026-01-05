@@ -9775,9 +9775,10 @@ async function regenerateFemaleRecipeWithStyle(payload, geminiKey) {
       lifting_range: liftingRange
     };
 
-    // 2. Firestore에서 여자 스타일 가져오기
+    // 2. Firestore styles 컬렉션에서 여자 커트 스타일 가져오기 (hairstyles에는 diagrams/textRecipe 없음!)
     const targetSeries = `F${length_code}L`;
-    const stylesUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles`;
+    // ⭐ styles 컬렉션 사용 (레시피/도해도 데이터가 여기 있음)
+    const stylesUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles`;
     const stylesResponse = await fetch(stylesUrl);
     const stylesData = await stylesResponse.json();
 
@@ -9963,8 +9964,9 @@ async function regeneratePermRecipeWithStyle(payload, geminiKey) {
     // 2. 펌 시리즈 코드 생성 (예: FALP, FBLP)
     const targetSeries = `F${length_code}LP`;
 
-    // 3. Firestore에서 펌 스타일 가져오기 (페이지네이션 포함)
-    const baseUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles`;
+    // 3. Firestore styles 컬렉션에서 펌 스타일 가져오기 (hairstyles에는 펌 없음!)
+    // ⭐ styles 컬렉션 사용 (펌 레시피 70개가 여기 있음: FALP~FHLP)
+    const baseUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles`;
     const allStyles = [];
     let nextPageToken = null;
 
@@ -10114,14 +10116,15 @@ async function regeneratePermRecipeWithStyle(payload, geminiKey) {
 }
 
 // ==================== 커트에서 매칭 펌 레시피 조회 ====================
+// ⚠️ 펌 레시피는 styles 컬렉션에 있음! (hairstyles 아님!)
 async function getPermRecipeByStyle(payload) {
   const { perm_style_id, cut_style_id } = payload;
 
   console.log(`🌀 펌 레시피 조회: ${perm_style_id} (커트: ${cut_style_id})`);
 
   try {
-    // Firestore에서 해당 펌 스타일 조회
-    const docUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles/${perm_style_id}`;
+    // ⭐ styles 컬렉션에서 해당 펌 스타일 조회 (hairstyles 아님!)
+    const docUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles/${perm_style_id}`;
     const response = await fetch(docUrl);
 
     if (!response.ok) {
@@ -10139,8 +10142,8 @@ async function getPermRecipeByStyle(payload) {
 
       const targetSeries = seriesMatch[1];
 
-      // 해당 시리즈의 펌 스타일 검색
-      const searchUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles?pageSize=50`;
+      // ⭐ styles 컬렉션에서 해당 시리즈의 펌 스타일 검색
+      const searchUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles?pageSize=300`;
       const searchResponse = await fetch(searchUrl);
       const searchData = await searchResponse.json();
 
@@ -10223,14 +10226,15 @@ async function getPermRecipeByStyle(payload) {
 }
 
 // ==================== 펌에서 매칭 커트 레시피 조회 ====================
+// ⚠️ 커트 레시피는 styles 컬렉션에 있음! (hairstyles 아님!)
 async function getCutRecipeByStyle(payload) {
   const { cut_style_id, perm_style_id } = payload;
 
   console.log(`✂️ 커트 레시피 조회: ${cut_style_id} (펌: ${perm_style_id})`);
 
   try {
-    // Firestore에서 해당 커트 스타일 조회
-    const docUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles/${cut_style_id}`;
+    // ⭐ styles 컬렉션에서 해당 커트 스타일 조회 (hairstyles 아님!)
+    const docUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles/${cut_style_id}`;
     const response = await fetch(docUrl);
 
     if (!response.ok) {
@@ -10248,15 +10252,15 @@ async function getCutRecipeByStyle(payload) {
 
       const targetSeries = seriesMatch[1];
 
-      // 해당 시리즈의 커트 스타일 검색
-      const searchUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles?pageSize=100`;
+      // ⭐ styles 컬렉션에서 해당 시리즈의 커트 스타일 검색
+      const searchUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles?pageSize=300`;
       const searchResponse = await fetch(searchUrl);
       const searchData = await searchResponse.json();
 
       const cutStyle = (searchData.documents || []).find(doc => {
         const fields = doc.fields;
         const styleId = doc.name.split('/').pop();
-        const type = fields.type?.stringValue;
+        const type = fields.type?.stringValue || 'cut';
         const series = fields.series?.stringValue;
         return type === 'cut' && (series === targetSeries || styleId.startsWith(targetSeries));
       });
@@ -10516,8 +10520,9 @@ async function regenerateMaleRecipeWithStyle(payload, geminiKey) {
       sub_style: subStyleName
     };
 
-    // 2. Firestore hairstyles에서 남자 스타일 가져오기 (gender='male')
-    const hairstylesUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/hairstyles`;
+    // 2. Firestore styles 컬렉션에서 남자 커트 스타일 가져오기 (hairstyles에는 diagrams/textRecipe 없음!)
+    // ⭐ styles 컬렉션 사용 (남자 69개: SF:14, SP:25, FU:7, PB:9, BZ:5, CP:4, MC:5)
+    const hairstylesUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles`;
     const hairstylesResponse = await fetch(hairstylesUrl);
     const hairstylesData = await hairstylesResponse.json();
 
