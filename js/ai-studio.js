@@ -417,7 +417,7 @@ class AIStudio {
 
   // 히스토리 항목 삭제 (세션 단위)
   async deleteHistoryItem(idx) {
-    if (!confirm('이 대화를 삭제하시겠습니까?')) return;
+    if (!confirm(t('aiStudio.deleteConfirm') || '이 대화를 삭제하시겠습니까?')) return;
 
     if (!this.historyData || !this.historyData[idx]) return;
 
@@ -461,12 +461,15 @@ class AIStudio {
     const now = new Date();
     const diff = now - date;
 
-    if (diff < 60000) return '방금 전';
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}분 전`;
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)}시간 전`;
-    if (diff < 604800000) return `${Math.floor(diff / 86400000)}일 전`;
+    if (diff < 60000) return t('aiStudio.justNow') || '방금 전';
+    if (diff < 3600000) return (t('aiStudio.minutesAgo') || '{n}분 전').replace('{n}', Math.floor(diff / 60000));
+    if (diff < 86400000) return (t('aiStudio.hoursAgo') || '{n}시간 전').replace('{n}', Math.floor(diff / 3600000));
+    if (diff < 604800000) return (t('aiStudio.daysAgo') || '{n}일 전').replace('{n}', Math.floor(diff / 86400000));
 
-    return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+    // 현재 언어에 맞는 로케일 사용
+    const lang = this.getStoredLanguage() || 'ko';
+    const localeMap = { ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN', vi: 'vi-VN', id: 'id-ID', es: 'es-ES' };
+    return date.toLocaleDateString(localeMap[lang] || 'ko-KR', { month: 'short', day: 'numeric' });
   }
 
   // ==================== Language ====================

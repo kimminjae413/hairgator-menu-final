@@ -302,7 +302,12 @@ const HAIRGATOR_I18N = {
       selectCategoryFormat: '을(를) 선택해주세요.',
       deleteFailed: '삭제에 실패했습니다.',
       saveComingSoon: '저장 기능은 준비 중입니다.',
-      shareNotSupported: '공유 기능을 지원하지 않는 브라우저입니다.'
+      shareNotSupported: '공유 기능을 지원하지 않는 브라우저입니다.',
+      deleteConfirm: '이 대화를 삭제하시겠습니까?',
+      justNow: '방금 전',
+      minutesAgo: '{n}분 전',
+      hoursAgo: '{n}시간 전',
+      daysAgo: '{n}일 전'
     },
 
     // ========== 헤어체험 ==========
@@ -1445,7 +1450,12 @@ const HAIRGATOR_I18N = {
       selectCategoryFormat: 'Please select.',
       deleteFailed: 'Delete failed.',
       saveComingSoon: 'Save feature is coming soon.',
-      shareNotSupported: 'Share feature is not supported in this browser.'
+      shareNotSupported: 'Share feature is not supported in this browser.',
+      deleteConfirm: 'Delete this conversation?',
+      justNow: 'Just now',
+      minutesAgo: '{n} min ago',
+      hoursAgo: '{n} hours ago',
+      daysAgo: '{n} days ago'
     },
 
     // ========== Hair Try ==========
@@ -2556,7 +2566,12 @@ const HAIRGATOR_I18N = {
       selectCategoryFormat: 'を選択してください。',
       deleteFailed: '削除に失敗しました。',
       saveComingSoon: '保存機能は準備中です。',
-      shareNotSupported: 'このブラウザでは共有機能がサポートされていません。'
+      shareNotSupported: 'このブラウザでは共有機能がサポートされていません。',
+      deleteConfirm: 'この会話を削除しますか？',
+      justNow: 'たった今',
+      minutesAgo: '{n}分前',
+      hoursAgo: '{n}時間前',
+      daysAgo: '{n}日前'
     },
 
     // ========== ヘアトライ ==========
@@ -3663,7 +3678,12 @@ const HAIRGATOR_I18N = {
       selectCategoryFormat: '请选择。',
       deleteFailed: '删除失败。',
       saveComingSoon: '保存功能正在准备中。',
-      shareNotSupported: '此浏览器不支持分享功能。'
+      shareNotSupported: '此浏览器不支持分享功能。',
+      deleteConfirm: '确定要删除这个对话吗？',
+      justNow: '刚刚',
+      minutesAgo: '{n}分钟前',
+      hoursAgo: '{n}小时前',
+      daysAgo: '{n}天前'
     },
 
     // ========== 发型体验 ==========
@@ -4773,7 +4793,12 @@ const HAIRGATOR_I18N = {
       selectCategoryFormat: 'Vui lòng chọn.',
       deleteFailed: 'Xóa thất bại.',
       saveComingSoon: 'Tính năng lưu đang được chuẩn bị.',
-      shareNotSupported: 'Trình duyệt này không hỗ trợ tính năng chia sẻ.'
+      shareNotSupported: 'Trình duyệt này không hỗ trợ tính năng chia sẻ.',
+      deleteConfirm: 'Xóa cuộc trò chuyện này?',
+      justNow: 'Vừa xong',
+      minutesAgo: '{n} phút trước',
+      hoursAgo: '{n} giờ trước',
+      daysAgo: '{n} ngày trước'
     },
 
     // ========== Thử kiểu tóc ==========
@@ -5843,7 +5868,12 @@ const HAIRGATOR_I18N = {
       selectCategoryFormat: 'Silakan pilih.',
       deleteFailed: 'Gagal menghapus.',
       saveComingSoon: 'Fitur simpan sedang dalam persiapan.',
-      shareNotSupported: 'Browser ini tidak mendukung fitur berbagi.'
+      shareNotSupported: 'Browser ini tidak mendukung fitur berbagi.',
+      deleteConfirm: 'Hapus percakapan ini?',
+      justNow: 'Baru saja',
+      minutesAgo: '{n} menit lalu',
+      hoursAgo: '{n} jam lalu',
+      daysAgo: '{n} hari lalu'
     },
 
     // ========== Hair Try ==========
@@ -6881,7 +6911,12 @@ const HAIRGATOR_I18N = {
       selectCategoryFormat: 'Por favor selecciona.',
       deleteFailed: 'Error al eliminar.',
       saveComingSoon: 'La función de guardar estará disponible próximamente.',
-      shareNotSupported: 'La función de compartir no está soportada en este navegador.'
+      shareNotSupported: 'La función de compartir no está soportada en este navegador.',
+      deleteConfirm: '¿Eliminar esta conversación?',
+      justNow: 'Ahora mismo',
+      minutesAgo: 'Hace {n} min',
+      hoursAgo: 'Hace {n} horas',
+      daysAgo: 'Hace {n} días'
     },
 
     // ========== Hair Try ==========
