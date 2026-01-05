@@ -666,9 +666,10 @@ Then: [동작] (예: 기존 데이터를 수정)
   | 1일 전 | ⚠️ 플랜이 내일 만료됩니다! | 빨간색 |
   | 만료 | 플랜이 만료되었습니다 | 빨간색 |
 
-  ### 환경변수 필요
-  - `SENDGRID_API_KEY`: Netlify 환경변수에 추가 필요
-  - 설정 안 하면 이메일 발송 스킵됨 (인앱 알림만 작동)
+  ### 환경변수 ✅ 설정 완료
+  - `SENDGRID_API_KEY`: Netlify에 추가됨
+  - `SENDGRID_FROM_EMAIL`: `noreply@hairgator.kr`
+  - 가비아 DNS 도메인 인증 완료
 
   ### 수정된 파일
   - `package.json`: @sendgrid/mail 의존성 추가
@@ -1019,14 +1020,15 @@ Then: [동작] (예: 기존 데이터를 수정)
   | `FIREBASE_PRIVATE_KEY` | (비공개) | Firebase Admin 인증 |
   | `GEMINI_API_KEY` | (비공개) | Gemini AI - 챗봇/RAG |
   | `GEMINI_API_KEY_ADMIN` | (비공개) | Gemini AI - 어드민용 |
+  | `SENDGRID_API_KEY` | `SG.k2pN2lx1TrW0Tt...` | 플랜 만료 이메일 알림 |
+  | `SENDGRID_FROM_EMAIL` | `noreply@hairgator.kr` | 이메일 발신자 주소 |
 
-  **추가 필요 (2026-01-05 업데이트):**
+  **추가 필요:**
   | 변수명 | 값 | 용도 |
   |--------|-----|------|
   | `KAKAO_REST_API_KEY` | `e085ad4b34b316bdd26d67bf620b2ec9` | 카카오 로그인 |
   | `VMODEL_API_KEY` | `Zqo2gbuOlkQW1hO7LezeOPboIutgLi6pjwXmB0NBRMQh1jAJ-au4f1H0OMcfvWAvwPR-xcKdCfMwsSIyueVu0A==` | 헤어체험 AI 합성 |
   | `PORTONE_API_SECRET` | `JEf3Ux7c+ixp74j1j4VxbMX12ww+zZYTUBx4GMCS6WHm/aNiVJbyHhUmTj7psIMI5u2nRE40meIkoh8ln6KS5w==` | 결제 검증 |
-  | `SENDGRID_API_KEY` | (신규 생성 필요) | 플랜 만료 이메일 알림 |
 
   **API 키 확인 위치:**
   - **KAKAO_REST_API_KEY**: https://developers.kakao.com → 앱 설정 → 앱 키 (앱 ID: 1298589)
@@ -1034,16 +1036,15 @@ Then: [동작] (예: 기존 데이터를 수정)
   - **PORTONE_API_SECRET**: https://admin.portone.io → 결제연동 → API 키 → V2 API Secret (이름: hairgator_pay)
   - **SENDGRID_API_KEY**: https://app.sendgrid.com → Settings → API Keys → Create API Key
 
-  ### SendGrid 설정 방법 (이메일 알림용)
-  1. **SendGrid 가입**: https://signup.sendgrid.com/ (무료 플랜: 100통/일)
-  2. **API 키 생성**: Settings → API Keys → Create API Key (Full Access)
-  3. **발신자 인증**: Settings → Sender Authentication → Single Sender Verification
-     - From Email: `noreply@hairgator.kr`
-     - From Name: `HAIRGATOR`
-  4. **Netlify 환경변수 추가**: Site Settings → Environment Variables → Add a variable
-     - Key: `SENDGRID_API_KEY`
-     - Value: (생성한 API 키)
-  5. **도메인 인증 (선택)**: 대량 발송 시 Settings → Sender Authentication → Domain Authentication
+  ### SendGrid 설정 ✅ 완료 (2026-01-05)
+  - **계정**: drylink.info@gmail.com
+  - **API 키**: `hairgator-email` (Full Access)
+  - **발신자**: `noreply@hairgator.kr`
+  - **도메인 인증**: hairgator.kr (가비아 DNS 레코드 4개 추가 완료)
+    - CNAME: em2682 → u58582226.wl227.sendgrid.net.
+    - CNAME: s1._domainkey → s1.domainkey.u58582226.wl227.sendgrid.net.
+    - CNAME: s2._domainkey → s2.domainkey.u58582226.wl227.sendgrid.net.
+    - TXT: _dmarc → v=DMARC1; p=none;
 
   ### ⚠️ TODO: 불나비 사용자 일괄 마이그레이션 (1주일 내 실행 필요!)
 
