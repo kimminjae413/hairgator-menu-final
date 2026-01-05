@@ -3612,8 +3612,9 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
   }
 
   try {
-    // Gemini File Search API 호출
-    const response = await fetch(
+    // ==================== 1단계: RAG 검색 ====================
+    console.log('🔍 [1/2] RAG 검색 시작...');
+    const ragResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
       {
         method: 'POST',
@@ -3632,39 +3633,122 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
             }
           }],
           generationConfig: {
-            temperature: 0.2,       // ⬇️ 0.5 → 0.2 (RAG 결과에 더 충실)
+            temperature: 0.2,
             maxOutputTokens: 8000,
-            topP: 0.8               // ⬇️ 0.9 → 0.8 (선택 폭 좁힘)
+            topP: 0.8
           }
         })
       }
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini API Error:', response.status, errorText);
-      throw new Error(`AI 서비스 오류: ${response.status}`);
+    if (!ragResponse.ok) {
+      const errorText = await ragResponse.text();
+      console.error('Gemini RAG API Error:', ragResponse.status, errorText);
+      throw new Error(`AI 서비스 오류: ${ragResponse.status}`);
     }
 
-    const data = await response.json();
-    const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || '답변을 생성할 수 없습니다.';
+    const ragData = await ragResponse.json();
+    const ragAnswer = ragData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const groundingMetadata = ragData.candidates?.[0]?.groundingMetadata;
+    const groundingChunks = groundingMetadata?.groundingChunks || [];
 
-    console.log(`✅ Gemini 응답 완료 (${answer.length}자)`);
+    console.log(`📄 RAG 응답: ${ragAnswer.length}자, grounding chunks: ${groundingChunks.length}개`);
+
+    // ==================== 2단계: 검증 (Lite Agentic) ====================
+    // 검증 기준:
+    // 1. grounding 결과가 있는가? (문서에서 찾았는가?)
+    // 2. 응답이 "모르겠다/찾을 수 없다" 패턴인가?
+    // 3. 응답이 너무 짧은가? (50자 미만)
+
+    const noInfoPatterns = [
+      '관련 정보를 찾을 수 없',
+      '정보가 없',
+      '알 수 없',
+      '모르겠',
+      '찾을 수 없',
+      '없습니다',
+      'no information',
+      'cannot find',
+      'not found',
+      'don\'t know',
+      '見つかりません',
+      '找不到',
+      'không tìm thấy'
+    ];
+
+    const isNoInfoResponse = noInfoPatterns.some(p => ragAnswer.toLowerCase().includes(p.toLowerCase()));
+    const isTooShort = ragAnswer.length < 50;
+    const hasGrounding = groundingChunks.length > 0;
+
+    // 검증 통과 조건: grounding 있고, 정보 있음 패턴 아니고, 충분한 길이
+    const isValidRagResponse = hasGrounding && !isNoInfoResponse && !isTooShort;
+
+    if (isValidRagResponse) {
+      console.log(`✅ [검증 통과] RAG 응답 사용 (grounding: ${groundingChunks.length}개)`);
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          data: ragAnswer,
+          method: 'gemini_file_search',
+          validation: 'rag_verified'
+        })
+      };
+    }
+
+    // ==================== 3단계: Fallback (일반 Gemini) ====================
+    console.log(`⚠️ [검증 실패] RAG 부족 → 일반 Gemini fallback`);
+    console.log(`   - hasGrounding: ${hasGrounding}, isNoInfo: ${isNoInfoResponse}, isTooShort: ${isTooShort}`);
+
+    const fallbackResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            role: 'user',
+            parts: [{ text: user_query }]
+          }],
+          systemInstruction: {
+            parts: [{
+              text: buildGeminiSystemPrompt(userLanguage) + `\n\n[추가 지침] RAG 검색으로 관련 문서를 찾지 못했습니다. 헤어 전문가로서 일반 지식을 바탕으로 답변해주세요. 단, 확실하지 않은 정보는 "일반적으로~" 또는 "보통~"으로 시작하세요.`
+            }]
+          },
+          // File Search 없이 일반 응답
+          generationConfig: {
+            temperature: 0.4,  // 약간 높여서 창의성 허용
+            maxOutputTokens: 8000,
+            topP: 0.9
+          }
+        })
+      }
+    );
+
+    if (!fallbackResponse.ok) {
+      throw new Error(`Fallback API 오류: ${fallbackResponse.status}`);
+    }
+
+    const fallbackData = await fallbackResponse.json();
+    const fallbackAnswer = fallbackData.candidates?.[0]?.content?.parts?.[0]?.text || '답변을 생성할 수 없습니다.';
+
+    console.log(`✅ [Fallback 완료] 일반 Gemini 응답 (${fallbackAnswer.length}자)`);
 
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
         success: true,
-        data: answer,
-        method: 'gemini_file_search'
+        data: fallbackAnswer,
+        method: 'gemini_fallback',
+        validation: 'rag_insufficient'
       })
     };
 
   } catch (error) {
-    console.error('💥 Gemini File Search 오류:', error.message);
+    console.error('💥 Gemini RAG+Fallback 오류:', error.message);
 
-    // 에러 시 간단한 폴백 메시지
     return {
       statusCode: 200,
       headers,
