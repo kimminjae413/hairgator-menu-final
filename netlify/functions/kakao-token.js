@@ -1,178 +1,111 @@
-// Flutter 앱용 카카오 로그인 → Firebase Custom Token 발급 API
+// Flutter 앱용 카카오 로그인 - Firebase Custom Token 발급 API
+// 웹 OAuth 방식: authorization code - access token - Firebase Custom Token
 const admin = require('firebase-admin');
 
-// Firebase Admin 초기화 함수
 function initializeFirebaseAdmin() {
-    if (admin.apps.length) {
-        return admin.apps[0];
-    }
-
+    if (admin.apps.length) return admin.apps[0];
     const projectId = process.env.FIREBASE_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
     const privateKey = process.env.FIREBASE_PRIVATE_KEY;
-
-    if (!projectId || !clientEmail || !privateKey) {
-        throw new Error('Firebase 환경변수 누락');
-    }
-
+    if (!projectId || !clientEmail || !privateKey) throw new Error('Firebase 환경변수 누락');
     return admin.initializeApp({
-        credential: admin.credential.cert({
-            projectId,
-            clientEmail,
-            privateKey: privateKey.replace(/\\n/g, '\n')
-        })
+        credential: admin.credential.cert({ projectId, clientEmail, privateKey: privateKey.replace(/\n/g, '\n') })
     });
+}
+
+async function exchangeKakaoCodeForToken(code, redirectUri) {
+    const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY || 'e085ad4b34b316bdd26d67bf620b2ec9';
+    const params = new URLSearchParams({ grant_type: 'authorization_code', client_id: KAKAO_REST_API_KEY, redirect_uri: redirectUri, code: code });
+    const response = await fetch('https://kauth.kakao.com/oauth/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+    if (!response.ok) { const errorText = await response.text(); console.error('Kakao token exchange failed:', errorText); throw new Error('카카오 토큰 교환 실패: ' + errorText); }
+    return await response.json();
+}
+
+async function getKakaoUserInfo(accessToken) {
+    const response = await fetch('https://kapi.kakao.com/v2/user/me', { method: 'GET', headers: { 'Authorization': 'Bearer ' + accessToken } });
+    if (!response.ok) { const errorText = await response.text(); console.error('Kakao user info failed:', errorText); throw new Error('카카오 사용자 정보 조회 실패'); }
+    return await response.json();
 }
 
 /* eslint-disable no-unused-vars */
 exports.handler = async (event, _context) => {
-    // CORS 헤더
-    const headers = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Content-Type': 'application/json'
-    };
-
-    // OPTIONS 요청 처리
-    if (event.httpMethod === 'OPTIONS') {
-        return { statusCode: 200, headers, body: '' };
-    }
-
-    // POST만 허용
-    if (event.httpMethod !== 'POST') {
-        return {
-            statusCode: 405,
-            headers,
-            body: JSON.stringify({ error: 'Method not allowed' })
-        };
-    }
+    const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Content-Type': 'application/json' };
+    if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
+    if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
 
     try {
-        // 요청 본문 파싱
         const body = JSON.parse(event.body || '{}');
-        const { kakaoAccessToken, kakaoId, email, nickname, profileImage } = body;
+        const { code, redirectUri, kakaoId, email, nickname, profileImage } = body;
+        let finalKakaoId, finalEmail, finalNickname, finalProfileImage;
 
-        console.log('Flutter 카카오 로그인 요청:', { kakaoId, email, nickname });
-
-        if (!kakaoId) {
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({ error: '카카오 ID가 필요합니다.' })
-            };
+        if (code && redirectUri) {
+            console.log('웹 OAuth 방식 - authorization code 처리');
+            const tokenData = await exchangeKakaoCodeForToken(code, redirectUri);
+            console.log('카카오 토큰 교환 성공');
+            const userInfo = await getKakaoUserInfo(tokenData.access_token);
+            console.log('카카오 사용자 정보 조회 성공:', userInfo.id);
+            finalKakaoId = userInfo.id;
+            finalEmail = userInfo.kakao_account?.email || '';
+            finalNickname = userInfo.kakao_account?.profile?.nickname || userInfo.properties?.nickname || '';
+            finalProfileImage = userInfo.kakao_account?.profile?.profile_image_url || userInfo.properties?.profile_image || '';
+        } else if (kakaoId) {
+            console.log('레거시 방식 - 직접 사용자 정보');
+            finalKakaoId = kakaoId;
+            finalEmail = email || '';
+            finalNickname = nickname || '';
+            finalProfileImage = profileImage || '';
+        } else {
+            return { statusCode: 400, headers, body: JSON.stringify({ error: 'authorization code 또는 kakaoId가 필요합니다.' }) };
         }
 
-        // Firebase Admin 초기화
+        console.log('Flutter 카카오 로그인 처리:', { kakaoId: finalKakaoId, email: finalEmail, nickname: finalNickname });
         initializeFirebaseAdmin();
-
-        // Firebase Custom Token 생성
-        const firebaseUid = 'kakao_' + kakaoId;
-
-        const additionalClaims = {
-            provider: 'kakao',
-            kakaoId: parseInt(kakaoId),
-            email: email || '',
-            displayName: nickname || '',
-            photoURL: profileImage || ''
-        };
-
+        const firebaseUid = 'kakao_' + finalKakaoId;
+        const additionalClaims = { provider: 'kakao', kakaoId: parseInt(finalKakaoId), email: finalEmail, displayName: finalNickname, photoURL: finalProfileImage };
         const customToken = await admin.auth().createCustomToken(firebaseUid, additionalClaims);
         console.log('Firebase Custom Token 생성 성공:', firebaseUid);
 
-        // Firestore에 사용자 정보 저장/업데이트
         const db = admin.firestore();
-        const sanitizeEmail = function(e) {
-            return e ? e.toLowerCase().replace(/@/g, '_').replace(/\./g, '_') : null;
-        };
-        const emailDocId = sanitizeEmail(email) || firebaseUid;
-
+        const sanitizeEmail = (e) => e ? e.toLowerCase().replace(/@/g, '_').replace(/\./g, '_') : null;
+        const emailDocId = sanitizeEmail(finalEmail) || firebaseUid;
         const userRef = db.collection('users').doc(emailDocId);
         const userDoc = await userRef.get();
 
-        // 불나비 사용자 마이그레이션 체크
         let bullnabiUserData = null;
-        if (email) {
+        if (finalEmail) {
             try {
-                const bullnabiDocId = 'bullnabi_' + email.replace(/[^a-zA-Z0-9]/g, '_');
+                const bullnabiDocId = 'bullnabi_' + finalEmail.replace(/[^a-zA-Z0-9]/g, '_');
                 const bullnabiDoc = await db.collection('bullnabi_users').doc(bullnabiDocId).get();
-
                 if (bullnabiDoc.exists) {
                     const data = bullnabiDoc.data();
-                    bullnabiUserData = {
-                        bullnabiUserId: data.bullnabiUserId,
-                        tokenBalance: data.tokenBalance || 0,
-                        plan: data.plan || 'free',
-                        name: data.name || data.nickname || ''
-                    };
+                    bullnabiUserData = { bullnabiUserId: data.bullnabiUserId, tokenBalance: data.tokenBalance || 0, plan: data.plan || 'free', name: data.name || data.nickname || '' };
                     console.log('불나비 사용자 발견:', bullnabiUserData);
                 }
-            } catch (e) {
-                console.log('불나비 마이그레이션 체크 실패:', e.message);
-            }
+            } catch (e) { console.log('불나비 마이그레이션 체크 실패:', e.message); }
         }
 
-        const userDataToSave = {
-            email: email || '',
-            displayName: nickname || '',
-            photoURL: profileImage || '',
-            primaryProvider: 'kakao',
-            kakaoId: parseInt(kakaoId),
-            lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
-            lastProvider: 'kakao'
-        };
+        const userDataToSave = { email: finalEmail, displayName: finalNickname, photoURL: finalProfileImage, primaryProvider: 'kakao', kakaoId: parseInt(finalKakaoId), lastLoginAt: admin.firestore.FieldValue.serverTimestamp(), lastProvider: 'kakao' };
 
         if (!userDoc.exists) {
-            // 신규 사용자
             userDataToSave.createdAt = admin.firestore.FieldValue.serverTimestamp();
-            userDataToSave.linkedProviders = {
-                kakao: {
-                    uid: firebaseUid,
-                    kakaoId: parseInt(kakaoId),
-                    linkedAt: admin.firestore.FieldValue.serverTimestamp()
-                }
-            };
-
+            userDataToSave.linkedProviders = { kakao: { uid: firebaseUid, kakaoId: parseInt(finalKakaoId), linkedAt: admin.firestore.FieldValue.serverTimestamp() } };
             if (bullnabiUserData) {
                 userDataToSave.tokenBalance = bullnabiUserData.tokenBalance || 200;
                 userDataToSave.plan = bullnabiUserData.plan || 'free';
-                userDataToSave.name = bullnabiUserData.name || nickname || '';
+                userDataToSave.name = bullnabiUserData.name || finalNickname;
                 userDataToSave.migratedFromBullnabi = true;
                 userDataToSave.bullnabiUserId = bullnabiUserData.bullnabiUserId;
-            } else {
-                userDataToSave.tokenBalance = 200;
-                userDataToSave.plan = 'free';
-            }
-
+            } else { userDataToSave.tokenBalance = 200; userDataToSave.plan = 'free'; }
             await userRef.set(userDataToSave);
             console.log('신규 사용자 생성:', emailDocId);
         } else {
-            // 기존 사용자 업데이트
             await userRef.update(userDataToSave);
             console.log('사용자 정보 업데이트:', emailDocId);
         }
 
-        return {
-            statusCode: 200,
-            headers,
-            body: JSON.stringify({
-                success: true,
-                customToken: customToken,
-                uid: firebaseUid,
-                email: email || ''
-            })
-        };
-
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, customToken: customToken, uid: firebaseUid, email: finalEmail }) };
     } catch (error) {
         console.error('카카오 토큰 처리 에러:', error.message);
-
-        return {
-            statusCode: 500,
-            headers,
-            body: JSON.stringify({
-                error: '서버 오류가 발생했습니다.',
-                message: error.message
-            })
-        };
+        return { statusCode: 500, headers, body: JSON.stringify({ error: '서버 오류가 발생했습니다.', message: error.message }) };
     }
 };
