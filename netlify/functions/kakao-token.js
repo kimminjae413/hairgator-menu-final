@@ -112,7 +112,29 @@ exports.handler = async (event, _context) => {
             } catch (e) { console.log('불나비 마이그레이션 체크 실패:', e.message); }
         }
 
-        const userDataToSave = { email: finalEmail, displayName: finalNickname, photoURL: finalProfileImage, primaryProvider: 'kakao', kakaoId: parseInt(finalKakaoId), lastLoginAt: admin.firestore.FieldValue.serverTimestamp(), lastProvider: 'kakao' };
+        // 기존 사용자가 있으면 displayName/photoURL 유지 (덮어쓰기 방지)
+        const existingData = userDoc.exists ? userDoc.data() : {};
+        const shouldUpdateName = !existingData.displayName || existingData.displayName === '사용자';
+        const shouldUpdatePhoto = !existingData.photoURL;
+
+        const userDataToSave = {
+            email: finalEmail || existingData.email || '',
+            primaryProvider: 'kakao',
+            kakaoId: parseInt(finalKakaoId),
+            lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
+            lastProvider: 'kakao'
+        };
+
+        // displayName: 기존 값 없거나 '사용자'일 때만 업데이트
+        if (shouldUpdateName && finalNickname) {
+            userDataToSave.displayName = finalNickname;
+        }
+        // photoURL: 기존 값 없을 때만 업데이트
+        if (shouldUpdatePhoto && finalProfileImage) {
+            userDataToSave.photoURL = finalProfileImage;
+        }
+
+        console.log('저장할 데이터:', userDataToSave, '기존 displayName:', existingData.displayName);
 
         if (!userDoc.exists) {
             userDataToSave.createdAt = admin.firestore.FieldValue.serverTimestamp();
