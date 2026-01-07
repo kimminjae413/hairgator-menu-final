@@ -2,26 +2,31 @@
 
 ## 🚨 재시작 후 해야 할 일 (2026-01-07)
 
-### iOS TestFlight 테스트 진행 중 (v35)
+### iOS TestFlight 테스트 진행 중 (v36)
 
 **현재 상태:**
-- v35 빌드 GitHub 푸시 완료 (커밋: `1d674e3`)
+- v36 빌드 GitHub 푸시 완료 (커밋: `0affe9a`)
 - Codemagic 빌드 시작 필요
 
-**v35에서 수정한 것:**
-- `GoogleService-Info.plist` 추가 (Firebase Console에서 다운로드)
-- `Info.plist`에 Google REVERSED_CLIENT_ID URL 스킴 추가
-- Google 로그인 크래시 수정
+**v36에서 수정한 것:**
+- `GoogleService-Info.plist`를 **Xcode 프로젝트(project.pbxproj)에 포함** (이전에는 파일만 있고 빌드에 안 들어감)
+- 카카오 로그인 상세 디버깅 로그 추가 (`[KAKAO] 1~12` 단계별)
+- 카카오 로그인 실패 시 실제 에러 메시지 표시
+
+**v35 테스트 결과:**
+- Google 로그인: 여전히 크래시 (plist가 Xcode 프로젝트에 포함 안 됨)
+- 카카오 로그인: 카카오톡 앱 전환 후 돌아오지만 로그인 실패 (에러 원인 불명)
 
 **테스트할 것:**
-1. Google 로그인 - v34에서 크래시 발생 (GoogleService-Info.plist 누락이 원인)
-2. 카카오 로그인 - v34에서 정상 동작 확인 필요
+1. Google 로그인 - v36에서 plist 빌드 포함 수정됨
+2. 카카오 로그인 - 상세 에러 메시지 확인 필요
 
 **이전 버전 히스토리:**
 - v28~v32: 회색/흰 화면 (Firebase.initializeApp() 블로킹 문제)
 - v33: 화면 정상, 카카오 SDK 초기화 누락
 - v34: 카카오 SDK 추가, Google 로그인 크래시 (plist 누락)
-- v35: Google plist + URL 스킴 추가 ← **현재**
+- v35: Google plist + URL 스킴 추가 (plist가 빌드에 안 들어감)
+- v36: plist를 project.pbxproj에 포함 + 카카오 디버깅 ← **현재**
 
 **핵심 수정 내용 (main.dart):**
 - `main()`에서 `await` 제거, `runApp()` 먼저 호출

@@ -27,7 +27,12 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('🦎 HAIRGATOR 초기화 시작...');
         setupEventListeners();
         loadTheme();
-        checkAuthStatus();
+
+        // Flutter WebView에서 전달된 토큰으로 자동 로그인 시도
+        handleFlutterAutoLogin().then(() => {
+            checkAuthStatus();
+        });
+
         setupSidebar();
         setupHashRouting(); // 해시 라우팅 설정
 
@@ -39,6 +44,49 @@ document.addEventListener('DOMContentLoaded', function() {
         checkUrlForStyleModal();
 
         console.log('✅ HAIRGATOR 초기화 완료');
+    }
+
+    // Flutter WebView 자동 로그인 처리
+    async function handleFlutterAutoLogin() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const firebaseToken = urlParams.get('firebaseToken');
+
+        if (!firebaseToken) {
+            console.log('[Flutter] firebaseToken 파라미터 없음');
+            return;
+        }
+
+        console.log('[Flutter] firebaseToken 감지, 자동 로그인 시도...');
+
+        try {
+            // Netlify Function으로 토큰 검증 및 Custom Token 발급
+            const response = await fetch('/.netlify/functions/verify-firebase-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken: firebaseToken })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('[Flutter] 토큰 검증 실패:', data.error);
+                return;
+            }
+
+            console.log('[Flutter] Custom Token 발급 성공, Firebase 로그인 중...');
+
+            // Firebase 로그인
+            if (window.auth && data.customToken) {
+                await window.auth.signInWithCustomToken(data.customToken);
+                console.log('[Flutter] Firebase 자동 로그인 성공!');
+
+                // URL에서 토큰 파라미터 제거 (보안)
+                const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
+        } catch (error) {
+            console.error('[Flutter] 자동 로그인 에러:', error);
+        }
     }
 
     // ========== 해시 라우팅 시스템 ==========
