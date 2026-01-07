@@ -58,7 +58,7 @@ exports.handler = async (event, _context) => {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'authorization code 또는 kakaoId가 필요합니다.' }) };
         }
 
-        console.log('Flutter 카카오 로그인 처리:', { kakaoId: finalKakaoId, email: finalEmail, nickname: finalNickname });
+        console.log('Flutter 카카오 로그인 처리:', { kakaoId: finalKakaoId, email: finalEmail, nickname: finalNickname, profileImage: finalProfileImage || '없음' });
         initializeFirebaseAdmin();
         const firebaseUid = 'kakao_' + finalKakaoId;
         const additionalClaims = { provider: 'kakao', kakaoId: parseInt(finalKakaoId), email: finalEmail, displayName: finalNickname, photoURL: finalProfileImage };
@@ -156,9 +156,12 @@ exports.handler = async (event, _context) => {
         if (shouldUpdateName && finalNickname) {
             userDataToSave.displayName = finalNickname;
         }
-        // photoURL: 기존 값 없을 때만 업데이트
-        if (shouldUpdatePhoto && finalProfileImage) {
+        // photoURL: 카카오에서 받으면 항상 업데이트 (최신 프로필 반영)
+        if (finalProfileImage) {
             userDataToSave.photoURL = finalProfileImage;
+            console.log('[DEBUG] photoURL 저장:', finalProfileImage.substring(0, 50) + '...');
+        } else {
+            console.log('[DEBUG] photoURL 없음 - 카카오에서 프로필 이미지 안 줌');
         }
 
         console.log('저장할 데이터:', userDataToSave, '기존 displayName:', existingData.displayName);
