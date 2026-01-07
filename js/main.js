@@ -48,29 +48,65 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ========== 풀스크린 토글 (Flutter 앱 전용) ==========
+    let isFullscreenMode = false;
+
     function setupFullscreenToggle() {
-        // 스타일 메뉴 페이지 (genderSelection) 여백 클릭 시 탭바 숨기기
-        const genderSelection = document.getElementById('genderSelection');
-        if (!genderSelection) return;
+        // Flutter 앱에서만 버튼 표시
+        if (!window.FlutterChannel) {
+            console.log('[Fullscreen] Flutter 앱 아님, 버튼 숨김');
+            return;
+        }
 
-        genderSelection.addEventListener('click', function(e) {
-            // 현재 해시가 스타일메뉴인 경우만 (hash 없거나 'stylemenu')
-            const hash = window.location.hash.replace('#', '');
-            if (hash && hash !== 'stylemenu') return;
+        // 전체화면 토글 버튼 생성
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.id = 'fullscreen-toggle-btn';
+        fullscreenBtn.innerHTML = '⛶';
+        fullscreenBtn.title = '전체화면 토글';
+        fullscreenBtn.style.cssText = `
+            position: fixed;
+            bottom: 70px;
+            right: 12px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            transition: all 0.2s ease;
+        `;
 
-            // 클릭한 대상이 버튼, 카드, 링크 등이 아닌 경우만 (여백 클릭)
-            const target = e.target;
-            const isInteractive = target.closest('button, a, .gender-card, .category-card, .menu-item, input, select');
-            if (isInteractive) return;
-
-            // Flutter WebView에 메시지 전송
+        fullscreenBtn.addEventListener('click', function() {
             if (window.FlutterChannel) {
-                console.log('[Fullscreen] 탭바 토글 요청');
+                isFullscreenMode = !isFullscreenMode;
+                console.log('[Fullscreen] 탭바 토글 요청, 모드:', isFullscreenMode);
                 window.FlutterChannel.postMessage('toggleFullscreen');
+
+                // 버튼 위치 조정 (탭바 유무에 따라)
+                fullscreenBtn.style.bottom = isFullscreenMode ? '12px' : '70px';
+                fullscreenBtn.innerHTML = isFullscreenMode ? '⛶' : '⛶';
             }
         });
 
-        console.log('📱 풀스크린 토글 설정 완료');
+        document.body.appendChild(fullscreenBtn);
+
+        // 스타일 메뉴 페이지에서만 버튼 표시
+        function updateButtonVisibility() {
+            const hash = window.location.hash.replace('#', '');
+            const isStyleMenu = !hash || hash === 'stylemenu' || hash === '';
+            fullscreenBtn.style.display = isStyleMenu ? 'flex' : 'none';
+        }
+
+        updateButtonVisibility();
+        window.addEventListener('hashchange', updateButtonVisibility);
+
+        console.log('📱 풀스크린 토글 버튼 설정 완료');
     }
 
     // Flutter WebView 자동 로그인 처리
