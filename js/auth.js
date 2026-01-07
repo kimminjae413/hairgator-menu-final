@@ -101,6 +101,16 @@ function initFirebaseAuth() {
 
             // 로그인 페이지로 리다이렉트 (login.html이 아닌 경우에만)
             const currentPage = window.location.pathname;
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasFlutterToken = urlParams.has('firebaseToken');
+
+            // Flutter 앱에서 토큰이 전달된 경우, 자동 로그인 대기
+            if (hasFlutterToken) {
+                console.log('📱 Flutter 토큰 감지, 자동 로그인 대기 중...');
+                // main.js의 handleFlutterAutoLogin()이 처리할 때까지 대기
+                return;
+            }
+
             if (!currentPage.includes('login.html') && !currentPage.includes('admin.html')) {
                 // login.html로 리다이렉트
                 console.log('🔄 로그인 페이지로 리다이렉트...');

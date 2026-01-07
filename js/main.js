@@ -97,6 +97,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!response.ok) {
                 console.error('[Flutter] 토큰 검증 실패:', data.error);
+                // 실패 시 로그인 페이지로 리다이렉트
+                window.location.href = '/login.html';
                 return;
             }
 
@@ -113,6 +115,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('[Flutter] 자동 로그인 에러:', error);
+            // 에러 시 로그인 페이지로 리다이렉트
+            window.location.href = '/login.html';
         }
     }
 
