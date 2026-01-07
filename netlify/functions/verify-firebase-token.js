@@ -53,13 +53,24 @@ exports.handler = async (event) => {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
     const email = decodedToken.email;
+    const kakaoId = decodedToken.kakaoId;
+    const displayName = decodedToken.displayName;
+    const photoURL = decodedToken.photoURL;
+    const provider = decodedToken.provider;
 
-    console.log(`[verify-firebase-token] 검증 성공: uid=${uid}, email=${email}`);
+    console.log(`[verify-firebase-token] 검증 성공: uid=${uid}, email=${email}, kakaoId=${kakaoId}`);
 
-    // Custom Token 발급 (웹앱에서 signInWithCustomToken에 사용)
-    const customToken = await admin.auth().createCustomToken(uid);
+    // Custom Token 발급 - 원본 claims 유지!
+    const additionalClaims = {};
+    if (email) additionalClaims.email = email;
+    if (kakaoId) additionalClaims.kakaoId = kakaoId;
+    if (displayName) additionalClaims.displayName = displayName;
+    if (photoURL) additionalClaims.photoURL = photoURL;
+    if (provider) additionalClaims.provider = provider;
 
-    console.log('[verify-firebase-token] Custom Token 발급 완료');
+    const customToken = await admin.auth().createCustomToken(uid, additionalClaims);
+
+    console.log('[verify-firebase-token] Custom Token 발급 완료 (claims 포함):', Object.keys(additionalClaims));
 
     return {
       statusCode: 200,
