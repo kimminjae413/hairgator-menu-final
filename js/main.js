@@ -938,6 +938,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateLoginInfo() {
+        console.log('📊 [DEBUG] updateLoginInfo 호출됨');
+        console.log('📊 [DEBUG] currentDesigner.plan:', window.currentDesigner?.plan);
+
         const loginStatus = document.getElementById('loginStatus');
         const planBadge = document.getElementById('planBadge');
         const planIcon = document.getElementById('planIcon');
@@ -976,6 +979,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const ADMIN_IDS = ['708eric_hanmail_net'];
 
         const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
+        console.log('📊 [DEBUG] bullnabiUser:', bullnabiUser ? { plan: bullnabiUser.plan, tokenBalance: bullnabiUser.tokenBalance } : 'null');
         if (bullnabiUser) {
             // 불나비/Firebase 로그인 성공
             loginInfoPending = false;
@@ -990,6 +994,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // 플랜 & 토큰 표시
             const tokenBalance = bullnabiUser.tokenBalance ?? window.currentDesigner?.tokenBalance ?? 0;
             const plan = bullnabiUser.plan || window.currentDesigner?.plan || 'free';
+            console.log('📊 [DEBUG] 최종 plan 표시:', plan, '| bullnabiUser.plan:', bullnabiUser.plan, '| currentDesigner.plan:', window.currentDesigner?.plan);
             const userId = bullnabiUser.userId || bullnabiUser.id || bullnabiUser._id;
             const isAdmin = ADMIN_IDS.includes(userId);
             const config = planConfig[plan] || planConfig['free'];
