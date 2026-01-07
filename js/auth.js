@@ -296,6 +296,7 @@ async function handleUserLogin(user) {
  */
 async function handleUserLoginByUid(user) {
     try {
+        console.log('🚀 [v2] handleUserLoginByUid 시작 - uid:', user.uid);
         const db = firebase.firestore();
         const providerName = getProviderName(user.providerData[0]?.providerId);
 
