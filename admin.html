@@ -5266,11 +5266,19 @@
         }
 
         // ========== 앱 탭 관리 ==========
+        let tabOrder = [1, 2, 3, 4]; // 현재 탭 순서
+
         async function loadAppTabs() {
             try {
                 const doc = await db.collection('app_config').doc('tabs').get();
                 if (doc.exists) {
                     const data = doc.data();
+
+                    // 순서 정보 로드
+                    if (data.tabOrder && Array.isArray(data.tabOrder)) {
+                        tabOrder = data.tabOrder;
+                    }
+
                     for (let i = 1; i <= 4; i++) {
                         const tab = data[`tab${i}`];
                         if (tab) {
@@ -5280,34 +5288,130 @@
                             document.getElementById(`tab${i}Url`).value = tab.url || '';
                         }
                     }
-                    console.log('✅ 앱 탭 설정 로드됨');
+
+                    // DOM 순서 재정렬
+                    reorderTabsInDOM();
+                    console.log('✅ 앱 탭 설정 로드됨, 순서:', tabOrder);
                 }
+
+                // 드래그 앤 드롭 초기화
+                initTabDragAndDrop();
             } catch (error) {
                 console.error('앱 탭 로드 오류:', error);
+                initTabDragAndDrop();
             }
+        }
+
+        // DOM에서 탭 순서 재정렬
+        function reorderTabsInDOM() {
+            const container = document.getElementById('appTabsList');
+            if (!container) return;
+
+            const items = Array.from(container.querySelectorAll('.tab-config-item'));
+
+            // 순서대로 정렬
+            tabOrder.forEach(tabId => {
+                const item = items.find(el => el.dataset.tabId === String(tabId));
+                if (item) {
+                    container.appendChild(item);
+                }
+            });
+        }
+
+        // 드래그 앤 드롭 초기화
+        function initTabDragAndDrop() {
+            const container = document.getElementById('appTabsList');
+            if (!container) return;
+
+            const items = container.querySelectorAll('.tab-config-item');
+            let draggedItem = null;
+
+            items.forEach(item => {
+                item.setAttribute('draggable', 'true');
+
+                item.addEventListener('dragstart', (e) => {
+                    draggedItem = item;
+                    item.style.opacity = '0.5';
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+
+                item.addEventListener('dragend', () => {
+                    item.style.opacity = '1';
+                    draggedItem = null;
+                    // 새 순서 저장
+                    updateTabOrder();
+                });
+
+                item.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                });
+
+                item.addEventListener('dragenter', (e) => {
+                    e.preventDefault();
+                    if (item !== draggedItem) {
+                        item.style.borderTop = '3px solid var(--primary)';
+                    }
+                });
+
+                item.addEventListener('dragleave', () => {
+                    item.style.borderTop = '';
+                });
+
+                item.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    item.style.borderTop = '';
+
+                    if (draggedItem && item !== draggedItem) {
+                        const allItems = [...container.querySelectorAll('.tab-config-item')];
+                        const draggedIndex = allItems.indexOf(draggedItem);
+                        const dropIndex = allItems.indexOf(item);
+
+                        if (draggedIndex < dropIndex) {
+                            item.parentNode.insertBefore(draggedItem, item.nextSibling);
+                        } else {
+                            item.parentNode.insertBefore(draggedItem, item);
+                        }
+                    }
+                });
+            });
+
+            console.log('✅ 탭 드래그 앤 드롭 초기화됨');
+        }
+
+        // 현재 DOM 순서에서 탭 순서 업데이트
+        function updateTabOrder() {
+            const container = document.getElementById('appTabsList');
+            const items = container.querySelectorAll('.tab-config-item');
+            tabOrder = Array.from(items).map(item => parseInt(item.dataset.tabId));
+            console.log('📦 탭 순서 변경됨:', tabOrder);
         }
 
         async function saveAppTabs() {
             try {
+                // 현재 DOM 순서 반영
+                updateTabOrder();
+
                 const tabsConfig = {};
-                for (let i = 1; i <= 4; i++) {
-                    tabsConfig[`tab${i}`] = {
-                        enabled: document.getElementById(`tab${i}Enabled`).checked,
-                        icon: document.getElementById(`tab${i}Icon`).value,
-                        label: document.getElementById(`tab${i}Label`).value,
-                        url: document.getElementById(`tab${i}Url`).value,
-                        order: i
+                tabOrder.forEach((tabId, index) => {
+                    tabsConfig[`tab${tabId}`] = {
+                        enabled: document.getElementById(`tab${tabId}Enabled`).checked,
+                        icon: document.getElementById(`tab${tabId}Icon`).value,
+                        label: document.getElementById(`tab${tabId}Label`).value,
+                        url: document.getElementById(`tab${tabId}Url`).value,
+                        order: index + 1  // 1부터 시작하는 순서
                     };
-                }
+                });
 
                 await db.collection('app_config').doc('tabs').set({
                     ...tabsConfig,
+                    tabOrder: tabOrder,  // 순서 배열 저장
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedBy: currentAdmin?.email || 'admin'
                 }, { merge: true });
 
                 showToast('앱 탭 설정이 저장되었습니다', 'success');
-                console.log('✅ 앱 탭 설정 저장됨:', tabsConfig);
+                console.log('✅ 앱 탭 설정 저장됨:', tabsConfig, '순서:', tabOrder);
             } catch (error) {
                 console.error('앱 탭 저장 오류:', error);
                 showToast('저장 실패: ' + error.message, 'error');
