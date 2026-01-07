@@ -4103,6 +4103,7 @@
                         <td>
                             <button class="btn btn-sm btn-secondary" onclick="viewUserDetail('${user.id}')">상세</button>
                             <button class="btn btn-sm btn-primary" onclick="quickEditUser('${user.id}')">수정</button>
+                            <button class="btn btn-sm" style="background: #EF4444; color: white;" onclick="deleteUser('${user.id}')">삭제</button>
                         </td>
                     </tr>
                 `;
@@ -4486,6 +4487,29 @@
             document.querySelectorAll('.nav-item')[2].classList.add('active');
             queryUserToken();
             showToast('사용자 선택됨', 'success');
+        }
+
+        // 사용자 삭제
+        async function deleteUser(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            const userName = user ? (user.displayName || user.email || userId) : userId;
+
+            if (!confirm(`정말로 "${userName}" 사용자를 삭제하시겠습니까?\n\n문서 ID: ${userId}\n\n⚠️ 이 작업은 되돌릴 수 없습니다!`)) {
+                return;
+            }
+
+            try {
+                await db.collection('users').doc(userId).delete();
+                showToast(`사용자 "${userName}" 삭제됨`, 'success');
+
+                // 목록에서 제거하고 다시 렌더링
+                allUsers = allUsers.filter(u => u.id !== userId);
+                filteredUsers = filteredUsers.filter(u => u.id !== userId);
+                renderUsersPage();
+            } catch (error) {
+                console.error('사용자 삭제 실패:', error);
+                showToast('삭제 실패: ' + error.message, 'error');
+            }
         }
 
         // 토큰 조회
