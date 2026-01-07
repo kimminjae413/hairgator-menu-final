@@ -488,6 +488,11 @@ body::after {
     animation: pulse-dot 1.5s ease-in-out infinite;
 }
 
+/* 수동 촬영 모드 - 주황색 */
+.indicator-dot.manual {
+    background: #f59e0b;
+}
+
 @keyframes pulse-dot {
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.5; transform: scale(1.2); }

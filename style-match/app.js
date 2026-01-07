@@ -528,6 +528,18 @@ async function startCamera() {
         // 실시간 감지 루프
         detectFacesLoop(video);
 
+        // ⚠️ WebView 폴백: MediaPipe가 3초 내 동작 안 하면 수동 모드
+        setTimeout(() => {
+            if (isCameraMode && !isFaceDetected && selectedGender) {
+                console.log('⚠️ MediaPipe 미응답 - 수동 캡처 모드 활성화');
+                captureBtn.disabled = false;
+                indicator.innerHTML = '<span class="indicator-dot manual"></span><span>수동 촬영 모드</span>';
+                indicator.style.display = 'flex';
+                // 전역 플래그 설정
+                window.manualCaptureMode = true;
+            }
+        }, 3000);
+
     } catch (error) {
         console.error('❌ 카메라 접근 실패:', error);
         // 카메라 실패 시 업로드 모드로 전환
@@ -1178,7 +1190,8 @@ function drawLandmarksOnUploadedImage(landmarks, canvas) {
 
 // 카메라에서 캡처
 window.captureFromCamera = function() {
-    if (!lastFaceResults || !isFaceDetected) {
+    // 수동 캡처 모드가 아닌 경우에만 얼굴 감지 체크
+    if (!window.manualCaptureMode && (!lastFaceResults || !isFaceDetected)) {
         alert(t('styleMatch.alertFaceNotDetected') || '얼굴을 감지할 수 없습니다. 카메라를 정면으로 바라봐주세요.');
         return;
     }
