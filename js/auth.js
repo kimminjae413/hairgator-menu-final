@@ -330,18 +330,19 @@ async function handleUserLoginByUid(user) {
             console.log('⚠️ Token claims 조회 실패:', e.message);
         }
 
-        // 1.5. kakaoId로 기존 사용자 검색 (이메일 없어도 매칭 가능)
+        // 1.5. kakaoId로 기존 사용자 검색 (이메일 없어도 매칭 가능, kakao_ 문서 제외)
         if (!userEmail && kakaoIdFromClaims) {
             try {
                 const kakaoQuery = await db.collection('users')
                     .where('kakaoId', '==', kakaoIdFromClaims)
-                    .limit(1)
                     .get();
                 if (!kakaoQuery.empty) {
-                    const kakaoDoc = kakaoQuery.docs[0];
-                    const kakaoData = kakaoDoc.data();
+                    // kakao_로 시작하지 않는 문서 우선 선택 (이메일 기반 문서)
+                    const nonKakaoDoc = kakaoQuery.docs.find(doc => !doc.id.startsWith('kakao_'));
+                    const targetDoc = nonKakaoDoc || kakaoQuery.docs[0];
+                    const kakaoData = targetDoc.data();
                     userEmail = kakaoData.email;
-                    console.log('🔍 kakaoId로 기존 사용자 찾음:', kakaoDoc.id, '이메일:', userEmail);
+                    console.log('🔍 kakaoId로 기존 사용자 찾음:', targetDoc.id, '이메일:', userEmail, '(kakao_ 제외 우선)');
                 }
             } catch (e) {
                 console.log('⚠️ kakaoId 검색 실패:', e.message);
