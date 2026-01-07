@@ -593,7 +593,13 @@ async function logout() {
 
         console.log('🔓 로그아웃 완료');
 
-        // 로그인 페이지로 이동
+        // Flutter 앱인 경우 네이티브 로그인 화면으로
+        if (window.FlutterChannel) {
+            window.FlutterChannel.postMessage('logout');
+            return; // Flutter가 처리하므로 웹 리다이렉트 안 함
+        }
+
+        // 웹 브라우저인 경우 로그인 페이지로 이동
         window.location.href = '/login.html';
 
     } catch (error) {
