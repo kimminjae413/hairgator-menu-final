@@ -310,15 +310,39 @@ async function handleUserLoginByUid(user) {
             plan: 'free'
         };
 
-        // 1. Firebase Token claims에서 이메일 찾기 (카카오 Custom Token)
+        // 1. Firebase Token claims에서 이메일/kakaoId 찾기 (카카오 Custom Token)
+        let kakaoIdFromClaims = null;
         try {
             const tokenResult = await user.getIdTokenResult();
+            console.log('🔍 Token claims:', tokenResult.claims);
             if (tokenResult.claims.email) {
                 userEmail = tokenResult.claims.email;
                 console.log('🔍 Token claims에서 이메일 찾음:', userEmail);
             }
+            if (tokenResult.claims.kakaoId) {
+                kakaoIdFromClaims = tokenResult.claims.kakaoId;
+                console.log('🔍 Token claims에서 kakaoId 찾음:', kakaoIdFromClaims);
+            }
         } catch (e) {
             console.log('⚠️ Token claims 조회 실패:', e.message);
+        }
+
+        // 1.5. kakaoId로 기존 사용자 검색 (이메일 없어도 매칭 가능)
+        if (!userEmail && kakaoIdFromClaims) {
+            try {
+                const kakaoQuery = await db.collection('users')
+                    .where('kakaoId', '==', kakaoIdFromClaims)
+                    .limit(1)
+                    .get();
+                if (!kakaoQuery.empty) {
+                    const kakaoDoc = kakaoQuery.docs[0];
+                    const kakaoData = kakaoDoc.data();
+                    userEmail = kakaoData.email;
+                    console.log('🔍 kakaoId로 기존 사용자 찾음:', kakaoDoc.id, '이메일:', userEmail);
+                }
+            } catch (e) {
+                console.log('⚠️ kakaoId 검색 실패:', e.message);
+            }
         }
 
         // 2. claims에 이메일 없으면 UID 문서 조회 (폴백)
