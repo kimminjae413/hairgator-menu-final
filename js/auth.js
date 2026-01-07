@@ -360,12 +360,20 @@ async function handleUserLoginByUid(user) {
         }
 
         // 3. 이메일이 있으면 이메일 기반 문서 조회 (진짜 데이터!)
+        console.log('🔍 [DEBUG] userEmail 최종값:', userEmail, '| kakaoIdFromClaims:', kakaoIdFromClaims);
         if (userEmail) {
             emailDocId = sanitizeEmailForDocId(userEmail);
+            console.log('🔍 [DEBUG] emailDocId:', emailDocId);
             const emailDoc = await db.collection('users').doc(emailDocId).get();
 
             if (emailDoc.exists) {
                 const emailData = emailDoc.data();
+                console.log('🔍 [DEBUG] Firestore emailData:', JSON.stringify({
+                    plan: emailData.plan,
+                    tokenBalance: emailData.tokenBalance,
+                    displayName: emailData.displayName,
+                    photoURL: emailData.photoURL ? '있음' : '없음'
+                }));
                 userData = { ...userData, ...emailData };
                 console.log('✅ 이메일 기반 문서에서 데이터 로드:', {
                     docId: emailDocId,
@@ -434,6 +442,11 @@ async function handleUserLoginByUid(user) {
         };
 
         // localStorage에 저장 (firebase_user로 통합)
+        console.log('🔍 [DEBUG] 최종 currentDesigner:', JSON.stringify({
+            id: window.currentDesigner.id,
+            plan: window.currentDesigner.plan,
+            tokenBalance: window.currentDesigner.tokenBalance
+        }));
         localStorage.setItem('firebase_user', JSON.stringify(window.currentDesigner));
 
         // 플랜 만료 체크 (자동 다운그레이드)
