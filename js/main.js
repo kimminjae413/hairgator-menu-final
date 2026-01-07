@@ -259,7 +259,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     const emailDocId = user.email ? user.email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_') : null;
 
                     // window.currentDesigner가 있으면 그 ID 우선 사용
-                    const docId = window.currentDesigner?.id || emailDocId;
+                    let docId = window.currentDesigner?.id || emailDocId;
+
+                    // 카카오 로그인: token claims에서 이메일 가져오기
+                    if (!docId) {
+                        try {
+                            const tokenResult = await user.getIdTokenResult();
+                            if (tokenResult.claims.email) {
+                                docId = tokenResult.claims.email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_');
+                                console.log('📋 Token claims에서 docId 생성:', docId);
+                            }
+                        } catch (e) {
+                            console.log('Token claims 조회 실패:', e);
+                        }
+                    }
+
+                    console.log('📋 [DEBUG] 사이드바 프로필 조회 - docId:', docId, '| currentDesigner.id:', window.currentDesigner?.id, '| emailDocId:', emailDocId);
 
                     if (docId) {
                         const userDoc = await firebase.firestore().collection('users').doc(docId).get();
