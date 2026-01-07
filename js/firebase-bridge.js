@@ -347,8 +347,14 @@
 
         // ========== 토큰 관리 함수들 ==========
 
-        // 사용자 문서 ID 가져오기 (Firebase Auth 이메일 기반, UID 폴백)
+        // 사용자 문서 ID 가져오기 (이메일 기반 문서 ID 우선)
         async getUserDocId() {
+            // 0. currentDesigner.id 우선! (auth.js에서 이미 계산된 이메일 기반 문서 ID)
+            if (window.currentDesigner?.id) {
+                console.log('🔑 getUserDocId: currentDesigner.id =', window.currentDesigner.id);
+                return window.currentDesigner.id;
+            }
+
             // Firebase Auth에서 현재 사용자 가져오기
             const firebaseUser = typeof auth !== 'undefined' ? auth.currentUser : null;
 
@@ -370,12 +376,6 @@
             if (firebaseUser?.uid) {
                 console.log('🔑 getUserDocId: UID 폴백 =', firebaseUser.uid);
                 return firebaseUser.uid;
-            }
-
-            // 4. currentDesigner UID 폴백
-            if (window.currentDesigner?.uid) {
-                console.log('🔑 getUserDocId: currentDesigner UID 폴백 =', window.currentDesigner.uid);
-                return window.currentDesigner.uid;
             }
 
             console.warn('⚠️ getUserDocId: 사용자 정보 없음');
