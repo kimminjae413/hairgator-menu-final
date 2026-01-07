@@ -315,8 +315,9 @@ async function handleUserLoginByUid(user) {
         // 1. Firebase Token claims에서 이메일/kakaoId 찾기 (카카오 Custom Token)
         let kakaoIdFromClaims = null;
         try {
-            const tokenResult = await user.getIdTokenResult();
-            console.log('🔍 Token claims:', tokenResult.claims);
+            // 토큰 강제 새로고침하여 최신 claims 가져오기
+            const tokenResult = await user.getIdTokenResult(true);
+            console.log('🔍 Token claims (강제 새로고침):', tokenResult.claims);
             if (tokenResult.claims.email) {
                 userEmail = tokenResult.claims.email;
                 console.log('🔍 Token claims에서 이메일 찾음:', userEmail);
