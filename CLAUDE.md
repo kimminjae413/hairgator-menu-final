@@ -65,6 +65,58 @@ void main() {
 
 ## 🔴 자주 헷갈리는 것들
 
+### Flutter WebView 카카오 로그인 흐름 (2026-01-07 디버깅)
+
+**⚠️ 핵심: Flutter Firebase와 WebView Firebase는 별개!**
+
+```
+Flutter 앱                    서버                         WebView
+    │                          │                              │
+    ├─ 카카오 로그인 ─────────────►│                              │
+    │                          │                              │
+    │  ◄─── customToken ──────┤ kakao-token.js               │
+    │       (claims 포함)      │ - email, kakaoId 등          │
+    │                          │ - Firestore 문서 업데이트     │
+    │                          │                              │
+    ├─ signInWithCustomToken ──►│                              │
+    │                          │                              │
+    ├─ getIdToken() ───────────►│                              │
+    │                          │                              │
+    ├─────── ?firebaseToken=xxx ─────────────────────────────►│
+    │                          │                              │
+    │                          │  ◄──── verify-firebase-token │
+    │                          │        (claims 복사 필수!)   │
+    │                          │                              │
+    │                          │        customToken ─────────►│
+    │                          │        (claims 포함!)        │
+    │                          │                              │
+    │                          │              signInWithCustomToken
+    │                          │              auth.js 실행
+```
+
+**❌ 이전 버그:** `verify-firebase-token.js`에서 claims 없이 토큰 생성
+```javascript
+// ❌ 잘못된 코드
+const customToken = await admin.auth().createCustomToken(uid);
+
+// ✅ 올바른 코드 - claims 복사!
+const customToken = await admin.auth().createCustomToken(uid, {
+    email: decodedToken.email,
+    kakaoId: decodedToken.kakaoId,
+    // ...
+});
+```
+
+**사이드바 프로필 사진 안 나오는 문제:**
+- 원인: `user.email`이 카카오 로그인 시 null → Firestore 문서 ID 생성 실패
+- 해결: token claims에서 email 가져와서 docId 생성 (main.js `updateMypageInfo`)
+
+**Firestore 문서 중복 생성 문제:**
+- `708eric_hanmail_net` (이메일 기반, 올바른 문서)
+- `kakao_4556280939` (UID 기반, 중복)
+- 원인: kakao-token.js에서 기존 문서 검색 실패
+- 해결: 이메일 우선 검색 + `kakao_` 문서 제외
+
 ### 파일 구분
 - **main.js**: 사이드바 메뉴 HTML 동적 생성, 테마 전환
 - **menu.js**: 메뉴 클릭 액션, 페이지 이동
