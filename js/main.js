@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         setupSidebar();
         setupHashRouting(); // 해시 라우팅 설정
+        setupFullscreenToggle(); // 풀스크린 토글 (스타일메뉴용)
 
         if (backBtn) {
             backBtn.style.display = 'none';
@@ -44,6 +45,32 @@ document.addEventListener('DOMContentLoaded', function() {
         checkUrlForStyleModal();
 
         console.log('✅ HAIRGATOR 초기화 완료');
+    }
+
+    // ========== 풀스크린 토글 (Flutter 앱 전용) ==========
+    function setupFullscreenToggle() {
+        // 스타일 메뉴 페이지 (genderSelection) 여백 클릭 시 탭바 숨기기
+        const genderSelection = document.getElementById('genderSelection');
+        if (!genderSelection) return;
+
+        genderSelection.addEventListener('click', function(e) {
+            // 현재 해시가 스타일메뉴인 경우만 (hash 없거나 'stylemenu')
+            const hash = window.location.hash.replace('#', '');
+            if (hash && hash !== 'stylemenu') return;
+
+            // 클릭한 대상이 버튼, 카드, 링크 등이 아닌 경우만 (여백 클릭)
+            const target = e.target;
+            const isInteractive = target.closest('button, a, .gender-card, .category-card, .menu-item, input, select');
+            if (isInteractive) return;
+
+            // Flutter WebView에 메시지 전송
+            if (window.FlutterChannel) {
+                console.log('[Fullscreen] 탭바 토글 요청');
+                window.FlutterChannel.postMessage('toggleFullscreen');
+            }
+        });
+
+        console.log('📱 풀스크린 토글 설정 완료');
     }
 
     // Flutter WebView 자동 로그인 처리
