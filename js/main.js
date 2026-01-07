@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fullscreenBtn.style.cssText = `
             position: fixed;
             bottom: 70px;
-            right: 12px;
+            left: 12px;
             width: 40px;
             height: 40px;
             border-radius: 50%;
