@@ -1659,6 +1659,15 @@
                     <button class="filter-btn" onclick="filterUsers('business', this)">비즈니스</button>
                 </div>
 
+                <!-- 정렬 옵션 -->
+                <div class="filters" style="margin-top: 8px;">
+                    <span style="font-size: 12px; color: var(--text-muted); margin-right: 8px;">정렬:</span>
+                    <button class="filter-btn sort-btn active" data-sort="lastLogin" onclick="setUserSort('lastLogin')">최근 로그인 순</button>
+                    <button class="filter-btn sort-btn" data-sort="created" onclick="setUserSort('created')">가입일 순</button>
+                    <button class="filter-btn sort-btn" data-sort="name" onclick="setUserSort('name')">이름 순</button>
+                    <button class="filter-btn sort-btn" data-sort="tokens" onclick="setUserSort('tokens')">토큰 많은 순</button>
+                </div>
+
                 <div class="table-container">
                     <table>
                         <thead>
@@ -3894,6 +3903,7 @@
 
         // 사용자 목록 로드 (Firebase users + Bullnabi users 통합)
         let userSource = 'all'; // 'all', 'firebase', 'bullnabi'
+        let userSort = 'lastLogin'; // 'lastLogin', 'created', 'name', 'tokens'
 
         async function loadUsers() {
             const tbody = document.getElementById('usersTableBody');
@@ -3955,17 +3965,28 @@
                 });
                 allUsers = Array.from(emailMap.values());
 
-                // 정렬 (최근 로그인 순, 없으면 가입일 순)
+                // 정렬 옵션에 따라 정렬
                 allUsers.sort((a, b) => {
-                    const aLogin = a.lastLoginAt?.toDate?.() || a.lastLoginAt || null;
-                    const bLogin = b.lastLoginAt?.toDate?.() || b.lastLoginAt || null;
-                    const aCreated = a.createdAt?.toDate?.() || new Date(0);
-                    const bCreated = b.createdAt?.toDate?.() || new Date(0);
-
-                    // 최근 로그인 시간 우선, 없으면 가입일
-                    const aTime = aLogin || aCreated;
-                    const bTime = bLogin || bCreated;
-                    return bTime - aTime;
+                    switch (userSort) {
+                        case 'lastLogin':
+                            const aLogin = a.lastLoginAt?.toDate?.() || a.lastLoginAt || new Date(0);
+                            const bLogin = b.lastLoginAt?.toDate?.() || b.lastLoginAt || new Date(0);
+                            return bLogin - aLogin;
+                        case 'created':
+                            const aCreated = a.createdAt?.toDate?.() || new Date(0);
+                            const bCreated = b.createdAt?.toDate?.() || new Date(0);
+                            return bCreated - aCreated;
+                        case 'name':
+                            const aName = (a.displayName || a.email || '').toLowerCase();
+                            const bName = (b.displayName || b.email || '').toLowerCase();
+                            return aName.localeCompare(bName, 'ko');
+                        case 'tokens':
+                            const aTokens = a.tokenBalance || 0;
+                            const bTokens = b.tokenBalance || 0;
+                            return bTokens - aTokens;
+                        default:
+                            return 0;
+                    }
                 });
 
                 // 총 사용자 수 표시
@@ -3990,6 +4011,13 @@
             userSource = source;
             document.querySelectorAll('.source-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`[data-source="${source}"]`)?.classList.add('active');
+            loadUsers();
+        }
+
+        function setUserSort(sort) {
+            userSort = sort;
+            document.querySelectorAll('.sort-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-sort="${sort}"]`)?.classList.add('active');
             loadUsers();
         }
 
