@@ -2,36 +2,41 @@
 
 ## 🚨 재시작 후 해야 할 일 (2026-01-07)
 
-### iOS TestFlight 테스트 진행 중 (v36)
+### iOS TestFlight 테스트 진행 중 (v41)
 
 **현재 상태:**
-- v36 빌드 GitHub 푸시 완료 (커밋: `0affe9a`)
+- v41 빌드 GitHub 푸시 완료 (커밋: `088d0ff`)
 - Codemagic 빌드 시작 필요
 
-**v36에서 수정한 것:**
-- `GoogleService-Info.plist`를 **Xcode 프로젝트(project.pbxproj)에 포함** (이전에는 파일만 있고 빌드에 안 들어감)
-- 카카오 로그인 상세 디버깅 로그 추가 (`[KAKAO] 1~12` 단계별)
-- 카카오 로그인 실패 시 실제 에러 메시지 표시
+**v41에서 수정한 것 (카카오 앱투앱 로그인 핵심 수정):**
+- `KakaoSdk.init()`을 **runApp() 전에** 호출 (이전: initState()에서 호출 → 잘못됨)
+- 카카오 문서에 따르면 SDK 초기화는 반드시 runApp() 전에 해야 함
+- 이전 방식은 `isKakaoTalkInstalled()`가 항상 false 반환 → 웹 로그인으로 폴백
 
-**v35 테스트 결과:**
-- Google 로그인: 여전히 크래시 (plist가 Xcode 프로젝트에 포함 안 됨)
-- 카카오 로그인: 카카오톡 앱 전환 후 돌아오지만 로그인 실패 (에러 원인 불명)
+**v40 테스트 결과:**
+- 카카오 로그인: 앱투앱 안 되고 웹 로그인만 표시
+- 원인: KakaoSdk.init()이 runApp() 후에 호출됨
 
 **테스트할 것:**
-1. Google 로그인 - v36에서 plist 빌드 포함 수정됨
-2. 카카오 로그인 - 상세 에러 메시지 확인 필요
+1. 카카오 앱투앱 로그인 - v41에서 SDK 초기화 순서 수정됨
+2. Google 로그인 - 이전 빌드에서 정상 동작 확인 필요
 
 **이전 버전 히스토리:**
 - v28~v32: 회색/흰 화면 (Firebase.initializeApp() 블로킹 문제)
 - v33: 화면 정상, 카카오 SDK 초기화 누락
-- v34: 카카오 SDK 추가, Google 로그인 크래시 (plist 누락)
-- v35: Google plist + URL 스킴 추가 (plist가 빌드에 안 들어감)
-- v36: plist를 project.pbxproj에 포함 + 카카오 디버깅 ← **현재**
+- v34~v35: Google plist 설정
+- v36~v40: 카카오 앱투앱 안 됨 (SDK 초기화 순서 문제)
+- v41: **KakaoSdk.init()을 runApp() 전에 호출** ← **현재**
 
 **핵심 수정 내용 (main.dart):**
-- `main()`에서 `await` 제거, `runApp()` 먼저 호출
-- StatefulWidget의 `initState()`에서 Firebase/Kakao 초기화
-- iOS에서 async 초기화가 UI 렌더링 블로킹하는 문제 해결
+```dart
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  KakaoSdk.init(nativeAppKey: '...');  // runApp() 전에 필수!
+  runApp(const HairgatorApp());
+}
+```
+- Firebase는 여전히 initState()에서 async 초기화 (iOS 회색화면 방지)
 
 ---
 
