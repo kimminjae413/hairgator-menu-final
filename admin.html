@@ -1677,6 +1677,7 @@
                                 <th>플랜</th>
                                 <th>토큰</th>
                                 <th>가입일</th>
+                                <th>최근 접속</th>
                                 <th>액션</th>
                             </tr>
                         </thead>
@@ -4032,7 +4033,7 @@
             const tbody = document.getElementById('usersTableBody');
 
             if (filteredUsers.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">사용자 없음</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">사용자 없음</td></tr>';
                 updatePagination(0);
                 return;
             }
@@ -4052,6 +4053,7 @@
 
             tbody.innerHTML = pageUsers.map(user => {
                 const createdAt = user.createdAt?.toDate ? user.createdAt.toDate().toLocaleDateString('ko-KR') : '-';
+                const lastLoginAt = user.lastLoginAt?.toDate ? user.lastLoginAt.toDate().toLocaleString('ko-KR') : '-';
                 const plan = user.plan || 'free';
                 const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' }[plan];
 
@@ -4097,6 +4099,7 @@
                         <td><span class="badge ${planBadges[plan]}">${planName}</span></td>
                         <td style="color: var(--success); font-weight: 500;">${(user.tokenBalance || 0).toLocaleString()}</td>
                         <td style="font-size: 12px; color: var(--text-muted);">${createdAt}</td>
+                        <td style="font-size: 11px; color: var(--text-muted);">${lastLoginAt}</td>
                         <td>
                             <button class="btn btn-sm btn-secondary" onclick="viewUserDetail('${user.id}')">상세</button>
                             <button class="btn btn-sm btn-primary" onclick="quickEditUser('${user.id}')">수정</button>
