@@ -85,7 +85,8 @@
       "Bash(openssl sha1:*)",
       "Bash(openssl base64:*)",
       "Bash(\"C:/Program Files/Android/Android Studio/jbr/bin/keytool\" -exportcert -alias upload -keystore upload-keystore.jks -storepass hairgator2025)",
-      "Bash(unzip:*)"
+      "Bash(unzip:*)",
+      "WebFetch(domain:pub.dev)"
     ],
     "deny": [],
     "ask": []

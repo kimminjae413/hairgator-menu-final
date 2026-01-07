@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const hash = window.location.hash.replace('#', '');
         console.log('📍 해시 변경:', hash || '(메인)');
 
-        // 모든 페이지 숨기기
+        // 모든 페이지/섹션 숨기기
         const productsPage = document.getElementById('productsPage');
         const mypagePage = document.getElementById('mypagePage');
         const genderSelection = document.getElementById('genderSelection');
@@ -110,6 +110,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (productsPage) productsPage.style.display = 'none';
         if (mypagePage) mypagePage.style.display = 'none';
+        if (genderSelection) genderSelection.style.display = 'none';
+        if (menuContainer) menuContainer.style.display = 'none';
 
         // 탭 변경 시 현재 언어로 텍스트 업데이트 (i18n.js)
         if (typeof window.updateAllTexts === 'function') {
@@ -135,14 +137,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
             case 'stylemenu':
                 // 스타일 메뉴 (메인 화면)
-                if (genderSelection) genderSelection.style.display = '';
-                if (menuContainer) menuContainer.style.display = '';
+                if (genderSelection) genderSelection.style.display = 'flex';
+                if (menuContainer) menuContainer.style.display = 'block';
                 console.log('💇 스타일 메뉴 표시');
                 break;
             default:
                 // 메인 페이지 (해시 없음) - stylemenu와 동일
-                if (genderSelection) genderSelection.style.display = '';
-                if (menuContainer) menuContainer.style.display = '';
+                if (genderSelection) genderSelection.style.display = 'flex';
+                if (menuContainer) menuContainer.style.display = 'block';
                 console.log('🏠 메인 페이지');
                 break;
         }
