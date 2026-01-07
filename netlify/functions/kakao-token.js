@@ -67,9 +67,37 @@ exports.handler = async (event, _context) => {
 
         const db = admin.firestore();
         const sanitizeEmail = (e) => e ? e.toLowerCase().replace(/@/g, '_').replace(/\./g, '_') : null;
-        const emailDocId = sanitizeEmail(finalEmail) || firebaseUid;
-        const userRef = db.collection('users').doc(emailDocId);
-        const userDoc = await userRef.get();
+
+        // 1. 먼저 kakaoId로 기존 사용자 검색 (이메일 없어도 매칭 가능)
+        let existingUserRef = null;
+        let existingUserDoc = null;
+
+        const kakaoIdQuery = await db.collection('users')
+            .where('kakaoId', '==', parseInt(finalKakaoId))
+            .limit(1)
+            .get();
+
+        if (!kakaoIdQuery.empty) {
+            existingUserRef = kakaoIdQuery.docs[0].ref;
+            existingUserDoc = kakaoIdQuery.docs[0];
+            console.log('기존 사용자 발견 (kakaoId 매칭):', existingUserRef.id);
+        }
+
+        // 2. kakaoId로 못 찾으면 이메일로 검색
+        const emailDocId = sanitizeEmail(finalEmail);
+        if (!existingUserRef && emailDocId) {
+            const emailRef = db.collection('users').doc(emailDocId);
+            const emailDoc = await emailRef.get();
+            if (emailDoc.exists) {
+                existingUserRef = emailRef;
+                existingUserDoc = emailDoc;
+                console.log('기존 사용자 발견 (이메일 매칭):', emailDocId);
+            }
+        }
+
+        // 3. 기존 사용자 없으면 새 문서 ID 결정
+        const userRef = existingUserRef || db.collection('users').doc(emailDocId || firebaseUid);
+        const userDoc = existingUserDoc || await userRef.get();
 
         let bullnabiUserData = null;
         if (finalEmail) {
