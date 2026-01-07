@@ -1114,6 +1114,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (sidebar) sidebar.classList.remove('active');
     }
 
+    // 전역으로 노출 (Flutter에서 호출 가능)
+    window.closeSidebar = closeSidebar;
+
+    // 해시 변경 시 사이드바 자동 닫기 (탭 전환 시)
+    window.addEventListener('hashchange', function() {
+        closeSidebar();
+        console.log('[Sidebar] 해시 변경으로 사이드바 닫힘');
+    });
+
     function loadTheme() {
         const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
         const isLight = savedTheme === 'light';
