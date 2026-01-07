@@ -346,8 +346,9 @@ async function handleUserLoginByUid(user) {
         }
 
         // 2. claims에 이메일 없으면 UID 문서 조회 (폴백)
+        let uidDoc = null;
         if (!userEmail) {
-            const uidDoc = await db.collection('users').doc(user.uid).get();
+            uidDoc = await db.collection('users').doc(user.uid).get();
             if (uidDoc.exists) {
                 const uidData = uidDoc.data();
                 userEmail = uidData.email;
@@ -382,7 +383,7 @@ async function handleUserLoginByUid(user) {
             }
         } else {
             // 이메일 없는 경우 UID 문서 데이터 사용
-            if (uidDoc.exists) {
+            if (uidDoc && uidDoc.exists) {
                 const uidData = uidDoc.data();
                 userData = { ...userData, ...uidData };
 
