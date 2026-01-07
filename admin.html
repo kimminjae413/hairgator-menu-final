@@ -3955,10 +3955,16 @@
                 });
                 allUsers = Array.from(emailMap.values());
 
-                // 정렬 (최신순)
+                // 정렬 (최근 로그인 순, 없으면 가입일 순)
                 allUsers.sort((a, b) => {
-                    const aTime = a.createdAt?.toDate?.() || new Date(0);
-                    const bTime = b.createdAt?.toDate?.() || new Date(0);
+                    const aLogin = a.lastLoginAt?.toDate?.() || a.lastLoginAt || null;
+                    const bLogin = b.lastLoginAt?.toDate?.() || b.lastLoginAt || null;
+                    const aCreated = a.createdAt?.toDate?.() || new Date(0);
+                    const bCreated = b.createdAt?.toDate?.() || new Date(0);
+
+                    // 최근 로그인 시간 우선, 없으면 가입일
+                    const aTime = aLogin || aCreated;
+                    const bTime = bLogin || bCreated;
                     return bTime - aTime;
                 });
 
