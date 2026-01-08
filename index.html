@@ -4647,6 +4647,25 @@ if (window.innerWidth >= 768 && window.innerWidth <= 1024) {
   `;
   document.body.insertAdjacentHTML('beforeend', buttonHTML);
   console.log('✅ AI Studio 플로팅 버튼 생성 완료');
+
+  // 첫 번째 탭에서만 버튼 표시
+  function updateAIButtonVisibility() {
+    const wrapper = document.getElementById('ai-studio-wrapper');
+    if (!wrapper) return;
+
+    const hash = window.location.hash.replace('#', '');
+    // 첫 번째 탭: 해시 없음, stylemenu, 또는 빈 문자열
+    const isFirstTab = !hash || hash === '' || hash === 'stylemenu';
+
+    wrapper.style.display = isFirstTab ? 'flex' : 'none';
+    console.log('🎯 AI 버튼 표시:', isFirstTab, '(hash:', hash, ')');
+  }
+
+  // 초기 실행
+  updateAIButtonVisibility();
+
+  // 해시 변경 시 업데이트
+  window.addEventListener('hashchange', updateAIButtonVisibility);
 })();
 
 // AI Studio 이동
