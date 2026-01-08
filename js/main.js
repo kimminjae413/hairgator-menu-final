@@ -245,25 +245,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 페이지 스크롤 문제 수정 (iOS WebView)
-    // 참고: 커스텀 touch 이벤트 핸들러 제거 - 기본 스크롤 사용
+    // page-content를 스크롤 컨테이너로 사용 (menu-items-container와 동일 구조)
     function fixPageScroll(pageElement) {
         if (!pageElement) return;
 
-        // 스크롤 위치 초기화
-        pageElement.scrollTop = 0;
-
-        // 스크롤 관련 스타일 강제 설정 (menu-items-container와 동일하게)
-        pageElement.style.position = 'absolute';
-        pageElement.style.overflow = 'auto';
-        pageElement.style.overflowY = 'auto';
-        pageElement.style.overflowX = 'hidden';
-        pageElement.style.webkitOverflowScrolling = 'touch';
-
-        // page-content도 설정
+        // page-content를 스크롤 컨테이너로 설정 (menu-items-container와 동일)
         const pageContent = pageElement.querySelector('.page-content');
         if (pageContent) {
-            pageContent.style.minHeight = '100%';
-            pageContent.style.paddingBottom = '150px';
+            pageContent.style.cssText = `
+                position: absolute !important;
+                top: 50px !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+                padding: 20px 16px !important;
+                padding-bottom: 100px !important;
+            `;
+            pageContent.scrollTop = 0;
         }
 
         console.log('🔧 페이지 스크롤 수정 적용:', pageElement.id);

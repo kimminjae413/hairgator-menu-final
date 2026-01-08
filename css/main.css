@@ -4476,23 +4476,28 @@ body.flutter-app .styles-container {
 }
 
 /* Flutter 앱 모드 - 페이지 스크롤 문제 수정 */
-/* menu-items-container와 동일한 스타일 적용 */
+/* page-container는 스크롤 안함, page-content가 스크롤 컨테이너 */
 html.flutter-app .page-container,
 body.flutter-app .page-container {
-    position: absolute !important;
+    position: fixed !important;
     top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    overflow: hidden !important;
+}
+
+/* page-content를 스크롤 컨테이너로 (menu-items-container와 동일 구조) */
+html.flutter-app .page-content,
+body.flutter-app .page-content {
+    position: absolute !important;
+    top: 50px !important;
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch !important;
-}
-
-html.flutter-app #mypagePage .page-content,
-html.flutter-app #productsPage .page-content,
-body.flutter-app #mypagePage .page-content,
-body.flutter-app #productsPage .page-content {
     padding-bottom: 150px !important;
 }
 
