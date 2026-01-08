@@ -3422,9 +3422,18 @@
             setupModalHandlers();
 
             // loginScreen이 null이 아닌지 확인 후 스타일 적용
+            // Flutter 앱에서는 로그인 화면을 숨김 (Flutter가 인증 처리)
             const loginScreenEl = document.getElementById('loginScreen');
+            const urlParams = new URLSearchParams(window.location.search);
+            const isFlutterApp = urlParams.has('isFlutterApp') || urlParams.has('firebaseToken');
+
             if (loginScreenEl) {
-                loginScreenEl.style.display = 'flex';
+                if (isFlutterApp) {
+                    console.log('📱 Flutter 앱 감지 → 로그인 화면 숨김, 자동 로그인 대기');
+                    loginScreenEl.style.display = 'none';
+                } else {
+                    loginScreenEl.style.display = 'flex';
+                }
             }
             
             // updateUserInfo를 약간 지연시켜 DOM이 완전히 로드된 후 실행
