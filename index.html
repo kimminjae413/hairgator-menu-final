@@ -5,16 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HAIRGATOR - Professional Hair Style Menu</title>
 
-    <!-- ⭐ Flutter 앱 모드 감지 (가장 먼저 실행!) - v3 (배너 제거) -->
+    <!-- ⭐ Flutter 앱 모드 감지 (가장 먼저 실행!) - v4 (하단 탭바 패딩 추가) -->
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
             window.IS_FLUTTER_APP = params.has('isFlutterApp') || params.has('firebaseToken');
             if (window.IS_FLUTTER_APP) {
-                console.log('📱 [v3] Flutter 앱 모드');
-                // Flutter 앱에서는 로그인 관련 UI 모두 숨김
+                console.log('📱 [v4] Flutter 앱 모드');
                 var style = document.createElement('style');
-                style.textContent = '.login-screen, #loginScreen, .login-modal, .login-container, .login-form { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; height: 0 !important; overflow: hidden !important; position: absolute !important; left: -9999px !important; }';
+                // 로그인 UI 숨김 + Flutter 하단 탭바 공간 확보 (70px)
+                style.textContent = '\
+                    .login-screen, #loginScreen, .login-modal, .login-container, .login-form { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; height: 0 !important; overflow: hidden !important; position: absolute !important; left: -9999px !important; }\
+                    .page-container { padding-bottom: 70px !important; }\
+                    #menuContainer { padding-bottom: 70px !important; }\
+                    body { padding-bottom: 70px !important; }\
+                ';
                 document.head.appendChild(style);
             }
         })();
@@ -1245,6 +1250,102 @@
         }
         .inquiry-message.user .message-time {
             color: rgba(255,255,255,0.7);
+        }
+
+        /* ========== iPad/태블릿 반응형 (1024px 이상) ========== */
+        @media (min-width: 1024px) {
+            /* productsPage (Plan & Billing) - 콘텐츠 중앙 정렬 + 카드 크기 확대 */
+            #productsPage .page-content {
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 40px 24px;
+            }
+            #productsPage .pricing-cards-horizontal {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 24px;
+            }
+            #productsPage .plan-card {
+                padding: 36px 28px;
+                min-width: auto;
+            }
+            #productsPage .plan-name {
+                font-size: 24px;
+            }
+            #productsPage .plan-price {
+                font-size: 42px;
+            }
+            #productsPage .plan-credits {
+                font-size: 18px;
+            }
+            #productsPage .plan-usage-example {
+                font-size: 15px;
+            }
+            #productsPage .plan-features li {
+                font-size: 15px;
+                padding: 10px 0;
+            }
+            #productsPage .plan-btn {
+                padding: 16px 28px;
+                font-size: 17px;
+            }
+
+            /* mypagePage (My) - 콘텐츠 중앙 정렬 + 여백 */
+            #mypagePage .page-content {
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 24px;
+            }
+            #mypagePage .mypage-profile {
+                padding: 28px;
+            }
+            #mypagePage .profile-avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 36px;
+            }
+            #mypagePage .profile-name {
+                font-size: 24px;
+            }
+            #mypagePage .profile-email {
+                font-size: 16px;
+            }
+            #mypagePage .mypage-card {
+                padding: 24px;
+            }
+            #mypagePage .card-label {
+                font-size: 14px;
+            }
+            #mypagePage .card-value {
+                font-size: 24px;
+            }
+            #mypagePage .mypage-menu .menu-item {
+                padding: 18px 24px;
+            }
+            #mypagePage .menu-text {
+                font-size: 17px;
+            }
+        }
+
+        /* 더 큰 태블릿/데스크톱 (1366px 이상) */
+        @media (min-width: 1366px) {
+            #productsPage .page-content {
+                max-width: 1100px;
+            }
+            #productsPage .pricing-cards-horizontal {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+            }
+            #productsPage .plan-card {
+                padding: 32px 24px;
+            }
+            #productsPage .plan-price {
+                font-size: 36px;
+            }
+
+            #mypagePage .page-content {
+                max-width: 700px;
+            }
         }
     </style>
 
@@ -4518,6 +4619,22 @@ if (window.innerWidth >= 768 && window.innerWidth <= 1024) {
   `;
   document.body.insertAdjacentHTML('beforeend', buttonHTML);
   console.log('✅ AI Studio 플로팅 버튼 생성 완료');
+
+  // ⭐ 첫 번째 탭(스타일 메뉴)에서만 AI Recipe 버튼 표시
+  function updateAIButtonVisibility() {
+    const hash = window.location.hash;
+    const wrapper = document.getElementById('ai-studio-wrapper');
+    if (!wrapper) return;
+
+    // 첫 번째 탭: 해시 없음, '#', 또는 빈 해시
+    const isFirstTab = !hash || hash === '#' || hash === '';
+    wrapper.style.display = isFirstTab ? 'flex' : 'none';
+    console.log('[AI Button] hash=' + hash + ', visible=' + isFirstTab);
+  }
+
+  // 초기 상태 설정 및 해시 변경 감지
+  updateAIButtonVisibility();
+  window.addEventListener('hashchange', updateAIButtonVisibility);
 })();
 
 // AI Studio 이동
