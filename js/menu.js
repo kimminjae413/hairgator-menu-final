@@ -237,6 +237,16 @@ function getThumbnailUrl(style) {
     return url;
 }
 
+/**
+ * 스타일 데이터에서 원본 이미지 URL 반환 (헤어체험/룩북/레시피용)
+ * style-match/app.js와 동일한 폴백 로직 사용
+ * @param {object} style - 스타일 데이터
+ * @returns {string} - 원본 이미지 URL
+ */
+function getOriginalImageUrl(style) {
+    return style.imageUrl || (style.media && style.media.images && style.media.images[0]) || style.thumbnailUrl || '';
+}
+
 // ========== 헤어게이터 토큰 차감 (Bullnabi API _users.tokenBalance) ==========
 
 // 룩북 토큰 차감
@@ -982,7 +992,7 @@ function createStyleCard(style, _index = 0) {
         <div class="style-image-wrapper" style="width: 100% !important; height: 100% !important; position: relative !important; display: block !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; border-radius: 20px !important;">
             <img class="style-image"
                  src="${thumbnailUrl || ''}"
-                 data-original="${style.imageUrl || ''}"
+                 data-original="${getOriginalImageUrl(style)}"
                  alt="${style.name || 'Style'}"
                  loading="lazy"
                  style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; border-radius: 20px !important; margin: 0 !important; padding: 0 !important; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;"
@@ -1486,11 +1496,13 @@ async function openStyleModal(style) {
 
         if (!has360Viewer) {
             // 360° 데이터가 없으면 기존 단일 이미지 렌더링
+            // 원본 이미지 URL (폴백 포함)
+            const modalImageUrl = getOriginalImageUrl(fullStyleData);
             container.innerHTML = `
                 <div class="media-viewer" style="width: 100%; background: transparent;">
                     <div class="main-display" style="position: relative; width: 100%; display: flex; align-items: center; justify-content: center; line-height: 0;">
                         ${navIndicatorHTML}
-                        <img src="${fullStyleData.imageUrl || ''}"
+                        <img src="${modalImageUrl}"
                              alt="${fullStyleData.name || 'Style'}"
                              class="modal-zoom-image"
                              style="width: 100%; height: auto; object-fit: cover; max-height: 70vh; cursor: zoom-in; transition: max-height 0.3s ease, transform 0.3s ease, opacity 0.2s ease; display: block; border-radius: 18px 18px 0 0;"
@@ -1617,11 +1629,14 @@ async function openStyleModal(style) {
 
             try {
                 // API 호출하여 분석 및 이미지 생성
+                // 원본 이미지 URL 가져오기 (폴백 포함)
+                const styleOriginalImage = getOriginalImageUrl(style);
+
                 const response = await fetch('/.netlify/functions/lookbook-analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        imageUrl: style.imageUrl,
+                        imageUrl: styleOriginalImage,
                         language: window.currentLanguage || 'ko',
                         generateImages: true,
                         gender: genderValue,
@@ -1640,7 +1655,7 @@ async function openStyleModal(style) {
 
                 // 결과를 sessionStorage에 저장
                 sessionStorage.setItem('lookbookResult', JSON.stringify(result));
-                sessionStorage.setItem('lookbookImage', style.imageUrl || '');
+                sessionStorage.setItem('lookbookImage', styleOriginalImage);
                 sessionStorage.setItem('lookbookTitle', style.name || 'Style');
                 sessionStorage.setItem('lookbookGender', genderValue);
                 sessionStorage.setItem('lookbookLanguage', window.currentLanguage || 'ko');
@@ -1693,7 +1708,8 @@ async function openStyleModal(style) {
             console.log('💇 헤어체험 버튼 클릭:', style.name);
 
             // 헤어체험 모달 열기 (토큰 차감은 API 호출 후 내부에서 처리)
-            openAIPhotoModal(style.id, style.name, style.imageUrl);
+            // imageUrl 폴백: style-match/app.js와 동일한 로직
+            openAIPhotoModal(style.id, style.name, getOriginalImageUrl(style));
         };
     }
 
@@ -3821,13 +3837,16 @@ function navigateModalStyle(direction) {
     const img = container?.querySelector('.modal-zoom-image');
     const indicator = container?.querySelector('.modal-nav-indicator');
 
+    // 원본 이미지 URL (폴백 포함)
+    const newStyleImageUrl = getOriginalImageUrl(newStyle);
+
     if (img) {
         // 페이드 아웃
         img.style.opacity = '0.3';
 
         setTimeout(() => {
             // 새 이미지로 교체
-            img.src = newStyle.imageUrl || '';
+            img.src = newStyleImageUrl;
             img.alt = newStyle.name || 'Style';
 
             // 페이드 인
@@ -3855,7 +3874,7 @@ function navigateModalStyle(direction) {
     const btnLookbook = document.getElementById('btnOpenLookbook');
     if (btnLookbook) {
         btnLookbook.onclick = function() {
-            openAIPhotoModal(newStyle.id, newStyle.name, newStyle.imageUrl);
+            openAIPhotoModal(newStyle.id, newStyle.name, newStyleImageUrl);
         };
     }
 }
@@ -4222,9 +4241,10 @@ function navigateToRecipe(style, service = 'cut') {
     }
 
     // URL 파라미터 구성
+    const recipeImageUrl = getOriginalImageUrl(style);
     const params = new URLSearchParams({
         autoRecipe: 'true',
-        imageUrl: style.imageUrl || '',
+        imageUrl: recipeImageUrl,
         gender: gender,
         service: service,
         category: categoryCode,
@@ -4238,7 +4258,7 @@ function navigateToRecipe(style, service = 'cut') {
         service,
         categoryCode,
         series,
-        imageUrl: style.imageUrl
+        imageUrl: recipeImageUrl
     });
 
     // 스타일 모달 닫기
@@ -4261,6 +4281,9 @@ function showRecipeTypeModal(style) {
     const primaryColor = '#E91E63';
     const primaryDark = '#C2185B';
 
+    // 원본 이미지 URL (폴백 포함)
+    const stylePreviewImage = getOriginalImageUrl(style);
+
     modal.innerHTML = `
         <div class="recipe-type-overlay" onclick="closeRecipeTypeModal()"></div>
         <div class="recipe-type-content">
@@ -4270,7 +4293,7 @@ function showRecipeTypeModal(style) {
                 <button class="recipe-type-close" onclick="closeRecipeTypeModal()">×</button>
             </div>
             <div class="recipe-type-preview">
-                <img src="${style.imageUrl}" alt="${style.name}" />
+                <img src="${stylePreviewImage}" alt="${style.name}" />
             </div>
             <div class="recipe-type-buttons">
                 <button class="recipe-type-btn cut-btn" onclick="selectRecipeType('${style.id}', 'cut')">
