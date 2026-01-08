@@ -4,6 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HAIRGATOR - 로그인</title>
+
+    <!-- ⭐ Flutter 앱에서 login.html 로드 시 즉시 index.html로 리다이렉트 -->
+    <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var isFlutter = params.has('isFlutterApp') || params.has('firebaseToken') || localStorage.getItem('isFlutterApp') === 'true';
+            if (isFlutter) {
+                console.log('📱 Flutter 앱에서 login.html 접근 → index.html로 리다이렉트');
+                // 화면 숨기기
+                document.documentElement.style.visibility = 'hidden';
+                // index.html로 리다이렉트
+                window.location.replace('https://app.hairgator.kr/?isFlutterApp=true');
+            }
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">

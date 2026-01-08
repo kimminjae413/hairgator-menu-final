@@ -5,26 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HAIRGATOR - Professional Hair Style Menu</title>
 
-    <!-- ⭐ Flutter 앱 모드 감지 (가장 먼저 실행!) - v2 -->
+    <!-- ⭐ Flutter 앱 모드 감지 (가장 먼저 실행!) - v3 (배너 제거) -->
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
             window.IS_FLUTTER_APP = params.has('isFlutterApp') || params.has('firebaseToken');
             if (window.IS_FLUTTER_APP) {
-                console.log('📱 [EARLY-v2] Flutter 앱 모드 감지됨');
-                // Flutter 앱에서는 loginScreen을 CSS로 완전히 숨김
+                console.log('📱 [v3] Flutter 앱 모드');
+                // Flutter 앱에서는 로그인 관련 UI 모두 숨김
                 var style = document.createElement('style');
-                style.textContent = '.login-screen { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }';
+                style.textContent = '.login-screen, #loginScreen, .login-modal, .login-container, .login-form { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; height: 0 !important; overflow: hidden !important; position: absolute !important; left: -9999px !important; }';
                 document.head.appendChild(style);
-
-                // 디버그: Flutter 모드 표시 배너 (상단에 초록색 바)
-                document.addEventListener('DOMContentLoaded', function() {
-                    var debugBanner = document.createElement('div');
-                    debugBanner.id = 'flutter-debug-banner';
-                    debugBanner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#00ff00;color:#000;padding:5px;text-align:center;font-size:12px;z-index:99999;font-weight:bold;';
-                    debugBanner.textContent = '📱 FLUTTER MODE v2 - ' + new Date().toLocaleTimeString();
-                    document.body.insertBefore(debugBanner, document.body.firstChild);
-                });
             }
         })();
     </script>
