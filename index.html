@@ -11,10 +11,16 @@
             var params = new URLSearchParams(window.location.search);
             window.IS_FLUTTER_APP = params.has('isFlutterApp') || params.has('firebaseToken');
             if (window.IS_FLUTTER_APP) {
-                console.log('📱 [EARLY] Flutter 앱 모드 감지됨');
-                // Flutter 앱에서는 loginScreen을 CSS로 완전히 숨김
+                console.log('📱 [Flutter] safe-area 비활성화');
                 var style = document.createElement('style');
-                style.textContent = '.login-screen { display: none !important; }';
+                // Flutter SafeArea가 처리하므로 웹의 모든 safe-area 패딩 제거
+                style.textContent = '\
+                    .login-screen { display: none !important; }\
+                    html, body { padding: 0 !important; margin: 0 !important; }\
+                    .header { padding-top: 0 !important; height: 50px !important; min-height: 50px !important; }\
+                    .tablet-fixed-header { top: 0 !important; padding-top: 0 !important; }\
+                    #menuContainer { padding-top: 0 !important; margin-top: 0 !important; }\
+                ';
                 document.head.appendChild(style);
             }
         })();
