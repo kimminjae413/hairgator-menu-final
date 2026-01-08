@@ -245,15 +245,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 페이지 스크롤 문제 수정 (iOS WebView)
+    // 참고: 커스텀 touch 이벤트 핸들러 제거 - 기본 스크롤 사용
     function fixPageScroll(pageElement) {
         if (!pageElement) return;
 
         // 스크롤 위치 초기화
         pageElement.scrollTop = 0;
 
-        // 스크롤 관련 스타일 강제 설정
+        // 스크롤 관련 스타일 강제 설정 (menu-items-container와 동일하게)
+        pageElement.style.position = 'absolute';
         pageElement.style.overflow = 'auto';
         pageElement.style.overflowY = 'auto';
+        pageElement.style.overflowX = 'hidden';
         pageElement.style.webkitOverflowScrolling = 'touch';
 
         // page-content도 설정
@@ -261,35 +264,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (pageContent) {
             pageContent.style.minHeight = '100%';
             pageContent.style.paddingBottom = '150px';
-        }
-
-        // iOS WebView 스크롤 잠금 방지
-        if (!pageElement._scrollFixed) {
-            pageElement._scrollFixed = true;
-
-            // 스크롤 영역 터치 시작점 저장
-            let startY = 0;
-
-            pageElement.addEventListener('touchstart', function(e) {
-                startY = e.touches[0].pageY;
-            }, { passive: true });
-
-            pageElement.addEventListener('touchmove', function(e) {
-                const scrollTop = pageElement.scrollTop;
-                const scrollHeight = pageElement.scrollHeight;
-                const clientHeight = pageElement.clientHeight;
-                const currentY = e.touches[0].pageY;
-                const deltaY = currentY - startY;
-
-                // 맨 위에서 아래로 당기거나, 맨 아래에서 위로 당길 때만 기본 동작 허용
-                if (scrollTop <= 0 && deltaY > 0) {
-                    // 맨 위에서 더 위로 - 약간의 스크롤 허용
-                    pageElement.scrollTop = 1;
-                } else if (scrollTop + clientHeight >= scrollHeight && deltaY < 0) {
-                    // 맨 아래에서 더 아래로 - 약간의 스크롤 허용
-                    pageElement.scrollTop = scrollHeight - clientHeight - 1;
-                }
-            }, { passive: true });
         }
 
         console.log('🔧 페이지 스크롤 수정 적용:', pageElement.id);
