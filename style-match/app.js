@@ -4212,11 +4212,33 @@ window.retryHairTry = function() {
     }
 };
 
-window.downloadHairTryResult = function(imageUrl) {
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = `hairgator-hairtry-${Date.now()}.jpg`;
-    link.click();
+window.downloadHairTryResult = async function(imageUrl) {
+    try {
+        // WebView에서도 작동하도록 fetch + blob 방식 사용
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `hairgator-hairtry-${Date.now()}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // blob URL 해제
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+
+        // 저장 성공 알림
+        alert(t('hairTry.saved') || '이미지가 저장되었습니다!');
+    } catch (error) {
+        console.error('이미지 저장 실패:', error);
+        // 실패 시 기존 방식 시도
+        const link = document.createElement('a');
+        link.href = imageUrl;
+        link.download = `hairgator-hairtry-${Date.now()}.jpg`;
+        link.click();
+    }
 };
 
 // 헤어체험 로딩 스타일
