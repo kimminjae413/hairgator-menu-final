@@ -2918,7 +2918,7 @@ function showSaveImageOverlay(imageUrl) {
             <img src="${imageUrl}" alt="Result" class="save-target-image" crossorigin="anonymous">
             <div class="save-image-actions">
                 <button class="save-close-btn" onclick="closeSaveImageOverlay()">
-                    ${t('common.close') || '닫기'}
+                    ${t('ui.close') || '닫기'}
                 </button>
             </div>
         </div>
