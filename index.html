@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HAIRGATOR - Professional Hair Style Menu</title>
 
-    <!-- ⭐ Flutter 앱 모드 감지 (가장 먼저 실행!) - v6 (padding 제거) -->
+    <!-- ⭐ Flutter 앱 모드 감지 (가장 먼저 실행!) - v7 (단순화) -->
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
             window.IS_FLUTTER_APP = params.has('isFlutterApp') || params.has('firebaseToken');
             if (window.IS_FLUTTER_APP) {
-                console.log('📱 [v6] Flutter 앱 모드');
+                console.log('📱 [v7] Flutter 앱 모드');
                 var style = document.createElement('style');
-                // 로그인 UI 숨김만 적용
-                style.textContent = '.login-screen, #loginScreen, .login-modal, .login-container, .login-form { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; height: 0 !important; overflow: hidden !important; position: absolute !important; left: -9999px !important; }';
+                // 로그인 화면만 간단히 숨김
+                style.textContent = '.login-screen { display: none !important; }';
                 document.head.appendChild(style);
             }
         })();
