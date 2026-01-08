@@ -86,7 +86,9 @@
       "Bash(openssl base64:*)",
       "Bash(\"C:/Program Files/Android/Android Studio/jbr/bin/keytool\" -exportcert -alias upload -keystore upload-keystore.jks -storepass hairgator2025)",
       "Bash(unzip:*)",
-      "WebFetch(domain:pub.dev)"
+      "WebFetch(domain:pub.dev)",
+      "Bash(adb install:*)",
+      "Bash(D:hairgator_devAndroidSdkplatform-toolsadb.exe install -r \"D:\\\\hairgator_dev\\\\hairgator_flutter_app\\\\build\\\\app\\\\outputs\\\\flutter-apk\\\\app-release.apk\")"
     ],
     "deny": [],
     "ask": []

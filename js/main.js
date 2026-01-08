@@ -140,14 +140,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
             console.log('[Flutter] Custom Token 발급 성공, Firebase 로그인 중...');
 
-            // Firebase 로그인
-            if (window.auth && data.customToken) {
-                await window.auth.signInWithCustomToken(data.customToken);
-                console.log('[Flutter] Firebase 자동 로그인 성공!');
+            // Firebase 로그인 - window.auth가 준비될 때까지 대기 (iOS WKWebView 타이밍 이슈)
+            if (data.customToken) {
+                // window.auth가 준비될 때까지 최대 5초 대기
+                let retries = 0;
+                const maxRetries = 50; // 100ms * 50 = 5초
 
-                // URL에서 토큰 파라미터 제거 (보안)
-                const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
-                window.history.replaceState({}, document.title, cleanUrl);
+                while (!window.auth && retries < maxRetries) {
+                    console.log(`[Flutter] window.auth 대기 중... (${retries + 1}/${maxRetries})`);
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    retries++;
+                }
+
+                if (window.auth) {
+                    await window.auth.signInWithCustomToken(data.customToken);
+                    console.log('[Flutter] Firebase 자동 로그인 성공!');
+
+                    // URL에서 토큰 파라미터 제거 (보안)
+                    const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
+                    window.history.replaceState({}, document.title, cleanUrl);
+                } else {
+                    console.error('[Flutter] window.auth 초기화 실패 (타임아웃)');
+                    window.location.href = '/login.html';
+                    return;
+                }
             }
         } catch (error) {
             console.error('[Flutter] 자동 로그인 에러:', error);
