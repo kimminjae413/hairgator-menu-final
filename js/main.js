@@ -113,6 +113,13 @@ document.addEventListener('DOMContentLoaded', function() {
     async function handleFlutterAutoLogin() {
         const urlParams = new URLSearchParams(window.location.search);
         const firebaseToken = urlParams.get('firebaseToken');
+        const isFlutterAppParam = urlParams.has('isFlutterApp');
+
+        // isFlutterApp 파라미터가 있으면 localStorage에 저장 (URL 파라미터 제거 후에도 유지)
+        if (isFlutterAppParam) {
+            localStorage.setItem('isFlutterApp', 'true');
+            console.log('[Flutter] isFlutterApp 플래그 localStorage에 저장');
+        }
 
         if (!firebaseToken) {
             console.log('[Flutter] firebaseToken 파라미터 없음');

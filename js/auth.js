@@ -1,5 +1,6 @@
-// ========== Firebase Auth 인증 시스템 [BUILD 2026-01-07-v3] ==========
-console.log('🔥 auth.js 버전: 2026-01-07-v3');
+// ========== Firebase Auth 인증 시스템 [BUILD 2026-01-08-v4] ==========
+console.log('🔥 auth.js 버전: 2026-01-08-v4');
+// v4: isFlutterApp localStorage 저장으로 URL 파라미터 제거 후에도 Flutter 앱 감지 유지
 // 2025-12-27: 불나비 → Firebase Auth 전환
 // 2025-12-27: 이메일 기반 사용자 통합 (다중 로그인 방식 지원)
 /* eslint-disable no-unused-vars */
@@ -104,11 +105,18 @@ function initFirebaseAuth() {
             const currentPage = window.location.pathname;
             const urlParams = new URLSearchParams(window.location.search);
             const hasFlutterToken = urlParams.has('firebaseToken');
-            const isFlutterApp = urlParams.has('isFlutterApp') || !!window.FlutterChannel || !!window.DownloadChannel;
+            // Flutter 앱 감지: URL 파라미터, localStorage, JavaScript 채널 모두 확인
+            const isFlutterApp = urlParams.has('isFlutterApp') ||
+                                 localStorage.getItem('isFlutterApp') === 'true' ||
+                                 !!window.FlutterChannel ||
+                                 !!window.DownloadChannel;
 
             // Flutter 앱에서는 리다이렉트하지 않음 (Flutter가 인증 관리)
             if (isFlutterApp) {
-                console.log('📱 Flutter WebView 감지 (isFlutterApp 파라미터), 리다이렉트 안 함');
+                console.log('📱 Flutter WebView 감지, 리다이렉트 안 함 (source:',
+                    urlParams.has('isFlutterApp') ? 'URL' :
+                    localStorage.getItem('isFlutterApp') === 'true' ? 'localStorage' :
+                    window.FlutterChannel ? 'FlutterChannel' : 'DownloadChannel', ')');
                 return;
             }
 
@@ -629,6 +637,7 @@ async function logout() {
 
         // localStorage 정리 (firebase_user로 통합됨)
         localStorage.removeItem('firebase_user');
+        localStorage.removeItem('isFlutterApp'); // Flutter 앱 플래그도 정리
         localStorage.removeItem('hairgator_profile_image');
         localStorage.removeItem('hairgator_brand_name');
         localStorage.removeItem('hairgator_brand_font');
