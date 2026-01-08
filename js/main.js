@@ -3604,25 +3604,56 @@ async function updateProductsPagePlan() {
     try {
         // 현재 플랜 가져오기
         let currentPlan = 'free';
-        
+        let tokenBalance = 0;
+        let planExpiry = null;
+
         if (typeof window.FirebaseBridge !== 'undefined') {
             const tokenData = await window.FirebaseBridge.getTokenBalance();
-            if (tokenData && tokenData.plan) {
-                currentPlan = tokenData.plan;
+            if (tokenData) {
+                if (tokenData.plan) currentPlan = tokenData.plan;
+                if (tokenData.balance !== undefined) tokenBalance = tokenData.balance;
+                if (tokenData.planExpiry) planExpiry = tokenData.planExpiry;
             }
         }
-        
-        console.log('📋 현재 플랜:', currentPlan);
-        
+
+        console.log('📋 현재 플랜:', currentPlan, '토큰:', tokenBalance);
+
+        // 현재 플랜 정보 표시 업데이트
+        const planNames = {
+            free: '무료',
+            basic: '베이직',
+            pro: '프로',
+            business: '비즈니스'
+        };
+
+        const currentPlanNameEl = document.getElementById('currentPlanName');
+        const currentPlanTokensEl = document.getElementById('currentPlanTokens');
+        const currentPlanExpiryEl = document.getElementById('currentPlanExpiry');
+
+        if (currentPlanNameEl) {
+            currentPlanNameEl.textContent = planNames[currentPlan] || currentPlan;
+        }
+        if (currentPlanTokensEl) {
+            currentPlanTokensEl.textContent = tokenBalance.toLocaleString();
+        }
+        if (currentPlanExpiryEl) {
+            if (planExpiry) {
+                const expiryDate = planExpiry.toDate ? planExpiry.toDate() : new Date(planExpiry);
+                currentPlanExpiryEl.textContent = expiryDate.toLocaleDateString('ko-KR');
+            } else {
+                currentPlanExpiryEl.textContent = currentPlan === 'free' ? '-' : '무제한';
+            }
+        }
+
         // 모든 카드 리셋
         const allCards = document.querySelectorAll('.plan-card[data-plan]');
         allCards.forEach(card => {
             const badge = card.querySelector('.plan-badge-current');
             const btn = card.querySelector('.plan-btn');
             const plan = card.getAttribute('data-plan');
-            
+
             if (badge) badge.style.display = 'none';
-            
+
             if (btn) {
                 if (plan === currentPlan) {
                     // 현재 플랜 카드
@@ -3640,9 +3671,123 @@ async function updateProductsPagePlan() {
                 }
             }
         });
-        
+
+        // 결제 내역 로드
+        await loadProductsPaymentHistory();
+
     } catch (e) {
         console.error('플랜 정보 로드 실패:', e);
+    }
+}
+
+/**
+ * Products 페이지 결제 내역 로드
+ */
+async function loadProductsPaymentHistory() {
+    const listEl = document.getElementById('productsPaymentHistoryList');
+    if (!listEl) return;
+
+    // 사용자 ID 가져오기
+    let userId = null;
+
+    if (window.FirebaseBridge && typeof window.FirebaseBridge.getUserDocId === 'function') {
+        userId = await window.FirebaseBridge.getUserDocId();
+    }
+
+    if (!userId && window.currentDesigner && window.currentDesigner.email) {
+        userId = window.currentDesigner.email.replace(/[@.]/g, '_');
+    }
+
+    if (!userId) {
+        const user = firebase.auth().currentUser;
+        if (user && user.email) {
+            userId = user.email.replace(/[@.]/g, '_');
+        }
+    }
+
+    if (!userId) {
+        listEl.innerHTML = `<div class="no-payment-message">${t('ui.loginRequired') || '로그인이 필요합니다.'}</div>`;
+        return;
+    }
+
+    listEl.innerHTML = `<div class="loading-message">${t('ui.loading') || '로딩 중...'}</div>`;
+
+    try {
+        const snapshot = await firebase.firestore()
+            .collection('payments')
+            .where('userId', '==', userId)
+            .limit(10)
+            .get();
+
+        if (snapshot.empty) {
+            listEl.innerHTML = `<div class="no-payment-message">${t('ui.noPaymentHistory') || '결제 내역이 없습니다.'}</div>`;
+            return;
+        }
+
+        const planNames = {
+            basic: '베이직',
+            pro: '프로',
+            business: '비즈니스',
+            tokens_5000: '추가 토큰'
+        };
+
+        const statusNames = {
+            completed: '결제 완료',
+            cancelled: '결제 취소',
+            refunded: '환불 완료'
+        };
+
+        let html = '';
+        const docs = snapshot.docs.sort((a, b) => {
+            const aTime = a.data().createdAt?.toMillis?.() || 0;
+            const bTime = b.data().createdAt?.toMillis?.() || 0;
+            return bTime - aTime;
+        });
+
+        docs.forEach(doc => {
+            const data = doc.data();
+            const paymentId = data.paymentId || doc.id;
+            const planKey = data.planKey || 'unknown';
+            const planName = planNames[planKey] || planKey;
+            const amount = data.amount || 0;
+            const tokens = data.tokens || 0;
+            const status = data.status || 'completed';
+            const statusName = statusNames[status] || status;
+            const statusClass = `payment-status-${status}`;
+
+            let dateStr = '-';
+            if (data.createdAt) {
+                const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+                dateStr = date.toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            }
+
+            const isCancelled = status === 'cancelled' || status === 'refunded';
+            const onClickAttr = isCancelled ? '' : `onclick="openPaymentReceipt('${paymentId}')"`;
+
+            html += `
+                <div class="payment-history-item" ${onClickAttr}>
+                    <div class="payment-item-left">
+                        <div class="payment-item-plan">${planName}</div>
+                        <div class="payment-item-date">${dateStr}</div>
+                        <span class="payment-status-badge ${statusClass}">${statusName}</span>
+                    </div>
+                    <div class="payment-item-right">
+                        <div class="payment-item-amount">${amount.toLocaleString()}원</div>
+                        <div class="payment-item-tokens">+${tokens.toLocaleString()} 토큰</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        listEl.innerHTML = html;
+
+    } catch (error) {
+        console.error('결제 내역 로드 실패:', error);
+        listEl.innerHTML = `<div class="no-payment-message">로딩 중 오류가 발생했습니다.</div>`;
     }
 }
 

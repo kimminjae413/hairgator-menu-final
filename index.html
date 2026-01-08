@@ -17,9 +17,10 @@
                 style.textContent = '\
                     .login-screen { display: none !important; }\
                     html, body { padding: 0 !important; margin: 0 !important; }\
-                    .header { padding-top: 0 !important; height: 50px !important; min-height: 50px !important; }\
-                    .tablet-fixed-header { top: 50px !important; padding-top: 10px !important; }\
-                    .menu-items-container { top: 50px !important; padding-top: 160px !important; }\
+                    .header { padding-top: 0 !important; height: 48px !important; min-height: 48px !important; margin: 0 !important; }\
+                    .back-btn { top: 0 !important; }\
+                    .tablet-fixed-header { top: 48px !important; padding-top: 5px !important; margin-top: 0 !important; }\
+                    .menu-items-container { top: 48px !important; padding-top: 175px !important; }\
                 ';
                 document.head.appendChild(style);
             }
@@ -898,6 +899,61 @@
         }
         body.light-theme .no-payment-message {
             color: rgba(0,0,0,0.4);
+        }
+
+        /* Products 페이지 결제 정보 섹션 */
+        .products-payment-section {
+            margin-top: 30px;
+            padding: 0 16px 20px;
+        }
+        .current-plan-info {
+            background: linear-gradient(135deg, #E91E63 0%, #9C27B0 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+        }
+        .current-plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .current-plan-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .current-plan-name {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .current-plan-details {
+            display: flex;
+            gap: 20px;
+        }
+        .plan-detail-item {
+            flex: 1;
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .detail-label {
+            display: block;
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 4px;
+        }
+        .detail-value {
+            display: block;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .products-history {
+            margin: 0;
+        }
+        .products-history .section-header h3 {
+            color: var(--text-primary);
         }
 
         /* NEW 뱃지 */
@@ -2294,6 +2350,35 @@
                     <li><span class="icon-bonus">+</span> 최고 효율 플랜</li>
                 </ul>
                 <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('business')">선택하기</button>
+            </div>
+        </div>
+
+        <!-- 현재 플랜 정보 + 결제 내역 -->
+        <div class="products-payment-section">
+            <div class="current-plan-info" id="currentPlanInfo">
+                <div class="current-plan-header">
+                    <span class="current-plan-label" data-i18n="ui.currentPlan">현재 플랜</span>
+                    <span class="current-plan-name" id="currentPlanName">무료</span>
+                </div>
+                <div class="current-plan-details">
+                    <div class="plan-detail-item">
+                        <span class="detail-label" data-i18n="ui.remainingTokens">남은 토큰</span>
+                        <span class="detail-value" id="currentPlanTokens">0</span>
+                    </div>
+                    <div class="plan-detail-item">
+                        <span class="detail-label" data-i18n="ui.planExpiry">만료일</span>
+                        <span class="detail-value" id="currentPlanExpiry">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="payment-history-section products-history">
+                <div class="section-header">
+                    <h3 data-i18n="ui.paymentHistory">결제 내역</h3>
+                </div>
+                <div id="productsPaymentHistoryList" class="payment-history-list">
+                    <div class="loading-message" data-i18n="ui.loading">로딩 중...</div>
+                </div>
             </div>
         </div>
     </div>
