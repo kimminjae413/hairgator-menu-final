@@ -105,18 +105,28 @@ function initFirebaseAuth() {
             const currentPage = window.location.pathname;
             const urlParams = new URLSearchParams(window.location.search);
             const hasFlutterToken = urlParams.has('firebaseToken');
-            // Flutter 앱 감지: URL 파라미터, localStorage, JavaScript 채널 모두 확인
-            const isFlutterApp = urlParams.has('isFlutterApp') ||
+
+            // Flutter 앱 감지: 전역변수, URL 파라미터, localStorage, JavaScript 채널 모두 확인
+            // iOS WKWebView에서 auth state가 갑자기 null이 될 수 있어서 여러 방법으로 체크
+            const isFlutterApp = window.isFlutterApp === true ||
+                                 urlParams.has('isFlutterApp') ||
                                  localStorage.getItem('isFlutterApp') === 'true' ||
                                  !!window.FlutterChannel ||
                                  !!window.DownloadChannel;
 
-            // Flutter 앱에서는 리다이렉트하지 않음 (Flutter가 인증 관리)
+            // Flutter 앱에서는 절대 리다이렉트하지 않음 (Flutter가 인증 관리)
             if (isFlutterApp) {
-                console.log('📱 Flutter WebView 감지, 리다이렉트 안 함 (source:',
+                const source = window.isFlutterApp === true ? 'window.isFlutterApp' :
                     urlParams.has('isFlutterApp') ? 'URL' :
                     localStorage.getItem('isFlutterApp') === 'true' ? 'localStorage' :
-                    window.FlutterChannel ? 'FlutterChannel' : 'DownloadChannel', ')');
+                    window.FlutterChannel ? 'FlutterChannel' : 'DownloadChannel';
+                console.log('📱 Flutter WebView 감지, 리다이렉트 안 함 (source:', source, ')');
+
+                // Flutter 앱에서 로그아웃 상태면 FlutterChannel로 알림
+                if (window.FlutterChannel) {
+                    console.log('📱 Flutter에 로그아웃 상태 알림');
+                    window.FlutterChannel.postMessage('auth_state_null');
+                }
                 return;
             }
 

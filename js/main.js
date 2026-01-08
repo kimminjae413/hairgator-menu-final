@@ -115,10 +115,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const firebaseToken = urlParams.get('firebaseToken');
         const isFlutterAppParam = urlParams.has('isFlutterApp');
 
-        // isFlutterApp 파라미터가 있으면 localStorage에 저장 (URL 파라미터 제거 후에도 유지)
-        if (isFlutterAppParam) {
+        // isFlutterApp 파라미터가 있으면 전역 변수 + localStorage 모두 저장
+        // 전역 변수는 페이지 세션 내에서 유지, localStorage는 새로고침 시에도 유지
+        if (isFlutterAppParam || window.FlutterChannel || window.DownloadChannel) {
+            window.isFlutterApp = true;
             localStorage.setItem('isFlutterApp', 'true');
-            console.log('[Flutter] isFlutterApp 플래그 localStorage에 저장');
+            console.log('[Flutter] ✅ isFlutterApp 플래그 설정 (전역변수 + localStorage)');
         }
 
         if (!firebaseToken) {
