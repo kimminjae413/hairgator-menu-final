@@ -36,17 +36,25 @@ let currentStyleIndex = 0;       // 현재 표시 중인 스타일 인덱스
             return;  // 클릭 허용
         }
 
-        // 스크롤 가능한 컨테이너 내부인지 확인 (세로 + 가로 모두)
+        // ⭐ 명시적 스크롤 컨테이너 체크 (우선 처리)
+        const scrollableContainer = e.target.closest('.styles-container, .menu-items-container, .style-modal-content, .page-content');
+        if (scrollableContainer) {
+            // 스크롤 컨테이너 내부 - 맨 위에서 더 위로 당기는 경우만 막기
+            const isAtTop = scrollableContainer.scrollTop <= 0;
+            const isPullingDown = currentY > lastY;
+            if (isAtTop && isPullingDown) {
+                e.preventDefault();
+            }
+            lastY = currentY;
+            return;
+        }
+
+        // 그 외 영역 - 가로 스크롤 체크
         let el = e.target;
         while (el && el !== document.body) {
             const style = window.getComputedStyle(el);
-            const overflowY = style.overflowY;
             const overflowX = style.overflowX;
 
-            // 세로 스크롤 가능한 영역
-            if ((overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight) {
-                return;  // 기본 동작 허용
-            }
             // 가로 스크롤 가능한 영역 (대분류 탭 등)
             if ((overflowX === 'auto' || overflowX === 'scroll') && el.scrollWidth > el.clientWidth) {
                 return;  // 기본 동작 허용
@@ -59,6 +67,7 @@ let currentStyleIndex = 0;       // 현재 표시 중인 스타일 인덱스
         if (scrollTop <= 0 && currentY > lastY) {
             e.preventDefault();
         }
+        lastY = currentY;
     }, { passive: false });
 })();
 
