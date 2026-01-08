@@ -104,11 +104,11 @@ function initFirebaseAuth() {
             const currentPage = window.location.pathname;
             const urlParams = new URLSearchParams(window.location.search);
             const hasFlutterToken = urlParams.has('firebaseToken');
-            const isFlutterApp = !!window.FlutterChannel || !!window.DownloadChannel;
+            const isFlutterApp = urlParams.has('isFlutterApp') || !!window.FlutterChannel || !!window.DownloadChannel;
 
             // Flutter 앱에서는 리다이렉트하지 않음 (Flutter가 인증 관리)
             if (isFlutterApp) {
-                console.log('📱 Flutter WebView 감지, 리다이렉트 안 함');
+                console.log('📱 Flutter WebView 감지 (isFlutterApp 파라미터), 리다이렉트 안 함');
                 return;
             }
 
