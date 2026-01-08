@@ -5,20 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HAIRGATOR - Professional Hair Style Menu</title>
 
-    <!-- ⭐ Flutter 앱 모드 감지 (가장 먼저 실행!) - v8 (safe-area 비활성화) -->
+    <!-- ⭐ Flutter 앱 모드 감지 (가장 먼저 실행!) -->
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
             window.IS_FLUTTER_APP = params.has('isFlutterApp') || params.has('firebaseToken');
             if (window.IS_FLUTTER_APP) {
-                console.log('📱 [v8] Flutter 앱 모드');
+                console.log('📱 [EARLY] Flutter 앱 모드 감지됨');
+                // Flutter 앱에서는 loginScreen을 CSS로 완전히 숨김
                 var style = document.createElement('style');
-                // Flutter에서 SafeArea 처리하므로 웹의 safe-area 비활성화
-                style.textContent = '\
-                    .login-screen { display: none !important; }\
-                    body { padding-top: 0 !important; padding-bottom: 0 !important; }\
-                    .header { height: 50px !important; padding-top: 0 !important; }\
-                ';
+                style.textContent = '.login-screen { display: none !important; }';
                 document.head.appendChild(style);
             }
         })();
@@ -1249,102 +1245,6 @@
         }
         .inquiry-message.user .message-time {
             color: rgba(255,255,255,0.7);
-        }
-
-        /* ========== iPad/태블릿 반응형 (1024px 이상) ========== */
-        @media (min-width: 1024px) {
-            /* productsPage (Plan & Billing) - 콘텐츠 중앙 정렬 + 카드 크기 확대 */
-            #productsPage .page-content {
-                max-width: 900px;
-                margin: 0 auto;
-                padding: 40px 24px;
-            }
-            #productsPage .pricing-cards-horizontal {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 24px;
-            }
-            #productsPage .plan-card {
-                padding: 36px 28px;
-                min-width: auto;
-            }
-            #productsPage .plan-name {
-                font-size: 24px;
-            }
-            #productsPage .plan-price {
-                font-size: 42px;
-            }
-            #productsPage .plan-credits {
-                font-size: 18px;
-            }
-            #productsPage .plan-usage-example {
-                font-size: 15px;
-            }
-            #productsPage .plan-features li {
-                font-size: 15px;
-                padding: 10px 0;
-            }
-            #productsPage .plan-btn {
-                padding: 16px 28px;
-                font-size: 17px;
-            }
-
-            /* mypagePage (My) - 콘텐츠 중앙 정렬 + 여백 */
-            #mypagePage .page-content {
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 24px;
-            }
-            #mypagePage .mypage-profile {
-                padding: 28px;
-            }
-            #mypagePage .profile-avatar {
-                width: 80px;
-                height: 80px;
-                font-size: 36px;
-            }
-            #mypagePage .profile-name {
-                font-size: 24px;
-            }
-            #mypagePage .profile-email {
-                font-size: 16px;
-            }
-            #mypagePage .mypage-card {
-                padding: 24px;
-            }
-            #mypagePage .card-label {
-                font-size: 14px;
-            }
-            #mypagePage .card-value {
-                font-size: 24px;
-            }
-            #mypagePage .mypage-menu .menu-item {
-                padding: 18px 24px;
-            }
-            #mypagePage .menu-text {
-                font-size: 17px;
-            }
-        }
-
-        /* 더 큰 태블릿/데스크톱 (1366px 이상) */
-        @media (min-width: 1366px) {
-            #productsPage .page-content {
-                max-width: 1100px;
-            }
-            #productsPage .pricing-cards-horizontal {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 20px;
-            }
-            #productsPage .plan-card {
-                padding: 32px 24px;
-            }
-            #productsPage .plan-price {
-                font-size: 36px;
-            }
-
-            #mypagePage .page-content {
-                max-width: 700px;
-            }
         }
     </style>
 
