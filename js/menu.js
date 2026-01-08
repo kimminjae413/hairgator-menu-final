@@ -2871,11 +2871,18 @@ async function saveHairTryResult(imageUrl) {
         return;
     }
 
+    // Flutter WebView에서는 DownloadChannel 사용
+    if (window.DownloadChannel) {
+        console.log('[HairTry] Flutter 채널로 이미지 저장 요청:', imageUrl);
+        window.DownloadChannel.postMessage(imageUrl);
+        return;
+    }
+
     // 모바일 체크
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     if (isMobile) {
-        // 모바일: 오버레이로 길게 눌러 저장 안내
+        // 모바일 브라우저: 오버레이로 길게 눌러 저장 안내
         showSaveImageOverlay(imageUrl);
     } else {
         // 데스크톱: 직접 다운로드 시도

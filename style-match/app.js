@@ -4214,7 +4214,14 @@ window.retryHairTry = function() {
 
 window.downloadHairTryResult = async function(imageUrl) {
     try {
-        // WebView에서도 작동하도록 fetch + blob 방식 사용
+        // Flutter WebView에서는 DownloadChannel 사용
+        if (window.DownloadChannel) {
+            console.log('[HairTry] Flutter 채널로 이미지 저장 요청:', imageUrl);
+            window.DownloadChannel.postMessage(imageUrl);
+            return;
+        }
+
+        // 일반 브라우저: fetch + blob 방식
         const response = await fetch(imageUrl);
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
