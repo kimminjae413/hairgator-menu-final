@@ -782,6 +782,10 @@ function showCardSelectionModal(cards, defaultBillingKey, planKey, userId) {
             <input type="checkbox" id="saveNewCard" checked>
             <span>다음 결제를 위해 카드 정보 저장</span>
           </label>
+
+          <button class="confirm-payment-btn" id="confirmPaymentBtn" disabled onclick="confirmSavedCardPayment('${planKey}')">
+            결제하기
+          </button>
         </div>
       </div>
     </div>
@@ -932,6 +936,26 @@ function showCardSelectionModal(cards, defaultBillingKey, planKey, userId) {
         height: 18px;
         accent-color: #E91E63;
       }
+      .confirm-payment-btn {
+        width: 100%;
+        padding: 16px;
+        margin-top: 20px;
+        background: #E91E63;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .confirm-payment-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .confirm-payment-btn:not(:disabled):hover {
+        background: #C2185B;
+      }
     `;
     document.head.appendChild(styles);
   }
@@ -947,30 +971,46 @@ function closeCardSelectionModal() {
   if (modal) modal.remove();
 }
 
-/**
- * 저장된 카드 선택하여 결제
- */
-async function selectSavedCard(billingKey, planKey) {
-  const userId = HAIRGATOR_PAYMENT.getUserId();
-  const userName = window.currentDesigner?.name || '';
+// 선택된 빌링키 저장용 변수
+let selectedBillingKey = null;
 
+/**
+ * 저장된 카드 선택 (UI만 업데이트)
+ */
+function selectSavedCard(billingKey, planKey) {
   // 선택 UI 업데이트
   document.querySelectorAll('.saved-card-item').forEach(item => {
     item.classList.remove('selected');
   });
   document.querySelector(`[data-billing-key="${billingKey}"]`)?.classList.add('selected');
 
-  // 확인 후 결제
-  const plan = HAIRGATOR_PAYMENT.plans[planKey];
-  if (!confirm(`${plan.name} (₩${plan.price.toLocaleString()})을 결제하시겠습니까?`)) {
+  // 선택된 빌링키 저장
+  selectedBillingKey = billingKey;
+
+  // 결제하기 버튼 활성화
+  const confirmBtn = document.getElementById('confirmPaymentBtn');
+  if (confirmBtn) {
+    confirmBtn.disabled = false;
+  }
+}
+
+/**
+ * 저장된 카드로 결제 확인
+ */
+async function confirmSavedCardPayment(planKey) {
+  if (!selectedBillingKey) {
+    alert('카드를 선택해주세요.');
     return;
   }
+
+  const userId = HAIRGATOR_PAYMENT.getUserId();
+  const userName = window.currentDesigner?.name || '';
 
   closeCardSelectionModal();
   showPaymentLoading(true);
 
   try {
-    const result = await payWithBillingKey(billingKey, planKey, userId, userName);
+    const result = await payWithBillingKey(selectedBillingKey, planKey, userId, userName);
 
     if (result.success) {
       alert(`${result.tokens.toLocaleString()} 토큰이 충전되었습니다!`);
@@ -984,6 +1024,7 @@ async function selectSavedCard(billingKey, planKey) {
     alert(error.message || '결제에 실패했습니다.');
   } finally {
     showPaymentLoading(false);
+    selectedBillingKey = null; // 초기화
   }
 }
 
