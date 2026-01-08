@@ -104,6 +104,13 @@ function initFirebaseAuth() {
             const currentPage = window.location.pathname;
             const urlParams = new URLSearchParams(window.location.search);
             const hasFlutterToken = urlParams.has('firebaseToken');
+            const isFlutterApp = !!window.FlutterChannel || !!window.DownloadChannel;
+
+            // Flutter 앱에서는 리다이렉트하지 않음 (Flutter가 인증 관리)
+            if (isFlutterApp) {
+                console.log('📱 Flutter WebView 감지, 리다이렉트 안 함');
+                return;
+            }
 
             // Flutter 앱에서 토큰이 전달된 경우, 자동 로그인 대기
             if (hasFlutterToken) {
