@@ -216,6 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'products':
                 if (productsPage) {
                     productsPage.style.display = 'block';
+                    fixPageScroll(productsPage); // 스크롤 문제 수정
                     updateProductsPagePlan(); // 현재 플랜 표시 업데이트
                     console.log('📦 상품 페이지 표시');
                 }
@@ -223,6 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'mypage':
                 if (mypagePage) {
                     mypagePage.style.display = 'block';
+                    fixPageScroll(mypagePage); // 스크롤 문제 수정
                     updateMypageInfo(); // 마이페이지 정보 업데이트
                     console.log('👤 마이페이지 표시');
                 }
@@ -240,6 +242,57 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('🏠 메인 페이지');
                 break;
         }
+    }
+
+    // 페이지 스크롤 문제 수정 (iOS WebView)
+    function fixPageScroll(pageElement) {
+        if (!pageElement) return;
+
+        // 스크롤 위치 초기화
+        pageElement.scrollTop = 0;
+
+        // 스크롤 관련 스타일 강제 설정
+        pageElement.style.overflow = 'auto';
+        pageElement.style.overflowY = 'auto';
+        pageElement.style.webkitOverflowScrolling = 'touch';
+
+        // page-content도 설정
+        const pageContent = pageElement.querySelector('.page-content');
+        if (pageContent) {
+            pageContent.style.minHeight = '100%';
+            pageContent.style.paddingBottom = '150px';
+        }
+
+        // iOS WebView 스크롤 잠금 방지
+        if (!pageElement._scrollFixed) {
+            pageElement._scrollFixed = true;
+
+            // 스크롤 영역 터치 시작점 저장
+            let startY = 0;
+
+            pageElement.addEventListener('touchstart', function(e) {
+                startY = e.touches[0].pageY;
+            }, { passive: true });
+
+            pageElement.addEventListener('touchmove', function(e) {
+                const scrollTop = pageElement.scrollTop;
+                const scrollHeight = pageElement.scrollHeight;
+                const clientHeight = pageElement.clientHeight;
+                const currentY = e.touches[0].pageY;
+                const deltaY = currentY - startY;
+
+                // 맨 위에서 아래로 당기거나, 맨 아래에서 위로 당길 때만 기본 동작 허용
+                if (scrollTop <= 0 && deltaY > 0) {
+                    // 맨 위에서 더 위로 - 약간의 스크롤 허용
+                    pageElement.scrollTop = 1;
+                } else if (scrollTop + clientHeight >= scrollHeight && deltaY < 0) {
+                    // 맨 아래에서 더 아래로 - 약간의 스크롤 허용
+                    pageElement.scrollTop = scrollHeight - clientHeight - 1;
+                }
+            }, { passive: true });
+        }
+
+        console.log('🔧 페이지 스크롤 수정 적용:', pageElement.id);
     }
 
     // 해시 네비게이션 함수 (전역으로 노출)
