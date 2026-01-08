@@ -3050,6 +3050,17 @@
             loadingOverlay.style.display = show ? 'flex' : 'none';
         }
 
+        // ⭐ 페이지 로드/복원 시 로딩 오버레이 숨기기 (bfcache 대응)
+        window.addEventListener('pageshow', function(event) {
+            // bfcache에서 복원되거나 일반 로드 시 로딩 오버레이 숨기기
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+            }
+            console.log('📄 페이지 표시됨 (persisted:', event.persisted, ')');
+        });
+        // 초기 로드 시에도 숨기기
+        loadingOverlay.style.display = 'none';
+
         function showToast(message, type = 'info') {
             toast.textContent = message;
             toast.className = `toast ${type} show`;
