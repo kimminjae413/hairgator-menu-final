@@ -11,21 +11,13 @@
             var params = new URLSearchParams(window.location.search);
             window.IS_FLUTTER_APP = params.has('isFlutterApp') || params.has('firebaseToken');
             if (window.IS_FLUTTER_APP) {
-                console.log('📱 [Flutter] safe-area 비활성화');
-                var style = document.createElement('style');
-                // Flutter SafeArea가 처리하므로 웹의 모든 safe-area 패딩 제거
-                style.textContent = '\
-                    .login-screen { display: none !important; }\
-                    html, body { padding: 0 !important; margin: 0 !important; overflow: visible !important; }\
-                    .header { padding-top: 0 !important; height: 48px !important; min-height: 48px !important; margin: 0 !important; }\
-                    .back-btn { top: 0 !important; }\
-                    .tablet-fixed-header { top: 48px !important; padding-top: 5px !important; margin-top: 0 !important; }\
-                    .menu-items-container { top: 48px !important; padding-top: 175px !important; }\
-                    .page-container { overscroll-behavior: auto !important; -webkit-overflow-scrolling: touch !important; }\
-                    #mypagePage { overflow-y: scroll !important; -webkit-overflow-scrolling: touch !important; }\
-                    #mypagePage .page-content { padding-bottom: 120px !important; }\
-                ';
-                document.head.appendChild(style);
+                console.log('📱 [Flutter] Flutter 앱 모드 활성화');
+                // html에 클래스 추가 (즉시)
+                document.documentElement.classList.add('flutter-app');
+                // body에 클래스 추가 (DOM 준비 후)
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.body.classList.add('flutter-app');
+                });
             }
         })();
     </script>

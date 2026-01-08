@@ -4426,3 +4426,60 @@ body.light-theme .upgrade-btn-secondary:hover {
     background: rgba(0, 0, 0, 0.05);
 }
 
+/* ========== Flutter 앱 모드 전용 스타일 (모든 미디어 쿼리 덮어쓰기) ========== */
+/* html.flutter-app 또는 body.flutter-app 클래스는 index.html의 Flutter 감지 스크립트에서 추가됨 */
+html.flutter-app body,
+body.flutter-app {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+html.flutter-app .login-screen,
+body.flutter-app .login-screen {
+    display: none !important;
+}
+
+html.flutter-app .header,
+body.flutter-app .header {
+    padding-top: 0 !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    margin: 0 !important;
+}
+
+html.flutter-app .back-btn,
+body.flutter-app .back-btn {
+    top: 0 !important;
+}
+
+/* Flutter 앱 모드 - 태블릿 가로모드 포함 모든 케이스 덮어쓰기 */
+html.flutter-app .tablet-fixed-header,
+body.flutter-app .tablet-fixed-header {
+    top: 48px !important;
+    padding-top: 5px !important;
+    margin-top: 0 !important;
+}
+
+html.flutter-app .menu-items-container,
+html.flutter-app .styles-container,
+body.flutter-app .menu-items-container,
+body.flutter-app .styles-container {
+    top: 48px !important;
+    padding-top: 175px !important;
+}
+
+/* Flutter 앱 모드 - 페이지 스크롤 문제 수정 */
+html.flutter-app .page-container,
+body.flutter-app .page-container {
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: auto !important;
+}
+
+html.flutter-app #mypagePage .page-content,
+html.flutter-app #productsPage .page-content,
+body.flutter-app #mypagePage .page-content,
+body.flutter-app #productsPage .page-content {
+    padding-bottom: 120px !important;
+}
+
