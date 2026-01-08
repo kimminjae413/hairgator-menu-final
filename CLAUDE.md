@@ -1,28 +1,15 @@
 # HAIRGATOR 챗봇 - Claude 작업 가이드
 
-## 🚨 재시작 후 해야 할 일 (2026-01-08)
+## 🚨 현재 앱 버전 (2026-01-08 업데이트)
 
-### 1. Android v62 Play Store 배포
-- **AAB 파일**: `D:\hairgator_dev\hairgator_flutter_app\build\app\outputs\bundle\release\app-release.aab`
-- **버전**: 1.0.0+62
-- **v62 변경사항**:
-  - `permission_handler` 패키지 추가
-  - 앱 시작 시 카메라/사진 권한 요청
-  - Android WebView `setOnPlatformPermissionRequest` 설정
-  - iOS WebView `allowsInlineMediaPlayback` 설정
-  - AI 스타일 매치 수동 캡처 모드 (MediaPipe 미응답 시 3초 후 활성화)
+| 플랫폼 | 스토어 제출 | 최신 빌드 |
+|--------|------------|----------|
+| **Android** | v73 | v76 (테스트 완료) |
+| **iOS** | v76 | v76 |
 
-### 2. iOS Codemagic 빌드 시작
-- GitHub 푸시 완료 (커밋: `9380fb2`)
-- iOS에도 v62 변경사항 포함:
-  - iOS Podfile permission_handler 설정
-  - Info.plist 카메라/사진 권한 설명 추가
-  - WebView allowsInlineMediaPlayback 설정
-
-### 3. AI 스타일 매치 테스트
-- 카메라는 켜짐 ✅
-- MediaPipe Face Mesh가 WebView에서 동작 안 함 → 수동 캡처 모드로 폴백
-- 3초 후 "수동 촬영 모드" 표시되고 촬영하기 버튼 활성화
+### 빌드 파일 경로
+- **APK**: `D:\hairgator_dev\hairgator_flutter_app\build\app\outputs\flutter-apk\app-release.apk`
+- **AAB**: `D:\hairgator_dev\hairgator_flutter_app\build\app\outputs\bundle\release\app-release.aab`
 
 ---
 
@@ -30,9 +17,17 @@
 
 | 버전 | 상태 | 내용 |
 |------|------|------|
-| v60 | ✅ Play Store 제출됨 | 카카오 로그인 수정 |
-| v61 | 빌드만 | 카메라 권한 추가 |
-| v62 | **현재** | permission_handler + WebView 권한 핸들러 + 수동 캡처 모드 |
+| v76 | ✅ **현재** | 디버그 버튼/콘솔 UI 제거 |
+| v75 | iOS 제출됨 | login.html 리다이렉트 감지 |
+| v74 | iOS 제출됨 | WebView 콘솔 로그 캡처 |
+| v73 | Android 제출됨 | 네이티브 로그인 약관 동의 |
+| v72 | iOS | iOS Keychain 세션 정리 |
+| v62 | 레거시 | permission_handler + WebView 권한 |
+
+### ⚠️ v77은 사용하지 않음!
+- v77: Flutter에서 스크롤 문제 해결 시도 (VerticalDragGestureRecognizer 변경)
+- **결과**: 불필요 - 스크롤 문제는 **웹 코드(menu.js)에서 해결됨**
+- v76으로 유지!
 
 ---
 
@@ -62,6 +57,68 @@
 ---
 
 ## 🔴 자주 헷갈리는 것들
+
+### 🔥 Flutter WebView 스크롤 문제 (2026-01-08 해결) - 중요!
+
+**증상:**
+- 1번 탭 (스타일 메뉴): 스크롤 정상 ✅
+- 2번/3번 탭 (Plan & Billing, My): 아래로 스크롤은 됨, **위로 스크롤 안됨** ❌
+- 손가락 안 떼면 됨, 떼고 다시 올리면 안됨
+
+**원인 (menu.js Pull-to-Refresh 차단 코드):**
+```javascript
+// ❌ 문제 코드 - window.scrollY는 항상 0!
+const scrollTop = window.scrollY || document.documentElement.scrollTop;
+if (scrollTop <= 0 && currentY > lastY) {
+    e.preventDefault();  // 위로 스크롤 시 항상 막힘!
+}
+```
+- `.page-content`는 `position: absolute`라서 `window.scrollY`가 항상 0
+- 1번 탭은 이 코드를 안 거침 (`.menu-items-container`는 별도 체크)
+
+**해결 (menu.js 수정):**
+```javascript
+// ✅ 명시적 스크롤 컨테이너 체크 추가
+const scrollableContainer = e.target.closest(
+    '.styles-container, .menu-items-container, .style-modal-content, .page-content'
+);
+if (scrollableContainer) {
+    // scrollableContainer.scrollTop 사용! (window.scrollY 아님!)
+    const isAtTop = scrollableContainer.scrollTop <= 0;
+    if (isAtTop && isPullingDown) {
+        e.preventDefault();
+    }
+    return;
+}
+```
+
+**같이 수정해야 하는 파일:**
+- `dynamic-layout.js` line 49: `.page-content` 추가 필요
+
+**핵심 교훈:**
+- ❌ `window.scrollY` 사용하면 `position: absolute/fixed` 컨테이너에서 항상 0
+- ✅ 스크롤 컨테이너의 `.scrollTop` 직접 사용해야 함
+- ❌ Flutter 쪽 수정 불필요 - 웹에서 해결!
+
+---
+
+### 로딩 오버레이 안 사라지는 문제 (2026-01-08)
+
+**증상:** 스타일 매치에서 뒤로가기 → 메뉴판에 로딩 스피너 계속 표시
+
+**원인:** bfcache (back-forward cache)에서 페이지 복원 시 이전 상태 유지
+
+**해결 (index.html):**
+```javascript
+window.addEventListener('pageshow', function(event) {
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+    }
+});
+loadingOverlay.style.display = 'none'; // 초기화 시에도
+```
+
+---
 
 ### Flutter WebView 카카오 로그인 흐름 (2026-01-07 디버깅)
 
