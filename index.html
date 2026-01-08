@@ -5,21 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HAIRGATOR - Professional Hair Style Menu</title>
 
-    <!-- ⭐ Flutter 앱 모드 감지 (가장 먼저 실행!) - v4 (하단 탭바 패딩 추가) -->
+    <!-- ⭐ Flutter 앱 모드 감지 (가장 먼저 실행!) - v6 (padding 제거) -->
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
             window.IS_FLUTTER_APP = params.has('isFlutterApp') || params.has('firebaseToken');
             if (window.IS_FLUTTER_APP) {
-                console.log('📱 [v4] Flutter 앱 모드');
+                console.log('📱 [v6] Flutter 앱 모드');
                 var style = document.createElement('style');
-                // 로그인 UI 숨김 + Flutter 하단 탭바 공간 확보 (70px)
-                style.textContent = '\
-                    .login-screen, #loginScreen, .login-modal, .login-container, .login-form { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; height: 0 !important; overflow: hidden !important; position: absolute !important; left: -9999px !important; }\
-                    .page-container { padding-bottom: 70px !important; }\
-                    #menuContainer { padding-bottom: 70px !important; }\
-                    body { padding-bottom: 70px !important; }\
-                ';
+                // 로그인 UI 숨김만 적용
+                style.textContent = '.login-screen, #loginScreen, .login-modal, .login-container, .login-form { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; height: 0 !important; overflow: hidden !important; position: absolute !important; left: -9999px !important; }';
                 document.head.appendChild(style);
             }
         })();
@@ -4619,22 +4614,6 @@ if (window.innerWidth >= 768 && window.innerWidth <= 1024) {
   `;
   document.body.insertAdjacentHTML('beforeend', buttonHTML);
   console.log('✅ AI Studio 플로팅 버튼 생성 완료');
-
-  // ⭐ 첫 번째 탭(스타일 메뉴)에서만 AI Recipe 버튼 표시
-  function updateAIButtonVisibility() {
-    const hash = window.location.hash;
-    const wrapper = document.getElementById('ai-studio-wrapper');
-    if (!wrapper) return;
-
-    // 첫 번째 탭: 해시 없음, '#', 또는 빈 해시
-    const isFirstTab = !hash || hash === '#' || hash === '';
-    wrapper.style.display = isFirstTab ? 'flex' : 'none';
-    console.log('[AI Button] hash=' + hash + ', visible=' + isFirstTab);
-  }
-
-  // 초기 상태 설정 및 해시 변경 감지
-  updateAIButtonVisibility();
-  window.addEventListener('hashchange', updateAIButtonVisibility);
 })();
 
 // AI Studio 이동
