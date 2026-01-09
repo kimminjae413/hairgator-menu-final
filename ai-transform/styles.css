@@ -506,15 +506,16 @@ body {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.9);
-    display: none;
+    display: none !important;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 200;
 }
 
+/* 명시적으로 visible 클래스가 있을 때만 표시 */
 .loading-overlay.visible {
-    display: flex;
+    display: flex !important;
 }
 
 .loading-spinner {
