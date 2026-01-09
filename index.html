@@ -46,6 +46,9 @@
             var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
+            // 로딩 오버레이 HTML 템플릿 저장
+            var loadingOverlayHTML = null;
+
             function forceHideLoading() {
                 var overlay = document.getElementById('loadingOverlay');
                 if (overlay) {
@@ -56,27 +59,55 @@
                 }
             }
 
-            // ⭐ 핵심: bfcache에서 복원 시 페이지 새로고침 (iOS만)
+            // 로딩 오버레이 완전 제거
+            function removeLoadingOverlay() {
+                var overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    // HTML 저장 (나중에 복원용)
+                    if (!loadingOverlayHTML) {
+                        loadingOverlayHTML = overlay.outerHTML;
+                    }
+                    overlay.remove();
+                    console.log('🗑️ 로딩 오버레이 DOM에서 제거됨');
+                }
+            }
+
+            // 로딩 오버레이 복원 (숨김 상태로)
+            function restoreLoadingOverlay() {
+                if (loadingOverlayHTML && !document.getElementById('loadingOverlay')) {
+                    var temp = document.createElement('div');
+                    temp.innerHTML = loadingOverlayHTML;
+                    var overlay = temp.firstElementChild;
+                    overlay.style.cssText = 'display: none !important;';
+                    overlay.classList.add('force-hide');
+                    overlay.classList.remove('visible');
+                    document.body.appendChild(overlay);
+                    console.log('♻️ 로딩 오버레이 복원됨 (숨김 상태)');
+                }
+            }
+
+            // ⭐ bfcache에서 복원 시
             window.addEventListener('pageshow', function(e) {
                 console.log('📄 pageshow - persisted:', e.persisted, 'isIOS:', isIOS);
 
-                // bfcache에서 복원된 경우 (e.persisted === true)
-                if (e.persisted) {
-                    console.log('🔄 bfcache에서 복원됨 - 페이지 새로고침');
-                    // iOS에서만 새로고침 (Android는 문제 없음)
-                    if (isIOS) {
-                        window.location.reload();
-                        return;
-                    }
+                if (e.persisted && isIOS) {
+                    console.log('🔄 iOS bfcache에서 복원됨 - 로딩 오버레이 처리');
+                    // DOM에서 제거 후 숨김 상태로 복원
+                    removeLoadingOverlay();
+                    setTimeout(function() {
+                        restoreLoadingOverlay();
+                    }, 100);
                 }
-
-                // 일반적인 경우: 로딩 오버레이 숨기기
                 forceHideLoading();
             });
 
-            // pagehide: 페이지 떠날 때 로딩 숨기기
+            // pagehide: 페이지 떠날 때 로딩 오버레이 제거
             window.addEventListener('pagehide', function() {
-                forceHideLoading();
+                if (isIOS) {
+                    removeLoadingOverlay();
+                } else {
+                    forceHideLoading();
+                }
             });
 
             // DOM 로드 시 로딩 숨기기
@@ -85,6 +116,8 @@
             });
 
             window.forceHideLoading = forceHideLoading;
+            window.removeLoadingOverlay = removeLoadingOverlay;
+            window.restoreLoadingOverlay = restoreLoadingOverlay;
         })();
     </script>
 
@@ -3113,6 +3146,14 @@
 
         // 유틸리티 함수들
         function showLoading(show = true) {
+            // 로딩 오버레이가 제거된 경우 복원
+            if (!loadingOverlay) {
+                loadingOverlay = document.getElementById('loadingOverlay');
+            }
+            if (!loadingOverlay && show && typeof restoreLoadingOverlay === 'function') {
+                restoreLoadingOverlay();
+                loadingOverlay = document.getElementById('loadingOverlay');
+            }
             if (loadingOverlay) {
                 if (show) {
                     loadingOverlay.classList.remove('force-hide');
