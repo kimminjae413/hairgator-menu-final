@@ -199,8 +199,24 @@
                 if (isIOS) startIOSHideInterval();
             });
             window.addEventListener('pageshow', function(e) {
+                // ⭐ bfcache에서 복원된 경우 → 메인 페이지(성별 선택)로 리다이렉트
+                if (e.persisted) {
+                    console.log('🔄 bfcache 복원 감지 → 메인 페이지로 이동');
+                    var mainUrl = window.location.origin + '/';
+                    // Flutter 앱이면 firebaseToken 유지
+                    var params = new URLSearchParams(window.location.search);
+                    var newParams = new URLSearchParams();
+                    if (params.has('firebaseToken')) {
+                        newParams.set('firebaseToken', params.get('firebaseToken'));
+                    }
+                    if (params.has('isFlutterApp')) {
+                        newParams.set('isFlutterApp', 'true');
+                    }
+                    window.location.replace(mainUrl + (newParams.toString() ? '?' + newParams.toString() : ''));
+                    return;
+                }
                 forceHideLoading();
-                if (isIOS || e.persisted) startIOSHideInterval();
+                if (isIOS) startIOSHideInterval();
             });
             window.addEventListener('pagehide', function() {
                 // 메인 페이지가 이 플래그를 보고 로딩 표시 차단

@@ -73,6 +73,26 @@
             // 페이지 표시될 때마다 실행
             window.addEventListener('pageshow', function(e) {
                 console.log('📄 pageshow - persisted:', e.persisted);
+
+                // ⭐ bfcache에서 복원된 경우 → 성별 선택 페이지로 리다이렉트
+                if (e.persisted) {
+                    console.log('🔄 bfcache 복원 감지 → 성별 선택 페이지로 이동');
+                    // gender 파라미터 제거하고 새로고침
+                    var baseUrl = window.location.origin + window.location.pathname;
+                    // Flutter 앱이면 firebaseToken 유지
+                    var params = new URLSearchParams(window.location.search);
+                    var newParams = new URLSearchParams();
+                    if (params.has('firebaseToken')) {
+                        newParams.set('firebaseToken', params.get('firebaseToken'));
+                    }
+                    if (params.has('isFlutterApp')) {
+                        newParams.set('isFlutterApp', 'true');
+                    }
+                    var newUrl = baseUrl + (newParams.toString() ? '?' + newParams.toString() : '');
+                    window.location.replace(newUrl);
+                    return;
+                }
+
                 nukeAllLoading();
                 // 추가로 100ms, 500ms 후에도 실행
                 setTimeout(nukeAllLoading, 100);
