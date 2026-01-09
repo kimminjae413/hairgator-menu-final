@@ -144,21 +144,30 @@
 
     <!-- bfcache 로딩 오버레이 숨김 -->
     <script>
-        // 페이지 로드/복원 시 로딩 오버레이 숨김
         (function() {
-            var hideLoading = function() {
+            function forceHideLoading() {
                 var overlay = document.getElementById('loadingOverlay');
                 if (overlay) {
-                    overlay.classList.remove('visible');
                     overlay.style.display = 'none';
+                    overlay.style.visibility = 'hidden';
+                    overlay.style.opacity = '0';
+                    overlay.style.pointerEvents = 'none';
+                    overlay.classList.remove('visible');
                 }
-            };
+            }
             // 즉시 실행
-            hideLoading();
+            forceHideLoading();
             // DOMContentLoaded
-            document.addEventListener('DOMContentLoaded', hideLoading);
+            document.addEventListener('DOMContentLoaded', forceHideLoading);
             // pageshow (bfcache 복원 시)
-            window.addEventListener('pageshow', hideLoading);
+            window.addEventListener('pageshow', function() {
+                forceHideLoading();
+                setTimeout(forceHideLoading, 100);
+            });
+            // pagehide (페이지 떠나기 전)
+            window.addEventListener('pagehide', forceHideLoading);
+            // popstate (히스토리 뒤로/앞으로)
+            window.addEventListener('popstate', forceHideLoading);
         })();
     </script>
 

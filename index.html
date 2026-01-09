@@ -31,6 +31,7 @@
                     overlay.style.display = 'none';
                     overlay.style.visibility = 'hidden';
                     overlay.style.opacity = '0';
+                    overlay.style.pointerEvents = 'none';
                     overlay.classList.remove('visible', 'active', 'show');
                 }
             }
@@ -43,8 +44,11 @@
             // pageshow (bfcache 복원 시) - 가장 중요!
             window.addEventListener('pageshow', function(e) {
                 forceHideLoading();
-                console.log('🔄 pageshow: 로딩 오버레이 강제 숨김 (persisted:', e.persisted, ')');
+                // 100ms 후 한번 더 (Flutter WebView 안정성)
+                setTimeout(forceHideLoading, 100);
             });
+            // pagehide (페이지 떠나기 전) - bfcache에 숨긴 상태로 저장
+            window.addEventListener('pagehide', forceHideLoading);
             // visibilitychange (앱 복귀 시)
             document.addEventListener('visibilitychange', function() {
                 if (document.visibilityState === 'visible') {
@@ -53,6 +57,8 @@
             });
             // focus (윈도우 포커스 시)
             window.addEventListener('focus', forceHideLoading);
+            // popstate (히스토리 뒤로/앞으로)
+            window.addEventListener('popstate', forceHideLoading);
         })();
     </script>
 
