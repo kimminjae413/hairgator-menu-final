@@ -217,6 +217,8 @@ body {
 .upload-card {
     flex: 1;
     aspect-ratio: 1;
+    /* iOS/iPad 폴백: aspect-ratio가 작동하지 않을 때 최소 높이 보장 */
+    min-height: 150px;
     background: var(--card-bg);
     border: 1px dashed var(--border-color);
     border-radius: 16px;
@@ -602,6 +604,47 @@ body {
 }
 
 /* ========== Responsive ========== */
+
+/* 태블릿 (iPad) - aspect-ratio 폴백 */
+@media (min-width: 600px) {
+    .upload-section {
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .upload-card {
+        /* iPad에서 aspect-ratio가 flex와 충돌할 때 명시적 높이 지정 */
+        min-height: 200px;
+        max-height: 280px;
+    }
+
+    .video-upload-card {
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        min-height: 200px;
+    }
+
+    .options-section,
+    .action-section,
+    .result-section,
+    .video-result-container {
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .section-header {
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+/* 작은 모바일 */
 @media (max-width: 380px) {
     .upload-section {
         flex-direction: column;
@@ -609,6 +652,7 @@ body {
 
     .upload-card {
         aspect-ratio: 4/3;
+        min-height: 120px;
     }
 
     .upload-arrow {

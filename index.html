@@ -3050,16 +3050,35 @@
             loadingOverlay.style.display = show ? 'flex' : 'none';
         }
 
-        // ⭐ 페이지 로드/복원 시 로딩 오버레이 숨기기 (bfcache 대응)
-        window.addEventListener('pageshow', function(event) {
-            // bfcache에서 복원되거나 일반 로드 시 로딩 오버레이 숨기기
+        // ⭐ 페이지 로드/복원 시 로딩 오버레이 숨기기 (bfcache + Flutter WebView 대응)
+        function hideLoadingOverlay() {
             if (loadingOverlay) {
                 loadingOverlay.style.display = 'none';
             }
+        }
+
+        // 1. pageshow 이벤트 (bfcache 복원)
+        window.addEventListener('pageshow', function(event) {
+            hideLoadingOverlay();
             console.log('📄 페이지 표시됨 (persisted:', event.persisted, ')');
         });
+
+        // 2. visibilitychange 이벤트 (Flutter WebView에서 더 안정적)
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                hideLoadingOverlay();
+                console.log('📄 페이지 visible 상태로 변경됨');
+            }
+        });
+
+        // 3. focus 이벤트 (앱으로 돌아올 때)
+        window.addEventListener('focus', function() {
+            hideLoadingOverlay();
+            console.log('📄 윈도우 포커스됨');
+        });
+
         // 초기 로드 시에도 숨기기
-        loadingOverlay.style.display = 'none';
+        hideLoadingOverlay();
 
         function showToast(message, type = 'info') {
             toast.textContent = message;
