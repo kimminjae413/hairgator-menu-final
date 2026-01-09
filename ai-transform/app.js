@@ -615,7 +615,10 @@
         const textEl = document.getElementById('loadingText');
         const progressEl = document.getElementById('loadingProgress');
 
-        if (overlay) overlay.classList.add('visible');
+        if (overlay) {
+            overlay.style.display = 'flex';  // 인라인 스타일 오버라이드
+            overlay.classList.add('visible');
+        }
         if (textEl) textEl.textContent = title || '처리 중...';
         if (progressEl) progressEl.textContent = desc || '';
     }
@@ -627,7 +630,10 @@
 
     function hideLoading() {
         const overlay = document.getElementById('loadingOverlay');
-        if (overlay) overlay.classList.remove('visible');
+        if (overlay) {
+            overlay.classList.remove('visible');
+            overlay.style.display = 'none';
+        }
     }
 
     function showToast(message, type = 'info') {
