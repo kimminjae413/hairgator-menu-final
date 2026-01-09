@@ -3265,6 +3265,14 @@
             }
         }
 
+        // ==================== 유틸리티 함수 ====================
+
+        // HTTP URL을 HTTPS로 변환 (Mixed Content 경고 방지)
+        function toHttps(url) {
+            if (!url) return '';
+            return url.replace(/^http:\/\//i, 'https://');
+        }
+
         // ==================== 로그인/로그아웃 (서버 API 사용) ====================
 
         // 관리자 인증 API 호출
@@ -4029,7 +4037,7 @@
 
                 // 프로필 사진 또는 이니셜
                 const avatarHtml = user.photoURL
-                    ? `<img src="${user.photoURL}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    ? `<img src="${toHttps(user.photoURL)}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); display: none; align-items: center; justify-content: center; font-weight: 600;">${(displayName || 'U')[0].toUpperCase()}</div>`
                     : `<div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 600;">${(displayName || 'U')[0].toUpperCase()}</div>`;
 
@@ -4170,7 +4178,7 @@
 
             // 상세 모달용 프로필 사진 또는 이니셜
             const detailAvatarHtml = user.photoURL
-                ? `<img src="${user.photoURL}" class="user-avatar" style="object-fit: cover;" onerror="this.outerHTML='<div class=\\'user-avatar\\'>${(user.displayName || 'U')[0].toUpperCase()}</div>'">`
+                ? `<img src="${toHttps(user.photoURL)}" class="user-avatar" style="object-fit: cover;" onerror="this.outerHTML='<div class=\\'user-avatar\\'>${(user.displayName || 'U')[0].toUpperCase()}</div>'">`
                 : `<div class="user-avatar">${(user.displayName || 'U')[0].toUpperCase()}</div>`;
 
             document.getElementById('userDetailContent').innerHTML = `
@@ -5647,7 +5655,7 @@
 
                 grid.innerHTML = snapshot.docs.map(doc => {
                     const data = doc.data();
-                    const thumbnail = data.thumbnailUrl || data.resultImage || 'https://via.placeholder.com/180x220?text=No+Image';
+                    const thumbnail = toHttps(data.thumbnailUrl || data.resultImage) || 'https://via.placeholder.com/180x220?text=No+Image';
                     const escapedData = encodeURIComponent(JSON.stringify(data));
                     const ai = data.aiAnalysis;
                     const aiEscaped = ai ? encodeURIComponent(JSON.stringify(ai)) : '';
