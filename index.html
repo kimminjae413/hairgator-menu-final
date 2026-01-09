@@ -33,97 +33,113 @@
             pointer-events: none !important;
             z-index: -9999 !important;
         }
-        /* iOS Safari에서 bfcache 복원 시 즉시 숨김 */
-        @supports (-webkit-touch-callout: none) {
-            .loading-overlay {
-                display: none;
-            }
-        }
     </style>
     <script>
         (function() {
             var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-            var hideIntervalId = null;
-            var hideIntervalCount = 0;
+
+            // 페이지 이동 플래그
+            var wasNavigatedAway = false;
 
             function forceHideLoading() {
                 var overlay = document.getElementById('loadingOverlay');
                 if (overlay) {
-                    // 모든 가능한 방법으로 숨김
                     overlay.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; z-index: -9999 !important;';
                     overlay.classList.add('force-hide');
                     overlay.classList.remove('visible', 'active', 'show');
                     overlay.setAttribute('data-force-hide', 'true');
                     overlay.setAttribute('hidden', '');
-                    overlay.setAttribute('aria-hidden', 'true');
                 }
             }
 
-            // iOS 전용: 지속적인 체크 (2초간 50ms마다)
-            function startIOSHideInterval() {
-                if (hideIntervalId) clearInterval(hideIntervalId);
-                hideIntervalCount = 0;
-                hideIntervalId = setInterval(function() {
-                    forceHideLoading();
-                    hideIntervalCount++;
-                    if (hideIntervalCount >= 40) { // 2초 (50ms * 40)
-                        clearInterval(hideIntervalId);
-                        hideIntervalId = null;
+            // MutationObserver로 로딩 오버레이 감시 (iOS 핵심)
+            function setupLoadingObserver() {
+                var overlay = document.getElementById('loadingOverlay');
+                if (!overlay || !window.MutationObserver) return;
+
+                var observer = new MutationObserver(function(mutations) {
+                    // 뒤로가기로 돌아온 상태에서 로딩이 표시되면 즉시 숨김
+                    if (wasNavigatedAway) {
+                        var isVisible = overlay.style.display === 'flex' ||
+                                       overlay.classList.contains('visible') ||
+                                       getComputedStyle(overlay).display !== 'none';
+                        if (isVisible) {
+                            console.log('🚫 iOS: 로딩 표시 감지됨, 강제 숨김');
+                            forceHideLoading();
+                        }
                     }
-                }, 50);
+                });
+
+                observer.observe(overlay, {
+                    attributes: true,
+                    attributeFilter: ['style', 'class']
+                });
+
+                window._loadingObserver = observer;
             }
+
+            // pagehide: 페이지 떠날 때 플래그 설정
+            window.addEventListener('pagehide', function() {
+                wasNavigatedAway = true;
+                sessionStorage.setItem('hairgator_navigated', 'true');
+                forceHideLoading();
+            });
+
+            // pageshow: 페이지 표시될 때
+            window.addEventListener('pageshow', function(e) {
+                var wasAway = sessionStorage.getItem('hairgator_navigated') === 'true';
+                console.log('📄 pageshow - persisted:', e.persisted, 'wasAway:', wasAway, 'iOS:', isIOS);
+
+                if (e.persisted || wasAway) {
+                    wasNavigatedAway = true;
+                    forceHideLoading();
+
+                    // iOS: 5초간 100ms마다 체크
+                    if (isIOS) {
+                        var count = 0;
+                        var checkInterval = setInterval(function() {
+                            forceHideLoading();
+                            count++;
+                            if (count >= 50) {
+                                clearInterval(checkInterval);
+                                wasNavigatedAway = false;
+                                sessionStorage.removeItem('hairgator_navigated');
+                            }
+                        }, 100);
+                    } else {
+                        setTimeout(function() {
+                            wasNavigatedAway = false;
+                            sessionStorage.removeItem('hairgator_navigated');
+                        }, 2000);
+                    }
+                }
+            });
 
             // DOM 로드 시
             document.addEventListener('DOMContentLoaded', function() {
                 forceHideLoading();
-                if (isIOS) startIOSHideInterval();
-            });
+                setupLoadingObserver();
 
-            // pageshow (bfcache 복원 시) - 가장 중요!
-            window.addEventListener('pageshow', function(e) {
-                console.log('📄 pageshow - persisted:', e.persisted, 'iOS:', isIOS);
-                forceHideLoading();
-
-                // iOS에서는 지속적인 체크
-                if (isIOS || e.persisted) {
-                    startIOSHideInterval();
-                }
-
-                // requestAnimationFrame으로도 시도 (iOS에서 더 안정적)
-                if (typeof requestAnimationFrame === 'function') {
-                    requestAnimationFrame(forceHideLoading);
-                    requestAnimationFrame(function() {
-                        requestAnimationFrame(forceHideLoading);
-                    });
+                // iOS에서 초기 로드 시에도 체크
+                if (isIOS && sessionStorage.getItem('hairgator_navigated') === 'true') {
+                    wasNavigatedAway = true;
+                    var count = 0;
+                    var initInterval = setInterval(function() {
+                        forceHideLoading();
+                        count++;
+                        if (count >= 50) clearInterval(initInterval);
+                    }, 100);
                 }
             });
 
-            // pagehide (페이지 떠나기 전)
-            window.addEventListener('pagehide', function() {
-                forceHideLoading();
-                if (hideIntervalId) {
-                    clearInterval(hideIntervalId);
-                    hideIntervalId = null;
-                }
-            });
-
-            // visibilitychange (iOS에서 중요)
+            // visibilitychange
             document.addEventListener('visibilitychange', function() {
-                if (document.visibilityState === 'visible') {
+                if (document.visibilityState === 'visible' && wasNavigatedAway) {
                     forceHideLoading();
-                    if (isIOS) startIOSHideInterval();
                 }
             });
 
-            // focus, popstate
-            window.addEventListener('focus', forceHideLoading);
-            window.addEventListener('popstate', function() {
-                forceHideLoading();
-                if (isIOS) startIOSHideInterval();
-            });
-
-            // 전역에 노출
             window.forceHideLoading = forceHideLoading;
             window.isIOSDevice = isIOS;
         })();
@@ -3153,28 +3169,29 @@
         const firebaseAuth = new FirebaseAuth();
 
         // 유틸리티 함수들
-        // ⭐ bfcache 복원 후 일정 시간 동안 로딩 표시 차단
-        var blockLoadingUntil = 0;
-
+        // ⭐ bfcache 복원 후 로딩 표시 차단
         function showLoading(show = true) {
-            if (show && Date.now() < blockLoadingUntil) {
-                console.log('⏳ 로딩 표시 차단됨 (bfcache 복원 직후)');
+            // 뒤로가기로 돌아온 직후에는 로딩 표시 차단 (iOS 문제 해결)
+            if (show && sessionStorage.getItem('hairgator_navigated') === 'true') {
+                console.log('⏳ 로딩 표시 차단됨 (뒤로가기 직후)');
                 return;
             }
             if (loadingOverlay) {
-                loadingOverlay.classList.remove('force-hide');
-                loadingOverlay.style.cssText = show
-                    ? 'display: flex; visibility: visible; opacity: 1; pointer-events: auto;'
-                    : 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
+                if (show) {
+                    loadingOverlay.classList.remove('force-hide');
+                    loadingOverlay.removeAttribute('data-force-hide');
+                    loadingOverlay.removeAttribute('hidden');
+                    loadingOverlay.style.cssText = 'display: flex; visibility: visible; opacity: 1; pointer-events: auto;';
+                } else {
+                    loadingOverlay.classList.add('force-hide');
+                    loadingOverlay.setAttribute('data-force-hide', 'true');
+                    loadingOverlay.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
+                }
             }
         }
 
-        // ⭐ 페이지 로드/복원 시 로딩 오버레이 숨기기 (head에서 이미 처리하지만 한 번 더)
-        // bfcache 복원 시 1초간 로딩 표시 차단
+        // ⭐ 페이지 로드/복원 시 로딩 오버레이 숨기기 (head에서 이미 처리)
         window.addEventListener('pageshow', function(event) {
-            if (event.persisted) {
-                blockLoadingUntil = Date.now() + 1000;
-            }
             if (typeof forceHideLoading === 'function') {
                 forceHideLoading();
             }
