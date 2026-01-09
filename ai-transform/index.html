@@ -6,7 +6,7 @@
     <title>AI Transform - HAIRGATOR</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=20260109b">
+    <link rel="stylesheet" href="styles.css?v=20260109c">
 </head>
 <body>
     <!-- Header -->
@@ -74,6 +74,33 @@
                 </div>
             </div>
 
+            <!-- 의상/배경 옵션 (처음부터 표시) -->
+            <div class="options-section" id="transformOptionsSection">
+                <div class="option-row">
+                    <span class="option-label">의상 변경</span>
+                    <select id="clothingSelect" class="option-select-inline">
+                        <option value="">변경 안함</option>
+                        <option value="A professional dark navy suit with white shirt">네이비 정장</option>
+                        <option value="A casual white t-shirt">화이트 티셔츠</option>
+                        <option value="A black turtleneck sweater">블랙 터틀넥</option>
+                        <option value="A light blue dress shirt">라이트블루 셔츠</option>
+                        <option value="A simple elegant dress">심플한 원피스</option>
+                    </select>
+                </div>
+                <div class="option-row">
+                    <span class="option-label">배경 변경</span>
+                    <select id="backgroundSelect" class="option-select-inline">
+                        <option value="">변경 안함</option>
+                        <option value="clean white studio background">화이트 스튜디오</option>
+                        <option value="gray studio background">그레이 스튜디오</option>
+                        <option value="soft gradient background">그라데이션</option>
+                        <option value="white cement textured wall background">시멘트 벽</option>
+                        <option value="warm wooden wall background">나무 벽면</option>
+                        <option value="soft bokeh blur background">보케 블러</option>
+                    </select>
+                </div>
+            </div>
+
             <!-- Action Button -->
             <div class="action-section">
                 <button class="action-btn" id="faceSwapBtn" disabled>
@@ -87,37 +114,6 @@
                 <div class="result-card">
                     <div class="result-image-container">
                         <img id="faceSwapResultImg" src="" alt="Result">
-                    </div>
-
-                    <!-- 추가 변환 옵션 (의상/배경) -->
-                    <div class="transform-options" id="transformOptions">
-                        <div class="option-group">
-                            <label class="option-label">의상 변경</label>
-                            <select id="clothingSelect" class="option-select">
-                                <option value="">변경 안함</option>
-                                <option value="A professional dark navy suit with white shirt">네이비 정장</option>
-                                <option value="A casual white t-shirt">화이트 티셔츠</option>
-                                <option value="A black turtleneck sweater">블랙 터틀넥</option>
-                                <option value="A light blue dress shirt">라이트블루 셔츠</option>
-                                <option value="A simple elegant dress">심플한 원피스</option>
-                            </select>
-                        </div>
-                        <div class="option-group">
-                            <label class="option-label">배경 변경</label>
-                            <select id="backgroundSelect" class="option-select">
-                                <option value="">변경 안함</option>
-                                <option value="clean white studio background">화이트 스튜디오</option>
-                                <option value="gray studio background">그레이 스튜디오</option>
-                                <option value="soft gradient background">그라데이션</option>
-                                <option value="white cement textured wall background">시멘트 벽</option>
-                                <option value="warm wooden wall background">나무 벽면</option>
-                                <option value="soft bokeh blur background">보케 블러</option>
-                            </select>
-                        </div>
-                        <button class="action-btn secondary" id="applyTransformBtn" onclick="applyTransform()">
-                            <span>의상/배경 적용</span>
-                            <span class="credit-cost">200 토큰</span>
-                        </button>
                     </div>
 
                     <div class="result-actions">
@@ -230,6 +226,6 @@
     <!-- Scripts -->
     <script src="../js/firebase-config.js?v=20260109"></script>
     <script src="../js/firebase-bridge.js?v=20260109e"></script>
-    <script src="app.js?v=20260109g"></script>
+    <script src="app.js?v=20260109i"></script>
 </body>
 </html>

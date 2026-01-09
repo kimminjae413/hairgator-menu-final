@@ -130,26 +130,32 @@ exports.handler = async (event) => {
             }
         }
 
-        // Gemini API 호출
+        // Gemini API 호출 (이미지 생성 모드)
         const genAI = new GoogleGenerativeAI(GEMINI_KEY);
         const model = genAI.getGenerativeModel({
             model: 'gemini-2.0-flash-exp',
             generationConfig: {
                 temperature: 0.05,
+                responseModalities: ['Text', 'Image']  // 이미지 생성 활성화
             }
         });
 
         console.log('🚀 Gemini API 호출 중...');
 
-        const result = await model.generateContent([
-            {
-                inlineData: {
-                    data: base64Data,
-                    mimeType: mimeType
-                }
-            },
-            { text: prompt }
-        ]);
+        const result = await model.generateContent({
+            contents: [{
+                role: 'user',
+                parts: [
+                    {
+                        inlineData: {
+                            data: base64Data,
+                            mimeType: mimeType
+                        }
+                    },
+                    { text: prompt }
+                ]
+            }]
+        });
 
         const response = result.response;
 

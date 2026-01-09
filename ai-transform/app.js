@@ -216,36 +216,65 @@
             return;
         }
 
-        // 토큰 체크는 API 성공 후 FirebaseBridge에서 처리 (룩북/헤어체험 패턴)
+        // 의상/배경 옵션 미리 가져오기
+        const clothingSelect = document.getElementById('clothingSelect');
+        const backgroundSelect = document.getElementById('backgroundSelect');
+        const clothingPrompt = clothingSelect?.value || '';
+        const backgroundPrompt = backgroundSelect?.value || '';
+        const hasTransformOptions = clothingPrompt || backgroundPrompt;
+
         state.isProcessing = true;
         showLoading('얼굴 변환 중...', '잠시만 기다려주세요');
 
         try {
-            // face-swap API 파라미터 (aimyapp 방식):
-            // - targetImage: 헤어스타일 유지할 원본 사진
-            // - swapImage: 바꿔 넣을 참조 얼굴
+            // Step 1: VModel 얼굴 변환
+            console.log('🔄 Step 1: VModel 얼굴 변환 시작');
             const response = await fetch(`${API_BASE}/face-swap`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'start',
-                    targetImage: state.sourceImage,   // 헤어스타일 유지할 원본
-                    swapImage: state.targetFace       // 바꿔 넣을 참조 얼굴
+                    targetImage: state.sourceImage,
+                    swapImage: state.targetFace
                 })
             });
 
             const data = await response.json();
+            let faceSwapResultUrl = null;
 
             if (data.taskId) {
-                // Poll for result
-                await pollFaceSwapStatus(data.taskId);
+                faceSwapResultUrl = await pollFaceSwapStatus(data.taskId, hasTransformOptions);
             } else if (data.resultUrl || data.result) {
-                showFaceSwapResult(data.resultUrl || data.result);
-                // 토큰 차감 (룩북/헤어체험 패턴)
-                await deductCredits('faceSwap', { feature: 'AI 얼굴변환' });
+                faceSwapResultUrl = data.resultUrl || data.result;
             } else {
                 throw new Error(data.error || '얼굴 변환에 실패했습니다');
             }
+
+            // Step 2: 의상/배경 옵션이 있으면 Gemini 변환
+            if (hasTransformOptions && faceSwapResultUrl) {
+                console.log('🔄 Step 2: Gemini 의상/배경 변환 시작');
+                updateLoading('의상/배경 변환 중...');
+
+                const finalResult = await applyGeminiTransform(faceSwapResultUrl, clothingPrompt, backgroundPrompt);
+                if (finalResult) {
+                    faceSwapResultUrl = finalResult;
+                }
+            }
+
+            // 최종 결과 표시
+            showFaceSwapResult(faceSwapResultUrl);
+
+            // 토큰 차감 (300토큰 - 의상/배경 포함)
+            await deductCredits('faceSwap', {
+                feature: 'AI 얼굴변환',
+                clothing: clothingPrompt || '없음',
+                background: backgroundPrompt || '없음'
+            });
+
+            // 선택 초기화
+            if (clothingSelect) clothingSelect.value = '';
+            if (backgroundSelect) backgroundSelect.value = '';
+
         } catch (error) {
             console.error('Face swap error:', error);
             showToast(error.message || '얼굴 변환 중 오류가 발생했습니다', 'error');
@@ -255,7 +284,7 @@
         }
     }
 
-    async function pollFaceSwapStatus(taskId, attempt = 0) {
+    async function pollFaceSwapStatus(taskId, hasTransformOptions = false, attempt = 0) {
         const maxAttempts = 30;
         const interval = 2000;
 
@@ -274,16 +303,60 @@
         const data = await response.json();
 
         if (data.status === 'completed' && (data.resultUrl || data.result)) {
-            showFaceSwapResult(data.resultUrl || data.result);
-            // 토큰 차감 (룩북/헤어체험 패턴)
-            await deductCredits('faceSwap', { feature: 'AI 얼굴변환' });
-            return;
+            // URL 반환 (handleFaceSwap에서 Gemini 변환 체인 처리)
+            return data.resultUrl || data.result;
         } else if (data.status === 'failed') {
             throw new Error(data.error || '얼굴 변환에 실패했습니다');
         }
 
         await new Promise(resolve => setTimeout(resolve, interval));
-        return pollFaceSwapStatus(taskId, attempt + 1);
+        return pollFaceSwapStatus(taskId, hasTransformOptions, attempt + 1);
+    }
+
+    // Gemini 의상/배경 변환
+    async function applyGeminiTransform(imageUrl, clothingPrompt, backgroundPrompt) {
+        try {
+            // URL을 base64로 변환
+            let imageBase64 = imageUrl;
+            if (!imageUrl.startsWith('data:')) {
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                imageBase64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(blob);
+                });
+            }
+
+            console.log('🎨 Gemini 변환 요청');
+            console.log('- 의상:', clothingPrompt || '변경 안함');
+            console.log('- 배경:', backgroundPrompt || '변경 안함');
+
+            const response = await fetch(`${API_BASE}/image-transform`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    imageBase64: imageBase64,
+                    clothingPrompt: clothingPrompt,
+                    backgroundPrompt: backgroundPrompt
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.resultImage) {
+                console.log('✅ Gemini 변환 완료');
+                return data.resultImage;
+            } else {
+                console.warn('⚠️ Gemini 변환 실패:', data.error || data.message);
+                showToast('의상/배경 변환 실패. 얼굴 변환 결과만 표시합니다.', 'error');
+                return null; // 실패해도 얼굴 변환 결과는 유지
+            }
+        } catch (error) {
+            console.error('Gemini transform error:', error);
+            showToast('의상/배경 변환 중 오류. 얼굴 변환 결과만 표시합니다.', 'error');
+            return null;
+        }
     }
 
     function showFaceSwapResult(imageUrl) {
@@ -662,87 +735,6 @@
         if (result) result.classList.remove('visible');
 
         checkVideoGenReady();
-    };
-
-    // ============ Image Transform (의상/배경 변환) ============
-    window.applyTransform = async function() {
-        if (state.isProcessing) return;
-
-        const resultImg = document.getElementById('faceSwapResultImg');
-        if (!resultImg || !resultImg.src) {
-            showToast('변환할 이미지가 없습니다', 'error');
-            return;
-        }
-
-        const clothingSelect = document.getElementById('clothingSelect');
-        const backgroundSelect = document.getElementById('backgroundSelect');
-        const clothingPrompt = clothingSelect?.value || '';
-        const backgroundPrompt = backgroundSelect?.value || '';
-
-        if (!clothingPrompt && !backgroundPrompt) {
-            showToast('의상 또는 배경을 선택해주세요', 'error');
-            return;
-        }
-
-        state.isProcessing = true;
-        showLoading('이미지 변환 중...', '잠시만 기다려주세요');
-
-        try {
-            // 현재 결과 이미지를 base64로 가져오기
-            let imageBase64 = resultImg.src;
-
-            // URL인 경우 fetch로 base64 변환
-            if (!imageBase64.startsWith('data:')) {
-                const response = await fetch(imageBase64);
-                const blob = await response.blob();
-                imageBase64 = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.readAsDataURL(blob);
-                });
-            }
-
-            console.log('🎨 의상/배경 변환 요청');
-            console.log('- 의상:', clothingPrompt || '변경 안함');
-            console.log('- 배경:', backgroundPrompt || '변경 안함');
-
-            const response = await fetch(`${API_BASE}/image-transform`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    imageBase64: imageBase64,
-                    clothingPrompt: clothingPrompt,
-                    backgroundPrompt: backgroundPrompt
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.success && data.resultImage) {
-                // 결과 이미지 업데이트
-                resultImg.src = data.resultImage;
-                showToast('변환 완료!', 'success');
-
-                // 토큰 차감
-                await deductCredits('imageTransform', {
-                    feature: 'AI 의상/배경 변환',
-                    clothing: clothingPrompt || '없음',
-                    background: backgroundPrompt || '없음'
-                });
-
-                // 선택 초기화
-                if (clothingSelect) clothingSelect.value = '';
-                if (backgroundSelect) backgroundSelect.value = '';
-            } else {
-                throw new Error(data.error || data.message || '이미지 변환에 실패했습니다');
-            }
-        } catch (error) {
-            console.error('Image transform error:', error);
-            showToast(error.message || '이미지 변환 중 오류가 발생했습니다', 'error');
-        } finally {
-            state.isProcessing = false;
-            hideLoading();
-        }
     };
 
 })();
