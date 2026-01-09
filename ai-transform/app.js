@@ -440,12 +440,16 @@
 
     // ============ UI Helpers ============
     function showLoading(title, desc) {
+        // 긴급 숨김 CSS 제거
+        const emergencyStyle = document.getElementById('emergency-hide-spinner');
+        if (emergencyStyle) emergencyStyle.remove();
+
         const overlay = document.getElementById('loadingOverlay');
         const textEl = document.getElementById('loadingText');
         const progressEl = document.getElementById('loadingProgress');
 
         if (overlay) {
-            overlay.style.display = 'flex';  // 인라인 스타일 오버라이드
+            overlay.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important;';
             overlay.classList.add('visible');
         }
         if (textEl) textEl.textContent = title || '처리 중...';
@@ -461,7 +465,7 @@
         const overlay = document.getElementById('loadingOverlay');
         if (overlay) {
             overlay.classList.remove('visible');
-            overlay.style.display = 'none';
+            overlay.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important;';
         }
     }
 

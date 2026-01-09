@@ -4560,7 +4560,22 @@ document.addEventListener('keydown', function(e) {
 
 // ========== 유틸리티 ==========
 function showLoading(show) {
-    document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+    // 긴급 숨김 CSS 제거/복원
+    const emergencyStyle = document.getElementById('emergency-hide-spinner');
+    const overlay = document.getElementById('loadingOverlay');
+
+    if (show) {
+        if (emergencyStyle) emergencyStyle.remove();
+        if (overlay) {
+            overlay.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important;';
+            overlay.classList.add('visible');
+        }
+    } else {
+        if (overlay) {
+            overlay.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important;';
+            overlay.classList.remove('visible');
+        }
+    }
 }
 
 window.goBack = function() {

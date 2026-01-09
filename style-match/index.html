@@ -8,18 +8,14 @@
     <!-- 캐시 방지 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 
-    <!-- ⭐ 로딩 오버레이 강제 숨김 (bfcache/뒤로가기 대응 - iOS 특화) -->
-    <style>
-        .loading-overlay.force-hide,
-        .loading-overlay[data-force-hide="true"] {
+    <!-- ⭐ 로딩 스피너 강제 숨김 (bfcache 문제 해결) -->
+    <style id="emergency-hide-spinner">
+        #loadingOverlay,
+        .loading-overlay,
+        .loading-spinner {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
-            pointer-events: none !important;
-            z-index: -9999 !important;
-        }
-        @supports (-webkit-touch-callout: none) {
-            .loading-overlay { display: none; }
         }
     </style>
     <script>

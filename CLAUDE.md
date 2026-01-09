@@ -1,11 +1,11 @@
 # HAIRGATOR 챗봇 - Claude 작업 가이드
 
-## 🚨 현재 앱 버전 (2026-01-08 업데이트)
+## 🚨 현재 앱 버전 (2026-01-09 업데이트)
 
 | 플랫폼 | 스토어 제출 | 최신 빌드 |
 |--------|------------|----------|
-| **Android** | v73 | v76 (테스트 완료) |
-| **iOS** | v76 | v76 |
+| **Android** | v73 | v78 (스피너 수정) |
+| **iOS** | v76 | v78 (스피너 수정) |
 
 ### 빌드 파일 경로
 - **APK**: `D:\hairgator_dev\hairgator_flutter_app\build\app\outputs\flutter-apk\app-release.apk`
@@ -17,7 +17,8 @@
 
 | 버전 | 상태 | 내용 |
 |------|------|------|
-| v76 | ✅ **현재** | 디버그 버튼/콘솔 UI 제거 |
+| v78 | ✅ **현재** | iOS bfcache 스피너 무한표시 수정 (주기적 JS 주입) |
+| v76 | 스토어 제출됨 | 디버그 버튼/콘솔 UI 제거 |
 | v75 | iOS 제출됨 | login.html 리다이렉트 감지 |
 | v74 | iOS 제출됨 | WebView 콘솔 로그 캡처 |
 | v73 | Android 제출됨 | 네이티브 로그인 약관 동의 |
@@ -27,7 +28,7 @@
 ### ⚠️ v77은 사용하지 않음!
 - v77: Flutter에서 스크롤 문제 해결 시도 (VerticalDragGestureRecognizer 변경)
 - **결과**: 불필요 - 스크롤 문제는 **웹 코드(menu.js)에서 해결됨**
-- v76으로 유지!
+- v77 스킵 → v78로 진행
 
 ---
 
@@ -102,21 +103,46 @@ if (scrollableContainer) {
 
 ---
 
-### 로딩 오버레이 안 사라지는 문제 (2026-01-08)
+### iOS bfcache 스피너 무한표시 문제 (2026-01-09 수정) - 중요!
 
-**증상:** 스타일 매치에서 뒤로가기 → 메뉴판에 로딩 스피너 계속 표시
+**증상:**
+- 앱 첫 실행: 스피너 정상 작동 (표시 후 사라짐) ✅
+- 다른 페이지(AI 얼굴변환, 스타일매치, 챗봇 등) 갔다가 **뒤로가기** → 핑크 스피너 무한 표시 ❌
+- 웹 브라우저: 문제 없음 ✅
+- Android 앱: 문제 없음 ✅
+- **iOS 앱만 문제** ❌
 
-**원인:** bfcache (back-forward cache)에서 페이지 복원 시 이전 상태 유지
+**원인:**
+- iOS WKWebView의 bfcache가 페이지의 **렌더링 상태**를 캐시
+- 뒤로가기 시 `onPageFinished` 콜백 호출 안됨
+- 웹의 JavaScript `pageshow` 이벤트는 호출되지만 DOM 조작이 렌더링에 반영 안됨
 
-**해결 (index.html):**
+**해결 (v78 - Flutter 쪽):**
+```dart
+// home_screen.dart
+// iOS 전용: 주기적 스피너 숨김 타이머 (500ms마다)
+if (Platform.isIOS) {
+  _spinnerHideTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+    if (_webViewReady && !_isLoading) {
+      _injectSpinnerHiderSilent();  // JS 주입하여 스피너 강제 숨김
+    }
+  });
+}
+```
+
+**웹 쪽 보조 처리 (index.html):**
 ```javascript
 window.addEventListener('pageshow', function(event) {
     if (loadingOverlay) {
         loadingOverlay.style.display = 'none';
     }
 });
-loadingOverlay.style.display = 'none'; // 초기화 시에도
 ```
+
+**핵심 교훈:**
+- ❌ 웹 JavaScript만으로는 iOS WKWebView bfcache 문제 해결 불가
+- ✅ Flutter에서 주기적으로 JS 주입해야 확실히 해결됨
+- ❌ reload() 사용하면 해결되지만 성별 선택 화면으로 돌아가서 UX 나쁨
 
 ---
 
