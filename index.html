@@ -3111,39 +3111,32 @@
         const firebaseAuth = new FirebaseAuth();
 
         // 유틸리티 함수들
+        // ⭐ bfcache 복원 후 일정 시간 동안 로딩 표시 차단
+        var blockLoadingUntil = 0;
+
         function showLoading(show = true) {
-            loadingOverlay.style.display = show ? 'flex' : 'none';
-        }
-
-        // ⭐ 페이지 로드/복원 시 로딩 오버레이 숨기기 (bfcache + Flutter WebView 대응)
-        function hideLoadingOverlay() {
+            if (show && Date.now() < blockLoadingUntil) {
+                console.log('⏳ 로딩 표시 차단됨 (bfcache 복원 직후)');
+                return;
+            }
             if (loadingOverlay) {
-                loadingOverlay.style.display = 'none';
+                loadingOverlay.classList.remove('force-hide');
+                loadingOverlay.style.cssText = show
+                    ? 'display: flex; visibility: visible; opacity: 1; pointer-events: auto;'
+                    : 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
             }
         }
 
-        // 1. pageshow 이벤트 (bfcache 복원)
+        // ⭐ 페이지 로드/복원 시 로딩 오버레이 숨기기 (head에서 이미 처리하지만 한 번 더)
+        // bfcache 복원 시 1초간 로딩 표시 차단
         window.addEventListener('pageshow', function(event) {
-            hideLoadingOverlay();
-            console.log('📄 페이지 표시됨 (persisted:', event.persisted, ')');
-        });
-
-        // 2. visibilitychange 이벤트 (Flutter WebView에서 더 안정적)
-        document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'visible') {
-                hideLoadingOverlay();
-                console.log('📄 페이지 visible 상태로 변경됨');
+            if (event.persisted) {
+                blockLoadingUntil = Date.now() + 1000;
+            }
+            if (typeof forceHideLoading === 'function') {
+                forceHideLoading();
             }
         });
-
-        // 3. focus 이벤트 (앱으로 돌아올 때)
-        window.addEventListener('focus', function() {
-            hideLoadingOverlay();
-            console.log('📄 윈도우 포커스됨');
-        });
-
-        // 초기 로드 시에도 숨기기
-        hideLoadingOverlay();
 
         function showToast(message, type = 'info') {
             toast.textContent = message;
