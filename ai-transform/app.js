@@ -223,6 +223,12 @@
         const backgroundPrompt = backgroundSelect?.value || '';
         const hasTransformOptions = clothingPrompt || backgroundPrompt;
 
+        console.log('📋 옵션 확인:', {
+            clothingPrompt: clothingPrompt || '(없음)',
+            backgroundPrompt: backgroundPrompt || '(없음)',
+            hasTransformOptions: hasTransformOptions
+        });
+
         state.isProcessing = true;
         showLoading('얼굴 변환 중...', '잠시만 기다려주세요');
 
@@ -250,15 +256,22 @@
                 throw new Error(data.error || '얼굴 변환에 실패했습니다');
             }
 
+            console.log('✅ Step 1 완료, 결과 URL:', faceSwapResultUrl ? '있음' : '없음');
+
             // Step 2: 의상/배경 옵션이 있으면 Gemini 변환
             if (hasTransformOptions && faceSwapResultUrl) {
                 console.log('🔄 Step 2: Gemini 의상/배경 변환 시작');
+                console.log('- 의상:', clothingPrompt || '없음');
+                console.log('- 배경:', backgroundPrompt || '없음');
                 updateLoading('의상/배경 변환 중...');
 
                 const finalResult = await applyGeminiTransform(faceSwapResultUrl, clothingPrompt, backgroundPrompt);
+                console.log('✅ Step 2 결과:', finalResult ? '성공' : '실패');
                 if (finalResult) {
                     faceSwapResultUrl = finalResult;
                 }
+            } else {
+                console.log('⏭️ Step 2 건너뜀 - hasTransformOptions:', hasTransformOptions, ', faceSwapResultUrl:', !!faceSwapResultUrl);
             }
 
             // 최종 결과 표시
@@ -332,6 +345,7 @@
             console.log('- 의상:', clothingPrompt || '변경 안함');
             console.log('- 배경:', backgroundPrompt || '변경 안함');
 
+            console.log('🚀 image-transform API 호출 중...');
             const response = await fetch(`${API_BASE}/image-transform`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -342,14 +356,16 @@
                 })
             });
 
+            console.log('📥 API 응답 상태:', response.status);
             const data = await response.json();
+            console.log('📥 API 응답 데이터:', data);
 
             if (data.success && data.resultImage) {
                 console.log('✅ Gemini 변환 완료');
                 return data.resultImage;
             } else {
                 console.warn('⚠️ Gemini 변환 실패:', data.error || data.message);
-                showToast('의상/배경 변환 실패. 얼굴 변환 결과만 표시합니다.', 'error');
+                showToast(`의상/배경 변환 실패: ${data.error || data.message || '알 수 없는 오류'}`, 'error');
                 return null; // 실패해도 얼굴 변환 결과는 유지
             }
         } catch (error) {
