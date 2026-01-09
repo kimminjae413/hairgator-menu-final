@@ -396,23 +396,46 @@
     function loadUserCredits() {
         console.log('🔄 AI Transform 토큰 로드 시작...');
 
-        // 1. 즉시 localStorage에서 로드 (동기적, 빠름)
-        loadFromLocalStorage();
+        // 1. URL 파라미터에서 토큰 로드 (가장 확실한 방법)
+        const loaded = loadFromUrlParams();
 
-        // 2. Firebase Auth 준비되면 Firestore에서 최신 값 업데이트 (비동기적)
+        // 2. URL 파라미터 없으면 localStorage에서 로드
+        if (!loaded) {
+            loadFromLocalStorage();
+        }
+
+        // 3. Firebase Auth 준비되면 Firestore에서 최신 값 업데이트 (비동기적)
         if (typeof firebase !== 'undefined' && firebase.auth) {
             firebase.auth().onAuthStateChanged(async (user) => {
                 if (user) {
                     console.log('✅ Firebase Auth 사용자:', user.email || user.uid);
                     await fetchTokenBalanceFromFirestore(user);
-                } else {
-                    console.log('ℹ️ Firebase Auth: 로그인 안됨 (localStorage 값 사용)');
                 }
             });
         }
     }
 
-    // localStorage에서 즉시 로드 (메인 페이지에서 저장한 값)
+    // URL 파라미터에서 토큰 로드 (메인 페이지에서 전달)
+    function loadFromUrlParams() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const tokenParam = params.get('token');
+            const userIdParam = params.get('userId');
+
+            if (tokenParam !== null) {
+                state.tokenBalance = parseInt(tokenParam, 10) || 0;
+                state.userId = userIdParam || '';
+                console.log('🔗 URL 파라미터에서 토큰 로드:', state.tokenBalance);
+                return true;
+            }
+            return false;
+        } catch (e) {
+            console.warn('URL 파라미터 로드 실패:', e);
+            return false;
+        }
+    }
+
+    // localStorage에서 로드 (폴백)
     function loadFromLocalStorage() {
         try {
             const stored = localStorage.getItem('firebase_user');
@@ -421,12 +444,8 @@
                 if (parsed.tokenBalance !== undefined) {
                     state.tokenBalance = parsed.tokenBalance;
                     state.userId = parsed.id;
-                    console.log('📦 localStorage 토큰 즉시 로드:', state.tokenBalance, '플랜:', parsed.plan);
-                } else {
-                    console.warn('⚠️ localStorage에 tokenBalance 없음');
+                    console.log('📦 localStorage 토큰 로드:', state.tokenBalance);
                 }
-            } else {
-                console.warn('⚠️ localStorage에 firebase_user 없음');
             }
         } catch (e) {
             console.warn('localStorage 로드 실패:', e);

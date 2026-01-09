@@ -1016,7 +1016,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 closeSidebar();
-                window.location.href = '/ai-transform/';
+
+                // 토큰 정보를 URL 파라미터로 전달
+                const tokenBalance = window.currentDesigner?.tokenBalance || 0;
+                const userId = window.currentDesigner?.id || '';
+                window.location.href = `/ai-transform/?token=${tokenBalance}&userId=${encodeURIComponent(userId)}`;
             });
         }
 
