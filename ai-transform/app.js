@@ -395,26 +395,48 @@
     // ============ Credits (HAIRGATOR Token) ============
     async function loadUserCredits() {
         try {
-            // Wait for Firebase Bridge to be ready
-            if (window.FirebaseBridge) {
-                await waitForAuth();
-                const user = window.currentDesigner;
-                if (user) {
-                    state.userId = user.id;
-                    state.tokenBalance = user.tokenBalance || 0;
-                    updateCreditDisplay();
+            // Firebase Auth가 준비될 때까지 대기
+            await waitForFirebaseAuth();
+
+            // FirebaseBridge.getTokenBalance() 직접 사용
+            if (window.FirebaseBridge && window.FirebaseBridge.getTokenBalance) {
+                const result = await window.FirebaseBridge.getTokenBalance();
+                console.log('🔑 AI Transform 토큰 조회 결과:', result);
+
+                if (result.success) {
+                    state.tokenBalance = result.tokenBalance || 0;
+                    state.userId = await window.FirebaseBridge.getUserDocId();
+                    console.log('✅ AI Transform 토큰 로드 완료:', state.tokenBalance);
+                } else {
+                    console.warn('⚠️ 토큰 조회 실패:', result.error);
                 }
+            } else if (window.currentDesigner) {
+                // 폴백: currentDesigner에서 가져오기
+                state.userId = window.currentDesigner.id;
+                state.tokenBalance = window.currentDesigner.tokenBalance || 0;
             }
         } catch (error) {
             console.error('Error loading credits:', error);
         }
     }
 
-    function waitForAuth() {
+    function waitForFirebaseAuth() {
         return new Promise((resolve) => {
+            const maxWait = 5000; // 최대 5초 대기
+            const startTime = Date.now();
+
             const check = () => {
-                if (window.currentDesigner) {
+                // Firebase Auth가 준비되었는지 확인
+                const authReady = typeof firebase !== 'undefined' &&
+                                  firebase.auth &&
+                                  firebase.auth().currentUser;
+                const bridgeReady = window.FirebaseBridge && window.FirebaseBridge.getTokenBalance;
+
+                if (authReady || bridgeReady || window.currentDesigner) {
                     resolve();
+                } else if (Date.now() - startTime > maxWait) {
+                    console.warn('⚠️ Firebase Auth 대기 타임아웃');
+                    resolve(); // 타임아웃되어도 계속 진행
                 } else {
                     setTimeout(check, 100);
                 }
@@ -425,14 +447,25 @@
 
     async function deductCredits(tokenCost, feature) {
         try {
-            // HAIRGATOR 토큰 차감
+            // HAIRGATOR 토큰 차감 (FirebaseBridge 사용)
             if (window.FirebaseBridge && window.FirebaseBridge.deductTokens) {
-                await window.FirebaseBridge.deductTokens(tokenCost, feature);
+                const result = await window.FirebaseBridge.deductTokens(tokenCost, feature);
+                console.log('💳 토큰 차감 결과:', result);
+
+                if (result.success) {
+                    state.tokenBalance = result.newBalance;
+                } else {
+                    console.error('토큰 차감 실패:', result.error);
+                    // 실패해도 로컬에서 차감 (UI 동기화)
+                    state.tokenBalance = Math.max(0, state.tokenBalance - tokenCost);
+                }
+            } else {
+                // FirebaseBridge 없으면 로컬에서만 차감
+                state.tokenBalance = Math.max(0, state.tokenBalance - tokenCost);
             }
-            state.tokenBalance -= tokenCost;
-            updateCreditDisplay();
         } catch (error) {
             console.error('Error deducting credits:', error);
+            state.tokenBalance = Math.max(0, state.tokenBalance - tokenCost);
         }
     }
 
