@@ -481,19 +481,37 @@
     window.downloadResult = async function() {
         const img = document.getElementById('faceSwapResultImg');
         const url = img?.src;
-        const filename = 'hairgator-faceswap.png';
 
         if (!url) {
             showToast('다운로드할 파일이 없습니다', 'error');
             return;
         }
 
+        // Flutter WebView에서는 DownloadChannel 사용
+        if (window.DownloadChannel) {
+            console.log('[AI Transform] Flutter 채널로 이미지 저장 요청');
+            window.DownloadChannel.postMessage(url);
+            showToast('갤러리에 저장됩니다', 'success');
+            return;
+        }
+
+        // 모바일 체크
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            // 모바일 브라우저: 새 탭에서 길게 눌러 저장 안내
+            window.open(url, '_blank');
+            showToast('이미지를 길게 눌러 저장하세요', 'info');
+            return;
+        }
+
+        // 데스크톱: 직접 다운로드
         try {
             showToast('다운로드 준비 중...', 'info');
 
             let blobUrl;
 
-            // base64 data URL인 경우 직접 blob 변환 (CSP fetch 우회)
+            // base64 data URL인 경우 직접 blob 변환
             if (url.startsWith('data:')) {
                 const [header, base64Data] = url.split(',');
                 const mimeType = header.match(/data:([^;]+)/)?.[1] || 'image/png';
@@ -506,7 +524,6 @@
                 const blob = new Blob([ab], { type: mimeType });
                 blobUrl = URL.createObjectURL(blob);
             } else {
-                // 외부 URL인 경우 fetch 사용
                 const response = await fetch(url);
                 const blob = await response.blob();
                 blobUrl = URL.createObjectURL(blob);
@@ -514,18 +531,15 @@
 
             const a = document.createElement('a');
             a.href = blobUrl;
-            a.download = filename;
+            a.download = 'hairgator-faceswap.png';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
 
-            // blob URL 해제
             setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-
             showToast('다운로드 완료!', 'success');
         } catch (error) {
             console.error('다운로드 실패:', error);
-            // 폴백: 새 탭에서 열기
             window.open(url, '_blank');
             showToast('새 탭에서 이미지를 길게 눌러 저장하세요', 'info');
         }
