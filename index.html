@@ -22,96 +22,26 @@
         })();
     </script>
 
-    <!-- ⭐ iOS bfcache 대응: 동적 CSS 주입으로 로딩 오버레이 숨김 -->
-    <script>
-        // 가장 먼저 실행: sessionStorage 플래그 확인 후 CSS 주입
-        (function() {
-            if (sessionStorage.getItem('hairgator_hide_loading') === 'true') {
-                // CSS를 head에 즉시 주입
-                var style = document.createElement('style');
-                style.id = 'bfcache-hide-loading';
-                style.textContent = '#loadingOverlay, .loading-overlay { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; position: absolute !important; left: -9999px !important; }';
-                document.head.appendChild(style);
-                console.log('🛡️ bfcache 로딩 숨김 CSS 주입됨');
-            }
-        })();
-    </script>
-    <style>
-        /* 기본: 로딩 오버레이 숨김 */
-        .loading-overlay {
-            display: none;
-        }
-        /* 명시적으로 보여줄 때만 표시 */
-        .loading-overlay.visible:not(.force-hide):not([hidden]) {
-            display: flex !important;
-        }
-        /* force-hide 클래스가 있으면 절대 표시 안함 */
-        .loading-overlay.force-hide,
-        .loading-overlay[hidden] {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-        }
-    </style>
+    <!-- ⭐ 로딩 오버레이: HTML에 없음, JavaScript로 동적 생성 (bfcache 문제 해결) -->
     <script>
         (function() {
-            var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
+            // bfcache 복원 시 혹시 남아있는 로딩 오버레이 제거
             function forceHideLoading() {
                 var overlay = document.getElementById('loadingOverlay');
                 if (overlay) {
-                    overlay.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; position: absolute !important; left: -9999px !important;';
-                    overlay.classList.add('force-hide');
-                    overlay.classList.remove('visible', 'active', 'show');
-                    overlay.setAttribute('hidden', '');
+                    overlay.remove();
+                    console.log('🗑️ 로딩 오버레이 제거됨 (bfcache 복원)');
                 }
             }
 
-            // CSS 주입 제거 (정상 로딩 표시 허용)
-            function removeBfcacheCSS() {
-                var style = document.getElementById('bfcache-hide-loading');
-                if (style) {
-                    style.remove();
-                    console.log('🗑️ bfcache 로딩 숨김 CSS 제거됨');
-                }
-            }
-
-            // pageshow: bfcache에서 복원 시
             window.addEventListener('pageshow', function(e) {
-                console.log('📄 pageshow - persisted:', e.persisted, 'isIOS:', isIOS);
-
                 if (e.persisted) {
+                    console.log('📄 bfcache에서 복원됨');
                     forceHideLoading();
-                    // 2초 후 CSS 제거 (정상 기능 복원)
-                    setTimeout(function() {
-                        sessionStorage.removeItem('hairgator_hide_loading');
-                        removeBfcacheCSS();
-                    }, 2000);
-                } else {
-                    // 일반 페이지 로드: CSS 제거
-                    sessionStorage.removeItem('hairgator_hide_loading');
-                    removeBfcacheCSS();
-                }
-            });
-
-            // pagehide: 페이지 떠날 때 플래그 설정
-            window.addEventListener('pagehide', function() {
-                sessionStorage.setItem('hairgator_hide_loading', 'true');
-                forceHideLoading();
-            });
-
-            // DOM 로드 시
-            document.addEventListener('DOMContentLoaded', function() {
-                // 플래그가 있으면 숨김 유지, 없으면 정상
-                if (sessionStorage.getItem('hairgator_hide_loading') !== 'true') {
-                    removeBfcacheCSS();
                 }
             });
 
             window.forceHideLoading = forceHideLoading;
-            window.removeBfcacheCSS = removeBfcacheCSS;
         })();
     </script>
 
@@ -2027,15 +1957,7 @@
         </div>
     </div>
 
-    <!-- 로딩 오버레이 (bfcache 복원 대비 force-hide 클래스 + 인라인 style) -->
-    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
-        <div class="loading-spinner"></div>
-        <!-- 백엔드 연결 상태 -->
-       <!-- 헤어체험 서비스 상태 -->
-<div id="backendStatus" class="backend-status">
-    <span>헤어체험 서비스 연결 확인 중...</span>
-</div>
-    </div>
+    <!-- 로딩 오버레이: bfcache 문제로 HTML에서 제거, JavaScript로 동적 생성 -->
 
     <!-- 토스트 메시지 -->
     <div class="toast" id="toast"></div>
@@ -3139,27 +3061,40 @@
         const firebaseAuth = new FirebaseAuth();
 
         // 유틸리티 함수들
+        // ⭐ 로딩 오버레이 동적 생성 (bfcache 문제 해결)
+        function createLoadingOverlay() {
+            var existing = document.getElementById('loadingOverlay');
+            if (existing) return existing;
+
+            var overlay = document.createElement('div');
+            overlay.id = 'loadingOverlay';
+            overlay.className = 'loading-overlay';
+            overlay.style.cssText = 'display: none;';
+            overlay.innerHTML = '<div class="loading-spinner"></div><div id="backendStatus" class="backend-status"><span>처리 중...</span></div>';
+            document.body.appendChild(overlay);
+            return overlay;
+        }
+
         function showLoading(show = true) {
-            // 로딩 오버레이 참조 갱신
-            if (!loadingOverlay) {
-                loadingOverlay = document.getElementById('loadingOverlay');
-            }
-            if (loadingOverlay) {
-                if (show) {
-                    // bfcache CSS 제거 (정상 로딩 표시)
-                    if (typeof removeBfcacheCSS === 'function') {
-                        removeBfcacheCSS();
-                    }
-                    sessionStorage.removeItem('hairgator_hide_loading');
-                    loadingOverlay.classList.remove('force-hide');
-                    loadingOverlay.removeAttribute('hidden');
-                    loadingOverlay.classList.add('visible');
-                    loadingOverlay.style.cssText = 'display: flex; visibility: visible; opacity: 1; pointer-events: auto; z-index: 9999;';
-                } else {
-                    loadingOverlay.classList.add('force-hide');
-                    loadingOverlay.classList.remove('visible');
-                    loadingOverlay.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
+            // 로딩 오버레이 참조 갱신 또는 생성
+            loadingOverlay = document.getElementById('loadingOverlay');
+
+            if (show) {
+                // 로딩 오버레이가 없으면 생성
+                if (!loadingOverlay) {
+                    loadingOverlay = createLoadingOverlay();
                 }
+                loadingOverlay.classList.remove('force-hide');
+                loadingOverlay.removeAttribute('hidden');
+                loadingOverlay.classList.add('visible');
+                loadingOverlay.style.cssText = 'display: flex; visibility: visible; opacity: 1; pointer-events: auto; z-index: 9999;';
+            } else if (loadingOverlay) {
+                loadingOverlay.classList.add('force-hide');
+                loadingOverlay.classList.remove('visible');
+                loadingOverlay.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
+                // ⭐ 숨긴 후 DOM에서 제거 (bfcache 방지)
+                loadingOverlay.remove();
+                loadingOverlay = null;
             }
         }
 
