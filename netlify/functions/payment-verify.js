@@ -187,7 +187,7 @@ exports.handler = async (event) => {
     });
 
     // 7. 토큰 충전 로그 기록
-    await db.collection('token_logs').add({
+    await db.collection('credit_logs').add({
       userId: userId,
       action: 'purchase',
       tokensAdded: plan.tokens,

@@ -180,7 +180,7 @@ exports.handler = async (event) => {
     await userRef.set(updateData, { merge: true });
 
     // 4. 토큰 로그 기록
-    await db.collection('token_logs').add({
+    await db.collection('credit_logs').add({
       userId: userId,
       action: 'billing_key_payment',
       tokensAdded: plan.tokens,

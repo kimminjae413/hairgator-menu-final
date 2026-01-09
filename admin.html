@@ -3265,9 +3265,24 @@
             }
         }
 
-        // ==================== 로그인/로그아웃 ====================
+        // ==================== 로그인/로그아웃 (서버 API 사용) ====================
 
-        // 로그인 처리
+        // 관리자 인증 API 호출
+        async function callAdminAuthAPI(action, data) {
+            try {
+                const response = await fetch('/.netlify/functions/admin-auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, ...data })
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API 호출 오류:', error);
+                return { error: '서버 연결에 실패했습니다.' };
+            }
+        }
+
+        // 로그인 처리 (서버 API)
         async function handleAdminLogin(event) {
             event.preventDefault();
 
@@ -3278,32 +3293,22 @@
             errorDiv.classList.remove('show');
 
             try {
-                // Firestore에서 관리자 확인
-                const adminDoc = await db.collection('admin_users').doc(email.replace(/[@.]/g, '_')).get();
+                const result = await callAdminAuthAPI('login', { email, password });
 
-                if (!adminDoc.exists) {
-                    errorDiv.textContent = '등록되지 않은 관리자입니다.';
-                    errorDiv.classList.add('show');
-                    return;
-                }
-
-                const adminData = adminDoc.data();
-
-                // 비밀번호 확인 (간단한 해시 비교)
-                if (adminData.password !== simpleHash(password)) {
-                    errorDiv.textContent = '비밀번호가 일치하지 않습니다.';
+                if (result.error) {
+                    errorDiv.textContent = result.error;
                     errorDiv.classList.add('show');
                     return;
                 }
 
                 // 로그인 성공
-                currentAdmin = {
-                    email: adminData.email,
-                    name: adminData.name || '관리자'
-                };
+                currentAdmin = result.admin;
 
-                // 로컬 스토리지에 저장
-                localStorage.setItem('hairgator_admin', JSON.stringify(currentAdmin));
+                // 세션 토큰과 함께 저장
+                localStorage.setItem('hairgator_admin', JSON.stringify({
+                    ...currentAdmin,
+                    sessionToken: result.sessionToken
+                }));
 
                 // UI 업데이트
                 updateAdminUI();
@@ -3326,17 +3331,6 @@
             showToast('로그아웃 되었습니다.', 'success');
         }
 
-        // 간단한 해시 함수 (실제 프로덕션에서는 bcrypt 등 사용)
-        function simpleHash(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
-            }
-            return hash.toString(16);
-        }
-
         // 관리자 UI 업데이트
         function updateAdminUI() {
             if (currentAdmin) {
@@ -3356,58 +3350,32 @@
                 return true;
             }
 
-            // 기본 관리자 자동 생성 (없으면)
-            try {
-                const snapshot = await db.collection('admin_users').get();
-                if (snapshot.empty) {
-                    await createDefaultAdmin();
-                }
-            } catch (error) {
-                console.error('관리자 확인 실패:', error);
-            }
-
             return false;
         }
 
-        // 기본 관리자 자동 생성
-        async function createDefaultAdmin() {
-            const defaultEmail = 'eric708@naver.com';
-            const defaultPassword = '123123';
-            const defaultName = '김민재';
-            const docId = defaultEmail.replace(/[@.]/g, '_');
-
-            try {
-                await db.collection('admin_users').doc(docId).set({
-                    email: defaultEmail,
-                    name: defaultName,
-                    password: simpleHash(defaultPassword),
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                console.log('기본 관리자 생성 완료:', defaultEmail);
-            } catch (error) {
-                console.error('기본 관리자 생성 실패:', error);
-            }
-        }
-
-        // ==================== 관리자 계정 관리 ====================
+        // ==================== 관리자 계정 관리 (서버 API 사용) ====================
 
         // 관리자 목록 로드
         async function loadAdminList() {
             const tbody = document.getElementById('adminTableBody');
 
             try {
-                const snapshot = await db.collection('admin_users').get();
+                const result = await callAdminAuthAPI('list', {});
 
-                if (snapshot.empty) {
+                if (result.error) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="color: var(--danger);">오류: ${result.error}</td></tr>`;
+                    return;
+                }
+
+                if (!result.admins || result.admins.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">
                         등록된 관리자가 없습니다. 첫 번째 관리자를 추가하세요.
                     </td></tr>`;
                     return;
                 }
 
-                tbody.innerHTML = snapshot.docs.map(doc => {
-                    const admin = doc.data();
-                    const createdAt = admin.createdAt?.toDate ? admin.createdAt.toDate().toLocaleDateString('ko-KR') : '-';
+                tbody.innerHTML = result.admins.map(admin => {
+                    const createdAt = admin.createdAt ? new Date(admin.createdAt).toLocaleDateString('ko-KR') : '-';
                     const isMe = currentAdmin && currentAdmin.email === admin.email;
 
                     return `
@@ -3417,7 +3385,7 @@
                             <td style="color: var(--text-muted);">${createdAt}</td>
                             <td>
                                 ${isMe ? `<button class="btn btn-sm btn-secondary" onclick="openChangePasswordModal()" style="margin-right: 6px;">비밀번호 변경</button>` : ''}
-                                <button class="btn btn-sm btn-danger" onclick="deleteAdmin('${doc.id}', '${admin.email}')">삭제</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteAdmin('${admin.docId}', '${admin.email}')">삭제</button>
                             </td>
                         </tr>
                     `;
@@ -3437,7 +3405,7 @@
             document.getElementById('addAdminModal').classList.add('show');
         }
 
-        // 새 관리자 추가
+        // 새 관리자 추가 (서버 API)
         async function addNewAdmin() {
             const name = document.getElementById('newAdminName').value.trim();
             const email = document.getElementById('newAdminEmail').value.trim();
@@ -3454,21 +3422,12 @@
             }
 
             try {
-                const docId = email.replace(/[@.]/g, '_');
+                const result = await callAdminAuthAPI('register', { email, password, name });
 
-                // 중복 확인
-                const existing = await db.collection('admin_users').doc(docId).get();
-                if (existing.exists) {
-                    showToast('이미 등록된 이메일입니다.', 'error');
+                if (result.error) {
+                    showToast(result.error, 'error');
                     return;
                 }
-
-                await db.collection('admin_users').doc(docId).set({
-                    email: email,
-                    name: name,
-                    password: simpleHash(password),
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
 
                 closeModal('addAdminModal');
                 loadAdminList();
@@ -3480,7 +3439,7 @@
             }
         }
 
-        // 관리자 삭제
+        // 관리자 삭제 (서버 API)
         async function deleteAdmin(docId, email) {
             // 본인 삭제 방지
             if (currentAdmin && currentAdmin.email === email) {
@@ -3493,7 +3452,13 @@
             }
 
             try {
-                await db.collection('admin_users').doc(docId).delete();
+                const result = await callAdminAuthAPI('delete', { email });
+
+                if (result.error) {
+                    showToast(result.error, 'error');
+                    return;
+                }
+
                 loadAdminList();
                 showToast('관리자가 삭제되었습니다.', 'success');
             } catch (error) {
@@ -3510,7 +3475,7 @@
             document.getElementById('changePasswordModal').classList.add('show');
         }
 
-        // 비밀번호 변경
+        // 비밀번호 변경 (서버 API)
         async function changePassword() {
             const currentPw = document.getElementById('currentPassword').value;
             const newPw = document.getElementById('newPassword').value;
@@ -3532,26 +3497,16 @@
             }
 
             try {
-                const docId = currentAdmin.email.replace(/[@.]/g, '_');
-                const adminDoc = await db.collection('admin_users').doc(docId).get();
-
-                if (!adminDoc.exists) {
-                    showToast('계정을 찾을 수 없습니다.', 'error');
-                    return;
-                }
-
-                const adminData = adminDoc.data();
-
-                // 현재 비밀번호 확인
-                if (adminData.password !== simpleHash(currentPw)) {
-                    showToast('현재 비밀번호가 일치하지 않습니다.', 'error');
-                    return;
-                }
-
-                // 비밀번호 업데이트
-                await db.collection('admin_users').doc(docId).update({
-                    password: simpleHash(newPw)
+                const result = await callAdminAuthAPI('changePassword', {
+                    email: currentAdmin.email,
+                    currentPassword: currentPw,
+                    newPassword: newPw
                 });
+
+                if (result.error) {
+                    showToast(result.error, 'error');
+                    return;
+                }
 
                 closeModal('changePasswordModal');
                 showToast('비밀번호가 변경되었습니다.', 'success');
