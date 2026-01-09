@@ -1412,7 +1412,7 @@
                 </div>
                 <div class="form-group">
                     <label>비밀번호 (숫자 6자리)</label>
-                    <input type="text" id="loginPassword" class="form-input" placeholder="123456" maxlength="6" inputmode="numeric" required>
+                    <input type="password" id="loginPassword" class="form-input" placeholder="******" maxlength="6" inputmode="numeric" autocomplete="off" required>
                 </div>
                 <button type="submit" class="btn btn-primary login-btn">로그인</button>
             </form>
@@ -3044,7 +3044,7 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">비밀번호 (숫자 6자리)</label>
-                    <input type="text" class="form-input" id="newAdminPassword" placeholder="123456" maxlength="6" pattern="\d{6}" inputmode="numeric">
+                    <input type="password" class="form-input" id="newAdminPassword" placeholder="******" maxlength="6" pattern="\d{6}" inputmode="numeric" autocomplete="new-password">
                 </div>
             </div>
             <div class="modal-footer">
@@ -3064,15 +3064,15 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">현재 비밀번호</label>
-                    <input type="text" class="form-input" id="currentPassword" placeholder="현재 비밀번호" maxlength="6" inputmode="numeric">
+                    <input type="password" class="form-input" id="currentPassword" placeholder="******" maxlength="6" inputmode="numeric" autocomplete="current-password">
                 </div>
                 <div class="form-group">
                     <label class="form-label">새 비밀번호 (숫자 6자리)</label>
-                    <input type="text" class="form-input" id="newPassword" placeholder="새 비밀번호" maxlength="6" inputmode="numeric">
+                    <input type="password" class="form-input" id="newPassword" placeholder="******" maxlength="6" inputmode="numeric" autocomplete="new-password">
                 </div>
                 <div class="form-group">
                     <label class="form-label">새 비밀번호 확인</label>
-                    <input type="text" class="form-input" id="confirmPassword" placeholder="새 비밀번호 확인" maxlength="6" inputmode="numeric">
+                    <input type="password" class="form-input" id="confirmPassword" placeholder="******" maxlength="6" inputmode="numeric" autocomplete="new-password">
                 </div>
             </div>
             <div class="modal-footer">
