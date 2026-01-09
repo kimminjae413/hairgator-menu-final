@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HAIRGATOR - Professional Hair Style Menu</title>
 
+    <!-- ⭐ 로딩 스피너 강제 숨김 (가장 먼저!) -->
+    <style id="emergency-hide-spinner">
+        #loadingOverlay,
+        .loading-overlay,
+        .loading-spinner,
+        [class*="loading-overlay"],
+        [class*="loading-spinner"],
+        [id*="loadingOverlay"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            position: absolute !important;
+            left: -99999px !important;
+            top: -99999px !important;
+            width: 0 !important;
+            height: 0 !important;
+            z-index: -99999 !important;
+        }
+    </style>
+
     <!-- ⭐ Flutter 앱 모드 감지 (가장 먼저 실행!) -->
     <script>
         (function() {
@@ -3097,10 +3118,16 @@
         }
 
         function showLoading(show = true) {
+            // 긴급 숨김 CSS 참조
+            var emergencyStyle = document.getElementById('emergency-hide-spinner');
+
             // 로딩 오버레이 참조 갱신 또는 생성
             loadingOverlay = document.getElementById('loadingOverlay');
 
             if (show) {
+                // 긴급 숨김 CSS 제거 (로딩 표시 허용)
+                if (emergencyStyle) emergencyStyle.remove();
+
                 // 로딩 오버레이가 없으면 생성
                 if (!loadingOverlay) {
                     loadingOverlay = createLoadingOverlay();
@@ -3108,7 +3135,7 @@
                 loadingOverlay.classList.remove('force-hide');
                 loadingOverlay.removeAttribute('hidden');
                 loadingOverlay.classList.add('visible');
-                loadingOverlay.style.cssText = 'display: flex; visibility: visible; opacity: 1; pointer-events: auto; z-index: 9999;';
+                loadingOverlay.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important; z-index: 9999 !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important;';
             } else if (loadingOverlay) {
                 loadingOverlay.classList.add('force-hide');
                 loadingOverlay.classList.remove('visible');
