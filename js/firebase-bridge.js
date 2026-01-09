@@ -381,6 +381,25 @@
                 return firebaseUser.uid;
             }
 
+            // 4. localStorage 폴백 (AI Transform 등 서브페이지용)
+            try {
+                const stored = localStorage.getItem('firebase_user');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (parsed.id) {
+                        console.log('🔑 getUserDocId: localStorage.id =', parsed.id);
+                        return parsed.id;
+                    }
+                    if (parsed.email) {
+                        const docId = parsed.email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_');
+                        console.log('🔑 getUserDocId: localStorage.email =', docId);
+                        return docId;
+                    }
+                }
+            } catch (e) {
+                console.warn('localStorage 파싱 실패:', e);
+            }
+
             console.warn('⚠️ getUserDocId: 사용자 정보 없음');
             return null;
         },
