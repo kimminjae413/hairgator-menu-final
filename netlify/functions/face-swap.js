@@ -45,9 +45,10 @@ async function uploadBase64ToStorage(base64Data, prefix = 'face-swap') {
 
         const bucket = admin.storage().bucket();
 
-        // base64 데이터 추출
-        const matches = base64Data.match(/^data:image\/(\w+);base64,(.+)$/);
+        // base64 데이터 추출 (더 유연한 정규식)
+        const matches = base64Data.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,(.+)$/s);
         if (!matches) {
+            console.error('base64 형식 오류, 입력 시작:', base64Data.substring(0, 100));
             throw new Error('Invalid base64 image format');
         }
 
@@ -90,8 +91,8 @@ const headers = {
     'Content-Type': 'application/json'
 };
 
-// VModel Face Swap 모델 버전 ID (aimyapp에서 사용하는 얼굴변환용)
-const FACE_SWAP_VERSION = 'a3c8d261fd14126eecef9812b52b408111e9ed557ccc57064528888cdeeebc0b6';
+// VModel Face Swap 모델 버전 ID (aimyapp vmodelService.ts와 동일)
+const FACE_SWAP_VERSION = 'a3c8d261fd14126eececf9812b52b40811e9ed557ccc5706452888cdeeebc0b6';
 
 exports.handler = async (event) => {
     // CORS preflight
