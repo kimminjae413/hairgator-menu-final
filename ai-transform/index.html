@@ -143,31 +143,44 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <!-- bfcache 로딩 오버레이 숨김 -->
+    <style>
+        .loading-overlay.force-hide {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+    </style>
     <script>
         (function() {
             function forceHideLoading() {
                 var overlay = document.getElementById('loadingOverlay');
                 if (overlay) {
-                    overlay.style.display = 'none';
-                    overlay.style.visibility = 'hidden';
-                    overlay.style.opacity = '0';
-                    overlay.style.pointerEvents = 'none';
+                    overlay.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
+                    overlay.classList.add('force-hide');
                     overlay.classList.remove('visible');
                 }
             }
-            // 즉시 실행
-            forceHideLoading();
             // DOMContentLoaded
-            document.addEventListener('DOMContentLoaded', forceHideLoading);
-            // pageshow (bfcache 복원 시)
-            window.addEventListener('pageshow', function() {
+            document.addEventListener('DOMContentLoaded', function() {
                 forceHideLoading();
                 setTimeout(forceHideLoading, 100);
+            });
+            // pageshow (bfcache 복원 시)
+            window.addEventListener('pageshow', function(e) {
+                forceHideLoading();
+                setTimeout(forceHideLoading, 0);
+                setTimeout(forceHideLoading, 100);
+                setTimeout(forceHideLoading, 300);
             });
             // pagehide (페이지 떠나기 전)
             window.addEventListener('pagehide', forceHideLoading);
             // popstate (히스토리 뒤로/앞으로)
-            window.addEventListener('popstate', forceHideLoading);
+            window.addEventListener('popstate', function() {
+                forceHideLoading();
+                setTimeout(forceHideLoading, 100);
+            });
+            window.forceHideLoading = forceHideLoading;
         })();
     </script>
 

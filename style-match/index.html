@@ -8,6 +8,39 @@
     <!-- 캐시 방지 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 
+    <!-- ⭐ 로딩 오버레이 강제 숨김 (bfcache/뒤로가기 대응) -->
+    <style>
+        .loading-overlay.force-hide {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+    </style>
+    <script>
+        (function() {
+            function forceHideLoading() {
+                var overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    overlay.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
+                    overlay.classList.add('force-hide');
+                }
+            }
+            document.addEventListener('DOMContentLoaded', function() {
+                forceHideLoading();
+                setTimeout(forceHideLoading, 100);
+            });
+            window.addEventListener('pageshow', function(e) {
+                forceHideLoading();
+                setTimeout(forceHideLoading, 0);
+                setTimeout(forceHideLoading, 100);
+                setTimeout(forceHideLoading, 300);
+            });
+            window.addEventListener('pagehide', forceHideLoading);
+            window.forceHideLoading = forceHideLoading;
+        })();
+    </script>
+
     <!-- Fonts - Clinical Beauty Style -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
