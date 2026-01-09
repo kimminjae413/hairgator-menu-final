@@ -215,12 +215,7 @@
             return;
         }
 
-        // Check credits
-        if (state.tokenBalance < COSTS.faceSwap) {
-            showToast(`토큰이 부족합니다 (필요: ${COSTS.faceSwap})`, 'error');
-            return;
-        }
-
+        // 토큰 체크는 API 성공 후 FirebaseBridge에서 처리 (룩북/헤어체험 패턴)
         state.isProcessing = true;
         showLoading('얼굴 변환 중...', '잠시만 기다려주세요');
 
@@ -245,7 +240,8 @@
                 await pollFaceSwapStatus(data.taskId);
             } else if (data.resultUrl || data.result) {
                 showFaceSwapResult(data.resultUrl || data.result);
-                await deductCredits(COSTS.faceSwap, 'faceSwap');
+                // 토큰 차감 (룩북/헤어체험 패턴)
+                await deductCredits('faceSwap', { feature: 'AI 얼굴변환' });
             } else {
                 throw new Error(data.error || '얼굴 변환에 실패했습니다');
             }
@@ -278,7 +274,8 @@
 
         if (data.status === 'completed' && (data.resultUrl || data.result)) {
             showFaceSwapResult(data.resultUrl || data.result);
-            await deductCredits(COSTS.faceSwap, 'faceSwap');
+            // 토큰 차감 (룩북/헤어체험 패턴)
+            await deductCredits('faceSwap', { feature: 'AI 얼굴변환' });
             return;
         } else if (data.status === 'failed') {
             throw new Error(data.error || '얼굴 변환에 실패했습니다');
@@ -307,12 +304,7 @@
             return;
         }
 
-        const tokenCost = state.videoDuration === 5 ? COSTS.video5sec : COSTS.video8sec;
-        if (state.tokenBalance < tokenCost) {
-            showToast(`토큰이 부족합니다 (필요: ${tokenCost})`, 'error');
-            return;
-        }
-
+        // 토큰 체크는 API 성공 후 FirebaseBridge에서 처리 (룩북/헤어체험 패턴)
         state.isProcessing = true;
         showLoading('영상 생성 중...', '3~8분 정도 소요됩니다');
 
@@ -330,12 +322,17 @@
 
             const data = await response.json();
 
+            // 영상 길이에 따른 feature 이름 결정
+            const videoFeature = state.videoDuration === 5 ? 'video5sec' : 'video8sec';
+
             if (data.operationName) {
                 await pollVideoStatus(data.operationName);
-                await deductCredits(tokenCost, 'videoGen');
+                // 토큰 차감 (룩북/헤어체험 패턴)
+                await deductCredits(videoFeature, { feature: `AI 영상생성 ${state.videoDuration}초` });
             } else if (data.videoUrl) {
                 showVideoResult(data.videoUrl);
-                await deductCredits(tokenCost, 'videoGen');
+                // 토큰 차감 (룩북/헤어체험 패턴)
+                await deductCredits(videoFeature, { feature: `AI 영상생성 ${state.videoDuration}초` });
             } else {
                 throw new Error(data.error || '영상 생성에 실패했습니다');
             }
@@ -487,27 +484,41 @@
         }
     }
 
-    async function deductCredits(tokenCost, feature) {
+    /**
+     * 토큰 차감 (룩북/헤어체험과 동일한 패턴)
+     * - FirebaseBridge.deductTokens(null, feature, metadata) 호출
+     * - 토큰 부족 시 /#products로 이동
+     */
+    async function deductCredits(feature, metadata = {}) {
         try {
-            // HAIRGATOR 토큰 차감 (FirebaseBridge 사용)
-            if (window.FirebaseBridge && window.FirebaseBridge.deductTokens) {
-                const result = await window.FirebaseBridge.deductTokens(tokenCost, feature);
+            // FirebaseBridge 사용 (룩북/헤어체험과 동일)
+            if (window.FirebaseBridge && typeof window.FirebaseBridge.deductTokens === 'function') {
+                const result = await window.FirebaseBridge.deductTokens(null, feature, metadata);
                 console.log('💳 토큰 차감 결과:', result);
 
                 if (result.success) {
                     state.tokenBalance = result.newBalance;
+                    return true;
                 } else {
                     console.error('토큰 차감 실패:', result.error);
-                    // 실패해도 로컬에서 차감 (UI 동기화)
-                    state.tokenBalance = Math.max(0, state.tokenBalance - tokenCost);
+                    // 토큰 부족 시 업그레이드 페이지로 이동
+                    if (result.error && result.error.includes('부족')) {
+                        showToast('토큰이 부족합니다. 업그레이드 페이지로 이동합니다.', 'error');
+                        setTimeout(() => {
+                            window.location.href = '/#products';
+                        }, 1500);
+                    }
+                    return false;
                 }
             } else {
-                // FirebaseBridge 없으면 로컬에서만 차감
-                state.tokenBalance = Math.max(0, state.tokenBalance - tokenCost);
+                console.error('FirebaseBridge를 사용할 수 없습니다');
+                showToast('토큰 차감에 실패했습니다', 'error');
+                return false;
             }
         } catch (error) {
             console.error('Error deducting credits:', error);
-            state.tokenBalance = Math.max(0, state.tokenBalance - tokenCost);
+            showToast('토큰 차감 중 오류가 발생했습니다', 'error');
+            return false;
         }
     }
 
