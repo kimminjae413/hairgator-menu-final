@@ -135,7 +135,15 @@ exports.handler = async (event) => {
       };
     }
 
-    // 2. Firestore에 결제 내역 저장
+    // 2. 사용자 현재 상태 조회 (취소 시 복원용)
+    const userRef = db.collection('users').doc(userId);
+    const userDoc = await userRef.get();
+    const userData = userDoc.exists ? userDoc.data() : {};
+    const currentTokens = userData.tokenBalance || 0;
+    const currentPlan = userData.plan || 'free';
+    const currentPlanExpiresAt = userData.planExpiresAt?.toDate?.()?.toISOString() || null;
+
+    // 3. Firestore에 결제 내역 저장 (이전 상태 포함)
     await db.collection('payments').doc(paymentId).set({
       paymentId: paymentId,
       billingKey: billingKey,
@@ -147,14 +155,14 @@ exports.handler = async (event) => {
       status: 'completed',
       paymentType: 'billing_key',
       portoneResponse: paymentResult,
+      // 취소 시 복원용 이전 상태 저장
+      previousState: {
+        plan: currentPlan,
+        tokens: currentTokens,
+        planExpiresAt: currentPlanExpiresAt
+      },
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
-
-    // 3. 사용자 토큰 충전 (플랜 구매 시 토큰 리셋, 추가 토큰은 합산)
-    const userRef = db.collection('users').doc(userId);
-    const userDoc = await userRef.get();
-    const currentTokens = userDoc.exists ? (userDoc.data().tokenBalance || 0) : 0;
-    const currentPlan = userDoc.exists ? (userDoc.data().plan || 'free') : 'free';
 
     // 토큰 계산: 플랜 구매는 리셋, 추가 토큰은 합산
     const newBalance = planKey === 'tokens_5000' ? currentTokens + plan.tokens : plan.tokens;

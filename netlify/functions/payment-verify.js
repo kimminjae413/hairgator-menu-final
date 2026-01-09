@@ -173,16 +173,22 @@ exports.handler = async (event) => {
       };
     }
 
-    // 6. 결제 내역 저장 (중복 방지용)
+    // 6. 결제 내역 저장 (중복 방지용 + 취소 시 복원용 이전 상태 포함)
     await db.collection('payments').doc(paymentId).set({
       paymentId: paymentId,
       userId: userId,
-      userName: userName || '', // 사용자 이름 저장
+      userName: userName || '',
       planKey: planKey,
       amount: plan.price,
       tokens: plan.tokens,
       status: 'completed',
       portoneStatus: paymentData.status,
+      // 취소 시 복원용 이전 상태 저장
+      previousState: {
+        plan: chargeResult.previousPlan,
+        tokens: chargeResult.previousTokens,
+        planExpiresAt: chargeResult.previousPlanExpiresAt
+      },
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
@@ -280,11 +286,14 @@ async function chargeTokens(userId, tokens, planKey, billingKey = null, cardInfo
 
     let currentTokens = 0;
     let currentPlan = 'free';
+    let currentPlanExpiresAt = null;
 
     if (userDoc.exists) {
       const userData = userDoc.data();
       currentTokens = userData.tokenBalance || 0;
       currentPlan = userData.plan || 'free';
+      // 이전 플랜 만료일 저장 (취소 시 복원용)
+      currentPlanExpiresAt = userData.planExpiresAt?.toDate?.()?.toISOString() || null;
     } else {
       console.warn(`⚠️ 사용자 문서가 없습니다: ${userId}, 새로 생성합니다.`);
     }
@@ -349,6 +358,7 @@ async function chargeTokens(userId, tokens, planKey, billingKey = null, cardInfo
       previousTokens: currentTokens,
       newTokens: newTokens,
       previousPlan: currentPlan,
+      previousPlanExpiresAt: currentPlanExpiresAt,
       newPlan: newPlan,
       planExpiresAt: expiresAt.toISOString()
     };

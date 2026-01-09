@@ -5107,7 +5107,14 @@
                     throw new Error(cancelResult.error || '포트원 결제 취소 실패');
                 }
 
-                // 2. Firestore 결제 상태 변경 + 취소 사유 저장
+                // 2. 결제 문서에서 이전 상태 조회
+                const paymentDoc = await db.collection('payments').doc(docId).get();
+                const paymentData = paymentDoc.exists ? paymentDoc.data() : {};
+                const planKey = paymentData.planKey;
+                const isPlanPurchase = planKey && planKey !== 'tokens_5000';
+                const previousState = paymentData.previousState || null;
+
+                // 3. Firestore 결제 상태 변경 + 취소 사유 저장
                 await db.collection('payments').doc(docId).update({
                     status: 'cancelled',
                     cancelledAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -5115,41 +5122,60 @@
                     portioneCancellation: cancelResult.cancellation || null
                 });
 
-                // 3. 결제 문서에서 planKey 확인
-                const paymentDoc = await db.collection('payments').doc(docId).get();
-                const planKey = paymentDoc.exists ? paymentDoc.data().planKey : null;
-                const isPlanPurchase = planKey && planKey !== 'tokens_5000';
-
-                // 4. 사용자 토큰 차감 + 플랜 리셋
+                // 4. 사용자 상태 복원 (이전 상태가 있으면 복원, 없으면 기존 로직)
                 const userRef = db.collection('users').doc(userId);
                 const userDoc = await userRef.get();
                 if (userDoc.exists) {
                     const currentTokens = userDoc.data().tokenBalance || 0;
                     const currentPlan = userDoc.data().plan || 'free';
-                    const newTokens = Math.max(0, currentTokens - tokens);
 
-                    const updateData = {
-                        tokenBalance: newTokens
-                    };
+                    let updateData = {};
+                    let restoredPlan = currentPlan;
+                    let restoredTokens = currentTokens;
 
-                    // 플랜 구매 취소 시 무료 플랜으로 되돌리기
-                    if (isPlanPurchase) {
-                        updateData.plan = 'free';
-                        updateData.planExpiresAt = null;
-                        updateData.planStartedAt = null;
+                    if (previousState) {
+                        // ✅ 이전 상태로 복원 (GPT/Claude 방식)
+                        restoredTokens = previousState.tokens ?? 0;
+                        restoredPlan = previousState.plan || 'free';
+
+                        updateData.tokenBalance = restoredTokens;
+                        updateData.plan = restoredPlan;
+
+                        if (previousState.planExpiresAt) {
+                            updateData.planExpiresAt = firebase.firestore.Timestamp.fromDate(new Date(previousState.planExpiresAt));
+                        } else if (isPlanPurchase) {
+                            updateData.planExpiresAt = null;
+                            updateData.planStartedAt = null;
+                        }
+
+                        console.log('✅ 이전 상태로 복원:', { restoredPlan, restoredTokens });
+                    } else {
+                        // 이전 상태가 없는 레거시 결제: 기존 로직 (토큰 차감 + free로 리셋)
+                        restoredTokens = Math.max(0, currentTokens - tokens);
+                        updateData.tokenBalance = restoredTokens;
+
+                        if (isPlanPurchase) {
+                            restoredPlan = 'free';
+                            updateData.plan = 'free';
+                            updateData.planExpiresAt = null;
+                            updateData.planStartedAt = null;
+                        }
+
+                        console.log('⚠️ 레거시 결제 취소 (이전 상태 없음):', { restoredPlan, restoredTokens });
                     }
 
                     await userRef.update(updateData);
 
-                    // 5. 로그 기록 (credit_logs 컬렉션 사용 - 메인 서비스와 일치)
+                    // 5. 로그 기록
                     await db.collection('credit_logs').add({
                         userId: userId,
                         action: 'payment_cancelled',
                         tokensDeducted: tokens,
                         previousBalance: currentTokens,
-                        newBalance: newTokens,
+                        newBalance: restoredTokens,
                         previousPlan: currentPlan,
-                        newPlan: isPlanPurchase ? 'free' : currentPlan,
+                        newPlan: restoredPlan,
+                        restoredFromPreviousState: !!previousState,
                         paymentDocId: docId,
                         cancelReason: reason,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -5157,7 +5183,11 @@
                 }
 
                 closeModal('cancelPaymentModal');
-                showToast('결제가 취소되었습니다. (환불 완료)', 'success');
+
+                const message = previousState
+                    ? '결제가 취소되었습니다. (이전 플랜으로 복원됨)'
+                    : '결제가 취소되었습니다. (환불 완료)';
+                showToast(message, 'success');
             } catch (error) {
                 console.error('결제 취소 오류:', error);
                 showToast('결제 취소 실패: ' + error.message, 'error');
