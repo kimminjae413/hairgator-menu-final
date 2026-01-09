@@ -1,8 +1,8 @@
 // netlify/functions/image-transform.js
 // Gemini 기반 의상/배경 변환 API
-// aimyapp-ai-video-server의 geminiService.ts 참고
+// REST API 직접 호출 방식 (이미지 생성 지원)
 
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const fetch = require('node-fetch');
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -130,38 +130,48 @@ exports.handler = async (event) => {
             }
         }
 
-        // Gemini API 호출 (이미지 생성 모드)
-        const genAI = new GoogleGenerativeAI(GEMINI_KEY);
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash-exp',
-            generationConfig: {
-                temperature: 0.05,
-                responseModalities: ['Text', 'Image']  // 이미지 생성 활성화
-            }
-        });
+        // Gemini REST API 직접 호출 (이미지 생성 지원)
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_KEY}`;
 
-        console.log('🚀 Gemini API 호출 중...');
+        console.log('🚀 Gemini REST API 호출 중...');
 
-        const result = await model.generateContent({
+        const requestBody = {
             contents: [{
-                role: 'user',
                 parts: [
                     {
                         inlineData: {
-                            data: base64Data,
-                            mimeType: mimeType
+                            mimeType: mimeType,
+                            data: base64Data
                         }
                     },
                     { text: prompt }
                 ]
-            }]
+            }],
+            generationConfig: {
+                temperature: 0.05,
+                responseModalities: ['TEXT', 'IMAGE']
+            }
+        };
+
+        const apiResponse = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
         });
 
-        const response = result.response;
+        const result = await apiResponse.json();
+        console.log('📥 Gemini API 응답 상태:', apiResponse.status);
+
+        if (!apiResponse.ok) {
+            console.error('❌ Gemini API 오류:', result);
+            throw new Error(result.error?.message || 'Gemini API error');
+        }
 
         // 응답에서 이미지 추출
-        if (response.candidates && response.candidates[0]) {
-            const parts = response.candidates[0].content.parts;
+        if (result.candidates && result.candidates[0]) {
+            const parts = result.candidates[0].content?.parts || [];
 
             for (const part of parts) {
                 if (part.inlineData) {
@@ -181,13 +191,16 @@ exports.handler = async (event) => {
                     };
                 }
             }
+
+            // 텍스트만 있는 경우
+            const textPart = parts.find(p => p.text);
+            if (textPart) {
+                console.log('⚠️ Gemini 텍스트 응답:', textPart.text);
+            }
         }
 
-        // 이미지가 없으면 텍스트 응답 확인
-        const textResponse = response.text();
-        console.log('⚠️ Gemini 텍스트 응답:', textResponse);
-
-        throw new Error('Gemini API did not return an image');
+        console.log('⚠️ 전체 응답:', JSON.stringify(result, null, 2));
+        throw new Error('Gemini API did not return an image - model may not support image generation');
 
     } catch (error) {
         console.error('🎨 이미지 변환 오류:', error);

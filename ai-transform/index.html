@@ -80,23 +80,32 @@
                     <span class="option-label">의상 변경</span>
                     <select id="clothingSelect" class="option-select-inline">
                         <option value="">변경 안함</option>
-                        <option value="A professional dark navy suit with white shirt">네이비 정장</option>
-                        <option value="A casual white t-shirt">화이트 티셔츠</option>
-                        <option value="A black turtleneck sweater">블랙 터틀넥</option>
-                        <option value="A light blue dress shirt">라이트블루 셔츠</option>
-                        <option value="A simple elegant dress">심플한 원피스</option>
+                        <optgroup label="👔 남성">
+                            <option value="A professional dark navy suit with white dress shirt and tie">네이비 정장</option>
+                            <option value="A casual white cotton t-shirt">화이트 티셔츠</option>
+                            <option value="A black turtleneck sweater">블랙 터틀넥</option>
+                            <option value="A light blue formal dress shirt">라이트블루 셔츠</option>
+                            <option value="A gray business casual blazer with white shirt">그레이 블레이저</option>
+                        </optgroup>
+                        <optgroup label="👗 여성">
+                            <option value="A simple elegant black dress">블랙 원피스</option>
+                            <option value="A white blouse with elegant neckline">화이트 블라우스</option>
+                            <option value="A professional navy blazer with white top">네이비 재킷</option>
+                            <option value="A soft pink knit sweater">핑크 니트</option>
+                            <option value="A casual cream colored cardigan">크림 가디건</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div class="option-row">
                     <span class="option-label">배경 변경</span>
                     <select id="backgroundSelect" class="option-select-inline">
                         <option value="">변경 안함</option>
-                        <option value="clean white studio background">화이트 스튜디오</option>
-                        <option value="gray studio background">그레이 스튜디오</option>
-                        <option value="soft gradient background">그라데이션</option>
+                        <option value="clean white studio background with soft lighting">화이트 스튜디오</option>
+                        <option value="professional gray studio background">그레이 스튜디오</option>
+                        <option value="soft gradient background from light gray to white">그라데이션</option>
                         <option value="white cement textured wall background">시멘트 벽</option>
-                        <option value="warm wooden wall background">나무 벽면</option>
-                        <option value="soft bokeh blur background">보케 블러</option>
+                        <option value="warm wooden wall background with natural texture">나무 벽면</option>
+                        <option value="soft bokeh blur background with warm tones">보케 블러</option>
                     </select>
                 </div>
             </div>
@@ -226,6 +235,6 @@
     <!-- Scripts -->
     <script src="../js/firebase-config.js?v=20260109"></script>
     <script src="../js/firebase-bridge.js?v=20260109e"></script>
-    <script src="app.js?v=20260109k"></script>
+    <script src="app.js?v=20260109l"></script>
 </body>
 </html>
