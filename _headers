@@ -6,7 +6,7 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer-when-downgrade
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; media-src 'self' https://generativelanguage.googleapis.com https://*.googleapis.com blob:; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://*.googleapis.com https://www.gstatic.com https://*.supabase.co https://*.firebaseio.com https://lovely-lebkuchen-4017ca.netlify.app https://cdn.jsdelivr.net;
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; media-src 'self' https://generativelanguage.googleapis.com https://*.googleapis.com blob:; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://*.googleapis.com https://www.gstatic.com https://*.supabase.co https://*.firebaseio.com https://lovely-lebkuchen-4017ca.netlify.app https://cdn.jsdelivr.net https://cdn.vmimgs.com https://*.vmimgs.com;
 
 /personal-color/*
   X-Frame-Options: SAMEORIGIN
