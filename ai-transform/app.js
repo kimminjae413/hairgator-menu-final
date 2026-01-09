@@ -569,7 +569,7 @@
     }
 
     // ============ Download & Reset ============
-    window.downloadResult = function(type) {
+    window.downloadResult = async function(type) {
         let url, filename;
 
         if (type === 'faceSwap') {
@@ -582,11 +582,35 @@
             filename = 'hairgator-video.mp4';
         }
 
-        if (url) {
+        if (!url) {
+            showToast('다운로드할 파일이 없습니다', 'error');
+            return;
+        }
+
+        try {
+            showToast('다운로드 준비 중...', 'info');
+
+            // iOS/iPadOS에서 외부 URL 다운로드를 위해 fetch + blob 사용
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+
             const a = document.createElement('a');
-            a.href = url;
+            a.href = blobUrl;
             a.download = filename;
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
+
+            // blob URL 해제
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+
+            showToast('다운로드 완료!', 'success');
+        } catch (error) {
+            console.error('다운로드 실패:', error);
+            // 폴백: 새 탭에서 열기
+            window.open(url, '_blank');
+            showToast('새 탭에서 이미지를 길게 눌러 저장하세요', 'info');
         }
     };
 
