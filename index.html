@@ -22,68 +22,110 @@
         })();
     </script>
 
-    <!-- ⭐ 로딩 오버레이 강제 숨김 (bfcache/뒤로가기 대응) -->
+    <!-- ⭐ 로딩 오버레이 강제 숨김 (bfcache/뒤로가기 대응 - iOS 특화) -->
     <style>
         /* bfcache 복원 시 로딩 오버레이 강제 숨김 */
-        .loading-overlay.force-hide {
+        .loading-overlay.force-hide,
+        .loading-overlay[data-force-hide="true"] {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
             pointer-events: none !important;
+            z-index: -9999 !important;
+        }
+        /* iOS Safari에서 bfcache 복원 시 즉시 숨김 */
+        @supports (-webkit-touch-callout: none) {
+            .loading-overlay {
+                display: none;
+            }
         }
     </style>
     <script>
         (function() {
-            var hideAttempts = 0;
+            var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            var hideIntervalId = null;
+            var hideIntervalCount = 0;
+
             function forceHideLoading() {
                 var overlay = document.getElementById('loadingOverlay');
                 if (overlay) {
-                    overlay.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
+                    // 모든 가능한 방법으로 숨김
+                    overlay.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; z-index: -9999 !important;';
                     overlay.classList.add('force-hide');
                     overlay.classList.remove('visible', 'active', 'show');
+                    overlay.setAttribute('data-force-hide', 'true');
+                    overlay.setAttribute('hidden', '');
+                    overlay.setAttribute('aria-hidden', 'true');
                 }
-                hideAttempts++;
             }
+
+            // iOS 전용: 지속적인 체크 (2초간 50ms마다)
+            function startIOSHideInterval() {
+                if (hideIntervalId) clearInterval(hideIntervalId);
+                hideIntervalCount = 0;
+                hideIntervalId = setInterval(function() {
+                    forceHideLoading();
+                    hideIntervalCount++;
+                    if (hideIntervalCount >= 40) { // 2초 (50ms * 40)
+                        clearInterval(hideIntervalId);
+                        hideIntervalId = null;
+                    }
+                }, 50);
+            }
+
             // DOM 로드 시
             document.addEventListener('DOMContentLoaded', function() {
                 forceHideLoading();
-                // 추가로 여러 번 시도
-                setTimeout(forceHideLoading, 50);
-                setTimeout(forceHideLoading, 150);
-                setTimeout(forceHideLoading, 300);
+                if (isIOS) startIOSHideInterval();
             });
+
             // pageshow (bfcache 복원 시) - 가장 중요!
             window.addEventListener('pageshow', function(e) {
-                console.log('📄 pageshow 이벤트 - persisted:', e.persisted);
+                console.log('📄 pageshow - persisted:', e.persisted, 'iOS:', isIOS);
                 forceHideLoading();
-                // 여러 타이밍에 시도 (Flutter WebView 안정성)
-                setTimeout(forceHideLoading, 0);
-                setTimeout(forceHideLoading, 50);
-                setTimeout(forceHideLoading, 100);
-                setTimeout(forceHideLoading, 200);
-                setTimeout(forceHideLoading, 500);
+
+                // iOS에서는 지속적인 체크
+                if (isIOS || e.persisted) {
+                    startIOSHideInterval();
+                }
+
+                // requestAnimationFrame으로도 시도 (iOS에서 더 안정적)
+                if (typeof requestAnimationFrame === 'function') {
+                    requestAnimationFrame(forceHideLoading);
+                    requestAnimationFrame(function() {
+                        requestAnimationFrame(forceHideLoading);
+                    });
+                }
             });
-            // pagehide (페이지 떠나기 전) - bfcache에 숨긴 상태로 저장
-            window.addEventListener('pagehide', forceHideLoading);
-            // visibilitychange (앱 복귀 시)
+
+            // pagehide (페이지 떠나기 전)
+            window.addEventListener('pagehide', function() {
+                forceHideLoading();
+                if (hideIntervalId) {
+                    clearInterval(hideIntervalId);
+                    hideIntervalId = null;
+                }
+            });
+
+            // visibilitychange (iOS에서 중요)
             document.addEventListener('visibilitychange', function() {
                 if (document.visibilityState === 'visible') {
                     forceHideLoading();
-                    setTimeout(forceHideLoading, 100);
+                    if (isIOS) startIOSHideInterval();
                 }
             });
-            // focus (윈도우 포커스 시)
-            window.addEventListener('focus', function() {
-                forceHideLoading();
-                setTimeout(forceHideLoading, 100);
-            });
-            // popstate (히스토리 뒤로/앞으로)
+
+            // focus, popstate
+            window.addEventListener('focus', forceHideLoading);
             window.addEventListener('popstate', function() {
                 forceHideLoading();
-                setTimeout(forceHideLoading, 100);
+                if (isIOS) startIOSHideInterval();
             });
-            // 전역에 노출 (다른 스크립트에서 호출 가능)
+
+            // 전역에 노출
             window.forceHideLoading = forceHideLoading;
+            window.isIOSDevice = isIOS;
         })();
     </script>
 

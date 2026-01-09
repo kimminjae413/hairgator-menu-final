@@ -8,35 +8,64 @@
     <!-- 캐시 방지 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 
-    <!-- ⭐ 로딩 오버레이 강제 숨김 (bfcache/뒤로가기 대응) -->
+    <!-- ⭐ 로딩 오버레이 강제 숨김 (bfcache/뒤로가기 대응 - iOS 특화) -->
     <style>
-        .loading-overlay.force-hide {
+        .loading-overlay.force-hide,
+        .loading-overlay[data-force-hide="true"] {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
             pointer-events: none !important;
+            z-index: -9999 !important;
+        }
+        @supports (-webkit-touch-callout: none) {
+            .loading-overlay { display: none; }
         }
     </style>
     <script>
         (function() {
+            var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            var hideIntervalId = null;
+
             function forceHideLoading() {
                 var overlay = document.getElementById('loadingOverlay');
                 if (overlay) {
-                    overlay.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;';
+                    overlay.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; z-index: -9999 !important;';
                     overlay.classList.add('force-hide');
+                    overlay.setAttribute('data-force-hide', 'true');
+                    overlay.setAttribute('hidden', '');
                 }
             }
+
+            function startIOSHideInterval() {
+                if (hideIntervalId) clearInterval(hideIntervalId);
+                var count = 0;
+                hideIntervalId = setInterval(function() {
+                    forceHideLoading();
+                    if (++count >= 40) clearInterval(hideIntervalId);
+                }, 50);
+            }
+
             document.addEventListener('DOMContentLoaded', function() {
                 forceHideLoading();
-                setTimeout(forceHideLoading, 100);
+                if (isIOS) startIOSHideInterval();
             });
             window.addEventListener('pageshow', function(e) {
                 forceHideLoading();
-                setTimeout(forceHideLoading, 0);
-                setTimeout(forceHideLoading, 100);
-                setTimeout(forceHideLoading, 300);
+                if (isIOS || e.persisted) startIOSHideInterval();
             });
             window.addEventListener('pagehide', forceHideLoading);
+            window.addEventListener('popstate', function() {
+                forceHideLoading();
+                if (isIOS) startIOSHideInterval();
+            });
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible') {
+                    forceHideLoading();
+                    if (isIOS) startIOSHideInterval();
+                }
+            });
             window.forceHideLoading = forceHideLoading;
         })();
     </script>
