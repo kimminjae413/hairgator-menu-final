@@ -22,26 +22,47 @@
         })();
     </script>
 
-    <!-- ⭐ 로딩 오버레이: HTML에 없음, JavaScript로 동적 생성 (bfcache 문제 해결) -->
+    <!-- ⭐ 로딩 오버레이 완전 제거 (bfcache 문제 해결) -->
     <script>
         (function() {
-            // bfcache 복원 시 혹시 남아있는 로딩 오버레이 제거
-            function forceHideLoading() {
-                var overlay = document.getElementById('loadingOverlay');
-                if (overlay) {
-                    overlay.remove();
-                    console.log('🗑️ 로딩 오버레이 제거됨 (bfcache 복원)');
+            // 모든 로딩 관련 요소 강제 삭제
+            function nukeAllLoading() {
+                // ID로 찾기
+                var byId = document.getElementById('loadingOverlay');
+                if (byId) {
+                    byId.remove();
+                    console.log('🗑️ #loadingOverlay 제거됨');
                 }
+
+                // 클래스로 찾기
+                var byClass = document.querySelectorAll('.loading-overlay');
+                byClass.forEach(function(el) {
+                    el.remove();
+                    console.log('🗑️ .loading-overlay 제거됨');
+                });
+
+                // 스피너 클래스로 찾기
+                var spinners = document.querySelectorAll('.loading-spinner');
+                spinners.forEach(function(el) {
+                    el.remove();
+                    console.log('🗑️ .loading-spinner 제거됨');
+                });
             }
 
+            // 페이지 표시될 때마다 실행
             window.addEventListener('pageshow', function(e) {
-                if (e.persisted) {
-                    console.log('📄 bfcache에서 복원됨');
-                    forceHideLoading();
-                }
+                console.log('📄 pageshow - persisted:', e.persisted);
+                nukeAllLoading();
+                // 추가로 100ms, 500ms 후에도 실행
+                setTimeout(nukeAllLoading, 100);
+                setTimeout(nukeAllLoading, 500);
             });
 
-            window.forceHideLoading = forceHideLoading;
+            // DOM 로드 시에도 실행
+            document.addEventListener('DOMContentLoaded', nukeAllLoading);
+
+            window.forceHideLoading = nukeAllLoading;
+            window.nukeAllLoading = nukeAllLoading;
         })();
     </script>
 
