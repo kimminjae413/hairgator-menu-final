@@ -1,7 +1,11 @@
 /**
  * HAIRGATOR AI Transform
  * Face Swap & Video Generation
- * Uses remainCount (AI횟수권) from Bullnabi/OhMyApp
+ *
+ * 얼굴변환 흐름:
+ * - sourceImage (01 원본): 헤어스타일을 유지할 사진 → vModel source
+ * - targetFace (02 참조): 바꿔 넣을 얼굴 사진 → vModel target
+ * - 결과: sourceImage의 헤어스타일 + targetFace의 얼굴
  */
 
 (function() {
@@ -10,20 +14,20 @@
     // ============ State ============
     const state = {
         currentTab: 'faceSwap',
-        customerPhoto: null,
-        targetStyle: null,
+        sourceImage: null,  // 헤어스타일 유지할 원본 사진
+        targetFace: null,   // 바꿔 넣을 얼굴 사진
         videoSource: null,
         videoDuration: 5,
         userId: null,
-        remainCount: 0, // AI횟수권 (불나비 remainCount)
+        tokenBalance: 0,    // HAIRGATOR 토큰
         isProcessing: false
     };
 
     // ============ Constants ============
     const COSTS = {
-        faceSwap: 1,    // AI횟수권 1회
-        video5sec: 1,   // AI횟수권 1회
-        video8sec: 2    // AI횟수권 2회
+        faceSwap: 300,    // 얼굴 변환: 300 토큰
+        video5sec: 500,   // 영상 5초: 500 토큰
+        video8sec: 800    // 영상 8초: 800 토큰
     };
 
     const API_BASE = '/.netlify/functions';
@@ -76,14 +80,14 @@
 
     // ============ Upload Events ============
     function bindUploadEvents() {
-        // Customer photo
-        const customerInput = document.getElementById('customerPhotoInput');
-        if (customerInput) {
-            customerInput.addEventListener('change', (e) => handleUpload(e, 'customer'));
+        // Source image (헤어스타일 유지할 원본)
+        const sourceInput = document.getElementById('sourceImageInput');
+        if (sourceInput) {
+            sourceInput.addEventListener('change', (e) => handleUpload(e, 'source'));
         }
 
-        // Target style
-        const targetInput = document.getElementById('targetStyleInput');
+        // Target face (바꿔 넣을 얼굴)
+        const targetInput = document.getElementById('targetFaceInput');
         if (targetInput) {
             targetInput.addEventListener('change', (e) => handleUpload(e, 'target'));
         }
@@ -103,13 +107,13 @@
         reader.onload = (event) => {
             const dataUrl = event.target.result;
 
-            if (type === 'customer') {
-                state.customerPhoto = dataUrl;
-                updateUploadCard('customerPhotoCard', dataUrl);
+            if (type === 'source') {
+                state.sourceImage = dataUrl;
+                updateUploadCard('sourceImageCard', dataUrl);
                 checkFaceSwapReady();
             } else if (type === 'target') {
-                state.targetStyle = dataUrl;
-                updateUploadCard('targetStyleCard', dataUrl);
+                state.targetFace = dataUrl;
+                updateUploadCard('targetFaceCard', dataUrl);
                 checkFaceSwapReady();
             } else if (type === 'video') {
                 state.videoSource = dataUrl;
@@ -192,7 +196,7 @@
     function checkFaceSwapReady() {
         const btn = document.getElementById('faceSwapBtn');
         if (btn) {
-            btn.disabled = !(state.customerPhoto && state.targetStyle);
+            btn.disabled = !(state.sourceImage && state.targetFace);
         }
     }
 
@@ -206,14 +210,14 @@
     // ============ Face Swap ============
     async function handleFaceSwap() {
         if (state.isProcessing) return;
-        if (!state.customerPhoto || !state.targetStyle) {
-            showToast('고객 사진과 헤어스타일을 모두 업로드해주세요', 'error');
+        if (!state.sourceImage || !state.targetFace) {
+            showToast('원본 사진과 참조 얼굴을 모두 업로드해주세요', 'error');
             return;
         }
 
         // Check credits
-        if (state.remainCount < COSTS.faceSwap) {
-            showToast('AI 횟수권이 부족합니다', 'error');
+        if (state.tokenBalance < COSTS.faceSwap) {
+            showToast(`토큰이 부족합니다 (필요: ${COSTS.faceSwap})`, 'error');
             return;
         }
 
@@ -221,13 +225,16 @@
         showLoading('얼굴 변환 중...', '잠시만 기다려주세요');
 
         try {
+            // vModel API 파라미터:
+            // - styleImageUrl (source): 헤어스타일 유지할 사진 = sourceImage
+            // - customerPhotoUrl (target): 바꿔 넣을 얼굴 = targetFace
             const response = await fetch(`${API_BASE}/hair-change`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'start',
-                    originalImage: state.customerPhoto.split(',')[1],
-                    hairstyleImage: state.targetStyle.split(',')[1]
+                    styleImageUrl: state.sourceImage,      // 헤어스타일 유지 (source)
+                    customerPhotoUrl: state.targetFace     // 바꿔 넣을 얼굴 (target)
                 })
             });
 
@@ -300,9 +307,9 @@
             return;
         }
 
-        const cost = state.videoDuration === 5 ? COSTS.video5sec : COSTS.video8sec;
-        if (state.remainCount < cost) {
-            showToast('AI 횟수권이 부족합니다', 'error');
+        const tokenCost = state.videoDuration === 5 ? COSTS.video5sec : COSTS.video8sec;
+        if (state.tokenBalance < tokenCost) {
+            showToast(`토큰이 부족합니다 (필요: ${tokenCost})`, 'error');
             return;
         }
 
@@ -325,10 +332,10 @@
 
             if (data.operationName) {
                 await pollVideoStatus(data.operationName);
-                await deductCredits(cost, 'videoGen');
+                await deductCredits(tokenCost, 'videoGen');
             } else if (data.videoUrl) {
                 showVideoResult(data.videoUrl);
-                await deductCredits(cost, 'videoGen');
+                await deductCredits(tokenCost, 'videoGen');
             } else {
                 throw new Error(data.error || '영상 생성에 실패했습니다');
             }
@@ -385,7 +392,7 @@
         }
     }
 
-    // ============ Credits (remainCount) ============
+    // ============ Credits (HAIRGATOR Token) ============
     async function loadUserCredits() {
         try {
             // Wait for Firebase Bridge to be ready
@@ -394,9 +401,7 @@
                 const user = window.currentDesigner;
                 if (user) {
                     state.userId = user.id;
-                    // TODO: Load remainCount from OhMyApp/Bullnabi API
-                    // For now, use tokenBalance as fallback
-                    state.remainCount = user.tokenBalance || 0;
+                    state.tokenBalance = user.tokenBalance || 0;
                     updateCreditDisplay();
                 }
             }
@@ -418,14 +423,13 @@
         });
     }
 
-    async function deductCredits(amount, feature) {
+    async function deductCredits(tokenCost, feature) {
         try {
-            // TODO: Deduct from remainCount via OhMyApp/Bullnabi API
-            // For now, deduct from tokenBalance via Firebase
+            // HAIRGATOR 토큰 차감
             if (window.FirebaseBridge && window.FirebaseBridge.deductTokens) {
-                await window.FirebaseBridge.deductTokens(amount * 100, feature); // Convert to tokens
+                await window.FirebaseBridge.deductTokens(tokenCost, feature);
             }
-            state.remainCount -= amount;
+            state.tokenBalance -= tokenCost;
             updateCreditDisplay();
         } catch (error) {
             console.error('Error deducting credits:', error);
@@ -435,7 +439,8 @@
     function updateCreditDisplay() {
         const display = document.getElementById('creditDisplay');
         if (display) {
-            display.textContent = state.remainCount;
+            // 토큰 잔액 표시
+            display.textContent = state.tokenBalance.toLocaleString();
         }
     }
 
@@ -495,11 +500,11 @@
     };
 
     window.resetFaceSwap = function() {
-        state.customerPhoto = null;
-        state.targetStyle = null;
+        state.sourceImage = null;
+        state.targetFace = null;
 
         // Reset cards
-        ['customerPhotoCard', 'targetStyleCard'].forEach(id => {
+        ['sourceImageCard', 'targetFaceCard'].forEach(id => {
             const card = document.getElementById(id);
             if (card) {
                 card.classList.remove('has-image');
@@ -511,8 +516,10 @@
         });
 
         // Reset inputs
-        document.getElementById('customerPhotoInput').value = '';
-        document.getElementById('targetStyleInput').value = '';
+        const sourceInput = document.getElementById('sourceImageInput');
+        const targetInput = document.getElementById('targetFaceInput');
+        if (sourceInput) sourceInput.value = '';
+        if (targetInput) targetInput.value = '';
 
         // Hide result
         const result = document.getElementById('faceSwapResult');

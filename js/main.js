@@ -966,10 +966,55 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // AI 얼굴변환 & 영상
+        // AI 얼굴변환 & 영상 (베이직 플랜 이상만 접근 가능)
         if (aiTransformBtn) {
             aiTransformBtn.addEventListener('click', function() {
                 console.log('🎬 AI 얼굴변환 & 영상 클릭');
+
+                // 플랜 기반 체크 (여러 소스에서 확인)
+                const ALLOWED_PLANS = ['basic', 'pro', 'business'];
+                let userPlan = 'free';
+
+                // 1. currentDesigner에서 확인
+                if (window.currentDesigner?.plan) {
+                    userPlan = window.currentDesigner.plan;
+                }
+                // 2. getBullnabiUser에서 확인
+                else if (typeof window.getBullnabiUser === 'function') {
+                    const bullnabiUser = window.getBullnabiUser();
+                    if (bullnabiUser?.plan) userPlan = bullnabiUser.plan;
+                }
+                // 3. FirebaseBridge.cachedUserData에서 확인
+                else if (window.FirebaseBridge?.cachedUserData?.plan) {
+                    userPlan = window.FirebaseBridge.cachedUserData.plan;
+                }
+                // 4. localStorage에서 확인
+                else {
+                    try {
+                        const stored = localStorage.getItem('firebase_user');
+                        if (stored) {
+                            const parsed = JSON.parse(stored);
+                            if (parsed?.plan) userPlan = parsed.plan;
+                        }
+                    } catch(_e) {}
+                }
+
+                const isAllowed = ALLOWED_PLANS.includes(userPlan);
+
+                console.log('AI 얼굴변환 & 영상 접근 체크:', { userPlan, isAllowed });
+
+                if (!isAllowed) {
+                    // 업그레이드 모달 표시
+                    if (typeof showUpgradeModal === 'function') {
+                        showUpgradeModal('AI 얼굴변환 & 영상', '베이직 플랜 이상에서 사용 가능합니다.');
+                    } else if (typeof showToast === 'function') {
+                        showToast('베이직 플랜 이상에서 사용 가능합니다.', 'warning');
+                    } else {
+                        alert('베이직 플랜 이상에서 사용 가능합니다.');
+                    }
+                    return;
+                }
+
                 closeSidebar();
                 window.location.href = '/ai-transform/';
             });

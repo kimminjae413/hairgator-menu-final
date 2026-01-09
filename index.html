@@ -4363,7 +4363,7 @@ function applyPlanBasedDisabledState() {
     console.log('🔐 플랜 기반 접근 체크:', userPlan, '허용:', isAllowed);
 
     // 유료 플랜 전용 버튼들
-    const paidFeatureButtons = ['styleMatchBtn', 'personalColorBtn'];
+    const paidFeatureButtons = ['styleMatchBtn', 'personalColorBtn', 'aiTransformBtn'];
 
     paidFeatureButtons.forEach(btnId => {
         const btn = document.getElementById(btnId);
