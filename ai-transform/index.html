@@ -180,12 +180,9 @@
     <!-- i18n 초기화 -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // i18n 초기화 및 적용
-            if (typeof initI18n === 'function') {
-                initI18n();
-            }
-            if (typeof applyTranslations === 'function') {
-                applyTranslations();
+            // i18n 번역 적용
+            if (typeof updateAllTexts === 'function') {
+                updateAllTexts();
             }
 
             // select optgroup label 번역 적용
@@ -195,6 +192,21 @@
                     var icon = el.label.substring(0, 2);
                     el.label = icon + ' ' + t(key);
                 }
+            });
+
+            // 언어 변경 이벤트 리스너
+            window.addEventListener('languageChanged', function() {
+                if (typeof updateAllTexts === 'function') {
+                    updateAllTexts();
+                }
+                // optgroup label 재적용
+                document.querySelectorAll('[data-i18n-label]').forEach(function(el) {
+                    var key = el.getAttribute('data-i18n-label');
+                    if (typeof t === 'function') {
+                        var icon = el.label.substring(0, 2);
+                        el.label = icon + ' ' + t(key);
+                    }
+                });
             });
         });
     </script>
