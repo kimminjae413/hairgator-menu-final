@@ -19,23 +19,6 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Tab Navigation -->
-        <nav class="tab-nav">
-            <button class="tab-btn active" data-tab="faceSwap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="8" r="4"/>
-                    <path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>
-                </svg>
-                얼굴 변환
-            </button>
-            <button class="tab-btn" data-tab="videoGen">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="4" width="20" height="16" rx="2"/>
-                    <polygon points="10,8 16,12 10,16"/>
-                </svg>
-                영상 생성
-            </button>
-        </nav>
 
         <!-- Face Swap Tab -->
         <div class="tab-panel active" id="faceSwapPanel">
@@ -126,7 +109,7 @@
                     </div>
 
                     <div class="result-actions">
-                        <button class="result-btn primary" onclick="downloadResult('faceSwap')">
+                        <button class="result-btn primary" onclick="downloadResult()">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
                             저장
                         </button>
@@ -138,58 +121,6 @@
             </div>
         </div>
 
-        <!-- Video Generation Tab -->
-        <div class="tab-panel" id="videoGenPanel">
-            <div class="section-header">
-                <h2 class="section-title" data-i18n="aiTransform.videoGenTitle">AI 영상 생성</h2>
-                <p class="section-subtitle" data-i18n="aiTransform.videoGenDesc">이미지를 움직이는 영상으로 변환합니다</p>
-            </div>
-
-            <!-- Video Upload -->
-            <div class="video-upload-card" id="videoSourceCard" onclick="document.getElementById('videoSourceInput').click()">
-                <div class="upload-placeholder">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
-                        <rect x="2" y="4" width="20" height="16" rx="2"/>
-                        <polygon points="10,8 16,12 10,16"/>
-                    </svg>
-                    <span class="title" data-i18n="aiTransform.selectImage">이미지 선택</span>
-                    <span class="subtitle">영상으로 변환할 이미지</span>
-                </div>
-            </div>
-
-            <!-- Duration Options -->
-            <div class="options-section">
-                <div class="option-row">
-                    <span class="option-label" data-i18n="aiTransform.videoDuration">영상 길이</span>
-                    <div class="option-buttons">
-                        <button class="option-btn active" data-duration="5">5초</button>
-                        <button class="option-btn" data-duration="8">8초</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Action Button -->
-            <div class="action-section">
-                <button class="action-btn" id="videoGenBtn" disabled>
-                    <span data-i18n="aiTransform.generateVideo">영상 생성</span>
-                    <span class="credit-cost"><span id="videoCreditCost">500</span> 토큰</span>
-                </button>
-            </div>
-
-            <!-- Video Result -->
-            <div class="video-result-container" id="videoResult">
-                <video id="videoResultPlayer" controls playsinline></video>
-                <div class="result-actions">
-                    <button class="result-btn primary" onclick="downloadResult('video')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                        저장
-                    </button>
-                    <button class="result-btn secondary" onclick="resetVideoGen()">
-                        다시하기
-                    </button>
-                </div>
-            </div>
-        </div>
     </main>
 
     <!-- Loading Overlay -->
@@ -205,7 +136,6 @@
     <!-- Hidden Inputs -->
     <input type="file" id="sourceImageInput" accept="image/*">
     <input type="file" id="targetFaceInput" accept="image/*">
-    <input type="file" id="videoSourceInput" accept="image/*">
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -235,6 +165,6 @@
     <!-- Scripts -->
     <script src="../js/firebase-config.js?v=20260109"></script>
     <script src="../js/firebase-bridge.js?v=20260109e"></script>
-    <script src="app.js?v=20260109n"></script>
+    <script src="app.js?v=20260109o"></script>
 </body>
 </html>

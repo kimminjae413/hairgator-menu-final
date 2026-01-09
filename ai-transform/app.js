@@ -13,11 +13,8 @@
 
     // ============ State ============
     const state = {
-        currentTab: 'faceSwap',
         sourceImage: null,  // 헤어스타일 유지할 원본 사진
         targetFace: null,   // 바꿔 넣을 얼굴 사진
-        videoSource: null,
-        videoDuration: 5,
         userId: null,
         tokenBalance: 0,    // HAIRGATOR 토큰
         isProcessing: false
@@ -25,10 +22,7 @@
 
     // ============ Constants ============
     const COSTS = {
-        faceSwap: 300,       // 얼굴 변환: 300 토큰
-        video5sec: 500,      // 영상 5초: 500 토큰
-        video8sec: 800,      // 영상 8초: 800 토큰
-        imageTransform: 200  // 의상/배경 변환: 200 토큰
+        faceSwap: 300       // 얼굴 변환: 300 토큰 (의상/배경 포함)
     };
 
     const API_BASE = '/.netlify/functions';
@@ -38,9 +32,7 @@
 
     function init() {
         loadTheme();
-        bindTabEvents();
         bindUploadEvents();
-        bindOptionEvents();
         bindActionEvents();
         loadUserCredits();
     }
@@ -55,30 +47,6 @@
         }
     }
 
-    // ============ Tab Navigation ============
-    function bindTabEvents() {
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tab = btn.dataset.tab;
-                switchTab(tab);
-            });
-        });
-    }
-
-    function switchTab(tabId) {
-        state.currentTab = tabId;
-
-        // Update tab buttons
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.tab === tabId);
-        });
-
-        // Update panels
-        document.querySelectorAll('.tab-panel').forEach(panel => {
-            panel.classList.toggle('active', panel.id === tabId + 'Panel');
-        });
-    }
-
     // ============ Upload Events ============
     function bindUploadEvents() {
         // Source image (헤어스타일 유지할 원본)
@@ -91,12 +59,6 @@
         const targetInput = document.getElementById('targetFaceInput');
         if (targetInput) {
             targetInput.addEventListener('change', (e) => handleUpload(e, 'target'));
-        }
-
-        // Video source
-        const videoInput = document.getElementById('videoSourceInput');
-        if (videoInput) {
-            videoInput.addEventListener('change', (e) => handleUpload(e, 'video'));
         }
     }
 
@@ -116,10 +78,6 @@
                 state.targetFace = dataUrl;
                 updateUploadCard('targetFaceCard', dataUrl);
                 checkFaceSwapReady();
-            } else if (type === 'video') {
-                state.videoSource = dataUrl;
-                updateVideoUploadCard(dataUrl);
-                checkVideoGenReady();
             }
         };
         reader.readAsDataURL(file);
@@ -143,54 +101,11 @@
         img.src = dataUrl;
     }
 
-    function updateVideoUploadCard(dataUrl) {
-        const card = document.getElementById('videoSourceCard');
-        if (!card) return;
-
-        card.classList.add('has-image');
-
-        const placeholder = card.querySelector('.upload-placeholder');
-        if (placeholder) placeholder.style.display = 'none';
-
-        let img = card.querySelector('img');
-        if (!img) {
-            img = document.createElement('img');
-            card.insertBefore(img, card.firstChild);
-        }
-        img.src = dataUrl;
-    }
-
-    // ============ Option Events ============
-    function bindOptionEvents() {
-        // Video duration options
-        document.querySelectorAll('.option-btn[data-duration]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.option-btn[data-duration]').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                state.videoDuration = parseInt(btn.dataset.duration);
-                updateVideoCost();
-            });
-        });
-    }
-
-    function updateVideoCost() {
-        const costEl = document.getElementById('videoCreditCost');
-        if (costEl) {
-            const cost = state.videoDuration === 5 ? COSTS.video5sec : COSTS.video8sec;
-            costEl.textContent = cost;
-        }
-    }
-
     // ============ Action Events ============
     function bindActionEvents() {
         const faceSwapBtn = document.getElementById('faceSwapBtn');
         if (faceSwapBtn) {
             faceSwapBtn.addEventListener('click', handleFaceSwap);
-        }
-
-        const videoGenBtn = document.getElementById('videoGenBtn');
-        if (videoGenBtn) {
-            videoGenBtn.addEventListener('click', handleVideoGen);
         }
     }
 
@@ -198,13 +113,6 @@
         const btn = document.getElementById('faceSwapBtn');
         if (btn) {
             btn.disabled = !(state.sourceImage && state.targetFace);
-        }
-    }
-
-    function checkVideoGenReady() {
-        const btn = document.getElementById('videoGenBtn');
-        if (btn) {
-            btn.disabled = !state.videoSource;
         }
     }
 
@@ -381,99 +289,6 @@
             resultImg.src = imageUrl;
             resultSection.classList.add('visible');
             resultSection.scrollIntoView({ behavior: 'smooth' });
-        }
-    }
-
-    // ============ Video Generation ============
-    async function handleVideoGen() {
-        if (state.isProcessing) return;
-        if (!state.videoSource) {
-            showToast('이미지를 업로드해주세요', 'error');
-            return;
-        }
-
-        // 토큰 체크는 API 성공 후 FirebaseBridge에서 처리 (룩북/헤어체험 패턴)
-        state.isProcessing = true;
-        showLoading('영상 생성 중...', '3~8분 정도 소요됩니다');
-
-        try {
-            const response = await fetch(`${API_BASE}/gemini-video-proxy`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    images: [state.videoSource.split(',')[1]],
-                    duration: state.videoDuration,
-                    aspectRatio: '9:16',
-                    prompt: '자연스럽게 움직이는 헤어스타일'
-                })
-            });
-
-            const data = await response.json();
-
-            // 영상 길이에 따른 feature 이름 결정
-            const videoFeature = state.videoDuration === 5 ? 'video5sec' : 'video8sec';
-
-            if (data.operationName) {
-                await pollVideoStatus(data.operationName);
-                // 토큰 차감 (룩북/헤어체험 패턴)
-                await deductCredits(videoFeature, { feature: `AI 영상생성 ${state.videoDuration}초` });
-            } else if (data.videoUrl) {
-                showVideoResult(data.videoUrl);
-                // 토큰 차감 (룩북/헤어체험 패턴)
-                await deductCredits(videoFeature, { feature: `AI 영상생성 ${state.videoDuration}초` });
-            } else {
-                throw new Error(data.error || '영상 생성에 실패했습니다');
-            }
-        } catch (error) {
-            console.error('Video gen error:', error);
-            showToast(error.message || '영상 생성 중 오류가 발생했습니다', 'error');
-        } finally {
-            state.isProcessing = false;
-            hideLoading();
-        }
-    }
-
-    async function pollVideoStatus(operationName, attempt = 0) {
-        const maxAttempts = 60;
-        const interval = 5000;
-
-        if (attempt >= maxAttempts) {
-            throw new Error('처리 시간이 초과되었습니다');
-        }
-
-        const minutes = Math.floor((attempt * 5) / 60);
-        const seconds = (attempt * 5) % 60;
-        updateLoading(`영상 생성 중... ${minutes}분 ${seconds}초`);
-
-        const response = await fetch(`${API_BASE}/gemini-video-status`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ operationName })
-        });
-
-        const data = await response.json();
-
-        if (data.done) {
-            if (data.videoUrl) {
-                showVideoResult(data.videoUrl);
-                return;
-            } else if (data.error) {
-                throw new Error(data.error);
-            }
-        }
-
-        await new Promise(resolve => setTimeout(resolve, interval));
-        return pollVideoStatus(operationName, attempt + 1);
-    }
-
-    function showVideoResult(videoUrl) {
-        const resultContainer = document.getElementById('videoResult');
-        const videoPlayer = document.getElementById('videoResultPlayer');
-
-        if (resultContainer && videoPlayer) {
-            videoPlayer.src = videoUrl;
-            resultContainer.classList.add('visible');
-            resultContainer.scrollIntoView({ behavior: 'smooth' });
         }
     }
 
@@ -663,18 +478,10 @@
     }
 
     // ============ Download & Reset ============
-    window.downloadResult = async function(type) {
-        let url, filename;
-
-        if (type === 'faceSwap') {
-            const img = document.getElementById('faceSwapResultImg');
-            url = img?.src;
-            filename = 'hairgator-faceswap.png';
-        } else if (type === 'video') {
-            const video = document.getElementById('videoResultPlayer');
-            url = video?.src;
-            filename = 'hairgator-video.mp4';
-        }
+    window.downloadResult = async function() {
+        const img = document.getElementById('faceSwapResultImg');
+        const url = img?.src;
+        const filename = 'hairgator-faceswap.png';
 
         if (!url) {
             showToast('다운로드할 파일이 없습니다', 'error');
@@ -751,26 +558,6 @@
         if (result) result.classList.remove('visible');
 
         checkFaceSwapReady();
-    };
-
-    window.resetVideoGen = function() {
-        state.videoSource = null;
-
-        const card = document.getElementById('videoSourceCard');
-        if (card) {
-            card.classList.remove('has-image');
-            const img = card.querySelector('img');
-            if (img) img.remove();
-            const placeholder = card.querySelector('.upload-placeholder');
-            if (placeholder) placeholder.style.display = '';
-        }
-
-        document.getElementById('videoSourceInput').value = '';
-
-        const result = document.getElementById('videoResult');
-        if (result) result.classList.remove('visible');
-
-        checkVideoGenReady();
     };
 
 })();
