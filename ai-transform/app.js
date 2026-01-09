@@ -225,16 +225,16 @@
         showLoading('얼굴 변환 중...', '잠시만 기다려주세요');
 
         try {
-            // vModel API 파라미터:
-            // - styleImageUrl (source): 헤어스타일 유지할 사진 = sourceImage
-            // - customerPhotoUrl (target): 바꿔 넣을 얼굴 = targetFace
-            const response = await fetch(`${API_BASE}/hair-change`, {
+            // face-swap API 파라미터 (aimyapp 방식):
+            // - targetImage: 헤어스타일 유지할 원본 사진
+            // - swapImage: 바꿔 넣을 참조 얼굴
+            const response = await fetch(`${API_BASE}/face-swap`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'start',
-                    styleImageUrl: state.sourceImage,      // 헤어스타일 유지 (source)
-                    customerPhotoUrl: state.targetFace     // 바꿔 넣을 얼굴 (target)
+                    targetImage: state.sourceImage,   // 헤어스타일 유지할 원본
+                    swapImage: state.targetFace       // 바꿔 넣을 참조 얼굴
                 })
             });
 
@@ -268,7 +268,7 @@
 
         updateLoading(`얼굴 변환 중... (${attempt + 1}/${maxAttempts})`);
 
-        const response = await fetch(`${API_BASE}/hair-change`, {
+        const response = await fetch(`${API_BASE}/face-swap`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'status', taskId })
