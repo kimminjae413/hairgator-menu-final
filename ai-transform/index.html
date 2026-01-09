@@ -175,9 +175,29 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
+    <!-- bfcache 로딩 오버레이 숨김 -->
+    <script>
+        // 페이지 로드/복원 시 로딩 오버레이 숨김
+        (function() {
+            var hideLoading = function() {
+                var overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    overlay.classList.remove('visible');
+                    overlay.style.display = 'none';
+                }
+            };
+            // 즉시 실행
+            hideLoading();
+            // DOMContentLoaded
+            document.addEventListener('DOMContentLoaded', hideLoading);
+            // pageshow (bfcache 복원 시)
+            window.addEventListener('pageshow', hideLoading);
+        })();
+    </script>
+
     <!-- Scripts -->
     <script src="../js/firebase-config.js?v=20260109"></script>
     <script src="../js/firebase-bridge.js?v=20260109d"></script>
-    <script src="app.js?v=20260109e"></script>
+    <script src="app.js?v=20260109f"></script>
 </body>
 </html>

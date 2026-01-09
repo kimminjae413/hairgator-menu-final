@@ -4598,9 +4598,16 @@ window.addEventListener('unload', function() {
     stopCamera();
 });
 
-// bfcache에서 복원될 때 - 카메라 상태 확인
+// bfcache에서 복원될 때 - 카메라 상태 확인 + 로딩 오버레이 숨김
 window.addEventListener('pageshow', function(e) {
     console.log('📥 pageshow 이벤트, persisted:', e.persisted);
+
+    // 로딩 오버레이 숨김 (bfcache 복원 시 스피너 문제 방지)
+    var loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+    }
+
     if (e.persisted) {
         // bfcache에서 복원됨 - 카메라 종료 확인
         stopCamera();
