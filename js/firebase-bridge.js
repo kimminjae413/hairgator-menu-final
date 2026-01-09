@@ -375,13 +375,8 @@
                 return docId;
             }
 
-            // 3. UID 기반 폴백 (카카오 등 이메일 없는 경우)
-            if (firebaseUser?.uid) {
-                console.log('🔑 getUserDocId: UID 폴백 =', firebaseUser.uid);
-                return firebaseUser.uid;
-            }
-
-            // 4. localStorage 폴백 (AI Transform 등 서브페이지용)
+            // 3. localStorage 폴백 (AI Transform 등 서브페이지용) - UID보다 우선!
+            // auth.js에서 이메일 기반 docId를 localStorage에 저장하므로 이걸 먼저 확인
             try {
                 const stored = localStorage.getItem('firebase_user');
                 if (stored) {
@@ -398,6 +393,12 @@
                 }
             } catch (e) {
                 console.warn('localStorage 파싱 실패:', e);
+            }
+
+            // 4. UID 기반 폴백 (최후의 수단 - 카카오 등 이메일 없는 경우)
+            if (firebaseUser?.uid) {
+                console.log('🔑 getUserDocId: UID 폴백 =', firebaseUser.uid);
+                return firebaseUser.uid;
             }
 
             console.warn('⚠️ getUserDocId: 사용자 정보 없음');
