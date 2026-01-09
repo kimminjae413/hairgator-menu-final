@@ -1,8 +1,7 @@
 // netlify/functions/image-transform.js
 // Gemini 기반 의상/배경 변환 API
 // REST API 직접 호출 방식 (이미지 생성 지원)
-
-const fetch = require('node-fetch');
+// Node.js 18+ 내장 fetch 사용
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
