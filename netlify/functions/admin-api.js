@@ -60,6 +60,10 @@ exports.handler = async (event) => {
       // ==================== 대시보드 ====================
       case 'getDashboardStats':
         return await getDashboardStats(body, headers);
+      case 'getUsageStats':
+        return await getUsageStats(body, headers);
+      case 'getDailyUsageChart':
+        return await getDailyUsageChart(body, headers);
       case 'getActivityLogs':
         return await getActivityLogs(body, headers);
 
@@ -363,14 +367,49 @@ async function getPaymentDetail(body, headers) {
 // ==================== 대시보드 ====================
 
 async function getDashboardStats(body, headers) {
-  // 사용자 수
-  const usersSnapshot = await db.collection('users').get();
-  const bullnabiSnapshot = await db.collection('bullnabi_users').get();
-
-  // 오늘 결제
+  // 오늘 시작 시간
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
+  // 사용자 조회
+  const usersSnapshot = await db.collection('users').get();
+  const bullnabiSnapshot = await db.collection('bullnabi_users').get();
+
+  const firebaseUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), source: 'firebase' }));
+  const bullnabiUsersData = bullnabiSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), source: 'bullnabi' }));
+
+  // 이메일 기준 중복 제거 (firebase 우선)
+  const firebaseEmails = new Set(firebaseUsers.map(u => u.email?.toLowerCase()).filter(Boolean));
+  const uniqueBullnabi = bullnabiUsersData.filter(u => !firebaseEmails.has(u.email?.toLowerCase()));
+  const allUsers = [...firebaseUsers, ...uniqueBullnabi];
+
+  // 통계 계산
+  const totalUsers = allUsers.length;
+  const paidUsers = allUsers.filter(u => u.plan && u.plan !== 'free').length;
+  const totalTokens = allUsers.reduce((sum, u) => sum + (u.tokenBalance || 0), 0);
+
+  // 오늘 가입자/활성 사용자
+  const todayNewUsers = firebaseUsers.filter(u => {
+    if (!u.createdAt) return false;
+    const date = u.createdAt?.toDate ? u.createdAt.toDate() : new Date(u.createdAt);
+    return date >= todayStart;
+  }).length;
+
+  const todayActive = firebaseUsers.filter(u => {
+    if (!u.lastLoginAt) return false;
+    const date = u.lastLoginAt?.toDate ? u.lastLoginAt.toDate() : new Date(u.lastLoginAt);
+    return date >= todayStart;
+  }).length;
+
+  // 플랜 분포
+  const planCounts = {
+    free: allUsers.filter(u => !u.plan || u.plan === 'free').length,
+    basic: allUsers.filter(u => u.plan === 'basic').length,
+    pro: allUsers.filter(u => u.plan === 'pro').length,
+    business: allUsers.filter(u => u.plan === 'business').length
+  };
+
+  // 결제 조회
   const paymentsSnapshot = await db.collection('payments')
     .where('status', 'in', ['completed', 'paid'])
     .get();
@@ -400,8 +439,13 @@ async function getDashboardStats(body, headers) {
     body: JSON.stringify({
       success: true,
       stats: {
-        totalUsers: usersSnapshot.size,
+        totalUsers,
         bullnabiUsers: bullnabiSnapshot.size,
+        paidUsers,
+        totalTokens,
+        todayNewUsers,
+        todayActive,
+        planCounts,
         todayRevenue,
         totalRevenue,
         totalPayments: paymentsSnapshot.size,
@@ -411,19 +455,167 @@ async function getDashboardStats(body, headers) {
   };
 }
 
-async function getActivityLogs(body, headers) {
-  const { limit = 100 } = body;
+// 기간별 사용 통계
+async function getUsageStats(body, headers) {
+  const { period = 'day' } = body;
 
-  const snapshot = await db.collection('credit_logs')
-    .orderBy('timestamp', 'desc')
-    .limit(limit)
+  // 기간에 따른 시작 날짜 계산
+  const now = new Date();
+  let startDate;
+  switch (period) {
+    case 'week':
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 7);
+      break;
+    case 'month':
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      break;
+    case 'year':
+      startDate = new Date(now.getFullYear(), 0, 1);
+      break;
+    case 'day':
+    default:
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      break;
+  }
+
+  // credit_logs에서 기간 내 로그 조회
+  const logsSnapshot = await db.collection('credit_logs')
+    .where('timestamp', '>=', startDate)
     .get();
 
-  const logs = snapshot.docs.map(doc => ({
+  const logs = logsSnapshot.docs.map(doc => doc.data());
+
+  const chatbotCount = logs.filter(l => l.action === 'chatbot').length;
+  const lookbookCount = logs.filter(l => l.action === 'lookbook').length;
+  const hairTryCount = logs.filter(l => l.action === 'hairTry').length;
+  const totalUsed = logs.reduce((sum, l) => sum + (l.creditsUsed || 0), 0);
+
+  // 신규 가입자 수
+  const usersSnapshot = await db.collection('users')
+    .where('createdAt', '>=', startDate)
+    .get();
+  const newUsersCount = usersSnapshot.size;
+
+  // 접속자 수
+  const activeUsersSnapshot = await db.collection('users')
+    .where('lastLoginAt', '>=', startDate)
+    .get();
+  const activeUsersCount = activeUsersSnapshot.size;
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({
+      success: true,
+      stats: {
+        chatbotCount,
+        lookbookCount,
+        hairTryCount,
+        totalUsed,
+        newUsersCount,
+        activeUsersCount,
+        period
+      }
+    })
+  };
+}
+
+// 일별 사용량 차트 데이터 (14일)
+async function getDailyUsageChart(body, headers) {
+  const { days = 14 } = body;
+
+  // 시작 날짜 설정
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - (days - 1));
+  startDate.setHours(0, 0, 0, 0);
+
+  // credit_logs에서 최근 데이터 조회
+  const logsSnapshot = await db.collection('credit_logs')
+    .where('timestamp', '>=', startDate)
+    .orderBy('timestamp', 'asc')
+    .get();
+
+  // 일별 데이터 초기화
+  const dailyData = {};
+  for (let i = 0; i < days; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() - (days - 1 - i));
+    const dateKey = date.toISOString().split('T')[0];
+    dailyData[dateKey] = {
+      users: new Set(),
+      count: 0
+    };
+  }
+
+  // 로그 데이터 집계
+  logsSnapshot.forEach(doc => {
+    const log = doc.data();
+    if (log.timestamp) {
+      const logDate = log.timestamp.toDate ? log.timestamp.toDate() : new Date(log.timestamp);
+      const dateKey = logDate.toISOString().split('T')[0];
+      if (dailyData[dateKey]) {
+        dailyData[dateKey].count++;
+        if (log.userId) {
+          dailyData[dateKey].users.add(log.userId);
+        }
+      }
+    }
+  });
+
+  // 응답 데이터 생성
+  const labels = [];
+  const uniqueUsersData = [];
+  const usageCountData = [];
+
+  for (let i = 0; i < days; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() - (days - 1 - i));
+    const dateKey = date.toISOString().split('T')[0];
+
+    labels.push(date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }));
+    uniqueUsersData.push(dailyData[dateKey]?.users.size || 0);
+    usageCountData.push(dailyData[dateKey]?.count || 0);
+  }
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({
+      success: true,
+      data: {
+        labels,
+        uniqueUsersData,
+        usageCountData
+      }
+    })
+  };
+}
+
+async function getActivityLogs(body, headers) {
+  const { userId, action, limit = 100 } = body;
+
+  let query = db.collection('credit_logs').orderBy('timestamp', 'desc').limit(limit);
+
+  // userId 필터 (복합 인덱스 필요)
+  if (userId) {
+    query = db.collection('credit_logs')
+      .where('userId', '==', userId)
+      .orderBy('timestamp', 'desc')
+      .limit(limit);
+  }
+
+  const snapshot = await query.get();
+  let logs = snapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data(),
     timestamp: doc.data().timestamp?.toDate?.()?.toISOString() || null
   }));
+
+  // action 필터 (클라이언트 사이드 필터링)
+  if (action) {
+    logs = logs.filter(l => l.action === action);
+  }
 
   return {
     statusCode: 200,

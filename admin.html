@@ -3589,39 +3589,15 @@
         // 대시보드 로드
         async function loadDashboard() {
             try {
-                // Firebase users + Bullnabi users 모두 조회
-                const [usersSnapshot, bullnabiSnapshot] = await Promise.all([
-                    db.collection('users').get(),
-                    db.collection('bullnabi_users').get()
-                ]);
+                // API를 통해 대시보드 통계 조회
+                const result = await callAdminAPI('getDashboardStats');
 
-                const firebaseUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), source: 'firebase' }));
-                const bullnabiUsers = bullnabiSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), source: 'bullnabi' }));
+                if (result.error) {
+                    throw new Error(result.error);
+                }
 
-                // 이메일 기준 중복 제거 (firebase 우선)
-                const firebaseEmails = new Set(firebaseUsers.map(u => u.email?.toLowerCase()).filter(Boolean));
-                const uniqueBullnabi = bullnabiUsers.filter(u => !firebaseEmails.has(u.email?.toLowerCase()));
-                const allUsers = [...firebaseUsers, ...uniqueBullnabi];
-
-                const totalUsers = allUsers.length;
-                const paidUsers = allUsers.filter(u => u.plan && u.plan !== 'free').length;
-                const totalTokens = allUsers.reduce((sum, u) => sum + (u.tokenBalance || 0), 0);
-
-                // 오늘 가입자 수 (신규 가입)
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const todayNewUsers = firebaseUsers.filter(u => {
-                    if (!u.createdAt) return false;
-                    const date = u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt);
-                    return date >= today;
-                }).length;
-
-                // 오늘 활성 사용자 (로그인 기준)
-                const todayActive = firebaseUsers.filter(u => {
-                    if (!u.lastLoginAt) return false;
-                    const date = u.lastLoginAt.toDate ? u.lastLoginAt.toDate() : new Date(u.lastLoginAt);
-                    return date >= today;
-                }).length;
+                const stats = result.stats || {};
+                const { totalUsers = 0, paidUsers = 0, totalTokens = 0, todayNewUsers = 0, todayActive = 0, planCounts = {} } = stats;
 
                 document.getElementById('statTotalUsers').textContent = totalUsers.toLocaleString();
                 document.getElementById('statTotalTokens').textContent = totalTokens.toLocaleString();
@@ -3640,20 +3616,13 @@
                 }
 
                 // 플랜 분포 차트
-                const planCounts = {
-                    free: allUsers.filter(u => !u.plan || u.plan === 'free').length,
-                    basic: allUsers.filter(u => u.plan === 'basic').length,
-                    pro: allUsers.filter(u => u.plan === 'pro').length,
-                    business: allUsers.filter(u => u.plan === 'business').length
-                };
-
                 if (planChart) planChart.destroy();
                 planChart = new Chart(document.getElementById('planChart'), {
                     type: 'doughnut',
                     data: {
                         labels: ['무료', '베이직', '프로', '비즈니스'],
                         datasets: [{
-                            data: [planCounts.free, planCounts.basic, planCounts.pro, planCounts.business],
+                            data: [planCounts.free || 0, planCounts.basic || 0, planCounts.pro || 0, planCounts.business || 0],
                             backgroundColor: ['#666', '#22c55e', '#3b82f6', '#a855f7']
                         }]
                     },
@@ -3686,16 +3655,20 @@
             showToast('새로고침 완료', 'success');
         }
 
-        // 최근 활동 로드
+        // 최근 활동 로드 (API 사용)
         async function loadRecentActivity() {
             const tbody = document.getElementById('recentActivityTable');
             try {
-                const snapshot = await db.collection('credit_logs')
-                    .orderBy('timestamp', 'desc')
-                    .limit(10)
-                    .get();
+                // API를 통해 최근 활동 조회
+                const result = await callAdminAPI('getActivityLogs', { limit: 10 });
 
-                if (snapshot.empty) {
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const logs = result.logs || [];
+
+                if (logs.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">활동 내역이 없습니다</td></tr>';
                     return;
                 }
@@ -3710,13 +3683,11 @@
                     'purchase': '💳 결제'
                 };
 
-                tbody.innerHTML = snapshot.docs.map(doc => {
-                    const log = doc.data();
-
+                tbody.innerHTML = logs.map(log => {
                     // 시간 포맷 (오늘이면 시간만, 아니면 날짜+시간)
                     let timeStr = '-';
-                    if (log.timestamp?.toDate) {
-                        const date = log.timestamp.toDate();
+                    if (log.timestamp) {
+                        const date = new Date(log.timestamp);
                         const now = new Date();
                         const isToday = date.toDateString() === now.toDateString();
                         if (isToday) {
@@ -3765,62 +3736,17 @@
             return map[action] || 'free';
         }
 
-        // 사용량 차트 로드 (실제 데이터)
+        // 사용량 차트 로드 (API 사용)
         async function loadUsageChart() {
             try {
-                const days = 14; // 최근 14일
-                const labels = [];
-                const uniqueUsersData = [];
-                const usageCountData = [];
+                // API를 통해 일별 사용량 데이터 조회
+                const result = await callAdminAPI('getDailyUsageChart', { days: 14 });
 
-                // 14일 전부터 오늘까지의 날짜 범위 설정
-                const startDate = new Date();
-                startDate.setDate(startDate.getDate() - (days - 1));
-                startDate.setHours(0, 0, 0, 0);
-
-                // credit_logs에서 최근 14일 데이터 조회
-                const logsSnapshot = await db.collection('credit_logs')
-                    .where('timestamp', '>=', startDate)
-                    .orderBy('timestamp', 'asc')
-                    .get();
-
-                // 일별로 데이터 그룹화
-                const dailyData = {};
-                for (let i = 0; i < days; i++) {
-                    const date = new Date();
-                    date.setDate(date.getDate() - (days - 1 - i));
-                    const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
-                    dailyData[dateKey] = {
-                        users: new Set(),
-                        count: 0
-                    };
+                if (result.error) {
+                    throw new Error(result.error);
                 }
 
-                // 로그 데이터 집계
-                logsSnapshot.forEach(doc => {
-                    const log = doc.data();
-                    if (log.timestamp) {
-                        const logDate = log.timestamp.toDate();
-                        const dateKey = logDate.toISOString().split('T')[0];
-                        if (dailyData[dateKey]) {
-                            dailyData[dateKey].count++;
-                            if (log.userId) {
-                                dailyData[dateKey].users.add(log.userId);
-                            }
-                        }
-                    }
-                });
-
-                // 차트 데이터 생성
-                for (let i = 0; i < days; i++) {
-                    const date = new Date();
-                    date.setDate(date.getDate() - (days - 1 - i));
-                    const dateKey = date.toISOString().split('T')[0];
-
-                    labels.push(date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }));
-                    uniqueUsersData.push(dailyData[dateKey]?.users.size || 0);
-                    usageCountData.push(dailyData[dateKey]?.count || 0);
-                }
+                const { labels = [], uniqueUsersData = [], usageCountData = [] } = result.data || {};
 
                 if (usageChart) usageChart.destroy();
                 usageChart = new Chart(document.getElementById('usageChart'), {
@@ -3880,7 +3806,7 @@
             }
         }
 
-        // 사용자 목록 로드 (Firebase users + Bullnabi users 통합)
+        // 사용자 목록 로드 (API 사용)
         let userSource = 'all'; // 'all', 'firebase', 'bullnabi'
         let userSort = 'lastLogin'; // 'lastLogin', 'created', 'name', 'tokens'
 
@@ -3889,56 +3815,45 @@
             tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;"><div class="loading"></div></td></tr>';
 
             try {
-                allUsers = [];
+                // API를 통해 사용자 목록 조회
+                const sourceParam = userSource === 'all' ? null : userSource;
+                const result = await callAdminAPI('getUsers', {
+                    source: sourceParam,
+                    limit: 5000
+                });
 
-                // 1. Firebase Auth 사용자 (users 컬렉션)
-                if (userSource === 'all' || userSource === 'firebase') {
-                    const firebaseSnapshot = await db.collection('users').orderBy('createdAt', 'desc').limit(5000).get();
-                    console.log('users 조회 결과:', firebaseSnapshot.size, '명');
-                    const firebaseUsers = firebaseSnapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data(),
-                        source: 'firebase'  // 출처 표시
-                    }));
-                    allUsers = allUsers.concat(firebaseUsers);
+                if (result.error) {
+                    throw new Error(result.error);
                 }
 
-                // 2. 불나비 마이그레이션 사용자 (bullnabi_users 컬렉션)
-                if (userSource === 'all' || userSource === 'bullnabi') {
-                    try {
-                        // createdAt 필드가 없을 수 있으므로 orderBy 없이 조회
-                        const bullnabiSnapshot = await db.collection('bullnabi_users').limit(5000).get();
-                        console.log('bullnabi_users 조회 결과:', bullnabiSnapshot.size, '명');
-                        const bullnabiUsers = bullnabiSnapshot.docs.map(doc => ({
-                            id: doc.id,
-                            ...doc.data(),
-                            source: 'bullnabi',  // 출처 표시
-                            // 필드명 매핑 (불나비 → 헤어게이터)
-                            displayName: doc.data().name || doc.data().displayName || doc.data().userName,
-                            email: doc.data().email || doc.data().userId,
-                            phone: doc.data().phone || doc.data().phoneNumber,
-                            plan: doc.data().plan || 'free',
-                            tokenBalance: doc.data().tokenBalance || 0
-                        }));
-                        allUsers = allUsers.concat(bullnabiUsers);
-                    } catch (bullnabiError) {
-                        console.error('bullnabi_users 로드 실패:', bullnabiError);
+                allUsers = result.users || [];
+
+                // 불나비 사용자 필드 매핑
+                allUsers = allUsers.map(user => {
+                    if (user.source === 'bullnabi') {
+                        return {
+                            ...user,
+                            displayName: user.name || user.displayName || user.userName,
+                            email: user.email || user.userId,
+                            phone: user.phone || user.phoneNumber,
+                            plan: user.plan || 'free',
+                            tokenBalance: user.tokenBalance || 0
+                        };
                     }
-                }
+                    return user;
+                });
 
                 // 이메일 기준 중복 제거 (Firebase 우선)
                 const emailMap = new Map();
                 allUsers.forEach(user => {
                     const email = (user.email || '').toLowerCase();
                     if (email && emailMap.has(email)) {
-                        // Firebase 사용자 우선
                         if (user.source === 'firebase') {
                             emailMap.set(email, user);
                         }
                     } else if (email) {
                         emailMap.set(email, user);
                     } else {
-                        // 이메일 없는 사용자는 그대로 추가
                         emailMap.set(user.id, user);
                     }
                 });
@@ -3948,12 +3863,12 @@
                 allUsers.sort((a, b) => {
                     switch (userSort) {
                         case 'lastLogin':
-                            const aLogin = a.lastLoginAt?.toDate?.() || a.lastLoginAt || new Date(0);
-                            const bLogin = b.lastLoginAt?.toDate?.() || b.lastLoginAt || new Date(0);
+                            const aLogin = a.lastLoginAt ? new Date(a.lastLoginAt) : new Date(0);
+                            const bLogin = b.lastLoginAt ? new Date(b.lastLoginAt) : new Date(0);
                             return bLogin - aLogin;
                         case 'created':
-                            const aCreated = a.createdAt?.toDate?.() || new Date(0);
-                            const bCreated = b.createdAt?.toDate?.() || new Date(0);
+                            const aCreated = a.createdAt ? new Date(a.createdAt) : new Date(0);
+                            const bCreated = b.createdAt ? new Date(b.createdAt) : new Date(0);
                             return bCreated - aCreated;
                         case 'name':
                             const aName = (a.displayName || a.email || '').toLowerCase();
@@ -4593,7 +4508,7 @@
             }
         }
 
-        // 토큰 충전
+        // 토큰 충전 (서버 API)
         async function chargeUserTokens() {
             const userId = document.getElementById('tokenChargeUserId').value.trim();
             const amount = parseInt(document.getElementById('tokenChargeAmount').value);
@@ -4609,36 +4524,22 @@
             resultDiv.innerHTML = '<div class="loading"></div>';
 
             try {
-                const userRef = db.collection('users').doc(userId);
-                const doc = await userRef.get();
+                const result = await callAdminAPI('updateUserTokens', {
+                    userId,
+                    amount,
+                    type: 'add',
+                    reason: note || '관리자 충전'
+                });
 
-                if (!doc.exists) {
-                    resultDiv.innerHTML = '<div style="color: var(--danger);">사용자를 찾을 수 없습니다</div>';
+                if (result.error) {
+                    resultDiv.innerHTML = `<div style="color: var(--danger);">${result.error}</div>`;
                     return;
                 }
-
-                const prev = doc.data().tokenBalance || 0;
-                const newBalance = prev + amount;
-
-                await userRef.update({
-                    tokenBalance: newBalance,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                await db.collection('credit_logs').add({
-                    userId: userId,
-                    action: 'admin_charge',
-                    tokensAdded: amount,
-                    previousBalance: prev,
-                    newBalance: newBalance,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    metadata: { note: note || '관리자 충전' }
-                });
 
                 resultDiv.innerHTML = `
                     <div style="color: var(--success);">✅ 충전 완료</div>
                     <div style="font-size: 13px; margin-top: 8px;">
-                        ${prev} + ${amount} = ${newBalance} 토큰
+                        ${result.previousTokens} + ${amount} = ${result.newTokens} 토큰
                     </div>
                 `;
                 showToast(`${amount.toLocaleString()} 토큰 충전 완료`, 'success');
@@ -4649,7 +4550,7 @@
             }
         }
 
-        // 토큰 차감
+        // 토큰 차감 (서버 API)
         async function deductUserTokens() {
             const userId = document.getElementById('tokenDeductUserId').value.trim();
             const amount = parseInt(document.getElementById('tokenDeductAmount').value);
@@ -4665,36 +4566,22 @@
             resultDiv.innerHTML = '<div class="loading"></div>';
 
             try {
-                const userRef = db.collection('users').doc(userId);
-                const doc = await userRef.get();
+                const result = await callAdminAPI('updateUserTokens', {
+                    userId,
+                    amount,
+                    type: 'deduct',
+                    reason: reason || '관리자 차감'
+                });
 
-                if (!doc.exists) {
-                    resultDiv.innerHTML = '<div style="color: var(--danger);">사용자를 찾을 수 없습니다</div>';
+                if (result.error) {
+                    resultDiv.innerHTML = `<div style="color: var(--danger);">${result.error}</div>`;
                     return;
                 }
-
-                const prev = doc.data().tokenBalance || 0;
-                const newBalance = Math.max(0, prev - amount);
-
-                await userRef.update({
-                    tokenBalance: newBalance,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                await db.collection('credit_logs').add({
-                    userId: userId,
-                    action: 'admin_deduct',
-                    creditsUsed: amount,
-                    previousBalance: prev,
-                    newBalance: newBalance,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    metadata: { reason: reason || '관리자 차감' }
-                });
 
                 resultDiv.innerHTML = `
                     <div style="color: var(--warning);">⚠️ 차감 완료</div>
                     <div style="font-size: 13px; margin-top: 8px;">
-                        ${prev} - ${amount} = ${newBalance} 토큰
+                        ${result.previousTokens} - ${amount} = ${result.newTokens} 토큰
                     </div>
                 `;
                 showToast(`${amount.toLocaleString()} 토큰 차감 완료`, 'warning');
@@ -4705,7 +4592,7 @@
             }
         }
 
-        // 활동 로그 로드
+        // 활동 로그 로드 (API 사용)
         async function loadActivityLogs() {
             const userId = document.getElementById('logSearchUserId').value.trim();
             const actionFilter = document.getElementById('logActionFilter').value;
@@ -4714,21 +4601,18 @@
             tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;"><div class="loading"></div></td></tr>';
 
             try {
-                let query = db.collection('credit_logs').orderBy('timestamp', 'desc').limit(100);
+                // API를 통해 활동 로그 조회
+                const result = await callAdminAPI('getActivityLogs', {
+                    userId: userId || null,
+                    action: actionFilter || null,
+                    limit: 100
+                });
 
-                if (userId) {
-                    query = db.collection('credit_logs')
-                        .where('userId', '==', userId)
-                        .orderBy('timestamp', 'desc')
-                        .limit(100);
+                if (result.error) {
+                    throw new Error(result.error);
                 }
 
-                const snapshot = await query.get();
-                let logs = snapshot.docs.map(doc => doc.data());
-
-                if (actionFilter) {
-                    logs = logs.filter(log => log.action === actionFilter);
-                }
+                const logs = result.logs || [];
 
                 if (logs.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">로그 없음</td></tr>';
@@ -4736,7 +4620,7 @@
                 }
 
                 tbody.innerHTML = logs.map(log => {
-                    const time = log.timestamp?.toDate ? log.timestamp.toDate().toLocaleString('ko-KR') : '-';
+                    const time = log.timestamp ? new Date(log.timestamp).toLocaleString('ko-KR') : '-';
                     const change = log.tokensAdded ? `+${log.tokensAdded}` : (log.creditsUsed ? `-${log.creditsUsed}` : '-');
                     const note = log.metadata?.note || log.metadata?.reason || log.metadata?.feature || '-';
 
@@ -4791,39 +4675,26 @@
             }
         }
 
-        // 사용 통계 로드
+        // 사용 통계 로드 (API 사용)
         async function loadUsageStats() {
             try {
-                const startDate = getStartDateForPeriod(currentStatsPeriod);
+                // API를 통해 기간별 통계 조회
+                const result = await callAdminAPI('getUsageStats', {
+                    period: currentStatsPeriod
+                });
 
-                // credit_logs에서 기간 내 로그 조회
-                const logsSnapshot = await db.collection('credit_logs')
-                    .where('timestamp', '>=', startDate)
-                    .get();
-                const logs = logsSnapshot.docs.map(doc => doc.data());
+                if (result.error) {
+                    throw new Error(result.error);
+                }
 
-                const chatbotCount = logs.filter(l => l.action === 'chatbot').length;
-                const lookbookCount = logs.filter(l => l.action === 'lookbook').length;
-                const hairTryCount = logs.filter(l => l.action === 'hairTry').length;
-                const totalUsed = logs.reduce((sum, l) => sum + (l.creditsUsed || 0), 0);
+                const stats = result.stats || {};
+                const { chatbotCount = 0, lookbookCount = 0, hairTryCount = 0, totalUsed = 0, newUsersCount = 0, activeUsersCount = 0 } = stats;
 
                 document.getElementById('usageChatbot').textContent = chatbotCount.toLocaleString();
                 document.getElementById('usageLookbook').textContent = lookbookCount.toLocaleString();
                 document.getElementById('usageHairTry').textContent = hairTryCount.toLocaleString();
                 document.getElementById('usageTokensUsed').textContent = totalUsed.toLocaleString();
-
-                // 신규 가입자 수 (users 컬렉션에서 createdAt 기준)
-                const usersSnapshot = await db.collection('users')
-                    .where('createdAt', '>=', startDate)
-                    .get();
-                const newUsersCount = usersSnapshot.size;
                 document.getElementById('usageNewUsers').textContent = newUsersCount.toLocaleString();
-
-                // 접속자 수 (users 컬렉션에서 lastLoginAt 기준)
-                const activeUsersSnapshot = await db.collection('users')
-                    .where('lastLoginAt', '>=', startDate)
-                    .get();
-                const activeUsersCount = activeUsersSnapshot.size;
                 document.getElementById('usageActiveUsers').textContent = activeUsersCount.toLocaleString();
 
                 // 기간 라벨 업데이트
@@ -5031,8 +4902,7 @@
             });
         }
 
-        // 결제 내역 로드 (실시간)
-        let paymentsUnsubscribe = null;
+        // 결제 내역 로드 (API 사용)
         let currentPaymentFilter = 'all';
 
         function setPaymentFilter(filter) {
@@ -5044,99 +4914,97 @@
             loadPayments();
         }
 
-        function loadPayments() {
+        async function loadPayments() {
             const tbody = document.getElementById('paymentsTableBody');
             const searchText = document.getElementById('paymentSearchInput')?.value?.toLowerCase() || '';
             tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;"><div class="loading"></div></td></tr>';
 
-            // 기존 리스너 해제
-            if (paymentsUnsubscribe) {
-                paymentsUnsubscribe();
-            }
+            try {
+                // API를 통해 결제 내역 조회
+                const result = await callAdminAPI('getPayments', { limit: 200 });
 
-            // 실시간 리스너 설정
-            paymentsUnsubscribe = db.collection('payments')
-                .orderBy('createdAt', 'desc')
-                .limit(200)
-                .onSnapshot(snapshot => {
-                    if (snapshot.empty) {
-                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">결제 내역이 없습니다</td></tr>';
-                        updatePaymentStats([]);
-                        return;
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const payments = result.payments || [];
+
+                if (payments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">결제 내역이 없습니다</td></tr>';
+                    updatePaymentStats([]);
+                    return;
+                }
+
+                // 기간 필터 적용
+                const now = new Date();
+                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const weekStart = new Date(todayStart);
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+                let filteredPayments = payments.filter(p => {
+                    const paymentDate = p.createdAt ? new Date(p.createdAt) : null;
+
+                    // 기간 필터
+                    if (currentPaymentFilter !== 'all' && paymentDate) {
+                        if (currentPaymentFilter === 'today' && paymentDate < todayStart) return false;
+                        if (currentPaymentFilter === 'week' && paymentDate < weekStart) return false;
+                        if (currentPaymentFilter === 'month' && paymentDate < monthStart) return false;
                     }
 
-                    // 기간 필터 적용
-                    const now = new Date();
-                    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    const weekStart = new Date(todayStart);
-                    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-                    let filteredDocs = snapshot.docs.filter(doc => {
-                        const p = doc.data();
-                        const paymentDate = p.createdAt?.toDate ? p.createdAt.toDate() : null;
-
-                        // 기간 필터
-                        if (currentPaymentFilter !== 'all' && paymentDate) {
-                            if (currentPaymentFilter === 'today' && paymentDate < todayStart) return false;
-                            if (currentPaymentFilter === 'week' && paymentDate < weekStart) return false;
-                            if (currentPaymentFilter === 'month' && paymentDate < monthStart) return false;
-                        }
-
-                        // 검색 필터
-                        if (searchText) {
-                            const searchTarget = `${p.paymentId || ''} ${p.userId || ''} ${p.userName || ''}`.toLowerCase();
-                            if (!searchTarget.includes(searchText)) return false;
-                        }
-
-                        return true;
-                    });
-
-                    // 통계 업데이트
-                    updatePaymentStats(filteredDocs.map(doc => doc.data()));
-
-                    if (filteredDocs.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">결제 내역이 없습니다</td></tr>';
-                        return;
+                    // 검색 필터
+                    if (searchText) {
+                        const searchTarget = `${p.paymentId || ''} ${p.userId || ''} ${p.userName || ''}`.toLowerCase();
+                        if (!searchTarget.includes(searchText)) return false;
                     }
 
-                    tbody.innerHTML = filteredDocs.map(doc => {
-                        const p = doc.data();
-                        const date = p.createdAt?.toDate ? p.createdAt.toDate().toLocaleString('ko-KR') : '-';
-
-                        // 플랜명 매핑
-                        const planNames = { basic: '베이직', pro: '프로', business: '비즈니스', tokens_5000: '토큰 5000' };
-                        const productName = planNames[p.planKey] || p.planKey || '-';
-
-                        // 상태 매핑
-                        const isCompleted = p.status === 'completed' || p.status === 'paid';
-                        const isCancelled = p.status === 'cancelled' || p.status === 'refunded';
-                        const statusBadge = isCompleted ? 'badge-success' : (isCancelled ? 'badge-danger' : 'badge-warning');
-                        const statusText = isCompleted ? '완료' : (isCancelled ? '결제취소' : p.status || '-');
-
-                        // 취소 버튼 (완료 상태일 때만 표시)
-                        const cancelBtn = isCompleted
-                            ? `<button class="btn btn-sm btn-danger" onclick="openCancelPaymentModal('${doc.id}', '${p.paymentId || ''}', '${p.userId}', ${p.tokens || 0}, '${p.userName || p.userId}')" style="margin-left: 5px;">결제취소</button>`
-                            : '';
-
-                        return `
-                            <tr style="${isCancelled ? 'opacity: 0.6;' : ''}">
-                                <td style="font-size: 11px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${p.paymentId || doc.id}</td>
-                                <td style="font-size: 12px;">${p.userName || p.userId || '-'}</td>
-                                <td>${productName} <span style="color: var(--text-muted); font-size: 11px;">(${(p.tokens || 0).toLocaleString()}토큰)</span></td>
-                                <td style="font-weight: 500; ${isCancelled ? 'text-decoration: line-through;' : ''}">₩${(p.amount || 0).toLocaleString()}</td>
-                                <td><span class="badge ${statusBadge}">${statusText}</span></td>
-                                <td style="font-size: 12px; color: var(--text-muted);">${date}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-secondary" onclick="showPaymentDetail('${doc.id}')">상세</button>
-                                    ${cancelBtn}
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
-                }, error => {
-                    tbody.innerHTML = `<tr><td colspan="7" style="color: var(--danger);">오류: ${error.message}</td></tr>`;
+                    return true;
                 });
+
+                // 통계 업데이트
+                updatePaymentStats(filteredPayments);
+
+                if (filteredPayments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">결제 내역이 없습니다</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = filteredPayments.map(p => {
+                    const date = p.createdAt ? new Date(p.createdAt).toLocaleString('ko-KR') : '-';
+
+                    // 플랜명 매핑
+                    const planNames = { basic: '베이직', pro: '프로', business: '비즈니스', tokens_5000: '토큰 5000' };
+                    const productName = planNames[p.planKey] || p.planKey || '-';
+
+                    // 상태 매핑
+                    const isCompleted = p.status === 'completed' || p.status === 'paid';
+                    const isCancelled = p.status === 'cancelled' || p.status === 'refunded';
+                    const statusBadge = isCompleted ? 'badge-success' : (isCancelled ? 'badge-danger' : 'badge-warning');
+                    const statusText = isCompleted ? '완료' : (isCancelled ? '결제취소' : p.status || '-');
+
+                    // 취소 버튼 (완료 상태일 때만 표시)
+                    const cancelBtn = isCompleted
+                        ? `<button class="btn btn-sm btn-danger" onclick="openCancelPaymentModal('${p.id}', '${p.paymentId || ''}', '${p.userId}', ${p.tokens || 0}, '${p.userName || p.userId}')" style="margin-left: 5px;">결제취소</button>`
+                        : '';
+
+                    return `
+                        <tr style="${isCancelled ? 'opacity: 0.6;' : ''}">
+                            <td style="font-size: 11px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${p.paymentId || p.id}</td>
+                            <td style="font-size: 12px;">${p.userName || p.userId || '-'}</td>
+                            <td>${productName} <span style="color: var(--text-muted); font-size: 11px;">(${(p.tokens || 0).toLocaleString()}토큰)</span></td>
+                            <td style="font-weight: 500; ${isCancelled ? 'text-decoration: line-through;' : ''}">₩${(p.amount || 0).toLocaleString()}</td>
+                            <td><span class="badge ${statusBadge}">${statusText}</span></td>
+                            <td style="font-size: 12px; color: var(--text-muted);">${date}</td>
+                            <td>
+                                <button class="btn btn-sm btn-secondary" onclick="showPaymentDetail('${p.id}')">상세</button>
+                                ${cancelBtn}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="7" style="color: var(--danger);">오류: ${error.message}</td></tr>`;
+            }
         }
 
         // 결제 통계 업데이트
@@ -5153,15 +5021,23 @@
             document.getElementById('paymentCancelledCount').textContent = `${cancelled.length}건`;
         }
 
-        // 결제 상세 보기
-        function showPaymentDetail(paymentId) {
-            db.collection('payments').doc(paymentId).get().then(doc => {
-                if (doc.exists) {
-                    const p = doc.data();
-                    const planNames = { basic: '베이직', pro: '프로', business: '비즈니스', tokens_5000: '토큰 5000' };
-                    alert(`결제 상세\n\n주문번호: ${p.paymentId}\n사용자: ${p.userName || p.userId}\n상품: ${planNames[p.planKey] || p.planKey}\n금액: ₩${(p.amount || 0).toLocaleString()}\n토큰: ${(p.tokens || 0).toLocaleString()}\n상태: ${p.status}\n결제일: ${p.createdAt?.toDate ? p.createdAt.toDate().toLocaleString('ko-KR') : '-'}`);
+        // 결제 상세 보기 (API 사용)
+        async function showPaymentDetail(paymentId) {
+            try {
+                const result = await callAdminAPI('getPaymentDetail', { paymentId });
+                if (result.error) {
+                    alert('결제 상세 조회 실패: ' + result.error);
+                    return;
                 }
-            });
+                const p = result.payment;
+                if (p) {
+                    const planNames = { basic: '베이직', pro: '프로', business: '비즈니스', tokens_5000: '토큰 5000' };
+                    const dateStr = p.createdAt ? new Date(p.createdAt).toLocaleString('ko-KR') : '-';
+                    alert(`결제 상세\n\n주문번호: ${p.paymentId}\n사용자: ${p.userName || p.userId}\n상품: ${planNames[p.planKey] || p.planKey}\n금액: ₩${(p.amount || 0).toLocaleString()}\n토큰: ${(p.tokens || 0).toLocaleString()}\n상태: ${p.status}\n결제일: ${dateStr}`);
+                }
+            } catch (error) {
+                alert('결제 상세 조회 오류: ' + error.message);
+            }
         }
 
         // 결제 취소 모달 관련 변수
