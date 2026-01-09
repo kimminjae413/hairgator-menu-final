@@ -3273,6 +3273,21 @@
             return url.replace(/^http:\/\//i, 'https://');
         }
 
+        // 어드민 API 호출 (Firestore 접근용)
+        async function callAdminAPI(action, data = {}) {
+            try {
+                const response = await fetch('/.netlify/functions/admin-api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, ...data })
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('Admin API 호출 오류:', error);
+                return { error: '서버 연결에 실패했습니다.' };
+            }
+        }
+
         // ==================== 로그인/로그아웃 (서버 API 사용) ====================
 
         // 관리자 인증 API 호출
