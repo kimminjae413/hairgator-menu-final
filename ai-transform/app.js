@@ -394,55 +394,70 @@
 
     // ============ Credits (HAIRGATOR Token) ============
     async function loadUserCredits() {
-        try {
-            // Firebase Auth가 준비될 때까지 대기
-            await waitForFirebaseAuth();
+        console.log('🔄 AI Transform 토큰 로드 시작...');
 
-            // FirebaseBridge.getTokenBalance() 직접 사용
-            if (window.FirebaseBridge && window.FirebaseBridge.getTokenBalance) {
-                const result = await window.FirebaseBridge.getTokenBalance();
-                console.log('🔑 AI Transform 토큰 조회 결과:', result);
-
-                if (result.success) {
-                    state.tokenBalance = result.tokenBalance || 0;
-                    state.userId = await window.FirebaseBridge.getUserDocId();
-                    console.log('✅ AI Transform 토큰 로드 완료:', state.tokenBalance);
+        // Firebase Auth onAuthStateChanged 사용
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+            firebase.auth().onAuthStateChanged(async (user) => {
+                if (user) {
+                    console.log('✅ Firebase Auth 사용자 확인:', user.email || user.uid);
+                    await fetchTokenBalance(user);
                 } else {
-                    console.warn('⚠️ 토큰 조회 실패:', result.error);
+                    console.warn('⚠️ 로그인된 사용자 없음');
+                    // localStorage에서 폴백 시도
+                    await tryLocalStorageFallback();
                 }
-            } else if (window.currentDesigner) {
-                // 폴백: currentDesigner에서 가져오기
-                state.userId = window.currentDesigner.id;
-                state.tokenBalance = window.currentDesigner.tokenBalance || 0;
-            }
-        } catch (error) {
-            console.error('Error loading credits:', error);
+            });
+        } else {
+            // Firebase 없으면 폴백
+            console.warn('⚠️ Firebase 미초기화, 폴백 시도');
+            await tryLocalStorageFallback();
         }
     }
 
-    function waitForFirebaseAuth() {
-        return new Promise((resolve) => {
-            const maxWait = 5000; // 최대 5초 대기
-            const startTime = Date.now();
+    async function fetchTokenBalance(user) {
+        try {
+            // 사용자 문서 ID 계산 (이메일 기반)
+            let docId = null;
+            if (user.email) {
+                docId = user.email.toLowerCase().replace(/@/g, '_').replace(/\./g, '_');
+            } else {
+                docId = user.uid;
+            }
 
-            const check = () => {
-                // Firebase Auth가 준비되었는지 확인
-                const authReady = typeof firebase !== 'undefined' &&
-                                  firebase.auth &&
-                                  firebase.auth().currentUser;
-                const bridgeReady = window.FirebaseBridge && window.FirebaseBridge.getTokenBalance;
+            console.log('🔍 Firestore 토큰 조회, docId:', docId);
 
-                if (authReady || bridgeReady || window.currentDesigner) {
-                    resolve();
-                } else if (Date.now() - startTime > maxWait) {
-                    console.warn('⚠️ Firebase Auth 대기 타임아웃');
-                    resolve(); // 타임아웃되어도 계속 진행
-                } else {
-                    setTimeout(check, 100);
+            // Firestore에서 직접 조회
+            const db = firebase.firestore();
+            const userDoc = await db.collection('users').doc(docId).get();
+
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                state.tokenBalance = userData.tokenBalance || 0;
+                state.userId = docId;
+                console.log('✅ AI Transform 토큰 로드 완료:', state.tokenBalance, '플랜:', userData.plan);
+            } else {
+                console.warn('⚠️ 사용자 문서 없음:', docId);
+            }
+        } catch (error) {
+            console.error('❌ 토큰 조회 오류:', error);
+        }
+    }
+
+    async function tryLocalStorageFallback() {
+        try {
+            const stored = localStorage.getItem('firebase_user');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed.tokenBalance !== undefined) {
+                    state.tokenBalance = parsed.tokenBalance;
+                    state.userId = parsed.id || parsed.email?.toLowerCase().replace(/@/g, '_').replace(/\./g, '_');
+                    console.log('📦 localStorage에서 토큰 로드:', state.tokenBalance);
                 }
-            };
-            check();
-        });
+            }
+        } catch (e) {
+            console.warn('localStorage 폴백 실패:', e);
+        }
     }
 
     async function deductCredits(tokenCost, feature) {

@@ -22,6 +22,29 @@
         })();
     </script>
 
+    <!-- ⭐ 로딩 오버레이 강제 숨김 (bfcache/뒤로가기 대응) -->
+    <script>
+        (function() {
+            // DOM 로드 시 숨기기
+            document.addEventListener('DOMContentLoaded', function() {
+                var overlay = document.getElementById('loadingOverlay');
+                if (overlay) overlay.style.display = 'none';
+            });
+            // pageshow (bfcache 복원 시)
+            window.addEventListener('pageshow', function() {
+                var overlay = document.getElementById('loadingOverlay');
+                if (overlay) overlay.style.display = 'none';
+            });
+            // visibilitychange (앱 복귀 시)
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible') {
+                    var overlay = document.getElementById('loadingOverlay');
+                    if (overlay) overlay.style.display = 'none';
+                }
+            });
+        })();
+    </script>
+
     <!-- ⭐ 강력한 캐시 방지 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -1934,8 +1957,8 @@
         </div>
     </div>
 
-    <!-- 로딩 오버레이 -->
-    <div class="loading-overlay" id="loadingOverlay">
+    <!-- 로딩 오버레이 (bfcache 복원 대비 인라인 style로 기본 숨김) -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
         <div class="loading-spinner"></div>
         <!-- 백엔드 연결 상태 -->
        <!-- 헤어체험 서비스 상태 -->
