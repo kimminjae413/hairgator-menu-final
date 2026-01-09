@@ -329,31 +329,29 @@
     // Gemini 의상/배경 변환
     async function applyGeminiTransform(imageUrl, clothingPrompt, backgroundPrompt) {
         try {
-            // URL을 base64로 변환
-            let imageBase64 = imageUrl;
-            if (!imageUrl.startsWith('data:')) {
-                const response = await fetch(imageUrl);
-                const blob = await response.blob();
-                imageBase64 = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.readAsDataURL(blob);
-                });
-            }
-
             console.log('🎨 Gemini 변환 요청');
             console.log('- 의상:', clothingPrompt || '변경 안함');
             console.log('- 배경:', backgroundPrompt || '변경 안함');
+            console.log('- 이미지:', imageUrl.startsWith('data:') ? 'base64' : 'URL');
+
+            // 서버에서 URL fetch하도록 변경 (Flutter WebView CORS 우회)
+            const requestBody = {
+                clothingPrompt: clothingPrompt,
+                backgroundPrompt: backgroundPrompt
+            };
+
+            // data URL이면 imageBase64로, 외부 URL이면 imageUrl로 전송
+            if (imageUrl.startsWith('data:')) {
+                requestBody.imageBase64 = imageUrl;
+            } else {
+                requestBody.imageUrl = imageUrl;  // 서버에서 fetch
+            }
 
             console.log('🚀 image-transform API 호출 중...');
             const response = await fetch(`${API_BASE}/image-transform`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    imageBase64: imageBase64,
-                    clothingPrompt: clothingPrompt,
-                    backgroundPrompt: backgroundPrompt
-                })
+                body: JSON.stringify(requestBody)
             });
 
             console.log('📥 API 응답 상태:', response.status);

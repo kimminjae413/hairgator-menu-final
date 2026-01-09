@@ -65,13 +65,14 @@ exports.handler = async (event) => {
 
     try {
         const body = JSON.parse(event.body);
-        const { imageBase64, clothingPrompt, backgroundPrompt } = body;
+        let { imageBase64, imageUrl, clothingPrompt, backgroundPrompt } = body;
 
-        if (!imageBase64) {
+        // imageBase64 또는 imageUrl 중 하나 필요
+        if (!imageBase64 && !imageUrl) {
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'imageBase64 is required' })
+                body: JSON.stringify({ error: 'imageBase64 or imageUrl is required' })
             };
         }
 
@@ -91,6 +92,25 @@ exports.handler = async (event) => {
         console.log('🎨 이미지 변환 시작');
         console.log('- 의상 프롬프트:', clothingPrompt || '없음');
         console.log('- 배경 프롬프트:', backgroundPrompt || '없음');
+
+        // imageUrl이 있으면 서버에서 fetch (Flutter WebView CORS 우회)
+        if (imageUrl && !imageBase64) {
+            console.log('🔄 이미지 URL 서버 측 fetch:', imageUrl.substring(0, 80) + '...');
+            try {
+                const imageResponse = await fetch(imageUrl);
+                if (!imageResponse.ok) {
+                    throw new Error(`Image fetch failed: ${imageResponse.status}`);
+                }
+                const arrayBuffer = await imageResponse.arrayBuffer();
+                const buffer = Buffer.from(arrayBuffer);
+                const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+                imageBase64 = `data:${contentType};base64,${buffer.toString('base64')}`;
+                console.log('✅ 이미지 URL → base64 변환 완료');
+            } catch (fetchError) {
+                console.error('❌ 이미지 URL fetch 실패:', fetchError.message);
+                throw new Error(`Failed to fetch image from URL: ${fetchError.message}`);
+            }
+        }
 
         // 프롬프트 생성
         let combinedPrompt = '';
