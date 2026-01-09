@@ -55,7 +55,11 @@
                 forceHideLoading();
                 if (isIOS || e.persisted) startIOSHideInterval();
             });
-            window.addEventListener('pagehide', forceHideLoading);
+            window.addEventListener('pagehide', function() {
+                // 메인 페이지가 이 플래그를 보고 로딩 표시 차단
+                sessionStorage.setItem('hairgator_navigated', 'true');
+                forceHideLoading();
+            });
             window.addEventListener('popstate', function() {
                 forceHideLoading();
                 if (isIOS) startIOSHideInterval();
