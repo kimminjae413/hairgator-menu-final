@@ -544,22 +544,17 @@ const HAIRGATOR_I18N = {
       }
     },
 
-    // ========== AI 얼굴변환 & 영상변환 ==========
+    // ========== AI 얼굴변환 ==========
     aiTransform: {
-      menuTitle: 'AI 얼굴변환 & 영상',
-      menuSubtitle: '얼굴 합성 · 영상 생성',
-      faceSwapTitle: '얼굴 변환',
-      faceSwapDesc: '헤어스타일 결과에 고객 얼굴을 합성합니다',
-      videoGenTitle: '영상 생성',
-      videoGenDesc: '이미지를 영상으로 변환합니다',
-      originalPhoto: '고객 사진',
-      targetStyle: '적용 스타일',
+      menuTitle: 'AI 얼굴변환',
+      menuSubtitle: '얼굴 합성 · 의상/배경 변경',
+      faceSwapTitle: 'AI 얼굴 변환',
+      faceSwapDesc: '원본의 헤어스타일을 유지하고 얼굴만 변환합니다',
+      originalPhoto: '헤어스타일 사진',
+      targetStyle: '참조 얼굴',
       startFaceSwap: '얼굴 변환 시작',
-      startVideoGen: '영상 생성 시작',
-      videoDuration: '영상 길이',
-      promptLabel: '프롬프트 (선택)',
+      selectImage: '이미지 선택',
       result: '변환 결과',
-      generatedVideo: '생성된 영상',
       processing: 'AI 처리 중',
       pleaseWait: '잠시만 기다려주세요...'
     },
@@ -1248,9 +1243,9 @@ const HAIRGATOR_I18N = {
         moreCredits: '80% 더 많은 토큰',
         maxCredits: '150% 더 많은 토큰',
         faceSwap: 'AI 얼굴 변환',
-        videoSwap: 'AI 영상 변환'
+        clothingChange: '의상/배경 변경'
       },
-      faceSwapPlan: 'AI 얼굴변환&영상변환',
+      faceSwapPlan: 'AI 얼굴변환',
       times: '회',
       addonNote: '이 상품은 상품 탭에서만 결제가 가능합니다.',
       payAtProductTab: '상품 탭에서 결제해 주세요',
@@ -1781,22 +1776,17 @@ const HAIRGATOR_I18N = {
       }
     },
 
-    // ========== AI Face & Video Transform ==========
+    // ========== AI Face Transform ==========
     aiTransform: {
-      menuTitle: 'AI Face & Video',
-      menuSubtitle: 'Face Swap · Video Gen',
-      faceSwapTitle: 'Face Transform',
-      faceSwapDesc: 'Composite customer face onto hairstyle result',
-      videoGenTitle: 'Video Generation',
-      videoGenDesc: 'Transform image into video',
-      originalPhoto: 'Customer Photo',
-      targetStyle: 'Target Style',
+      menuTitle: 'AI Face Transform',
+      menuSubtitle: 'Face Swap · Clothing/Background',
+      faceSwapTitle: 'AI Face Transform',
+      faceSwapDesc: 'Keep original hairstyle and transform face only',
+      originalPhoto: 'Hairstyle Photo',
+      targetStyle: 'Reference Face',
       startFaceSwap: 'Start Face Swap',
-      startVideoGen: 'Start Video Generation',
-      videoDuration: 'Video Duration',
-      promptLabel: 'Prompt (Optional)',
+      selectImage: 'Select Image',
       result: 'Result',
-      generatedVideo: 'Generated Video',
       processing: 'AI Processing',
       pleaseWait: 'Please wait...'
     },
@@ -2454,9 +2444,9 @@ const HAIRGATOR_I18N = {
         moreCredits: '80% more credits',
         maxCredits: '150% more credits',
         faceSwap: 'AI Face Swap',
-        videoSwap: 'AI Video Swap'
+        clothingChange: 'Clothing/Background Change'
       },
-      faceSwapPlan: 'AI Face & Video Swap',
+      faceSwapPlan: 'AI Face Transform',
       times: 'times',
       addonNote: 'This product can only be purchased from the Products tab.',
       payAtProductTab: 'Please pay from the Products tab',
@@ -3656,7 +3646,7 @@ const HAIRGATOR_I18N = {
         moreCredits: '80%多いクレジット',
         maxCredits: '150%多いクレジット',
         faceSwap: 'AI顔変換',
-        videoSwap: 'AI動画変換'
+        clothingChange: '服装/背景変更'
       },
       faceSwapPlan: 'AI顔変換＆動画変換',
       times: '回',
@@ -4861,7 +4851,7 @@ const HAIRGATOR_I18N = {
         moreCredits: '积分增加80%',
         maxCredits: '积分增加150%',
         faceSwap: 'AI换脸',
-        videoSwap: 'AI视频换脸'
+        clothingChange: '服装/背景更换'
       },
       faceSwapPlan: 'AI换脸&视频换脸',
       times: '次',
@@ -6053,7 +6043,7 @@ const HAIRGATOR_I18N = {
         moreCredits: 'Nhiều hơn 80% điểm',
         maxCredits: 'Nhiều hơn 150% điểm',
         faceSwap: 'AI đổi mặt',
-        videoSwap: 'AI đổi mặt video'
+        clothingChange: 'Thay đổi trang phục/nền'
       },
       faceSwapPlan: 'AI đổi mặt & video',
       times: 'lần',
@@ -7195,7 +7185,7 @@ const HAIRGATOR_I18N = {
         moreCredits: '80% lebih banyak kredit',
         maxCredits: '150% lebih banyak kredit',
         faceSwap: 'AI Tukar Wajah',
-        videoSwap: 'AI Tukar Wajah Video'
+        clothingChange: 'Ubah Pakaian/Latar Belakang'
       },
       faceSwapPlan: 'AI Tukar Wajah & Video',
       times: 'kali',
@@ -8110,7 +8100,7 @@ const HAIRGATOR_I18N = {
         moreCredits: '80% más créditos',
         maxCredits: '150% más créditos',
         faceSwap: 'Cambio de rostro IA',
-        videoSwap: 'Cambio de rostro en video IA'
+        clothingChange: 'Cambio de ropa/fondo'
       },
       faceSwapPlan: 'IA Cambio de Rostro & Video',
       times: 'veces',
