@@ -15,51 +15,38 @@ function getSmartModificationPrompt(combinedPrompt) {
     const hasClothing = combinedPrompt.toLowerCase().includes('clothing:');
     const hasBackground = combinedPrompt.toLowerCase().includes('background:');
 
-    let modificationTarget = 'nothing';
-    if (hasClothing && hasBackground) {
-        modificationTarget = 'clothing AND background';
-    } else if (hasClothing) {
-        modificationTarget = 'ONLY clothing';
-    } else if (hasBackground) {
-        modificationTarget = 'ONLY background';
-    }
+    return `You are a photo retouching expert. Edit this image with MINIMAL changes.
 
-    return `You are an expert image editor. Your task is to modify ONLY specific elements while preserving everything else.
+TASK: ${combinedPrompt}
 
-MODIFICATION INSTRUCTIONS:
-${combinedPrompt}
-
-STRICT PRESERVATION RULES (CRITICAL):
-1. HAIR: Preserve 100% - exact same hairstyle, color, texture, volume, parting, shine
-2. FACE: Preserve 100% - exact same facial features, expression, skin tone, makeup
-3. BODY POSE: Preserve 100% - exact same position, angle, posture
-
-MODIFICATION TARGET: ${modificationTarget}
+⚠️ CRITICAL - DO NOT CHANGE THESE (MUST BE PIXEL-PERFECT IDENTICAL):
+1. HAIRSTYLE - Keep exact same hair: style, color, texture, volume, parting, highlights, every strand
+2. FACE - Keep exact same: facial features, expression, skin tone, makeup, face angle
+3. HEAD/BODY ANGLE - Keep exact same pose and camera angle. DO NOT rotate or tilt.
+4. IMAGE COMPOSITION - Keep same framing, crop, aspect ratio
+5. LIGHTING - Keep same lighting direction and intensity
 
 ${hasClothing ? `
-- CLOTHING: Change according to Clothing instruction
-- Modify clothing style, color, pattern as specified
-- Keep clothing within existing frame boundaries
-` : ''}
+✅ CLOTHING CHANGE:
+- Replace ONLY the visible clothing with: ${combinedPrompt.match(/Clothing:\s*([^.]+)/i)?.[1] || 'new clothing'}
+- Keep the SAME neckline position on the body
+- Do NOT add extra layers or accessories
+- Do NOT change the body pose or angle
+- Match the lighting of the original clothing
+` : `
+❌ CLOTHING: Keep exactly as-is, do not modify
+`}
+
 ${hasBackground ? `
-- BACKGROUND: Change according to Background instruction
-- Modify background scenery, wall, environment as specified
-` : ''}
-${!hasClothing ? `
-- CLOTHING: DO NOT change clothing at all - keep identical
-` : ''}
-${!hasBackground ? `
-- BACKGROUND: DO NOT change background at all - keep identical
-` : ''}
+✅ BACKGROUND CHANGE:
+- Replace ONLY the background with: ${combinedPrompt.match(/Background:\s*([^.]+)/i)?.[1] || 'new background'}
+- Keep person in exact same position
+- Match lighting naturally
+` : `
+❌ BACKGROUND: Keep exactly as-is, do not modify
+`}
 
-MUST PRESERVE (DO NOT CHANGE):
-- Hair style, color, and texture
-- Facial features and expression
-- Body pose and position
-- Image crop and camera angle
-- Lighting direction
-
-IMPORTANT: Only modify what is explicitly mentioned in the instructions above. Everything else must remain pixel-perfect identical.`;
+FINAL CHECK: The output image should look like the same photo with only the specified element changed. Hair and face must be IDENTICAL to input.`;
 }
 
 exports.handler = async (event) => {

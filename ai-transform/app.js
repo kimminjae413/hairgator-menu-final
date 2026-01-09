@@ -686,10 +686,26 @@
         try {
             showToast('다운로드 준비 중...', 'info');
 
-            // iOS/iPadOS에서 외부 URL 다운로드를 위해 fetch + blob 사용
-            const response = await fetch(url);
-            const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
+            let blobUrl;
+
+            // base64 data URL인 경우 직접 blob 변환 (CSP fetch 우회)
+            if (url.startsWith('data:')) {
+                const [header, base64Data] = url.split(',');
+                const mimeType = header.match(/data:([^;]+)/)?.[1] || 'image/png';
+                const byteString = atob(base64Data);
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                const blob = new Blob([ab], { type: mimeType });
+                blobUrl = URL.createObjectURL(blob);
+            } else {
+                // 외부 URL인 경우 fetch 사용
+                const response = await fetch(url);
+                const blob = await response.blob();
+                blobUrl = URL.createObjectURL(blob);
+            }
 
             const a = document.createElement('a');
             a.href = blobUrl;
