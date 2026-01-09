@@ -30,7 +30,8 @@
             chatbot: 10,
             faceSwap: 300,
             video5sec: 500,
-            video8sec: 800
+            video8sec: 800,
+            imageTransform: 200
         },
 
         // 관리자 ID 목록 (이메일 기반: email.replace(/@/g, '_').replace(/\./g, '_'))

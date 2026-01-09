@@ -25,9 +25,10 @@
 
     // ============ Constants ============
     const COSTS = {
-        faceSwap: 300,    // 얼굴 변환: 300 토큰
-        video5sec: 500,   // 영상 5초: 500 토큰
-        video8sec: 800    // 영상 8초: 800 토큰
+        faceSwap: 300,       // 얼굴 변환: 300 토큰
+        video5sec: 500,      // 영상 5초: 500 토큰
+        video8sec: 800,      // 영상 8초: 800 토큰
+        imageTransform: 200  // 의상/배경 변환: 200 토큰
     };
 
     const API_BASE = '/.netlify/functions';
@@ -661,6 +662,87 @@
         if (result) result.classList.remove('visible');
 
         checkVideoGenReady();
+    };
+
+    // ============ Image Transform (의상/배경 변환) ============
+    window.applyTransform = async function() {
+        if (state.isProcessing) return;
+
+        const resultImg = document.getElementById('faceSwapResultImg');
+        if (!resultImg || !resultImg.src) {
+            showToast('변환할 이미지가 없습니다', 'error');
+            return;
+        }
+
+        const clothingSelect = document.getElementById('clothingSelect');
+        const backgroundSelect = document.getElementById('backgroundSelect');
+        const clothingPrompt = clothingSelect?.value || '';
+        const backgroundPrompt = backgroundSelect?.value || '';
+
+        if (!clothingPrompt && !backgroundPrompt) {
+            showToast('의상 또는 배경을 선택해주세요', 'error');
+            return;
+        }
+
+        state.isProcessing = true;
+        showLoading('이미지 변환 중...', '잠시만 기다려주세요');
+
+        try {
+            // 현재 결과 이미지를 base64로 가져오기
+            let imageBase64 = resultImg.src;
+
+            // URL인 경우 fetch로 base64 변환
+            if (!imageBase64.startsWith('data:')) {
+                const response = await fetch(imageBase64);
+                const blob = await response.blob();
+                imageBase64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(blob);
+                });
+            }
+
+            console.log('🎨 의상/배경 변환 요청');
+            console.log('- 의상:', clothingPrompt || '변경 안함');
+            console.log('- 배경:', backgroundPrompt || '변경 안함');
+
+            const response = await fetch(`${API_BASE}/image-transform`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    imageBase64: imageBase64,
+                    clothingPrompt: clothingPrompt,
+                    backgroundPrompt: backgroundPrompt
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.resultImage) {
+                // 결과 이미지 업데이트
+                resultImg.src = data.resultImage;
+                showToast('변환 완료!', 'success');
+
+                // 토큰 차감
+                await deductCredits('imageTransform', {
+                    feature: 'AI 의상/배경 변환',
+                    clothing: clothingPrompt || '없음',
+                    background: backgroundPrompt || '없음'
+                });
+
+                // 선택 초기화
+                if (clothingSelect) clothingSelect.value = '';
+                if (backgroundSelect) backgroundSelect.value = '';
+            } else {
+                throw new Error(data.error || data.message || '이미지 변환에 실패했습니다');
+            }
+        } catch (error) {
+            console.error('Image transform error:', error);
+            showToast(error.message || '이미지 변환 중 오류가 발생했습니다', 'error');
+        } finally {
+            state.isProcessing = false;
+            hideLoading();
+        }
     };
 
 })();

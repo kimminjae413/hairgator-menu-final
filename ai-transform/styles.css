@@ -682,6 +682,66 @@ input[type="file"] {
     display: none;
 }
 
+/* ========== Transform Options (의상/배경 변경) ========== */
+.transform-options {
+    padding: 16px;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+}
+
+.transform-options .option-group {
+    margin-bottom: 12px;
+}
+
+.transform-options .option-group:last-of-type {
+    margin-bottom: 16px;
+}
+
+.transform-options .option-label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.transform-options .option-select {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: var(--primary-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+.transform-options .option-select:focus {
+    outline: none;
+    border-color: var(--female-color);
+}
+
+.transform-options .option-select option {
+    background: var(--primary-bg);
+    color: var(--text-primary);
+}
+
+.transform-options .action-btn.secondary {
+    background: var(--card-bg-elevated);
+    border: 1px solid var(--female-color);
+    color: var(--female-color);
+    box-shadow: none;
+}
+
+.transform-options .action-btn.secondary:hover:not(:disabled) {
+    background: var(--ai-bg-secondary);
+}
+
 /* ========== Safe Area ========== */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
     .main-content {

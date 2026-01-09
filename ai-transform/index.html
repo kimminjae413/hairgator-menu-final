@@ -6,7 +6,7 @@
     <title>AI Transform - HAIRGATOR</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=20260109">
+    <link rel="stylesheet" href="styles.css?v=20260109b">
 </head>
 <body>
     <!-- Header -->
@@ -88,6 +88,38 @@
                     <div class="result-image-container">
                         <img id="faceSwapResultImg" src="" alt="Result">
                     </div>
+
+                    <!-- 추가 변환 옵션 (의상/배경) -->
+                    <div class="transform-options" id="transformOptions">
+                        <div class="option-group">
+                            <label class="option-label">의상 변경</label>
+                            <select id="clothingSelect" class="option-select">
+                                <option value="">변경 안함</option>
+                                <option value="A professional dark navy suit with white shirt">네이비 정장</option>
+                                <option value="A casual white t-shirt">화이트 티셔츠</option>
+                                <option value="A black turtleneck sweater">블랙 터틀넥</option>
+                                <option value="A light blue dress shirt">라이트블루 셔츠</option>
+                                <option value="A simple elegant dress">심플한 원피스</option>
+                            </select>
+                        </div>
+                        <div class="option-group">
+                            <label class="option-label">배경 변경</label>
+                            <select id="backgroundSelect" class="option-select">
+                                <option value="">변경 안함</option>
+                                <option value="clean white studio background">화이트 스튜디오</option>
+                                <option value="gray studio background">그레이 스튜디오</option>
+                                <option value="soft gradient background">그라데이션</option>
+                                <option value="white cement textured wall background">시멘트 벽</option>
+                                <option value="warm wooden wall background">나무 벽면</option>
+                                <option value="soft bokeh blur background">보케 블러</option>
+                            </select>
+                        </div>
+                        <button class="action-btn secondary" id="applyTransformBtn" onclick="applyTransform()">
+                            <span>의상/배경 적용</span>
+                            <span class="credit-cost">200 토큰</span>
+                        </button>
+                    </div>
+
                     <div class="result-actions">
                         <button class="result-btn primary" onclick="downloadResult('faceSwap')">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
@@ -197,7 +229,7 @@
 
     <!-- Scripts -->
     <script src="../js/firebase-config.js?v=20260109"></script>
-    <script src="../js/firebase-bridge.js?v=20260109d"></script>
-    <script src="app.js?v=20260109f"></script>
+    <script src="../js/firebase-bridge.js?v=20260109e"></script>
+    <script src="app.js?v=20260109g"></script>
 </body>
 </html>
