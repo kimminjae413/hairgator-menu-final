@@ -756,13 +756,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
 
-                        <!-- AI 얼굴변환 & 영상 -->
+                        <!-- AI 얼굴변환 -->
                         <div class="menu-item" id="aiTransformBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                <span style="font-size: 20px;">🎬</span>
+                                <span style="font-size: 20px;">🎭</span>
                                 <div style="flex: 1;">
-                                    <span class="sidebar-menu-text" style="font-size: 14px;">${t('aiTransform.menuTitle') || 'AI 얼굴변환 & 영상'}</span>
-                                    <div style="font-size: 11px; color: var(--text-secondary, #888); margin-top: 2px;">${t('aiTransform.menuSubtitle') || '얼굴 합성 · 영상 생성'}</div>
+                                    <span class="sidebar-menu-text" style="font-size: 14px;">${t('aiTransform.menuTitle') || 'AI 얼굴변환'}</span>
+                                    <div style="font-size: 11px; color: var(--text-secondary, #888); margin-top: 2px;">${t('aiTransform.menuSubtitle') || '얼굴 합성 · 의상/배경 변경'}</div>
                                 </div>
                             </div>
                         </div>
@@ -966,10 +966,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // AI 얼굴변환 & 영상 (베이직 플랜 이상만 접근 가능)
+        // AI 얼굴변환 (베이직 플랜 이상만 접근 가능)
         if (aiTransformBtn) {
             aiTransformBtn.addEventListener('click', function() {
-                console.log('🎬 AI 얼굴변환 & 영상 클릭');
+                console.log('🎭 AI 얼굴변환 클릭');
 
                 // 플랜 기반 체크 (여러 소스에서 확인)
                 const ALLOWED_PLANS = ['basic', 'pro', 'business'];
@@ -1001,12 +1001,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const isAllowed = ALLOWED_PLANS.includes(userPlan);
 
-                console.log('AI 얼굴변환 & 영상 접근 체크:', { userPlan, isAllowed });
+                console.log('AI 얼굴변환 접근 체크:', { userPlan, isAllowed });
 
                 if (!isAllowed) {
                     // 업그레이드 모달 표시
                     if (typeof showUpgradeModal === 'function') {
-                        showUpgradeModal('AI 얼굴변환 & 영상', '베이직 플랜 이상에서 사용 가능합니다.');
+                        showUpgradeModal('AI 얼굴변환', '베이직 플랜 이상에서 사용 가능합니다.');
                     } else if (typeof showToast === 'function') {
                         showToast('베이직 플랜 이상에서 사용 가능합니다.', 'warning');
                     } else {
