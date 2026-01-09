@@ -498,15 +498,20 @@
 
                 if (result.success) {
                     state.tokenBalance = result.newBalance;
+                    console.log('✅ 토큰 차감 성공:', result.newBalance, '토큰 남음');
                     return true;
                 } else {
-                    console.error('토큰 차감 실패:', result.error);
-                    // 토큰 부족 시 업그레이드 페이지로 이동
+                    console.error('토큰 차감 실패:', result);
+                    // 토큰 부족 시 - 디버그 정보 포함
                     if (result.error && result.error.includes('부족')) {
-                        showToast('토큰이 부족합니다. 업그레이드 페이지로 이동합니다.', 'error');
+                        const debugMsg = `토큰 부족 (현재: ${result.currentBalance || 0}, 필요: ${result.required || '?'})`;
+                        console.error(debugMsg);
+                        showToast(debugMsg + ' - 업그레이드 페이지로 이동합니다.', 'error');
                         setTimeout(() => {
                             window.location.href = '/#products';
-                        }, 1500);
+                        }, 2500);
+                    } else {
+                        showToast(`토큰 차감 실패: ${result.error || 'Unknown'}`, 'error');
                     }
                     return false;
                 }
