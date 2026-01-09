@@ -13,7 +13,7 @@
     <header class="header">
         <button class="back-btn" onclick="history.back()">←</button>
         <div class="header-title">
-            <span>AI Transform</span>
+            <span data-i18n="aiTransform.headerTitle">AI 얼굴변환</span>
         </div>
     </header>
 
@@ -36,9 +36,9 @@
                             <circle cx="8.5" cy="8.5" r="1.5"/>
                             <path d="M21 15l-5-5L5 21"/>
                         </svg>
-                        <span class="title">헤어스타일 사진</span>
+                        <span class="title" data-i18n="aiTransform.hairstylePhoto">헤어스타일 사진</span>
                     </div>
-                    <div class="step-badge"><span class="num">01</span> 원본</div>
+                    <div class="step-badge"><span class="num">01</span> <span data-i18n="aiTransform.original">원본</span></div>
                 </div>
 
                 <div class="upload-arrow">
@@ -51,44 +51,44 @@
                             <circle cx="12" cy="8" r="4"/>
                             <path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>
                         </svg>
-                        <span class="title">참조 얼굴</span>
+                        <span class="title" data-i18n="aiTransform.referenceFace">참조 얼굴</span>
                     </div>
-                    <div class="step-badge"><span class="num">02</span> 얼굴</div>
+                    <div class="step-badge"><span class="num">02</span> <span data-i18n="aiTransform.face">얼굴</span></div>
                 </div>
             </div>
 
             <!-- 의상/배경 옵션 (처음부터 표시) -->
             <div class="options-section" id="transformOptionsSection">
                 <div class="option-row">
-                    <span class="option-label">의상 변경</span>
+                    <span class="option-label" data-i18n="aiTransform.changeClothing">의상 변경</span>
                     <select id="clothingSelect" class="option-select-inline">
-                        <option value="">변경 안함</option>
-                        <optgroup label="👔 남성">
-                            <option value="A professional dark navy suit with white dress shirt and tie, formal business attire, fully buttoned">네이비 정장</option>
-                            <option value="A casual white cotton crew neck t-shirt, regular fit, professional headshot style">화이트 티셔츠</option>
-                            <option value="A black turtleneck sweater, professional portrait style">블랙 터틀넥</option>
-                            <option value="A light blue formal dress shirt with collar, buttoned up, professional office style">라이트블루 셔츠</option>
-                            <option value="A gray business casual blazer with white dress shirt underneath, professional style">그레이 블레이저</option>
+                        <option value="" data-i18n="aiTransform.noChange">변경 안함</option>
+                        <optgroup label="👔 " data-i18n-label="aiTransform.male">
+                            <option value="A professional dark navy suit with white dress shirt and tie, formal business attire, fully buttoned" data-i18n="aiTransform.clothing.navySuit">네이비 정장</option>
+                            <option value="A casual white cotton crew neck t-shirt, regular fit, professional headshot style" data-i18n="aiTransform.clothing.whiteTshirt">화이트 티셔츠</option>
+                            <option value="A black turtleneck sweater, professional portrait style" data-i18n="aiTransform.clothing.blackTurtleneck">블랙 터틀넥</option>
+                            <option value="A light blue formal dress shirt with collar, buttoned up, professional office style" data-i18n="aiTransform.clothing.blueShirt">라이트블루 셔츠</option>
+                            <option value="A gray business casual blazer with white dress shirt underneath, professional style" data-i18n="aiTransform.clothing.grayBlazer">그레이 블레이저</option>
                         </optgroup>
-                        <optgroup label="👗 여성">
-                            <option value="A modest black dress with high round neckline, long sleeves, professional office style">블랙 원피스</option>
-                            <option value="A white blouse with high collar, buttoned up, professional office style">화이트 블라우스</option>
-                            <option value="A professional navy blazer with white high-neck top underneath">네이비 재킷</option>
-                            <option value="A soft pink knit sweater with crew neckline, modest coverage">핑크 니트</option>
-                            <option value="A casual cream colored cardigan over white t-shirt, modest style">크림 가디건</option>
+                        <optgroup label="👗 " data-i18n-label="aiTransform.female">
+                            <option value="A modest black dress with high round neckline, long sleeves, professional office style" data-i18n="aiTransform.clothing.blackDress">블랙 원피스</option>
+                            <option value="A white blouse with high collar, buttoned up, professional office style" data-i18n="aiTransform.clothing.whiteBlouse">화이트 블라우스</option>
+                            <option value="A professional navy blazer with white high-neck top underneath" data-i18n="aiTransform.clothing.navyJacket">네이비 재킷</option>
+                            <option value="A soft pink knit sweater with crew neckline, modest coverage" data-i18n="aiTransform.clothing.pinkKnit">핑크 니트</option>
+                            <option value="A casual cream colored cardigan over white t-shirt, modest style" data-i18n="aiTransform.clothing.creamCardigan">크림 가디건</option>
                         </optgroup>
                     </select>
                 </div>
                 <div class="option-row">
-                    <span class="option-label">배경 변경</span>
+                    <span class="option-label" data-i18n="aiTransform.changeBackground">배경 변경</span>
                     <select id="backgroundSelect" class="option-select-inline">
-                        <option value="">변경 안함</option>
-                        <option value="clean white studio background with soft lighting">화이트 스튜디오</option>
-                        <option value="professional gray studio background">그레이 스튜디오</option>
-                        <option value="soft gradient background from light gray to white">그라데이션</option>
-                        <option value="white cement textured wall background">시멘트 벽</option>
-                        <option value="warm wooden wall background with natural texture">나무 벽면</option>
-                        <option value="soft bokeh blur background with warm tones">보케 블러</option>
+                        <option value="" data-i18n="aiTransform.noChange">변경 안함</option>
+                        <option value="clean white studio background with soft lighting" data-i18n="aiTransform.background.whiteStudio">화이트 스튜디오</option>
+                        <option value="professional gray studio background" data-i18n="aiTransform.background.grayStudio">그레이 스튜디오</option>
+                        <option value="soft gradient background from light gray to white" data-i18n="aiTransform.background.gradient">그라데이션</option>
+                        <option value="white cement textured wall background" data-i18n="aiTransform.background.cementWall">시멘트 벽</option>
+                        <option value="warm wooden wall background with natural texture" data-i18n="aiTransform.background.woodenWall">나무 벽면</option>
+                        <option value="soft bokeh blur background with warm tones" data-i18n="aiTransform.background.bokeh">보케 블러</option>
                     </select>
                 </div>
             </div>
@@ -97,7 +97,7 @@
             <div class="action-section">
                 <button class="action-btn" id="faceSwapBtn" disabled>
                     <span data-i18n="aiTransform.startFaceSwap">얼굴 변환 시작</span>
-                    <span class="credit-cost">300 토큰</span>
+                    <span class="credit-cost">300 <span data-i18n="aiTransform.tokens">토큰</span></span>
                 </button>
             </div>
 
@@ -111,10 +111,10 @@
                     <div class="result-actions">
                         <button class="result-btn primary" onclick="downloadResult()">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                            저장
+                            <span data-i18n="aiTransform.save">저장</span>
                         </button>
                         <button class="result-btn secondary" onclick="resetFaceSwap()">
-                            다시하기
+                            <span data-i18n="aiTransform.tryAgain">다시하기</span>
                         </button>
                     </div>
                 </div>
@@ -126,7 +126,7 @@
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
-        <p class="loading-text" id="loadingText">처리 중...</p>
+        <p class="loading-text" id="loadingText" data-i18n="aiTransform.processing">처리 중...</p>
         <p class="loading-progress" id="loadingProgress"></p>
     </div>
 
@@ -174,6 +174,29 @@
     <!-- Scripts -->
     <script src="../js/firebase-config.js?v=20260109"></script>
     <script src="../js/firebase-bridge.js?v=20260109e"></script>
-    <script src="app.js?v=20260109q"></script>
+    <script src="../js/i18n.js?v=20260109b"></script>
+    <script src="app.js?v=20260109r"></script>
+
+    <!-- i18n 초기화 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // i18n 초기화 및 적용
+            if (typeof initI18n === 'function') {
+                initI18n();
+            }
+            if (typeof applyTranslations === 'function') {
+                applyTranslations();
+            }
+
+            // select optgroup label 번역 적용
+            document.querySelectorAll('[data-i18n-label]').forEach(function(el) {
+                var key = el.getAttribute('data-i18n-label');
+                if (typeof t === 'function') {
+                    var icon = el.label.substring(0, 2);
+                    el.label = icon + ' ' + t(key);
+                }
+            });
+        });
+    </script>
 </body>
 </html>
