@@ -642,6 +642,16 @@ function getBullnabiUser() {
  * 로그아웃
  */
 async function logout() {
+    console.log('🚪 logout() 함수 호출됨!');
+
+    // Flutter 앱인 경우 먼저 FlutterChannel로 알림 (signOut 전에!)
+    if (window.FlutterChannel) {
+        console.log('📱 FlutterChannel 감지 → 네이티브 로그인으로 이동');
+        window.FlutterChannel.postMessage('logout');
+        // signOut은 Flutter 쪽에서 처리
+        return;
+    }
+
     try {
         await firebase.auth().signOut();
 
@@ -660,12 +670,6 @@ async function logout() {
         welcomeToastShown = false; // 다음 로그인 시 환영 메시지 표시
 
         console.log('🔓 로그아웃 완료');
-
-        // Flutter 앱인 경우 네이티브 로그인 화면으로
-        if (window.FlutterChannel) {
-            window.FlutterChannel.postMessage('logout');
-            return; // Flutter가 처리하므로 웹 리다이렉트 안 함
-        }
 
         // 웹 브라우저인 경우 로그인 페이지로 이동
         window.location.href = '/login.html';
