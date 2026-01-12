@@ -1074,7 +1074,15 @@
                 try {
                     await auth.signOut();
                     localStorage.removeItem('firebase_user');
-                    window.location.href = '/login.html';
+
+                    // Flutter 앱이면 네이티브 로그인 화면으로 이동
+                    if (window.FlutterChannel && typeof window.FlutterChannel.postMessage === 'function') {
+                        console.log('📱 Flutter에 로그아웃 메시지 전송');
+                        window.FlutterChannel.postMessage('logout');
+                    } else {
+                        // 웹 브라우저면 로그인 페이지로 이동
+                        window.location.href = '/login.html';
+                    }
                 } catch (error) {
                     console.error('로그아웃 실패:', error);
                     showToast('로그아웃에 실패했습니다.', 'error');
