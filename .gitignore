@@ -57,3 +57,4 @@ nul
 # Exports folder (Gemini upload용 로컬 파일)
 exports/
 twilio_2FA_recovery_code.txt
+AuthKey_*.p8

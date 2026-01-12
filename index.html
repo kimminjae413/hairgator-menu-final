@@ -40,6 +40,28 @@
                     document.body.classList.add('flutter-app');
                 });
             }
+
+            // ⭐ iOS Flutter 앱 감지 (IAPChannel 존재 여부로 판단)
+            // IAPChannel은 Flutter가 iOS에서만 추가하는 JavaScript 채널
+            function checkIOSFlutterApp() {
+                if (typeof window.IAPChannel !== 'undefined' &&
+                    typeof window.IAPChannel.postMessage === 'function') {
+                    console.log('🍎 [iOS] iOS Flutter 앱 감지 → 인앱결제 모드');
+                    document.documentElement.classList.add('ios-flutter-app');
+                    if (document.body) {
+                        document.body.classList.add('ios-flutter-app');
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            // 즉시 체크 + 지연 체크 (Flutter 채널 주입 대기)
+            checkIOSFlutterApp();
+            setTimeout(checkIOSFlutterApp, 100);
+            setTimeout(checkIOSFlutterApp, 500);
+            setTimeout(checkIOSFlutterApp, 1000);
+            document.addEventListener('DOMContentLoaded', checkIOSFlutterApp);
         })();
     </script>
 
@@ -1958,7 +1980,7 @@
                         <li><span class="feature-icon feature-check">✓</span> <span data-i18n="payment.feature.lookbook">룩북</span></li>
                         <li><span class="feature-icon feature-check">✓</span> <span data-i18n="payment.feature.hairTry">헤어체험</span></li>
                     </ul>
-                    <button class="pricing-btn pricing-btn-primary" onclick="selectPlan('basic')" data-i18n="payment.selectPlan">선택하기</button>
+                    <button class="pricing-btn pricing-btn-primary" onclick="selectPlan('basic')" ontouchend="selectPlan('basic')" data-i18n="payment.selectPlan">선택하기</button>
                 </div>
 
                 <!-- 프로 플랜 (추천) -->
@@ -1977,7 +1999,7 @@
                         <li><span class="feature-icon feature-check">✓</span> <span data-i18n="payment.feature.allBasic">베이직 플랜 모든 기능</span></li>
                         <li><span class="feature-icon feature-check">✓</span> <span data-i18n="payment.feature.moreCredits">80% 더 많은 크레딧</span></li>
                     </ul>
-                    <button class="pricing-btn pricing-btn-primary" onclick="selectPlan('pro')" data-i18n="payment.selectPlan">선택하기</button>
+                    <button class="pricing-btn pricing-btn-primary" onclick="selectPlan('pro')" ontouchend="selectPlan('pro')" data-i18n="payment.selectPlan">선택하기</button>
                 </div>
 
                 <!-- 비즈니스 플랜 -->
@@ -1995,7 +2017,7 @@
                         <li><span class="feature-icon feature-check">✓</span> <span data-i18n="payment.feature.allBasic">베이직 플랜 모든 기능</span></li>
                         <li><span class="feature-icon feature-check">✓</span> <span data-i18n="payment.feature.maxCredits">150% 더 많은 크레딧</span></li>
                     </ul>
-                    <button class="pricing-btn pricing-btn-primary" onclick="selectPlan('business')" data-i18n="payment.selectPlan">선택하기</button>
+                    <button class="pricing-btn pricing-btn-primary" onclick="selectPlan('business')" ontouchend="selectPlan('business')" data-i18n="payment.selectPlan">선택하기</button>
                 </div>
 
                 <!-- AI 얼굴변환 (별도 상품) -->
@@ -2400,7 +2422,7 @@
                     <li><span class="icon-check">✓</span> 룩북</li>
                     <li><span class="icon-check">✓</span> 헤어체험</li>
                 </ul>
-                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('basic')">선택하기</button>
+                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('basic')" ontouchend="selectPlanAndPay('basic')">선택하기</button>
             </div>
 
             <!-- 프로 플랜 (추천) -->
@@ -2416,7 +2438,7 @@
                     <li><span class="icon-bonus">+</span> 1.8배 더 많은 토큰</li>
                     <li><span class="icon-bonus">+</span> 같은 금액 대비 효율 UP</li>
                 </ul>
-                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('pro')">선택하기</button>
+                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('pro')" ontouchend="selectPlanAndPay('pro')">선택하기</button>
             </div>
 
             <!-- 비즈니스 플랜 -->
@@ -2431,7 +2453,7 @@
                     <li><span class="icon-bonus">+</span> 2.5배 더 많은 토큰</li>
                     <li><span class="icon-bonus">+</span> 최고 효율 플랜</li>
                 </ul>
-                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('business')">선택하기</button>
+                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('business')" ontouchend="selectPlanAndPay('business')">선택하기</button>
             </div>
         </div>
 
@@ -2525,33 +2547,33 @@
 
         <!-- 메뉴 -->
         <div class="mypage-menu">
-            <div class="menu-item" onclick="navigateToHash('products')">
+            <div class="menu-item" onclick="navigateToHash('products')" ontouchend="navigateToHash('products')">
                 <span class="menu-icon">💎</span>
                 <span class="menu-text" data-i18n="ui.upgradePlan">플랜 업그레이드</span>
                 <span class="menu-arrow">→</span>
             </div>
-            <div class="menu-item" onclick="toggleSavedCardsSection()">
+            <div class="menu-item ios-hide-payment" onclick="toggleSavedCardsSection()" ontouchend="toggleSavedCardsSection()">
                 <span class="menu-icon">💳</span>
                 <span class="menu-text" data-i18n="ui.paymentManage">결제 수단 관리</span>
                 <span class="menu-arrow" id="savedCardsArrow">→</span>
             </div>
-            <div class="menu-item" onclick="togglePaymentHistorySection()">
+            <div class="menu-item" onclick="togglePaymentHistorySection()" ontouchend="togglePaymentHistorySection()">
                 <span class="menu-icon">📋</span>
                 <span class="menu-text" data-i18n="ui.paymentHistory">결제 내역</span>
                 <span class="menu-arrow" id="paymentHistoryArrow">→</span>
             </div>
-            <div class="menu-item" onclick="openLanguageSelector()">
+            <div class="menu-item" onclick="openLanguageSelector()" ontouchend="openLanguageSelector()">
                 <span class="menu-icon">🌐</span>
                 <span class="menu-text" data-i18n="ui.languageSetting">언어 설정</span>
                 <span class="menu-arrow">→</span>
             </div>
-            <div class="menu-item" onclick="toggleNoticeSection()">
+            <div class="menu-item" onclick="toggleNoticeSection()" ontouchend="toggleNoticeSection()">
                 <span class="menu-icon">📢</span>
                 <span class="menu-text" data-i18n="ui.noticeMenu">공지사항</span>
                 <span class="menu-arrow" id="noticeArrow">→</span>
                 <span class="new-badge" id="mypageNoticeBadge" style="display: none;">NEW</span>
             </div>
-            <div class="menu-item" onclick="toggleInquirySection()">
+            <div class="menu-item" onclick="toggleInquirySection()" ontouchend="toggleInquirySection()">
                 <span class="menu-icon">💬</span>
                 <span class="menu-text" data-i18n="ui.inquiryMenu">1:1 문의</span>
                 <span class="menu-arrow" id="inquiryArrow">→</span>
@@ -2639,7 +2661,7 @@
 
         <!-- 로그아웃 & 탈퇴 -->
         <div class="mypage-footer">
-            <button class="logout-btn-full" onclick="logout()" data-i18n="ui.logout">로그아웃</button>
+            <button class="logout-btn-full" onclick="logout()" ontouchend="logout()" data-i18n="ui.logout">로그아웃</button>
             <button class="withdraw-btn" onclick="showWithdrawConfirm()" data-i18n="ui.withdrawAccount">회원 탈퇴</button>
         </div>
     </div>

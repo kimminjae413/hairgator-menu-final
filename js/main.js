@@ -529,6 +529,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // ⭐ iOS Flutter 앱이면 인앱결제 사용 (payment.js의 isIOSFlutterApp 호출)
+        if (typeof window.isIOSFlutterApp === 'function' && window.isIOSFlutterApp()) {
+            console.log('[IAP] iOS Flutter 앱 감지 → 인앱결제 진행');
+            if (typeof window.requestIOSInAppPurchase === 'function') {
+                window.requestIOSInAppPurchase(planType);
+                return;
+            }
+        }
+
         // 결제 처리 (payment.js 사용)
         // verifyAndPay: 본인인증 확인 후 결제 진행
         if (typeof window.verifyAndPay === 'function') {

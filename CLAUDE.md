@@ -1,11 +1,11 @@
 # HAIRGATOR 챗봇 - Claude 작업 가이드
 
-## 🚨 현재 앱 버전 (2026-01-09 업데이트)
+## 🚨 현재 앱 버전 (2026-01-12 업데이트)
 
 | 플랫폼 | 스토어 제출 | 최신 빌드 |
 |--------|------------|----------|
-| **Android** | v73 | v78 (스피너 수정) |
-| **iOS** | v76 | v78 (스피너 수정) |
+| **Android** | v73 | v85 (WebView 업데이트) |
+| **iOS** | v76 | v85 (Apple 로그인 + WebView 수정) |
 
 ### 빌드 파일 경로
 - **APK**: `D:\hairgator_dev\hairgator_flutter_app\build\app\outputs\flutter-apk\app-release.apk`
@@ -17,7 +17,9 @@
 
 | 버전 | 상태 | 내용 |
 |------|------|------|
-| v78 | ✅ **현재** | iOS bfcache 스피너 무한표시 수정 (주기적 JS 주입) |
+| v85 | ✅ **현재** | webview_flutter 4.13.0 업데이트 (iOS 18.2 클릭 수정) |
+| v84 | 빌드됨 | Apple 로그인 accessToken 수정 |
+| v78 | 스토어 제출됨 | iOS bfcache 스피너 무한표시 수정 (주기적 JS 주입) |
 | v76 | 스토어 제출됨 | 디버그 버튼/콘솔 UI 제거 |
 | v75 | iOS 제출됨 | login.html 리다이렉트 감지 |
 | v74 | iOS 제출됨 | WebView 콘솔 로그 캡처 |
@@ -143,6 +145,63 @@ window.addEventListener('pageshow', function(event) {
 - ❌ 웹 JavaScript만으로는 iOS WKWebView bfcache 문제 해결 불가
 - ✅ Flutter에서 주기적으로 JS 주입해야 확실히 해결됨
 - ❌ reload() 사용하면 해결되지만 성별 선택 화면으로 돌아가서 UX 나쁨
+
+---
+
+### iOS 18.2 WebView 클릭 안됨 문제 (2026-01-12 수정) - 중요!
+
+**증상:**
+- 네이티브 로그인(Apple/카카오) 후 WebView 버튼 클릭 안됨
+- 결제 버튼, 로그아웃 버튼 등 반응 없음
+- Android: 정상 ✅
+- **iOS 18.2+만 문제** ❌
+
+**원인:**
+- iOS 18.2에서 Flutter WebView의 gesture recognizer가 네이티브 위젯 상호작용 후 캐시된 상태 유지
+- 공식 버그: [flutter/flutter#158961](https://github.com/flutter/flutter/issues/158961)
+
+**해결 (v85):**
+```yaml
+# pubspec.yaml - webview_flutter 4.13.0+로 업데이트
+webview_flutter: ^4.13.0  # iOS 18.2 클릭 수정 포함
+```
+
+**핵심 교훈:**
+- ❌ 웹 JS에서 ontouchend 추가해도 해결 안됨
+- ✅ webview_flutter 최신 버전으로 업데이트 필요 (Flutter 엔진 레벨 수정)
+- ✅ Flutter 3.27.1+ 에 엔진 수정 포함됨 (PR #56804)
+
+---
+
+### Apple 로그인 "Invalid OAuth response" 에러 (2026-01-12 수정)
+
+**증상:**
+- Apple 로그인 시도 → "Invalid OAuth response from apple.com" 에러
+- Apple Developer, Firebase Console 설정 다 정상인데 안됨
+
+**원인:**
+- Firebase flutter_auth 5.2.0+에서 Apple OAuth에 `accessToken` 파라미터 필수
+- 공식 이슈: [firebase/flutterfire#13242](https://github.com/firebase/flutterfire/issues/13242)
+
+**해결 (v84 - auth_service.dart):**
+```dart
+// ❌ 잘못된 코드
+final oauthCredential = OAuthProvider("apple.com").credential(
+  idToken: identityToken,
+  rawNonce: rawNonce,
+);
+
+// ✅ 올바른 코드 - accessToken 추가!
+final oauthCredential = OAuthProvider("apple.com").credential(
+  idToken: identityToken,
+  rawNonce: rawNonce,
+  accessToken: appleCredential.authorizationCode,  // 필수!
+);
+```
+
+**핵심 교훈:**
+- ❌ Firebase Console 설정만으로는 해결 안됨
+- ✅ Dart 코드에서 `accessToken` 파라미터에 `authorizationCode` 전달 필수
 
 ---
 

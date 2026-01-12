@@ -4506,3 +4506,15 @@ body.flutter-app .page-content {
     padding-bottom: 150px !important;
 }
 
+/* iOS Flutter 앱에서 외부결제(포트원) 관련 요소 숨기기 - 인앱결제만 사용 */
+html.ios-flutter-app .ios-hide-payment,
+body.ios-flutter-app .ios-hide-payment {
+    display: none !important;
+}
+
+/* iOS Flutter 앱에서 저장된 카드 섹션 숨기기 */
+html.ios-flutter-app #mypageSavedCardSection,
+body.ios-flutter-app #mypageSavedCardSection {
+    display: none !important;
+}
+
