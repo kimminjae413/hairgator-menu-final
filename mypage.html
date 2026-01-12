@@ -224,6 +224,11 @@
             cursor: pointer;
             transition: background 0.2s;
             border-bottom: 1px solid var(--border);
+            /* iPad/iOS 터치 이벤트 활성화 */
+            -webkit-tap-highlight-color: rgba(233, 30, 99, 0.2);
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .menu-item:last-child {
@@ -1178,6 +1183,28 @@
             overlay.addEventListener('click', (e) => {
                 if (e.target === overlay) {
                     overlay.classList.remove('active');
+                }
+            });
+        });
+
+        // iPad/iOS 터치 이벤트 지원 (onclick이 작동하지 않는 경우 대비)
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('touchend', function(e) {
+                // 기본 터치 동작 방지
+                e.preventDefault();
+                // onclick 핸들러 실행
+                if (this.onclick) {
+                    this.onclick(e);
+                }
+            });
+        });
+
+        // 모달 버튼들에도 터치 이벤트 추가
+        document.querySelectorAll('.modal-btn, .charge-btn').forEach(btn => {
+            btn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                if (this.onclick && !this.disabled) {
+                    this.onclick(e);
                 }
             });
         });

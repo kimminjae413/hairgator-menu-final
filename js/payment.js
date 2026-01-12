@@ -1074,9 +1074,89 @@ async function processPaymentWithNewCard(planKey, userId, fromModal = false) {
   }
 }
 
+/**
+ * iOS Flutter 앱인지 확인
+ * @returns {boolean}
+ */
+function isIOSFlutterApp() {
+  // Flutter WebView에서 IAPChannel이 주입되어 있으면 iOS 인앱결제 사용
+  return typeof window.IAPChannel !== 'undefined' &&
+         typeof window.IAPChannel.postMessage === 'function';
+}
+
+/**
+ * iOS 인앱결제 요청
+ * @param {string} planKey - 요금제 키 (basic, pro, business, tokens_5000)
+ */
+function requestIOSInAppPurchase(planKey) {
+  const plan = HAIRGATOR_PAYMENT.plans[planKey];
+  if (!plan || !plan.productId) {
+    console.error('[IAP] 유효하지 않은 요금제:', planKey);
+    alert('유효하지 않은 요금제입니다.');
+    return;
+  }
+
+  console.log('[IAP] iOS 인앱결제 요청:', plan.productId);
+
+  // Flutter에 구매 요청 전송
+  window.IAPChannel.postMessage(JSON.stringify({
+    action: 'purchase',
+    productId: plan.productId
+  }));
+}
+
+/**
+ * iOS 인앱결제 성공 콜백 (Flutter에서 호출)
+ */
+window.onIAPSuccess = function(productId, tokens) {
+  console.log('[IAP] 구매 성공:', productId, tokens);
+
+  // 토큰 표시 업데이트
+  if (window.BullnabiBridge?.updateTokenDisplay) {
+    window.BullnabiBridge.updateTokenDisplay(null, productId);
+  }
+
+  // 페이지 새로고침하여 토큰 반영
+  setTimeout(() => {
+    location.reload();
+  }, 1000);
+};
+
+/**
+ * iOS 인앱결제 실패 콜백 (Flutter에서 호출)
+ */
+window.onIAPError = function(error) {
+  console.log('[IAP] 구매 실패:', error);
+  // 취소는 별도 알림 안 함
+  if (!error.includes('취소')) {
+    alert('결제 실패: ' + error);
+  }
+};
+
+/**
+ * 상품 페이지에서 플랜 선택 및 결제 (본인인증 포함)
+ * HTML 버튼: onclick="selectPlanAndPay('basic')" 등
+ */
+async function selectPlanAndPay(planKey) {
+  console.log('💳 selectPlanAndPay 호출:', planKey);
+
+  // iOS Flutter 앱이면 인앱결제 사용
+  if (isIOSFlutterApp()) {
+    console.log('[IAP] iOS Flutter 앱 감지 → 인앱결제 진행');
+    requestIOSInAppPurchase(planKey);
+    return;
+  }
+
+  // 일반 웹/Android 앱은 기존 외부결제 진행
+  await verifyAndPay(planKey);
+}
+
 // 전역 함수로 노출
 window.HAIRGATOR_PAYMENT = HAIRGATOR_PAYMENT;
 window.selectPlan = selectPlan;
+window.selectPlanAndPay = selectPlanAndPay;
+window.isIOSFlutterApp = isIOSFlutterApp;
+window.requestIOSInAppPurchase = requestIOSInAppPurchase;
 window.purchasePlan = (planKey) => HAIRGATOR_PAYMENT.purchasePlan(planKey);
 window.purchaseExtraCredits = () => HAIRGATOR_PAYMENT.purchaseExtraCredits();
 
