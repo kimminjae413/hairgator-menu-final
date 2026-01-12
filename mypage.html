@@ -651,7 +651,7 @@
         <!-- 계정 -->
         <section class="menu-section">
             <div class="menu-section-title">계정</div>
-            <div class="menu-item" onclick="logout()">
+            <div class="menu-item" onclick="logout()" ontouchend="logout()">
                 <div class="menu-icon">🚪</div>
                 <div class="menu-text">
                     <div class="menu-title">로그아웃</div>
@@ -1070,23 +1070,33 @@
 
         // 로그아웃
         async function logout() {
-            if (confirm('로그아웃하시겠습니까?')) {
-                try {
-                    await auth.signOut();
-                    localStorage.removeItem('firebase_user');
+            console.log('🚪 logout() 함수 호출됨');
 
-                    // Flutter 앱이면 네이티브 로그인 화면으로 이동
-                    if (window.FlutterChannel && typeof window.FlutterChannel.postMessage === 'function') {
-                        console.log('📱 Flutter에 로그아웃 메시지 전송');
-                        window.FlutterChannel.postMessage('logout');
-                    } else {
-                        // 웹 브라우저면 로그인 페이지로 이동
-                        window.location.href = '/login.html';
-                    }
-                } catch (error) {
-                    console.error('로그아웃 실패:', error);
-                    showToast('로그아웃에 실패했습니다.', 'error');
+            // Flutter 앱에서는 confirm 대신 바로 진행 (iOS WebView confirm 이슈)
+            const isFlutterApp = window.FlutterChannel && typeof window.FlutterChannel.postMessage === 'function';
+
+            if (!isFlutterApp && !confirm('로그아웃하시겠습니까?')) {
+                console.log('🚪 로그아웃 취소됨');
+                return;
+            }
+
+            try {
+                console.log('🚪 Firebase signOut 시도...');
+                await auth.signOut();
+                console.log('🚪 Firebase signOut 성공');
+                localStorage.removeItem('firebase_user');
+
+                // Flutter 앱이면 네이티브 로그인 화면으로 이동
+                if (isFlutterApp) {
+                    console.log('📱 Flutter에 로그아웃 메시지 전송');
+                    window.FlutterChannel.postMessage('logout');
+                } else {
+                    // 웹 브라우저면 로그인 페이지로 이동
+                    window.location.href = '/login.html';
                 }
+            } catch (error) {
+                console.error('🚪 로그아웃 실패:', error);
+                showToast('로그아웃에 실패했습니다.', 'error');
             }
         }
 
