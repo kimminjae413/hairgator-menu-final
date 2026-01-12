@@ -447,3 +447,106 @@ class _HairgatorAppState extends State<HairgatorApp> {
 ### 현재 상태
 - **v33**: 로그인 화면 정상 표시 ✅
 - **다음 할 일**: 카카오/구글/이메일 로그인 테스트, WebView 홈 화면 테스트
+
+---
+
+## 2026-01-12 iOS 결제/로그아웃 버튼 안됨 해결 ✅
+
+### 문제 1: 결제 버튼 클릭해도 아무 반응 없음
+
+**증상:**
+- Apple 로그인 후 "선택하기" 버튼 눌러도 아무 반응 없음
+- Android: 정상 ✅
+- iOS: 안됨 ❌
+
+**원인:**
+- `main.js`의 `selectPlanAndPay` 함수가 `payment.js`의 함수를 **덮어쓰고** 있었음
+- `payment.js`: iOS 체크 있음 ✅ → `isIOSFlutterApp()` 체크 후 `IAPChannel` 호출
+- `main.js`: iOS 체크 없음 ❌ → 무조건 외부결제(PortOne) 호출
+
+**해결 (main.js 수정):**
+```javascript
+window.selectPlanAndPay = async function(planType) {
+    // ⭐ iOS Flutter 앱이면 인앱결제 사용
+    if (typeof window.isIOSFlutterApp === 'function' && window.isIOSFlutterApp()) {
+        console.log('[IAP] iOS Flutter 앱 감지 → 인앱결제 진행');
+        if (typeof window.requestIOSInAppPurchase === 'function') {
+            window.requestIOSInAppPurchase(planType);
+            return;
+        }
+    }
+    // 기존 외부결제 로직...
+};
+```
+
+### 문제 2: 로그아웃 버튼 눌러도 아무 반응 없음
+
+**증상:**
+- 웹 브라우저: "로그아웃 하시겠습니까?" 확인창 뜸 ✅
+- iOS 앱: 아무 반응 없음 ❌
+
+**원인:**
+- `index.html` 안에 **또 다른 `logout()` 함수**가 있었음 (line ~3492)
+- 이 함수가 `auth.js`의 `logout()`을 덮어씀
+- `confirm()` 다이얼로그가 iOS WKWebView에서 제대로 안 뜸
+
+**해결 (index.html 수정):**
+```javascript
+async function logout() {
+    // Flutter 앱인 경우 바로 네이티브 로그인으로 이동
+    if (window.FlutterChannel) {
+        console.log('📱 [logout] Flutter 앱 → 네이티브 로그인으로 이동');
+        window.FlutterChannel.postMessage('logout');
+        return;
+    }
+    // 웹 브라우저인 경우 확인 후 로그아웃
+    if (confirm('로그아웃 하시겠습니까?')) {
+        // ...
+    }
+}
+```
+
+### 문제 3: 인앱결제 상품 없음
+
+**증상:**
+- 결제 버튼 클릭 시 "상품을 찾을 수 없습니다: hairgator_basic" 에러
+
+**원인:**
+- App Store Connect에서 인앱 구매 상품 미생성
+- 유료 앱 계약 미완료 (세금 양식 대기 중)
+
+**해결 (내일 작업):**
+1. App Store Connect → 비즈니스 → 유료 앱 계약 완료
+2. 세금 양식 제출 (W-8BEN-E 등)
+3. 인앱 구매 상품 생성:
+   - `hairgator_basic` - ₩22,000
+   - `hairgator_pro` - ₩38,000
+   - `hairgator_business` - ₩50,000
+
+### 추가 수정사항
+
+**ontouchend 핸들러 추가:**
+- iOS에서 onclick이 안 먹을 때를 대비해 모든 버튼에 `ontouchend` 추가
+- 결제 버튼, 로그아웃 버튼, 마이페이지 메뉴 등
+
+**iOS Flutter 앱 감지 로직 추가 (index.html):**
+```javascript
+function checkIOSFlutterApp() {
+    if (typeof window.IAPChannel !== 'undefined') {
+        document.documentElement.classList.add('ios-flutter-app');
+    }
+}
+```
+
+**iOS에서 외부결제 UI 숨김 (main.css):**
+```css
+html.ios-flutter-app .ios-hide-payment {
+    display: none !important;
+}
+```
+
+### 핵심 교훈
+- ❌ 같은 함수명이 여러 파일에 있으면 나중에 로드된 게 덮어씀
+- ❌ `confirm()` 다이얼로그는 iOS WKWebView에서 문제 발생 가능
+- ✅ Flutter 앱 체크는 **가장 먼저** 해야 함 (다른 로직 실행 전에)
+- ✅ iOS 인앱결제는 App Store Connect 계약/상품 등록 필수
