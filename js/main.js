@@ -82,6 +82,12 @@ document.addEventListener('DOMContentLoaded', function() {
             transition: all 0.2s ease;
         `;
 
+        // 아이콘 정의
+        const expandIcon = '⛶'; // 펼치기 (탭바 보일 때)
+        const collapseIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/>
+        </svg>`; // 접기 (탭바 숨겼을 때) - 안쪽으로 향하는 화살표
+
         fullscreenBtn.addEventListener('click', function() {
             if (window.FlutterChannel) {
                 isFullscreenMode = !isFullscreenMode;
@@ -90,7 +96,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // 버튼 위치 조정 (탭바 유무에 따라)
                 fullscreenBtn.style.bottom = isFullscreenMode ? '12px' : '70px';
-                fullscreenBtn.innerHTML = isFullscreenMode ? '⛶' : '⛶';
+                // 아이콘 변경: 펼쳤으면 접기 아이콘, 접혔으면 펼치기 아이콘
+                fullscreenBtn.innerHTML = isFullscreenMode ? collapseIcon : expandIcon;
             }
         });
 
