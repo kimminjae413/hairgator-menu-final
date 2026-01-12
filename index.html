@@ -2661,7 +2661,7 @@
 
         <!-- 로그아웃 & 탈퇴 -->
         <div class="mypage-footer">
-            <button class="logout-btn-full" onclick="alert('onclick!'); logout();" ontouchend="alert('touchend!'); logout();" data-i18n="ui.logout">로그아웃</button>
+            <button class="logout-btn-full" onclick="logout()" ontouchend="logout()" data-i18n="ui.logout">로그아웃</button>
             <button class="withdraw-btn" onclick="showWithdrawConfirm()" data-i18n="ui.withdrawAccount">회원 탈퇴</button>
         </div>
     </div>
@@ -3490,6 +3490,14 @@
         }
 
         async function logout() {
+            // Flutter 앱인 경우 바로 네이티브 로그인으로 이동
+            if (window.FlutterChannel) {
+                console.log('📱 [logout] Flutter 앱 → 네이티브 로그인으로 이동');
+                window.FlutterChannel.postMessage('logout');
+                return;
+            }
+
+            // 웹 브라우저인 경우 확인 후 로그아웃
             if (confirm('로그아웃 하시겠습니까?')) {
                 showLoading(true);
                 await firebaseAuth.logout();

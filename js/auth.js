@@ -642,8 +642,7 @@ function getBullnabiUser() {
  * 로그아웃
  */
 async function logout() {
-    alert('logout() 호출됨! FlutterChannel: ' + (typeof window.FlutterChannel));
-    console.log('🚪 logout() 함수 호출됨!');
+    console.log('🚪 logout() 함수 호출됨 (auth.js)');
 
     // Flutter 앱인 경우 먼저 FlutterChannel로 알림 (signOut 전에!)
     if (window.FlutterChannel) {
