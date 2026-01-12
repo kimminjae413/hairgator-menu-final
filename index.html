@@ -2661,7 +2661,7 @@
 
         <!-- 로그아웃 & 탈퇴 -->
         <div class="mypage-footer">
-            <button class="logout-btn-full" onclick="logout()" ontouchend="logout()" data-i18n="ui.logout">로그아웃</button>
+            <button class="logout-btn-full" onclick="alert('onclick!'); logout();" ontouchend="alert('touchend!'); logout();" data-i18n="ui.logout">로그아웃</button>
             <button class="withdraw-btn" onclick="showWithdrawConfirm()" data-i18n="ui.withdrawAccount">회원 탈퇴</button>
         </div>
     </div>
