@@ -3704,8 +3704,8 @@ async function updateProductsPagePlan() {
             const tokenData = await window.FirebaseBridge.getTokenBalance();
             if (tokenData) {
                 if (tokenData.plan) currentPlan = tokenData.plan;
-                if (tokenData.balance !== undefined) tokenBalance = tokenData.balance;
-                if (tokenData.planExpiry) planExpiry = tokenData.planExpiry;
+                if (tokenData.tokenBalance !== undefined) tokenBalance = tokenData.tokenBalance;
+                if (tokenData.planExpiresAt) planExpiry = tokenData.planExpiresAt;
             }
         }
 
@@ -3734,7 +3734,8 @@ async function updateProductsPagePlan() {
                 const expiryDate = planExpiry.toDate ? planExpiry.toDate() : new Date(planExpiry);
                 currentPlanExpiryEl.textContent = expiryDate.toLocaleDateString('ko-KR');
             } else {
-                currentPlanExpiryEl.textContent = currentPlan === 'free' ? '-' : '무제한';
+                // 만료일 정보 없으면 모든 플랜에서 '-' 표시
+                currentPlanExpiryEl.textContent = '-';
             }
         }
 

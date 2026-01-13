@@ -427,12 +427,14 @@
                     console.log('✅ getTokenBalance 결과:', {
                         docId: docId,
                         tokenBalance: userData.tokenBalance,
-                        plan: userData.plan
+                        plan: userData.plan,
+                        planExpiresAt: userData.planExpiresAt
                     });
                     return {
                         success: true,
                         tokenBalance: userData.tokenBalance || 0,
-                        plan: userData.plan || 'free'
+                        plan: userData.plan || 'free',
+                        planExpiresAt: userData.planExpiresAt || null
                     };
                 }
 
