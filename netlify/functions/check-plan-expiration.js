@@ -294,6 +294,7 @@ exports.handler = async (event, context) => {
   const stats = {
     totalChecked: 0,
     expired: 0,
+    missingExpirySet: 0,  // 만료일 없어서 설정한 사용자
     warning7days: 0,
     warning3days: 0,
     warning1day: 0,
@@ -317,12 +318,39 @@ exports.handler = async (event, context) => {
       stats.totalChecked++;
 
       try {
-        const planExpiresAt = userData.planExpiresAt;
-        if (!planExpiresAt) continue;
+        let planExpiresAt = userData.planExpiresAt;
+        const planName = PLAN_NAMES[userData.plan] || userData.plan;
+
+        // ⚠️ planExpiresAt이 없는 유료 플랜 사용자 처리
+        // 30일 유예기간을 주고 만료일 자동 설정
+        if (!planExpiresAt) {
+          const gracePeriodDays = 30;
+          const newExpiresAt = new Date(now.getTime() + gracePeriodDays * 24 * 60 * 60 * 1000);
+
+          await db.collection('users').doc(userId).update({
+            planExpiresAt: admin.firestore.Timestamp.fromDate(newExpiresAt),
+            planExpiresAtSetBy: 'auto_grace_period',
+            planExpiresAtSetAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+
+          console.log(`  ⚠️ ${userId}: 만료일 없음 → ${gracePeriodDays}일 유예기간 설정 (${newExpiresAt.toISOString()})`);
+          stats.missingExpirySet++;
+
+          // 알림 생성 - 만료일 자동 설정됨
+          await createNotification(
+            userId,
+            'plan_expiry_auto_set',
+            '플랜 만료일 설정 안내',
+            `${planName} 플랜의 만료일이 ${gracePeriodDays}일 후로 자동 설정되었습니다. 계속 이용하시려면 갱신해주세요.`,
+            { plan: userData.plan, expiresAt: newExpiresAt.toISOString(), gracePeriodDays }
+          );
+
+          continue; // 다음 사용자로 (이번에는 알림만 보내고 넘어감)
+        }
 
         const expiresDate = planExpiresAt.toDate ? planExpiresAt.toDate() : new Date(planExpiresAt);
         const daysRemaining = Math.ceil((expiresDate - now) / (1000 * 60 * 60 * 24));
-        const planName = PLAN_NAMES[userData.plan] || userData.plan;
+
 
         console.log(`  📋 ${userId}: ${planName}, 만료까지 ${daysRemaining}일`);
 
@@ -435,6 +463,7 @@ exports.handler = async (event, context) => {
 
     console.log('\n📊 처리 결과:');
     console.log(`  - 총 체크: ${stats.totalChecked}명`);
+    console.log(`  - 만료일 자동설정: ${stats.missingExpirySet}명 (30일 유예)`);
     console.log(`  - 만료 처리: ${stats.expired}명`);
     console.log(`  - 7일 알림: ${stats.warning7days}명`);
     console.log(`  - 3일 알림: ${stats.warning3days}명`);
