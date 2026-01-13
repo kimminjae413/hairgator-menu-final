@@ -4018,8 +4018,13 @@
             };
 
             tbody.innerHTML = pageUsers.map(user => {
-                const createdAt = user.createdAt?.toDate ? user.createdAt.toDate().toLocaleDateString('ko-KR') : '-';
-                const lastLoginAt = user.lastLoginAt?.toDate ? user.lastLoginAt.toDate().toLocaleString('ko-KR') : '-';
+                // API에서 ISO 문자열로 오거나 Firestore Timestamp 객체로 올 수 있음
+                const createdAt = user.createdAt
+                    ? (user.createdAt.toDate ? user.createdAt.toDate() : new Date(user.createdAt)).toLocaleDateString('ko-KR')
+                    : '-';
+                const lastLoginAt = user.lastLoginAt
+                    ? (user.lastLoginAt.toDate ? user.lastLoginAt.toDate() : new Date(user.lastLoginAt)).toLocaleString('ko-KR')
+                    : '-';
                 const plan = user.plan || 'free';
                 const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' }[plan];
 
@@ -4212,8 +4217,8 @@
 
                 <div style="background: var(--bg-dark); border-radius: 8px; padding: 16px; font-size: 12px;">
                     <div style="margin-bottom: 8px;"><strong>UID:</strong> ${user.id}</div>
-                    <div style="margin-bottom: 8px;"><strong>가입일:</strong> ${user.createdAt?.toDate ? user.createdAt.toDate().toLocaleString('ko-KR') : '-'}</div>
-                    <div><strong>최근 접속:</strong> ${user.lastLoginAt?.toDate ? user.lastLoginAt.toDate().toLocaleString('ko-KR') : '-'}</div>
+                    <div style="margin-bottom: 8px;"><strong>가입일:</strong> ${user.createdAt ? (user.createdAt.toDate ? user.createdAt.toDate() : new Date(user.createdAt)).toLocaleString('ko-KR') : '-'}</div>
+                    <div><strong>최근 접속:</strong> ${user.lastLoginAt ? (user.lastLoginAt.toDate ? user.lastLoginAt.toDate() : new Date(user.lastLoginAt)).toLocaleString('ko-KR') : '-'}</div>
                 </div>
 
                 ${user.plan && user.plan !== 'free' ? `
