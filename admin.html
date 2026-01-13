@@ -1475,6 +1475,10 @@
                 <span>1:1 문의</span>
                 <span class="nav-item-badge inquiry-badge" id="inquiryCountBadge" style="display: none; background: #EF4444;">NEW</span>
             </div>
+            <div class="nav-item" onclick="showPage('marketing')">
+                <span class="nav-item-icon">📧</span>
+                <span>마케팅 이메일</span>
+            </div>
         </nav>
 
         <nav class="nav-section">
@@ -2168,6 +2172,119 @@
                 <div class="modal-footer">
                     <button class="btn btn-secondary" onclick="closeModal('inquiryReplyModal')">닫기</button>
                     <button class="btn btn-primary" onclick="sendInquiryReply()">답변 보내기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 마케팅 이메일 페이지 -->
+        <div id="page-marketing" class="page">
+            <div class="page-header">
+                <h2 class="page-title">📧 마케팅 이메일</h2>
+                <button class="btn btn-secondary" onclick="loadMarketingHistory()">🔄 발송 내역</button>
+            </div>
+
+            <!-- 수신 대상 통계 -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                    <div class="card-title">📊 수신 대상</div>
+                    <button class="btn btn-secondary btn-sm" onclick="loadMarketingRecipients()">새로고침</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; padding: 16px;">
+                    <div style="text-align: center; padding: 16px; background: var(--bg-hover); border-radius: 8px;">
+                        <div style="font-size: 28px; font-weight: 700; color: var(--primary);" id="marketingTotalUsers">-</div>
+                        <div style="font-size: 13px; color: var(--text-muted);">전체 사용자</div>
+                    </div>
+                    <div style="text-align: center; padding: 16px; background: var(--bg-hover); border-radius: 8px;">
+                        <div style="font-size: 28px; font-weight: 700; color: var(--success);" id="marketingOptedIn">-</div>
+                        <div style="font-size: 13px; color: var(--text-muted);">마케팅 동의</div>
+                    </div>
+                    <div style="text-align: center; padding: 16px; background: var(--bg-hover); border-radius: 8px;">
+                        <div style="font-size: 28px; font-weight: 700; color: var(--info);" id="marketingWithEmail">-</div>
+                        <div style="font-size: 13px; color: var(--text-muted);">이메일 있음</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 이메일 작성 폼 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">✉️ 이메일 작성</div>
+                </div>
+                <div style="padding: 20px;">
+                    <div class="form-group">
+                        <label class="form-label">제목 *</label>
+                        <input type="text" class="form-input" id="marketingSubject" placeholder="이메일 제목을 입력하세요">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">본문 내용 *</label>
+                        <textarea class="form-input" id="marketingContent" rows="8" placeholder="이메일 본문을 입력하세요...&#10;&#10;HTML 태그 사용 가능:&#10;<b>굵게</b>, <i>기울임</i>, <br> 줄바꿈" style="resize: vertical; font-family: inherit;"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">이미지 첨부 (선택)</label>
+                        <input type="file" class="form-input" id="marketingImage" accept="image/*" onchange="previewMarketingImage(this)">
+                        <div id="marketingImagePreview" style="margin-top: 10px; display: none;">
+                            <img id="marketingImagePreviewImg" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <button type="button" onclick="clearMarketingImage()" style="margin-top: 8px; background: var(--danger); color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer;">이미지 제거</button>
+                        </div>
+                        <input type="hidden" id="marketingImageUrl">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">링크 버튼 (선택)</label>
+                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px;">
+                            <input type="text" class="form-input" id="marketingLinkText" placeholder="버튼 텍스트 (예: 자세히 보기)">
+                            <input type="text" class="form-input" id="marketingLinkUrl" placeholder="URL (예: https://app.hairgator.kr/#products)">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button class="btn btn-secondary" onclick="previewMarketingEmail()" style="flex: 1;">👁️ 미리보기</button>
+                        <button class="btn btn-primary" onclick="sendMarketingEmail()" style="flex: 1;">📤 발송하기</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 발송 내역 -->
+            <div class="card" style="margin-top: 20px; display: none;" id="marketingHistoryCard">
+                <div class="card-header">
+                    <div class="card-title">📋 발송 내역</div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>제목</th>
+                                <th style="width: 100px;">발송일</th>
+                                <th style="width: 80px;">발송 수</th>
+                                <th style="width: 80px;">성공</th>
+                                <th style="width: 80px;">실패</th>
+                            </tr>
+                        </thead>
+                        <tbody id="marketingHistoryBody">
+                            <tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">발송 내역이 없습니다</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 마케팅 이메일 미리보기 모달 -->
+        <div class="modal-overlay" id="marketingPreviewModal">
+            <div class="modal" style="max-width: 650px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">📧 이메일 미리보기</h3>
+                    <button class="modal-close" onclick="closeModal('marketingPreviewModal')">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 0;">
+                    <div id="marketingPreviewContent" style="background: #f5f5f5; padding: 20px;">
+                        <!-- 미리보기 내용 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('marketingPreviewModal')">닫기</button>
+                    <button class="btn btn-primary" onclick="closeModal('marketingPreviewModal'); sendMarketingEmail();">📤 발송하기</button>
                 </div>
             </div>
         </div>
@@ -3666,6 +3783,7 @@
             if (pageName === 'settings') loadAdminList();
             if (pageName === 'notices') loadNotices();
             if (pageName === 'inquiries') loadInquiries();
+            if (pageName === 'marketing') loadMarketingRecipients();
             if (pageName === 'legal') loadLegalDocuments();
         }
 
@@ -7983,6 +8101,230 @@
         }
 
         // 로그인 후 문의 체크
+
+        // ===== 마케팅 이메일 =====
+        let marketingImageBase64 = null;
+
+        // 마케팅 수신 대상 로드
+        async function loadMarketingRecipients() {
+            try {
+                const snapshot = await db.collection('users').get();
+                let total = 0;
+                let optedIn = 0;
+                let withEmail = 0;
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    total++;
+                    if (data.termsAgreement?.marketing === true) {
+                        optedIn++;
+                        if (data.email) withEmail++;
+                    }
+                });
+
+                document.getElementById('marketingTotalUsers').textContent = total;
+                document.getElementById('marketingOptedIn').textContent = optedIn;
+                document.getElementById('marketingWithEmail').textContent = withEmail;
+            } catch (error) {
+                console.error('마케팅 수신 대상 로드 실패:', error);
+                showToast('수신 대상 로드 실패: ' + error.message, 'error');
+            }
+        }
+
+        // 마케팅 이미지 미리보기
+        function previewMarketingImage(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('이미지 크기는 5MB 이하여야 합니다', 'error');
+                    input.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    marketingImageBase64 = e.target.result;
+                    document.getElementById('marketingImagePreviewImg').src = e.target.result;
+                    document.getElementById('marketingImagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 마케팅 이미지 제거
+        function clearMarketingImage() {
+            document.getElementById('marketingImage').value = '';
+            document.getElementById('marketingImagePreview').style.display = 'none';
+            document.getElementById('marketingImagePreviewImg').src = '';
+            document.getElementById('marketingImageUrl').value = '';
+            marketingImageBase64 = null;
+        }
+
+        // 마케팅 이메일 미리보기
+        function previewMarketingEmail() {
+            const subject = document.getElementById('marketingSubject').value.trim();
+            const content = document.getElementById('marketingContent').value.trim();
+            const linkText = document.getElementById('marketingLinkText').value.trim();
+            const linkUrl = document.getElementById('marketingLinkUrl').value.trim();
+
+            if (!subject || !content) {
+                showToast('제목과 본문을 입력해주세요', 'error');
+                return;
+            }
+
+            const previewHtml = buildMarketingEmailHtml(subject, content, marketingImageBase64, linkText, linkUrl);
+            document.getElementById('marketingPreviewContent').innerHTML = previewHtml;
+            openModal('marketingPreviewModal');
+        }
+
+        // 마케팅 이메일 HTML 생성
+        function buildMarketingEmailHtml(subject, content, imageUrl, linkText, linkUrl) {
+            const contentHtml = content.replace(/\n/g, '<br>');
+            let imageSection = '';
+            if (imageUrl) {
+                imageSection = `
+                    <div style="margin: 24px 0; text-align: center;">
+                        <img src="${imageUrl}" style="max-width: 100%; border-radius: 12px;" alt="이미지">
+                    </div>
+                `;
+            }
+
+            let buttonSection = '';
+            if (linkText && linkUrl) {
+                buttonSection = `
+                    <div style="text-align: center; margin: 32px 0;">
+                        <a href="${linkUrl}" style="
+                            display: inline-block;
+                            padding: 16px 48px;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: #ffffff;
+                            text-decoration: none;
+                            font-size: 16px;
+                            font-weight: 600;
+                            border-radius: 50px;
+                            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                        ">${linkText}</a>
+                    </div>
+                `;
+            }
+
+            return `
+                <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 32px 40px; text-align: center;">
+                        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">HAIRGATOR</h1>
+                        <p style="margin: 8px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">AI 헤어스타일 어시스턴트</p>
+                    </div>
+
+                    <!-- Content -->
+                    <div style="padding: 40px;">
+                        <h2 style="margin: 0 0 24px; color: #333333; font-size: 20px;">${subject}</h2>
+                        ${imageSection}
+                        <div style="color: #333333; font-size: 16px; line-height: 1.8;">
+                            ${contentHtml}
+                        </div>
+                        ${buttonSection}
+                    </div>
+
+                    <!-- Footer -->
+                    <div style="background: #f8f9fa; padding: 24px 40px; text-align: center; border-top: 1px solid #e9ecef;">
+                        <p style="margin: 0 0 8px; color: #999999; font-size: 12px;">
+                            본 메일은 마케팅 수신에 동의하신 분께 발송되었습니다.
+                        </p>
+                        <p style="margin: 0; color: #999999; font-size: 12px;">
+                            수신거부는 앱 설정에서 변경하실 수 있습니다.
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 마케팅 이메일 발송
+        async function sendMarketingEmail() {
+            const subject = document.getElementById('marketingSubject').value.trim();
+            const content = document.getElementById('marketingContent').value.trim();
+            const linkText = document.getElementById('marketingLinkText').value.trim();
+            const linkUrl = document.getElementById('marketingLinkUrl').value.trim();
+
+            if (!subject || !content) {
+                showToast('제목과 본문을 입력해주세요', 'error');
+                return;
+            }
+
+            if (!confirm(`마케팅 이메일을 발송하시겠습니까?\n\n제목: ${subject}\n\n마케팅 수신 동의한 사용자에게 일괄 발송됩니다.`)) {
+                return;
+            }
+
+            showToast('이메일 발송 중...', 'info');
+
+            try {
+                const response = await fetch('/.netlify/functions/send-marketing-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subject,
+                        content,
+                        imageBase64: marketingImageBase64,
+                        linkText,
+                        linkUrl
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(`이메일 발송 완료! 성공: ${result.sent}건, 실패: ${result.failed}건`, 'success');
+                    // 폼 초기화
+                    document.getElementById('marketingSubject').value = '';
+                    document.getElementById('marketingContent').value = '';
+                    document.getElementById('marketingLinkText').value = '';
+                    document.getElementById('marketingLinkUrl').value = '';
+                    clearMarketingImage();
+                    // 발송 내역 새로고침
+                    loadMarketingHistory();
+                } else {
+                    showToast('발송 실패: ' + (result.error || '알 수 없는 오류'), 'error');
+                }
+            } catch (error) {
+                console.error('마케팅 이메일 발송 실패:', error);
+                showToast('발송 실패: ' + error.message, 'error');
+            }
+        }
+
+        // 마케팅 발송 내역 로드
+        async function loadMarketingHistory() {
+            try {
+                const snapshot = await db.collection('marketing_emails')
+                    .orderBy('sentAt', 'desc')
+                    .limit(20)
+                    .get();
+
+                const historyCard = document.getElementById('marketingHistoryCard');
+                const tbody = document.getElementById('marketingHistoryBody');
+
+                if (snapshot.empty) {
+                    historyCard.style.display = 'none';
+                    return;
+                }
+
+                historyCard.style.display = 'block';
+                tbody.innerHTML = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    const sentAt = data.sentAt?.toDate?.()?.toLocaleDateString('ko-KR') || '-';
+                    return `
+                        <tr>
+                            <td>${escapeHtml(data.subject)}</td>
+                            <td>${sentAt}</td>
+                            <td>${data.totalRecipients || 0}</td>
+                            <td style="color: var(--success);">${data.successCount || 0}</td>
+                            <td style="color: var(--danger);">${data.failedCount || 0}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('마케팅 발송 내역 로드 실패:', error);
+            }
+        }
 
         // ===== 약관 관리 =====
         const LEGAL_ADMIN_EMAIL = 'eric708@naver.com';

@@ -62,6 +62,13 @@
   node_bundler = "esbuild"
   schedule = "@daily"
 
+# ⭐ 마케팅 이메일 일괄 발송
+# - 마케팅 수신 동의 사용자에게 SendGrid로 이메일 발송
+# - 대량 발송 시 시간이 걸릴 수 있음
+[functions."send-marketing-email"]
+  node_bundler = "esbuild"
+  timeout = 26
+
 # ========== 캐시 설정 (개발/업데이트 빈번) ==========
 # HTML 파일 - 캐시 비활성화
 [[headers]]
