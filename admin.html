@@ -2198,9 +2198,32 @@
                         <div style="font-size: 28px; font-weight: 700; color: var(--success);" id="marketingOptedIn">-</div>
                         <div style="font-size: 13px; color: var(--text-muted);">마케팅 동의</div>
                     </div>
-                    <div style="text-align: center; padding: 16px; background: var(--bg-hover); border-radius: 8px;">
+                    <div style="text-align: center; padding: 16px; background: var(--bg-hover); border-radius: 8px; cursor: pointer;" onclick="toggleMarketingRecipientList()">
                         <div style="font-size: 28px; font-weight: 700; color: var(--info);" id="marketingWithEmail">-</div>
-                        <div style="font-size: 13px; color: var(--text-muted);">이메일 있음</div>
+                        <div style="font-size: 13px; color: var(--text-muted);">발송 가능 (클릭해서 목록 보기)</div>
+                    </div>
+                </div>
+
+                <!-- 수신자 목록 -->
+                <div id="marketingRecipientList" style="display: none; border-top: 1px solid var(--border); padding: 16px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: var(--text);">📧 발송 대상 목록 (마케팅 동의 + 이메일 있음)</div>
+                    <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>이름</th>
+                                    <th>이메일</th>
+                                    <th>플랜</th>
+                                </tr>
+                            </thead>
+                            <tbody id="marketingRecipientTableBody">
+                                <tr><td colspan="3" style="text-align: center; padding: 20px; color: var(--text-muted);">로딩 중...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 12px; padding: 12px; background: var(--bg-hover); border-radius: 8px; font-size: 13px;">
+                        <div style="font-weight: 600; color: var(--warning); margin-bottom: 8px;">⚠️ 마케팅 동의했지만 이메일 없는 사용자</div>
+                        <div id="marketingNoEmailList" style="color: var(--text-muted);">-</div>
                     </div>
                 </div>
             </div>
@@ -8104,6 +8127,8 @@
 
         // ===== 마케팅 이메일 =====
         let marketingImageBase64 = null;
+        let marketingRecipients = [];  // 발송 가능 사용자 목록
+        let marketingNoEmail = [];     // 동의했지만 이메일 없는 사용자
 
         // 마케팅 수신 대상 로드
         async function loadMarketingRecipients() {
@@ -8111,24 +8136,66 @@
                 const snapshot = await db.collection('users').get();
                 let total = 0;
                 let optedIn = 0;
-                let withEmail = 0;
+                marketingRecipients = [];
+                marketingNoEmail = [];
 
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     total++;
                     if (data.termsAgreement?.marketing === true) {
                         optedIn++;
-                        if (data.email) withEmail++;
+                        if (data.email) {
+                            marketingRecipients.push({
+                                id: doc.id,
+                                name: data.displayName || data.name || '-',
+                                email: data.email,
+                                plan: data.plan || 'free'
+                            });
+                        } else {
+                            marketingNoEmail.push({
+                                id: doc.id,
+                                name: data.displayName || data.name || '-'
+                            });
+                        }
                     }
                 });
 
                 document.getElementById('marketingTotalUsers').textContent = total;
                 document.getElementById('marketingOptedIn').textContent = optedIn;
-                document.getElementById('marketingWithEmail').textContent = withEmail;
+                document.getElementById('marketingWithEmail').textContent = marketingRecipients.length;
+
+                // 수신자 목록 테이블 업데이트
+                const tbody = document.getElementById('marketingRecipientTableBody');
+                if (marketingRecipients.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 20px; color: var(--text-muted);">발송 가능한 사용자가 없습니다</td></tr>';
+                } else {
+                    tbody.innerHTML = marketingRecipients.map(user => `
+                        <tr>
+                            <td>${escapeHtml(user.name)}</td>
+                            <td style="font-family: monospace; font-size: 12px;">${escapeHtml(user.email)}</td>
+                            <td><span class="badge badge-${user.plan === 'free' ? 'secondary' : 'primary'}">${user.plan}</span></td>
+                        </tr>
+                    `).join('');
+                }
+
+                // 이메일 없는 사용자 목록
+                const noEmailDiv = document.getElementById('marketingNoEmailList');
+                if (marketingNoEmail.length === 0) {
+                    noEmailDiv.textContent = '없음';
+                } else {
+                    noEmailDiv.innerHTML = marketingNoEmail.map(u => `<span style="display: inline-block; background: var(--bg-dark); padding: 2px 8px; border-radius: 4px; margin: 2px;">${escapeHtml(u.name)} (${u.id})</span>`).join(' ');
+                }
+
             } catch (error) {
                 console.error('마케팅 수신 대상 로드 실패:', error);
                 showToast('수신 대상 로드 실패: ' + error.message, 'error');
             }
+        }
+
+        // 수신자 목록 토글
+        function toggleMarketingRecipientList() {
+            const list = document.getElementById('marketingRecipientList');
+            list.style.display = list.style.display === 'none' ? 'block' : 'none';
         }
 
         // 마케팅 이미지 미리보기
