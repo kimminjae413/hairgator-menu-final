@@ -2193,6 +2193,16 @@
                                 <input type="text" class="form-input" id="tab1Url" value="https://app.hairgator.kr/#stylemenu">
                             </div>
                         </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
+                            <div class="form-group">
+                                <label class="form-label" style="font-size: 11px; color: var(--text-muted);">앱 아이콘 URL (기본)</label>
+                                <input type="text" class="form-input" id="tab1IconLight" placeholder="https://...png" style="font-size: 12px;">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size: 11px; color: var(--text-muted);">앱 아이콘 URL (선택됨)</label>
+                                <input type="text" class="form-input" id="tab1IconSelected" placeholder="https://...png" style="font-size: 12px;">
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Tab 2 -->
@@ -2218,6 +2228,16 @@
                             <div class="form-group">
                                 <label class="form-label">URL</label>
                                 <input type="text" class="form-input" id="tab2Url" value="https://app.hairgator.kr/#ai-transform">
+                            </div>
+                        </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
+                            <div class="form-group">
+                                <label class="form-label" style="font-size: 11px; color: var(--text-muted);">앱 아이콘 URL (기본)</label>
+                                <input type="text" class="form-input" id="tab2IconLight" placeholder="https://...png" style="font-size: 12px;">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size: 11px; color: var(--text-muted);">앱 아이콘 URL (선택됨)</label>
+                                <input type="text" class="form-input" id="tab2IconSelected" placeholder="https://...png" style="font-size: 12px;">
                             </div>
                         </div>
                     </div>
@@ -2246,6 +2266,16 @@
                                 <input type="text" class="form-input" id="tab3Url" value="https://app.hairgator.kr/#products">
                             </div>
                         </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
+                            <div class="form-group">
+                                <label class="form-label" style="font-size: 11px; color: var(--text-muted);">앱 아이콘 URL (기본)</label>
+                                <input type="text" class="form-input" id="tab3IconLight" placeholder="https://...png" style="font-size: 12px;">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size: 11px; color: var(--text-muted);">앱 아이콘 URL (선택됨)</label>
+                                <input type="text" class="form-input" id="tab3IconSelected" placeholder="https://...png" style="font-size: 12px;">
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Tab 4 -->
@@ -2270,6 +2300,16 @@
                             <div class="form-group">
                                 <label class="form-label">URL</label>
                                 <input type="text" class="form-input" id="tab4Url" value="https://app.hairgator.kr/#mypage">
+                            </div>
+                        </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
+                            <div class="form-group">
+                                <label class="form-label" style="font-size: 11px; color: var(--text-muted);">앱 아이콘 URL (기본)</label>
+                                <input type="text" class="form-input" id="tab4IconLight" placeholder="https://...png" style="font-size: 12px;">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size: 11px; color: var(--text-muted);">앱 아이콘 URL (선택됨)</label>
+                                <input type="text" class="form-input" id="tab4IconSelected" placeholder="https://...png" style="font-size: 12px;">
                             </div>
                         </div>
                     </div>
@@ -5231,6 +5271,9 @@
                             document.getElementById(`tab${i}Icon`).value = tab.icon || '';
                             document.getElementById(`tab${i}Label`).value = tab.label || '';
                             document.getElementById(`tab${i}Url`).value = tab.url || '';
+                            // 아이콘 URL 로드
+                            document.getElementById(`tab${i}IconLight`).value = tab.iconSet?.light || '';
+                            document.getElementById(`tab${i}IconSelected`).value = tab.iconSet?.light_selected || '';
                         }
                     }
 
@@ -5343,9 +5386,13 @@
 
                 const tabsConfig = {};
                 tabOrder.forEach((tabId, index) => {
-                    // 기존 데이터 또는 MongoDB 덤프에서 meta, iconSet 가져오기
+                    // 기존 데이터 또는 MongoDB 덤프에서 meta 가져오기
                     const existingTab = existingData[`tab${tabId}`] || {};
                     const mongoTab = MONGODB_TABS_DATA[`tab${tabId}`] || {};
+
+                    // 아이콘 URL 입력값 가져오기
+                    const iconLight = document.getElementById(`tab${tabId}IconLight`).value.trim();
+                    const iconSelected = document.getElementById(`tab${tabId}IconSelected`).value.trim();
 
                     tabsConfig[`tab${tabId}`] = {
                         enabled: document.getElementById(`tab${tabId}Enabled`).checked,
@@ -5353,10 +5400,14 @@
                         label: document.getElementById(`tab${tabId}Label`).value,
                         url: document.getElementById(`tab${tabId}Url`).value,
                         order: index + 1,
-                        // meta와 iconSet 보존 (기존 데이터 > MongoDB 덤프 > 빈값)
+                        // meta 보존 (기존 데이터 > MongoDB 덤프 > 빈값)
                         meta: existingTab.meta || mongoTab.meta || '',
                         module: existingTab.module || mongoTab.module || '',
-                        iconSet: existingTab.iconSet || mongoTab.iconSet || null
+                        // iconSet은 입력 필드에서 가져오기
+                        iconSet: (iconLight || iconSelected) ? {
+                            light: iconLight || null,
+                            light_selected: iconSelected || null
+                        } : null
                     };
                 });
 
