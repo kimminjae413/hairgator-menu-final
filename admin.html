@@ -2181,8 +2181,13 @@
                         </div>
                         <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px;">
                             <div class="form-group">
-                                <label class="form-label">아이콘</label>
-                                <input type="text" class="form-input" id="tab1Icon" value="📋" placeholder="이모지">
+                                <label class="form-label">기능 타입</label>
+                                <select class="form-input" id="tab1Meta" style="cursor: pointer;">
+                                    <option value="styleMenuTab">📋 스타일 메뉴</option>
+                                    <option value="pkg_iamportPayment_productMulti">💳 상품/결제</option>
+                                    <option value="myPage">👤 마이페이지</option>
+                                    <option value="webView">🌐 웹뷰 (외부)</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">라벨</label>
@@ -2218,8 +2223,13 @@
                         </div>
                         <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px;">
                             <div class="form-group">
-                                <label class="form-label">아이콘</label>
-                                <input type="text" class="form-input" id="tab2Icon" value="🎬" placeholder="이모지">
+                                <label class="form-label">기능 타입</label>
+                                <select class="form-input" id="tab2Meta" style="cursor: pointer;">
+                                    <option value="styleMenuTab">📋 스타일 메뉴</option>
+                                    <option value="pkg_iamportPayment_productMulti">💳 상품/결제</option>
+                                    <option value="myPage">👤 마이페이지</option>
+                                    <option value="webView">🌐 웹뷰 (외부)</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">라벨</label>
@@ -2254,12 +2264,17 @@
                         </div>
                         <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px;">
                             <div class="form-group">
-                                <label class="form-label">아이콘</label>
-                                <input type="text" class="form-input" id="tab3Icon" value="🛒" placeholder="이모지">
+                                <label class="form-label">기능 타입</label>
+                                <select class="form-input" id="tab3Meta" style="cursor: pointer;">
+                                    <option value="styleMenuTab">📋 스타일 메뉴</option>
+                                    <option value="pkg_iamportPayment_productMulti">💳 상품/결제</option>
+                                    <option value="myPage">👤 마이페이지</option>
+                                    <option value="webView">🌐 웹뷰 (외부)</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">라벨</label>
-                                <input type="text" class="form-input" id="tab3Label" value="상품">
+                                <input type="text" class="form-input" id="tab3Label" value="Plan & Billing">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">URL</label>
@@ -2290,8 +2305,13 @@
                         </div>
                         <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px;">
                             <div class="form-group">
-                                <label class="form-label">아이콘</label>
-                                <input type="text" class="form-input" id="tab4Icon" value="👤" placeholder="이모지">
+                                <label class="form-label">기능 타입</label>
+                                <select class="form-input" id="tab4Meta" style="cursor: pointer;">
+                                    <option value="styleMenuTab">📋 스타일 메뉴</option>
+                                    <option value="pkg_iamportPayment_productMulti">💳 상품/결제</option>
+                                    <option value="myPage">👤 마이페이지</option>
+                                    <option value="webView">🌐 웹뷰 (외부)</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">라벨</label>
@@ -5268,7 +5288,7 @@
                         const tab = data[`tab${i}`];
                         if (tab) {
                             document.getElementById(`tab${i}Enabled`).checked = tab.enabled !== false;
-                            document.getElementById(`tab${i}Icon`).value = tab.icon || '';
+                            document.getElementById(`tab${i}Meta`).value = tab.meta || 'styleMenuTab';
                             document.getElementById(`tab${i}Label`).value = tab.label || '';
                             document.getElementById(`tab${i}Url`).value = tab.url || '';
                             // 아이콘 URL 로드
@@ -5380,29 +5400,19 @@
                 // 현재 DOM 순서 반영
                 updateTabOrder();
 
-                // 기존 Firestore 데이터 가져오기 (meta, iconSet 보존)
-                const existingDoc = await db.collection('app_config').doc('tabs').get();
-                const existingData = existingDoc.exists ? existingDoc.data() : {};
-
                 const tabsConfig = {};
                 tabOrder.forEach((tabId, index) => {
-                    // 기존 데이터 또는 MongoDB 덤프에서 meta 가져오기
-                    const existingTab = existingData[`tab${tabId}`] || {};
-                    const mongoTab = MONGODB_TABS_DATA[`tab${tabId}`] || {};
-
                     // 아이콘 URL 입력값 가져오기
                     const iconLight = document.getElementById(`tab${tabId}IconLight`).value.trim();
                     const iconSelected = document.getElementById(`tab${tabId}IconSelected`).value.trim();
 
                     tabsConfig[`tab${tabId}`] = {
                         enabled: document.getElementById(`tab${tabId}Enabled`).checked,
-                        icon: document.getElementById(`tab${tabId}Icon`).value,
                         label: document.getElementById(`tab${tabId}Label`).value,
                         url: document.getElementById(`tab${tabId}Url`).value,
                         order: index + 1,
-                        // meta 보존 (기존 데이터 > MongoDB 덤프 > 빈값)
-                        meta: existingTab.meta || mongoTab.meta || '',
-                        module: existingTab.module || mongoTab.module || '',
+                        // meta는 드롭다운에서 직접 가져오기
+                        meta: document.getElementById(`tab${tabId}Meta`).value,
                         // iconSet은 입력 필드에서 가져오기
                         iconSet: (iconLight || iconSelected) ? {
                             light: iconLight || null,
