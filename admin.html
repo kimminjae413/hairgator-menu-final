@@ -1725,8 +1725,16 @@
                         <div class="card-title">🔍 토큰 조회</div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">사용자 ID</label>
-                        <input type="text" class="form-input" id="tokenQueryUserId" placeholder="사용자 ID 입력...">
+                        <label class="form-label">검색 기준</label>
+                        <select class="form-input" id="tokenQueryType" style="cursor: pointer;">
+                            <option value="id">사용자 ID (문서 ID)</option>
+                            <option value="name">이름</option>
+                            <option value="phone">전화번호</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">검색어</label>
+                        <input type="text" class="form-input" id="tokenQueryUserId" placeholder="검색어 입력...">
                     </div>
                     <button class="btn btn-primary" onclick="queryUserToken()">조회</button>
                     <div id="tokenQueryResult" style="margin-top: 16px; display: none;"></div>
@@ -1764,6 +1772,11 @@
                     <div class="form-group">
                         <label class="form-label">토큰 수 (직접 수정 가능)</label>
                         <input type="number" class="form-input" id="tokenSetAmount" placeholder="토큰 수...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">플랜 만료일 (선택)</label>
+                        <input type="date" class="form-input" id="tokenSetExpiry" style="cursor: pointer;">
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">비워두면 만료일 없음</div>
                     </div>
                     <input type="hidden" id="selectedPlan" value="free">
                     <button class="btn btn-warning" onclick="setUserPlanAndTokens()">설정 적용</button>
@@ -4467,11 +4480,12 @@
 
         // 토큰 조회
         async function queryUserToken() {
-            const userId = document.getElementById('tokenQueryUserId').value.trim();
+            const searchType = document.getElementById('tokenQueryType').value;
+            const searchValue = document.getElementById('tokenQueryUserId').value.trim();
             const resultDiv = document.getElementById('tokenQueryResult');
 
-            if (!userId) {
-                showToast('사용자 ID를 입력하세요', 'error');
+            if (!searchValue) {
+                showToast('검색어를 입력하세요', 'error');
                 return;
             }
 
@@ -4479,33 +4493,98 @@
             resultDiv.innerHTML = '<div class="loading"></div>';
 
             try {
-                const doc = await db.collection('users').doc(userId).get();
+                let users = [];
 
-                if (doc.exists) {
-                    const data = doc.data();
-                    const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' }[data.plan || 'free'];
+                if (searchType === 'id') {
+                    // 문서 ID로 직접 조회
+                    const doc = await db.collection('users').doc(searchValue).get();
+                    if (doc.exists) {
+                        users.push({ id: doc.id, ...doc.data() });
+                    }
+                } else if (searchType === 'name') {
+                    // 이름으로 검색 (완전 일치 또는 포함)
+                    const snapshot = await db.collection('users')
+                        .where('displayName', '==', searchValue)
+                        .get();
+                    snapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
 
-                    resultDiv.innerHTML = `
-                        <div style="background: var(--bg-dark); border-radius: 8px; padding: 16px;">
-                            <div style="font-size: 18px; font-weight: 600; margin-bottom: 12px;">${data.displayName || '이름 없음'}</div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                                <div>
-                                    <div style="color: var(--text-muted); font-size: 11px;">플랜</div>
-                                    <div style="font-weight: 500;">${planName}</div>
+                    // 부분 일치도 검색 (이름이 검색어로 시작하는 경우)
+                    if (users.length === 0) {
+                        const allUsers = await db.collection('users').get();
+                        allUsers.forEach(doc => {
+                            const data = doc.data();
+                            if (data.displayName && data.displayName.includes(searchValue)) {
+                                users.push({ id: doc.id, ...data });
+                            }
+                        });
+                    }
+                } else if (searchType === 'phone') {
+                    // 전화번호로 검색
+                    const snapshot = await db.collection('users')
+                        .where('phoneNumber', '==', searchValue)
+                        .get();
+                    snapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
+
+                    // phone 필드도 검색
+                    if (users.length === 0) {
+                        const snapshot2 = await db.collection('users')
+                            .where('phone', '==', searchValue)
+                            .get();
+                        snapshot2.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
+                    }
+                }
+
+                if (users.length > 0) {
+                    const planNames = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' };
+                    let html = '';
+
+                    users.forEach(user => {
+                        const planName = planNames[user.plan || 'free'];
+                        const expiryText = user.planExpiresAt
+                            ? (user.planExpiresAt.toDate ? user.planExpiresAt.toDate().toLocaleDateString('ko-KR') : new Date(user.planExpiresAt).toLocaleDateString('ko-KR'))
+                            : '-';
+
+                        html += `
+                            <div style="background: var(--bg-dark); border-radius: 8px; padding: 16px; margin-bottom: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <div style="font-size: 16px; font-weight: 600;">${user.displayName || '이름 없음'}</div>
+                                    <button class="btn btn-sm" style="padding: 4px 8px; font-size: 11px;" onclick="selectUserForEdit('${user.id}')">선택</button>
                                 </div>
-                                <div>
-                                    <div style="color: var(--text-muted); font-size: 11px;">토큰</div>
-                                    <div style="font-weight: 500; color: var(--success);">${(data.tokenBalance || 0).toLocaleString()}</div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">ID: ${user.id}</div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                                    <div>
+                                        <div style="color: var(--text-muted); font-size: 11px;">플랜</div>
+                                        <div style="font-weight: 500;">${planName}</div>
+                                    </div>
+                                    <div>
+                                        <div style="color: var(--text-muted); font-size: 11px;">토큰</div>
+                                        <div style="font-weight: 500; color: var(--success);">${(user.tokenBalance || 0).toLocaleString()}</div>
+                                    </div>
+                                    <div>
+                                        <div style="color: var(--text-muted); font-size: 11px;">만료일</div>
+                                        <div style="font-weight: 500;">${expiryText}</div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    });
+
+                    resultDiv.innerHTML = html;
                 } else {
                     resultDiv.innerHTML = '<div style="color: var(--danger);">사용자를 찾을 수 없습니다</div>';
                 }
             } catch (error) {
+                console.error('조회 오류:', error);
                 resultDiv.innerHTML = `<div style="color: var(--danger);">오류: ${error.message}</div>`;
             }
+        }
+
+        // 조회 결과에서 사용자 선택
+        function selectUserForEdit(userId) {
+            document.getElementById('tokenSetUserId').value = userId;
+            document.getElementById('tokenChargeUserId').value = userId;
+            document.getElementById('tokenDeductUserId').value = userId;
+            showToast('사용자 선택됨: ' + userId, 'success');
         }
 
         // 플랜 선택
@@ -4521,6 +4600,7 @@
             const userId = document.getElementById('tokenSetUserId').value.trim();
             const plan = document.getElementById('selectedPlan').value;
             const tokens = parseInt(document.getElementById('tokenSetAmount').value);
+            const expiryDate = document.getElementById('tokenSetExpiry').value;
             const resultDiv = document.getElementById('tokenSetResult');
 
             if (!userId) {
@@ -4537,11 +4617,22 @@
 
                 const prev = doc.exists ? doc.data() : { tokenBalance: 0, plan: 'free' };
 
-                await userRef.set({
+                // 업데이트할 데이터
+                const updateData = {
                     plan: plan,
                     tokenBalance: tokens,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
+                };
+
+                // 만료일 설정
+                if (expiryDate) {
+                    updateData.planExpiresAt = firebase.firestore.Timestamp.fromDate(new Date(expiryDate + 'T23:59:59'));
+                } else {
+                    // 만료일 비워두면 null로 설정 (무제한)
+                    updateData.planExpiresAt = null;
+                }
+
+                await userRef.set(updateData, { merge: true });
 
                 await db.collection('credit_logs').add({
                     userId: userId,
@@ -4550,15 +4641,18 @@
                     newBalance: tokens,
                     previousPlan: prev.plan || 'free',
                     newPlan: plan,
+                    planExpiresAt: expiryDate || null,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
                 const planName = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' };
+                const expiryText = expiryDate ? new Date(expiryDate).toLocaleDateString('ko-KR') : '없음';
                 resultDiv.innerHTML = `
                     <div style="color: var(--success);">✅ 설정 완료</div>
                     <div style="font-size: 13px; margin-top: 8px;">
                         플랜: ${planName[prev.plan || 'free']} → ${planName[plan]}<br>
-                        토큰: ${prev.tokenBalance || 0} → ${tokens}
+                        토큰: ${prev.tokenBalance || 0} → ${tokens}<br>
+                        만료일: ${expiryText}
                     </div>
                 `;
                 showToast('설정 완료', 'success');
