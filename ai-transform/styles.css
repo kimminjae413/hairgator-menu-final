@@ -712,3 +712,101 @@ input[type="file"] {
         padding-bottom: calc(100px + env(safe-area-inset-bottom));
     }
 }
+
+/* ========== 무료 플랜 제한 오버레이 ========== */
+.free-plan-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 250;
+    padding: 20px;
+}
+
+.free-plan-overlay.visible {
+    display: flex;
+}
+
+.free-plan-notice {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 32px 24px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.notice-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--ai-bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.notice-icon svg {
+    color: var(--female-color);
+}
+
+.notice-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.notice-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.notice-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notice-btn {
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 25px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.notice-btn.primary {
+    background: linear-gradient(135deg, var(--ai-gradient-start), var(--ai-gradient-end));
+    border: none;
+    color: white;
+    box-shadow: 0 4px 20px var(--ai-shadow);
+}
+
+.notice-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px var(--ai-shadow);
+}
+
+.notice-btn.secondary {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.notice-btn.secondary:hover {
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+}

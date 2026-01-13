@@ -587,7 +587,11 @@ const HAIRGATOR_I18N = {
       processing: '처리 중...',
       selectImage: '이미지 선택',
       result: '변환 결과',
-      pleaseWait: '잠시만 기다려주세요...'
+      pleaseWait: '잠시만 기다려주세요...',
+      freePlanTitle: '유료 플랜 전용 기능',
+      freePlanDesc: 'AI 얼굴변환은 Basic 이상 요금제에서 사용할 수 있습니다.',
+      upgradePlan: '요금제 업그레이드',
+      goBack: '돌아가기'
     },
 
     // ========== 퍼스널컬러 ==========
@@ -1850,7 +1854,11 @@ const HAIRGATOR_I18N = {
       processing: 'Processing...',
       selectImage: 'Select Image',
       result: 'Result',
-      pleaseWait: 'Please wait...'
+      pleaseWait: 'Please wait...',
+      freePlanTitle: 'Paid Plan Feature',
+      freePlanDesc: 'AI Face Transform is available for Basic plan and above.',
+      upgradePlan: 'Upgrade Plan',
+      goBack: 'Go Back'
     },
 
     // ========== Personal Color ==========
@@ -3082,7 +3090,11 @@ const HAIRGATOR_I18N = {
       processing: '処理中...',
       selectImage: '画像を選択',
       result: '変換結果',
-      pleaseWait: 'しばらくお待ちください...'
+      pleaseWait: 'しばらくお待ちください...',
+      freePlanTitle: '有料プラン専用機能',
+      freePlanDesc: 'AI顔変換はBasic以上のプランでご利用いただけます。',
+      upgradePlan: 'プランアップグレード',
+      goBack: '戻る'
     },
 
     // ========== パーソナルカラー ==========
@@ -4310,7 +4322,11 @@ const HAIRGATOR_I18N = {
       processing: '处理中...',
       selectImage: '选择图片',
       result: '转换结果',
-      pleaseWait: '请稍候...'
+      pleaseWait: '请稍候...',
+      freePlanTitle: '付费专属功能',
+      freePlanDesc: 'AI换脸仅限Basic及以上套餐使用。',
+      upgradePlan: '升级套餐',
+      goBack: '返回'
     },
 
     // ========== 个人色彩 ==========
@@ -5541,7 +5557,11 @@ const HAIRGATOR_I18N = {
       processing: 'Đang xử lý...',
       selectImage: 'Chọn ảnh',
       result: 'Kết quả',
-      pleaseWait: 'Vui lòng đợi...'
+      pleaseWait: 'Vui lòng đợi...',
+      freePlanTitle: 'Tính năng gói trả phí',
+      freePlanDesc: 'AI Đổi Mặt chỉ khả dụng cho gói Basic trở lên.',
+      upgradePlan: 'Nâng cấp gói',
+      goBack: 'Quay lại'
     },
 
     // ========== Màu cá nhân ==========
@@ -7305,7 +7325,11 @@ const HAIRGATOR_I18N = {
       processing: 'Memproses...',
       selectImage: 'Pilih Gambar',
       result: 'Hasil',
-      pleaseWait: 'Mohon tunggu...'
+      pleaseWait: 'Mohon tunggu...',
+      freePlanTitle: 'Fitur Paket Berbayar',
+      freePlanDesc: 'AI Ganti Wajah hanya tersedia untuk paket Basic ke atas.',
+      upgradePlan: 'Upgrade Paket',
+      goBack: 'Kembali'
     },
 
     // ========== Pembayaran/Paket ==========
@@ -8242,7 +8266,11 @@ const HAIRGATOR_I18N = {
       processing: 'Procesando...',
       selectImage: 'Seleccionar Imagen',
       result: 'Resultado',
-      pleaseWait: 'Por favor espere...'
+      pleaseWait: 'Por favor espere...',
+      freePlanTitle: 'Función de Plan de Pago',
+      freePlanDesc: 'AI Cambio de Cara solo está disponible para plan Basic o superior.',
+      upgradePlan: 'Actualizar Plan',
+      goBack: 'Volver'
     },
 
     // ========== Pago/Planes ==========

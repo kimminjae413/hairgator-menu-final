@@ -18,7 +18,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=20260109e">
+    <link rel="stylesheet" href="styles.css?v=20260113a">
 </head>
 <body>
     <!-- Header -->
@@ -145,6 +145,28 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
+    <!-- 무료 플랜 제한 안내 오버레이 -->
+    <div class="free-plan-overlay" id="freePlanOverlay">
+        <div class="free-plan-notice">
+            <div class="notice-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="48" height="48">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 8v4M12 16h.01"/>
+                </svg>
+            </div>
+            <h3 class="notice-title" data-i18n="aiTransform.freePlanTitle">유료 플랜 전용 기능</h3>
+            <p class="notice-desc" data-i18n="aiTransform.freePlanDesc">AI 얼굴변환은 Basic 이상 요금제에서 사용할 수 있습니다.</p>
+            <div class="notice-actions">
+                <button class="notice-btn primary" onclick="location.href='/#products'" ontouchend="location.href='/#products'">
+                    <span data-i18n="aiTransform.upgradePlan">요금제 업그레이드</span>
+                </button>
+                <button class="notice-btn secondary" onclick="history.back()" ontouchend="history.back()">
+                    <span data-i18n="aiTransform.goBack">돌아가기</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Hidden Inputs -->
     <input type="file" id="sourceImageInput" accept="image/*">
     <input type="file" id="targetFaceInput" accept="image/*">
@@ -241,7 +263,7 @@
     <script src="../js/firebase-config.js?v=20260109"></script>
     <script src="../js/firebase-bridge.js?v=20260109e"></script>
     <script src="../js/i18n.js?v=20260109b"></script>
-    <script src="app.js?v=20260109r"></script>
+    <script src="app.js?v=20260113a"></script>
 
     <!-- i18n 초기화 -->
     <script>

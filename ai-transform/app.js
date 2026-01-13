@@ -17,6 +17,7 @@
         targetFace: null,   // 바꿔 넣을 얼굴 사진
         userId: null,
         tokenBalance: 0,    // HAIRGATOR 토큰
+        plan: 'free',       // 사용자 플랜 (free, basic, pro, business)
         isProcessing: false
     };
 
@@ -344,7 +345,14 @@
                 if (parsed.tokenBalance !== undefined) {
                     state.tokenBalance = parsed.tokenBalance;
                     state.userId = parsed.id;
-                    console.log('📦 localStorage 토큰 로드:', state.tokenBalance);
+                    state.plan = parsed.plan || 'free';
+                    console.log('📦 localStorage 토큰 로드:', state.tokenBalance, '플랜:', state.plan);
+
+                    // 무료 플랜이면 제한 안내 표시
+                    if (state.plan === 'free') {
+                        // DOM 로드 후 표시
+                        setTimeout(() => showFreePlanRestriction(), 100);
+                    }
                 }
             }
         } catch (e) {
@@ -370,6 +378,7 @@
             if (userDoc.exists) {
                 const userData = userDoc.data();
                 const firestoreBalance = userData.tokenBalance || 0;
+                const userPlan = userData.plan || 'free';
 
                 // Firestore 값이 다르면 업데이트
                 if (state.tokenBalance !== firestoreBalance) {
@@ -377,13 +386,46 @@
                     state.tokenBalance = firestoreBalance;
                 }
                 state.userId = docId;
-                console.log('✅ Firestore 토큰 확인 완료:', state.tokenBalance, '플랜:', userData.plan);
+                state.plan = userPlan;
+                console.log('✅ Firestore 토큰 확인 완료:', state.tokenBalance, '플랜:', userPlan);
+
+                // 무료 플랜이면 제한 안내 표시
+                if (userPlan === 'free') {
+                    showFreePlanRestriction();
+                }
             } else {
                 console.warn('⚠️ Firestore 사용자 문서 없음:', docId);
+                // 문서 없으면 무료 플랜으로 간주
+                showFreePlanRestriction();
             }
         } catch (error) {
             console.error('❌ Firestore 토큰 조회 오류:', error);
             // 오류 발생해도 localStorage 값 유지
+        }
+    }
+
+    // 무료 플랜 제한 안내 표시
+    function showFreePlanRestriction() {
+        console.log('🚫 무료 플랜 - AI 얼굴변환 제한');
+
+        // 오버레이 표시
+        const overlay = document.getElementById('freePlanOverlay');
+        if (overlay) {
+            overlay.classList.add('visible');
+        }
+
+        // 업로드 카드 클릭 방지
+        const uploadCards = document.querySelectorAll('.upload-card');
+        uploadCards.forEach(card => {
+            card.style.pointerEvents = 'none';
+            card.style.opacity = '0.5';
+        });
+
+        // 버튼 비활성화
+        const faceSwapBtn = document.getElementById('faceSwapBtn');
+        if (faceSwapBtn) {
+            faceSwapBtn.disabled = true;
+            faceSwapBtn.style.opacity = '0.5';
         }
     }
 
