@@ -5337,20 +5337,32 @@
                 // 현재 DOM 순서 반영
                 updateTabOrder();
 
+                // 기존 Firestore 데이터 가져오기 (meta, iconSet 보존)
+                const existingDoc = await db.collection('app_config').doc('tabs').get();
+                const existingData = existingDoc.exists ? existingDoc.data() : {};
+
                 const tabsConfig = {};
                 tabOrder.forEach((tabId, index) => {
+                    // 기존 데이터 또는 MongoDB 덤프에서 meta, iconSet 가져오기
+                    const existingTab = existingData[`tab${tabId}`] || {};
+                    const mongoTab = MONGODB_TABS_DATA[`tab${tabId}`] || {};
+
                     tabsConfig[`tab${tabId}`] = {
                         enabled: document.getElementById(`tab${tabId}Enabled`).checked,
                         icon: document.getElementById(`tab${tabId}Icon`).value,
                         label: document.getElementById(`tab${tabId}Label`).value,
                         url: document.getElementById(`tab${tabId}Url`).value,
-                        order: index + 1  // 1부터 시작하는 순서
+                        order: index + 1,
+                        // meta와 iconSet 보존 (기존 데이터 > MongoDB 덤프 > 빈값)
+                        meta: existingTab.meta || mongoTab.meta || '',
+                        module: existingTab.module || mongoTab.module || '',
+                        iconSet: existingTab.iconSet || mongoTab.iconSet || null
                     };
                 });
 
                 await db.collection('app_config').doc('tabs').set({
                     ...tabsConfig,
-                    tabOrder: tabOrder,  // 순서 배열 저장
+                    tabOrder: tabOrder,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedBy: currentAdmin?.email || 'admin'
                 }, { merge: true });
