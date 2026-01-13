@@ -100,24 +100,25 @@ exports.handler = async (event, _context) => {
             }
         }
 
-        // 3. kakaoId로 검색 (kakao_ 문서 제외)
+        // 3. kakaoId로 검색 (이메일 기반 문서 우선, kakao_ 문서도 포함)
         if (!existingUserRef) {
             const kakaoIdQuery = await db.collection('users')
                 .where('kakaoId', '==', kakaoIdNum)
                 .get();
 
-            // kakao_로 시작하지 않는 문서 우선 선택
+            // 이메일 기반 문서 우선 선택, 없으면 kakao_ 문서라도 선택
             const nonKakaoDoc = kakaoIdQuery.docs.find(doc => !doc.id.startsWith('kakao_'));
-            const anyDoc = kakaoIdQuery.docs[0];
+            const kakaoDoc = kakaoIdQuery.docs.find(doc => doc.id.startsWith('kakao_'));
 
             if (nonKakaoDoc) {
                 existingUserRef = nonKakaoDoc.ref;
                 existingUserDoc = nonKakaoDoc;
                 console.log('[DEBUG] 기존 사용자 발견 (kakaoId, 이메일 문서):', existingUserRef.id);
-            } else if (anyDoc && !anyDoc.id.startsWith('kakao_')) {
-                existingUserRef = anyDoc.ref;
-                existingUserDoc = anyDoc;
-                console.log('[DEBUG] 기존 사용자 발견 (kakaoId):', existingUserRef.id);
+            } else if (kakaoDoc) {
+                // kakao_ 레거시 문서 발견 - 이메일 기반으로 마이그레이션 필요
+                existingUserRef = kakaoDoc.ref;
+                existingUserDoc = kakaoDoc;
+                console.log('[DEBUG] 기존 kakao_ 레거시 문서 발견:', existingUserRef.id, '→ 이메일 업데이트 예정');
             }
         }
 
