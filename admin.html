@@ -1445,9 +1445,10 @@
                 <span class="nav-item-icon">💰</span>
                 <span>토큰 관리</span>
             </div>
-            <div class="nav-item" onclick="showPage('payments')">
+            <div class="nav-item" onclick="showPage('payments')" id="navPayments">
                 <span class="nav-item-icon">💳</span>
                 <span>결제 내역</span>
+                <span class="nav-item-badge" id="newPaymentBadge" style="display: none;">0</span>
             </div>
         </nav>
 
@@ -1829,6 +1830,9 @@
         <div id="page-payments" class="page">
             <div class="page-header">
                 <h2 class="page-title">결제 내역</h2>
+                <button class="btn btn-secondary" onclick="markAllPaymentsAsRead()" style="font-size: 12px;">
+                    ✓ 모두 확인
+                </button>
             </div>
 
             <!-- 결제 합계 카드 -->
@@ -3624,6 +3628,9 @@
 
             loadDashboard();
             loadUsers();
+
+            // 새 결제 개수 체크 (사이드바 뱃지)
+            checkNewPayments();
         });
 
         // 페이지 전환
@@ -5064,6 +5071,56 @@
         // 결제 내역 로드 (API 사용)
         let currentPaymentFilter = 'all';
 
+        // 마지막 확인 시간 관리
+        function getLastPaymentCheckTime() {
+            return localStorage.getItem('admin_lastPaymentCheckTime') || '1970-01-01T00:00:00.000Z';
+        }
+
+        function setLastPaymentCheckTime() {
+            localStorage.setItem('admin_lastPaymentCheckTime', new Date().toISOString());
+        }
+
+        // 새 결제 개수 업데이트 (사이드바 뱃지)
+        function updateNewPaymentBadge(newCount) {
+            const badge = document.getElementById('newPaymentBadge');
+            if (badge) {
+                if (newCount > 0) {
+                    badge.textContent = newCount > 99 ? '99+' : newCount;
+                    badge.style.display = 'inline';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
+        // 모든 결제 확인 완료 처리
+        function markAllPaymentsAsRead() {
+            setLastPaymentCheckTime();
+            updateNewPaymentBadge(0);
+            loadPayments(); // 테이블 다시 렌더링 (NEW 뱃지 제거)
+            showToast('모든 결제 내역을 확인했습니다', 'success');
+        }
+
+        // 초기 로드 시 새 결제 개수 체크
+        async function checkNewPayments() {
+            try {
+                const result = await callAdminAPI('getPayments', { limit: 100 });
+                if (result.error) return;
+
+                const payments = result.payments || [];
+                const lastCheckTime = new Date(getLastPaymentCheckTime());
+
+                const newPayments = payments.filter(p => {
+                    if (!p.createdAt) return false;
+                    return new Date(p.createdAt) > lastCheckTime;
+                });
+
+                updateNewPaymentBadge(newPayments.length);
+            } catch (error) {
+                console.error('새 결제 체크 오류:', error);
+            }
+        }
+
         function setPaymentFilter(filter) {
             currentPaymentFilter = filter;
             // 버튼 active 상태 변경
@@ -5120,6 +5177,17 @@
                     return true;
                 });
 
+                // 새 결제 체크 (마지막 확인 시간 이후)
+                const lastCheckTime = new Date(getLastPaymentCheckTime());
+                const newPayments = payments.filter(p => {
+                    if (!p.createdAt) return false;
+                    const paymentDate = new Date(p.createdAt);
+                    return paymentDate > lastCheckTime;
+                });
+
+                // 사이드바 뱃지 업데이트
+                updateNewPaymentBadge(newPayments.length);
+
                 // 통계 업데이트
                 updatePaymentStats(filteredPayments);
 
@@ -5130,6 +5198,8 @@
 
                 tbody.innerHTML = filteredPayments.map(p => {
                     const date = p.createdAt ? new Date(p.createdAt).toLocaleString('ko-KR') : '-';
+                    const paymentDate = p.createdAt ? new Date(p.createdAt) : null;
+                    const isNew = paymentDate && paymentDate > lastCheckTime;
 
                     // 플랜명 매핑
                     const planNames = { basic: '베이직', pro: '프로', business: '비즈니스', tokens_5000: '토큰 5000' };
@@ -5141,14 +5211,17 @@
                     const statusBadge = isCompleted ? 'badge-success' : (isCancelled ? 'badge-danger' : 'badge-warning');
                     const statusText = isCompleted ? '완료' : (isCancelled ? '결제취소' : p.status || '-');
 
+                    // NEW 뱃지
+                    const newBadge = isNew ? '<span style="background: #E91E63; color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">NEW</span>' : '';
+
                     // 취소 버튼 (완료 상태일 때만 표시)
                     const cancelBtn = isCompleted
                         ? `<button class="btn btn-sm btn-danger" onclick="openCancelPaymentModal('${p.id}', '${p.paymentId || ''}', '${p.userId}', ${p.tokens || 0}, '${p.userName || p.userId}')" style="margin-left: 5px;">결제취소</button>`
                         : '';
 
                     return `
-                        <tr style="${isCancelled ? 'opacity: 0.6;' : ''}">
-                            <td style="font-size: 11px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${p.paymentId || p.id}</td>
+                        <tr style="${isCancelled ? 'opacity: 0.6;' : ''}${isNew ? 'background: rgba(233, 30, 99, 0.05);' : ''}">
+                            <td style="font-size: 11px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${p.paymentId || p.id}${newBadge}</td>
                             <td style="font-size: 12px;">${p.userName || p.userId || '-'}</td>
                             <td>${productName} <span style="color: var(--text-muted); font-size: 11px;">(${(p.tokens || 0).toLocaleString()}토큰)</span></td>
                             <td style="font-weight: 500; ${isCancelled ? 'text-decoration: line-through;' : ''}">₩${(p.amount || 0).toLocaleString()}</td>
