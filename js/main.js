@@ -3699,6 +3699,7 @@ async function updateProductsPagePlan() {
         let currentPlan = 'free';
         let tokenBalance = 0;
         let planExpiry = null;
+        let pendingPlan = null;
 
         if (typeof window.FirebaseBridge !== 'undefined') {
             const tokenData = await window.FirebaseBridge.getTokenBalance();
@@ -3706,10 +3707,11 @@ async function updateProductsPagePlan() {
                 if (tokenData.plan) currentPlan = tokenData.plan;
                 if (tokenData.tokenBalance !== undefined) tokenBalance = tokenData.tokenBalance;
                 if (tokenData.planExpiresAt) planExpiry = tokenData.planExpiresAt;
+                if (tokenData.pendingPlan) pendingPlan = tokenData.pendingPlan;
             }
         }
 
-        console.log('📋 현재 플랜:', currentPlan, '토큰:', tokenBalance);
+        console.log('📋 현재 플랜:', currentPlan, '토큰:', tokenBalance, '예정 플랜:', pendingPlan);
 
         // 현재 플랜 정보 표시 업데이트
         const planNames = {
@@ -3722,6 +3724,9 @@ async function updateProductsPagePlan() {
         const currentPlanNameEl = document.getElementById('currentPlanName');
         const currentPlanTokensEl = document.getElementById('currentPlanTokens');
         const currentPlanExpiryEl = document.getElementById('currentPlanExpiry');
+        const pendingNoticeEl = document.getElementById('pendingDowngradeNotice');
+        const pendingDaysEl = document.getElementById('pendingDowngradeDays');
+        const downgradeBtnEl = document.getElementById('downgradeBtn');
 
         if (currentPlanNameEl) {
             currentPlanNameEl.textContent = planNames[currentPlan] || currentPlan;
@@ -3729,13 +3734,37 @@ async function updateProductsPagePlan() {
         if (currentPlanTokensEl) {
             currentPlanTokensEl.textContent = tokenBalance.toLocaleString();
         }
+
+        // 남은 일수 계산
+        let daysRemaining = 0;
         if (currentPlanExpiryEl) {
             if (planExpiry) {
                 const expiryDate = planExpiry.toDate ? planExpiry.toDate() : new Date(planExpiry);
                 currentPlanExpiryEl.textContent = expiryDate.toLocaleDateString('ko-KR');
+                daysRemaining = Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24));
             } else {
                 // 만료일 정보 없으면 모든 플랜에서 '-' 표시
                 currentPlanExpiryEl.textContent = '-';
+            }
+        }
+
+        // 다운그레이드 예정 안내 및 버튼 표시 로직
+        if (pendingNoticeEl && downgradeBtnEl) {
+            if (pendingPlan === 'free' && currentPlan !== 'free' && daysRemaining > 0) {
+                // pendingPlan이 있으면 안내 표시
+                pendingNoticeEl.style.display = 'flex';
+                downgradeBtnEl.style.display = 'none';
+                if (pendingDaysEl) {
+                    pendingDaysEl.textContent = daysRemaining;
+                }
+            } else if (currentPlan !== 'free' && !pendingPlan) {
+                // 유료 플랜이고 pendingPlan이 없으면 다운그레이드 버튼 표시
+                pendingNoticeEl.style.display = 'none';
+                downgradeBtnEl.style.display = 'block';
+            } else {
+                // 무료 플랜이면 둘 다 숨김
+                pendingNoticeEl.style.display = 'none';
+                downgradeBtnEl.style.display = 'none';
             }
         }
 
@@ -3771,6 +3800,58 @@ async function updateProductsPagePlan() {
 
     } catch (e) {
         console.error('플랜 정보 로드 실패:', e);
+    }
+}
+
+/**
+ * 무료 플랜으로 다운그레이드 요청
+ */
+async function requestDowngrade() {
+    const confirmed = confirm('무료 플랜으로 전환하시겠습니까?\n\n현재 플랜 만료일까지는 계속 사용 가능하며,\n만료일 이후 무료 플랜으로 자동 전환됩니다.\n\n⚠️ 전환 시 보유 토큰이 초기화됩니다.');
+
+    if (!confirmed) return;
+
+    try {
+        // Firestore에 pendingPlan 설정
+        if (typeof window.FirebaseBridge !== 'undefined' && window.FirebaseBridge.setPendingPlan) {
+            await window.FirebaseBridge.setPendingPlan('free');
+            console.log('✅ 다운그레이드 예약 완료');
+            alert('무료 플랜 전환이 예약되었습니다.\n만료일 이후 자동으로 전환됩니다.');
+            // UI 새로고침
+            updateProductsPagePlan();
+        } else {
+            console.error('FirebaseBridge.setPendingPlan 함수가 없습니다');
+            alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        }
+    } catch (e) {
+        console.error('다운그레이드 요청 실패:', e);
+        alert('오류가 발생했습니다: ' + e.message);
+    }
+}
+
+/**
+ * 다운그레이드 예약 취소
+ */
+async function cancelPendingDowngrade() {
+    const confirmed = confirm('무료 플랜 전환 예약을 취소하시겠습니까?\n\n취소하시면 현재 플랜이 유지됩니다.');
+
+    if (!confirmed) return;
+
+    try {
+        // Firestore에서 pendingPlan 제거
+        if (typeof window.FirebaseBridge !== 'undefined' && window.FirebaseBridge.setPendingPlan) {
+            await window.FirebaseBridge.setPendingPlan(null);
+            console.log('✅ 다운그레이드 예약 취소 완료');
+            alert('전환 예약이 취소되었습니다.');
+            // UI 새로고침
+            updateProductsPagePlan();
+        } else {
+            console.error('FirebaseBridge.setPendingPlan 함수가 없습니다');
+            alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        }
+    } catch (e) {
+        console.error('다운그레이드 취소 실패:', e);
+        alert('오류가 발생했습니다: ' + e.message);
     }
 }
 

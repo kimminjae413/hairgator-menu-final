@@ -129,48 +129,83 @@
                 const expiresDate = planExpiresAt.toDate ? planExpiresAt.toDate() : new Date(planExpiresAt);
                 const daysRemaining = Math.ceil((expiresDate - now) / (1000 * 60 * 60 * 24));
 
-                // 만료된 경우 - 토큰 소멸 및 free 전환
+                // 만료된 경우 - pendingPlan 또는 free로 전환
                 if (now > expiresDate) {
                     console.log('⏰ 플랜 만료 감지! 다운그레이드 진행...');
 
-                    await db.collection('users').doc(docId).update({
-                        plan: 'free',
-                        tokenBalance: 0,
+                    // pendingPlan이 있으면 해당 플랜으로, 없으면 free로
+                    const newPlan = userData.pendingPlan || 'free';
+                    const newTokenBalance = (newPlan === 'free') ? 0 : (userData.tokenBalance || 0);
+
+                    const updateData = {
+                        plan: newPlan,
+                        tokenBalance: newTokenBalance,
                         planExpiredAt: firebase.firestore.FieldValue.serverTimestamp(),
                         previousPlan: plan,
-                        previousTokenBalance: userData.tokenBalance || 0
-                    });
+                        previousTokenBalance: userData.tokenBalance || 0,
+                        planExpiresAt: null
+                    };
+
+                    // pendingPlan 제거
+                    if (userData.pendingPlan) {
+                        updateData.pendingPlan = firebase.firestore.FieldValue.delete();
+                        updateData.pendingPlanSetAt = firebase.firestore.FieldValue.delete();
+                    }
+
+                    await db.collection('users').doc(docId).update(updateData);
 
                     // 전역 변수 업데이트
                     if (window.currentDesigner) {
-                        window.currentDesigner.plan = 'free';
-                        window.currentDesigner.tokenBalance = 0;
+                        window.currentDesigner.plan = newPlan;
+                        window.currentDesigner.tokenBalance = newTokenBalance;
                     }
 
                     // UI 업데이트
-                    this.updateTokenDisplay(0, 'free');
+                    this.updateTokenDisplay(newTokenBalance, newPlan);
+
+                    const planNames = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' };
+                    const newPlanName = planNames[newPlan] || newPlan;
+                    const message = newPlan === 'free'
+                        ? '플랜이 만료되었습니다. 토큰이 초기화되었습니다.'
+                        : `플랜이 만료되어 예약하신 ${newPlanName} 플랜으로 전환되었습니다.`;
 
                     return {
                         expired: true,
                         previousPlan: plan,
                         previousTokens: userData.tokenBalance || 0,
-                        message: '플랜이 만료되었습니다. 토큰이 초기화되었습니다.'
+                        newPlan: newPlan,
+                        newTokenBalance: newTokenBalance,
+                        message: message
                     };
                 }
 
                 // 만료 임박 알림
                 let warning = null;
+                const pendingPlan = userData.pendingPlan;
+                const planNames = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' };
+
                 if (daysRemaining <= 3) {
+                    let message = '';
+                    if (pendingPlan === 'free') {
+                        message = `플랜이 ${daysRemaining}일 후 무료 플랜으로 전환됩니다. 만료 시 토큰이 소멸됩니다.`;
+                    } else if (pendingPlan) {
+                        message = `플랜이 ${daysRemaining}일 후 ${planNames[pendingPlan] || pendingPlan} 플랜으로 전환됩니다.`;
+                    } else {
+                        message = `플랜이 ${daysRemaining}일 후 만료됩니다. 만료 시 토큰이 소멸됩니다.`;
+                    }
                     warning = {
                         type: 'urgent',
                         daysRemaining: daysRemaining,
-                        message: `플랜이 ${daysRemaining}일 후 만료됩니다. 만료 시 토큰이 소멸됩니다.`
+                        message: message
                     };
                 } else if (daysRemaining <= 7) {
+                    let message = pendingPlan === 'free'
+                        ? `플랜이 ${daysRemaining}일 후 무료 플랜으로 전환됩니다.`
+                        : `플랜이 ${daysRemaining}일 후 만료됩니다.`;
                     warning = {
                         type: 'warning',
                         daysRemaining: daysRemaining,
-                        message: `플랜이 ${daysRemaining}일 후 만료됩니다.`
+                        message: message
                     };
                 }
 
@@ -179,7 +214,8 @@
                     plan: plan,
                     expiresAt: expiresDate.toISOString(),
                     daysRemaining: daysRemaining,
-                    warning: warning
+                    warning: warning,
+                    pendingPlan: pendingPlan || null
                 };
 
             } catch (error) {
@@ -428,13 +464,15 @@
                         docId: docId,
                         tokenBalance: userData.tokenBalance,
                         plan: userData.plan,
-                        planExpiresAt: userData.planExpiresAt
+                        planExpiresAt: userData.planExpiresAt,
+                        pendingPlan: userData.pendingPlan
                     });
                     return {
                         success: true,
                         tokenBalance: userData.tokenBalance || 0,
                         plan: userData.plan || 'free',
-                        planExpiresAt: userData.planExpiresAt || null
+                        planExpiresAt: userData.planExpiresAt || null,
+                        pendingPlan: userData.pendingPlan || null
                     };
                 }
 
@@ -442,6 +480,37 @@
                 return { success: false, error: 'User not found', tokenBalance: 0 };
             } catch (error) {
                 console.error('❌ 토큰 잔액 조회 실패:', error);
+                return { success: false, error: error.message };
+            }
+        },
+
+        // 예정 플랜 설정 (다운그레이드 예약)
+        async setPendingPlan(pendingPlan) {
+            try {
+                const docId = await this.getUserDocId();
+                if (!docId) {
+                    console.error('❌ setPendingPlan: 사용자 문서 ID가 없습니다');
+                    return { success: false, error: 'User doc ID required' };
+                }
+
+                const updateData = {};
+                if (pendingPlan === null) {
+                    // pendingPlan 제거 (취소)
+                    updateData.pendingPlan = firebase.firestore.FieldValue.delete();
+                    updateData.pendingPlanSetAt = firebase.firestore.FieldValue.delete();
+                    console.log('🔄 pendingPlan 제거 요청');
+                } else {
+                    // pendingPlan 설정
+                    updateData.pendingPlan = pendingPlan;
+                    updateData.pendingPlanSetAt = firebase.firestore.FieldValue.serverTimestamp();
+                    console.log('🔄 pendingPlan 설정:', pendingPlan);
+                }
+
+                await db.collection('users').doc(docId).update(updateData);
+                console.log('✅ setPendingPlan 완료');
+                return { success: true };
+            } catch (error) {
+                console.error('❌ setPendingPlan 실패:', error);
                 return { success: false, error: error.message };
             }
         },

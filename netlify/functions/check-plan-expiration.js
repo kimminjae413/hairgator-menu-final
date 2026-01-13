@@ -250,19 +250,31 @@ async function sendExpirationEmail(user, daysRemaining) {
 
 /**
  * 만료된 플랜 다운그레이드
+ * - pendingPlan이 설정되어 있으면 해당 플랜으로 전환
+ * - 없으면 무료 플랜으로 전환
  */
 async function downgradeExpiredPlan(userId, userData) {
   const previousPlan = userData.plan;
   const previousTokens = userData.tokenBalance || 0;
 
-  await db.collection('users').doc(userId).update({
-    plan: 'free',
-    tokenBalance: 0,
+  // pendingPlan이 있으면 해당 플랜으로, 없으면 free로
+  const newPlan = userData.pendingPlan || 'free';
+
+  // 무료 플랜으로 전환 시 토큰 초기화, 다른 플랜은 토큰 유지
+  const newTokenBalance = (newPlan === 'free') ? 0 : previousTokens;
+
+  const updateData = {
+    plan: newPlan,
+    tokenBalance: newTokenBalance,
     planExpiredAt: admin.firestore.FieldValue.serverTimestamp(),
     previousPlan: previousPlan,
     previousTokenBalance: previousTokens,
-    planExpiresAt: null  // 만료일 초기화
-  });
+    planExpiresAt: null,  // 만료일 초기화
+    pendingPlan: admin.firestore.FieldValue.delete(),  // pendingPlan 제거
+    pendingPlanSetAt: admin.firestore.FieldValue.delete()  // 설정 시간도 제거
+  };
+
+  await db.collection('users').doc(userId).update(updateData);
 
   // 만료 로그 기록
   await db.collection('credit_logs').add({
@@ -270,17 +282,18 @@ async function downgradeExpiredPlan(userId, userData) {
     action: 'plan_expired',
     previousPlan,
     previousTokenBalance: previousTokens,
-    newPlan: 'free',
-    newTokenBalance: 0,
+    newPlan: newPlan,
+    newTokenBalance: newTokenBalance,
     timestamp: admin.firestore.FieldValue.serverTimestamp(),
     metadata: {
-      reason: 'scheduled_expiration_check',
-      expiredAt: userData.planExpiresAt
+      reason: userData.pendingPlan ? 'pending_plan_applied' : 'scheduled_expiration_check',
+      expiredAt: userData.planExpiresAt,
+      hadPendingPlan: !!userData.pendingPlan
     }
   });
 
-  console.log(`⏰ 플랜 만료 처리: ${userId} (${previousPlan} → free, ${previousTokens} → 0 토큰)`);
-  return { previousPlan, previousTokens };
+  console.log(`⏰ 플랜 만료 처리: ${userId} (${previousPlan} → ${newPlan}, ${previousTokens} → ${newTokenBalance} 토큰)`);
+  return { previousPlan, previousTokens, newPlan, newTokenBalance };
 }
 
 /**
@@ -359,13 +372,19 @@ exports.handler = async (event, context) => {
           const result = await downgradeExpiredPlan(userId, userData);
           stats.expired++;
 
-          // 만료 알림 생성
+          // 만료 알림 생성 (새 플랜에 따라 메시지 다르게)
+          const newPlanNames = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' };
+          const newPlanName = newPlanNames[result.newPlan] || result.newPlan;
+          const notifMessage = result.newPlan === 'free'
+            ? `${planName} 플랜이 만료되어 무료 플랜으로 전환되었습니다. 토큰 ${result.previousTokens.toLocaleString()}개가 초기화되었습니다.`
+            : `${planName} 플랜이 만료되어 예약하신 ${newPlanName} 플랜으로 전환되었습니다.`;
+
           await createNotification(
             userId,
             'plan_expired',
             '플랜 만료',
-            `${planName} 플랜이 만료되어 무료 플랜으로 전환되었습니다. 토큰 ${result.previousTokens.toLocaleString()}개가 초기화되었습니다.`,
-            { previousPlan: result.previousPlan, previousTokens: result.previousTokens }
+            notifMessage,
+            { previousPlan: result.previousPlan, previousTokens: result.previousTokens, newPlan: result.newPlan }
           );
 
           // 이메일 발송 시도

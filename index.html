@@ -1064,6 +1064,61 @@
             font-size: 18px;
             font-weight: 600;
         }
+        /* 다운그레이드 예정 안내 */
+        .pending-downgrade-notice {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #FFF3CD 0%, #FFE69C 100%);
+            border: 1px solid #FFCA2C;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-top: 16px;
+        }
+        .pending-notice-icon {
+            font-size: 24px;
+        }
+        .pending-notice-text {
+            flex: 1;
+            font-size: 14px;
+            color: #664D03;
+            line-height: 1.4;
+        }
+        .pending-notice-text strong {
+            color: #CC9A06;
+        }
+        .pending-cancel-btn {
+            background: #fff;
+            border: 1px solid #FFCA2C;
+            border-radius: 6px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #664D03;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .pending-cancel-btn:hover {
+            background: #FFF3CD;
+        }
+        /* 다운그레이드 버튼 */
+        .downgrade-btn {
+            width: 100%;
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: transparent;
+            border: 1px solid #dc3545;
+            border-radius: 8px;
+            color: #dc3545;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .downgrade-btn:hover {
+            background: #dc3545;
+            color: #fff;
+        }
         .products-history {
             margin: 0;
         }
@@ -2480,6 +2535,20 @@
                         <span class="detail-value" id="currentPlanExpiry">-</span>
                     </div>
                 </div>
+                <!-- 다운그레이드 예정 안내 (pendingPlan이 있을 때 표시) -->
+                <div class="pending-downgrade-notice" id="pendingDowngradeNotice" style="display: none;">
+                    <div class="pending-notice-icon">⏰</div>
+                    <div class="pending-notice-text">
+                        <span id="pendingDowngradeDays">0</span>일 후 <strong>무료 플랜</strong>으로 전환됩니다
+                    </div>
+                    <button class="pending-cancel-btn" onclick="cancelPendingDowngrade()" ontouchend="cancelPendingDowngrade()">
+                        취소
+                    </button>
+                </div>
+                <!-- 다운그레이드 버튼 (유료 플랜이고 pendingPlan이 없을 때 표시) -->
+                <button class="downgrade-btn" id="downgradeBtn" style="display: none;" onclick="requestDowngrade()" ontouchend="requestDowngrade()">
+                    무료 플랜으로 전환
+                </button>
             </div>
 
             <div class="payment-history-section products-history">
