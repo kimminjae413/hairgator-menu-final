@@ -35,10 +35,11 @@ exports.handler = async (event, _context) => {
 
     try {
         const body = JSON.parse(event.body || '{}');
-        const { code, redirectUri, kakaoId, email, nickname, profileImage } = body;
+        const { code, redirectUri, kakaoId, kakaoAccessToken, email, nickname, profileImage } = body;
         let finalKakaoId, finalEmail, finalNickname, finalProfileImage;
 
         if (code && redirectUri) {
+            // 웹 OAuth 방식 - authorization code 처리
             console.log('웹 OAuth 방식 - authorization code 처리');
             const tokenData = await exchangeKakaoCodeForToken(code, redirectUri);
             console.log('카카오 토큰 교환 성공');
@@ -48,14 +49,28 @@ exports.handler = async (event, _context) => {
             finalEmail = userInfo.kakao_account?.email || '';
             finalNickname = userInfo.kakao_account?.profile?.nickname || userInfo.properties?.nickname || '';
             finalProfileImage = userInfo.kakao_account?.profile?.profile_image_url || userInfo.properties?.profile_image || '';
+        } else if (kakaoAccessToken) {
+            // 🔒 Flutter 앱 방식 - accessToken으로 카카오 API 검증
+            console.log('Flutter 앱 방식 - accessToken 검증');
+            const userInfo = await getKakaoUserInfo(kakaoAccessToken);
+            console.log('✅ 카카오 accessToken 검증 성공:', userInfo.id);
+
+            // 클라이언트가 보낸 kakaoId와 실제 사용자가 일치하는지 확인
+            if (kakaoId && String(userInfo.id) !== String(kakaoId)) {
+                console.error('❌ kakaoId 불일치! 요청:', kakaoId, '실제:', userInfo.id);
+                return { statusCode: 401, headers, body: JSON.stringify({ error: '사용자 정보가 일치하지 않습니다.' }) };
+            }
+
+            finalKakaoId = userInfo.id;
+            finalEmail = userInfo.kakao_account?.email || '';
+            finalNickname = userInfo.kakao_account?.profile?.nickname || userInfo.properties?.nickname || '';
+            finalProfileImage = userInfo.kakao_account?.profile?.profile_image_url || userInfo.properties?.profile_image || '';
         } else if (kakaoId) {
-            console.log('레거시 방식 - 직접 사용자 정보');
-            finalKakaoId = kakaoId;
-            finalEmail = email || '';
-            finalNickname = nickname || '';
-            finalProfileImage = profileImage || '';
+            // ❌ 레거시 방식 - 보안 위험으로 거부
+            console.error('❌ 레거시 방식 거부 - accessToken 없이 kakaoId만 전달됨:', kakaoId);
+            return { statusCode: 400, headers, body: JSON.stringify({ error: 'kakaoAccessToken이 필요합니다.' }) };
         } else {
-            return { statusCode: 400, headers, body: JSON.stringify({ error: 'authorization code 또는 kakaoId가 필요합니다.' }) };
+            return { statusCode: 400, headers, body: JSON.stringify({ error: 'authorization code 또는 kakaoAccessToken이 필요합니다.' }) };
         }
 
         console.log('Flutter 카카오 로그인 처리:', { kakaoId: finalKakaoId, email: finalEmail, nickname: finalNickname, profileImage: finalProfileImage || '없음' });

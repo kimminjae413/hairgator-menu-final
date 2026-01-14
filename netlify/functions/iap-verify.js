@@ -91,31 +91,42 @@ exports.handler = async (event) => {
     let verified = false;
     let appleResponse = null;
 
-    if (receipt && receipt.length > 0) {
-      // App Store 공유 비밀번호 (App Store Connect에서 생성)
-      const appSharedSecret = process.env.APPLE_SHARED_SECRET || '';
+    // 🔒 영수증 필수 체크 (프로덕션)
+    if (!receipt || receipt.length === 0) {
+      console.error('❌ 영수증 없음 - 거부');
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Receipt is required' })
+      };
+    }
 
-      // 프로덕션 먼저 시도
-      appleResponse = await verifyWithApple(receipt, appSharedSecret, APPLE_VERIFY_URL_PRODUCTION);
+    // App Store 공유 비밀번호 (App Store Connect에서 생성)
+    const appSharedSecret = process.env.APPLE_SHARED_SECRET || '';
 
-      // 샌드박스 응답(21007)이면 샌드박스로 재시도
-      if (appleResponse && appleResponse.status === 21007) {
-        console.log('🍎 샌드박스 영수증 감지 → 샌드박스 검증');
-        appleResponse = await verifyWithApple(receipt, appSharedSecret, APPLE_VERIFY_URL_SANDBOX);
-      }
+    // 프로덕션 먼저 시도
+    appleResponse = await verifyWithApple(receipt, appSharedSecret, APPLE_VERIFY_URL_PRODUCTION);
 
-      if (appleResponse && appleResponse.status === 0) {
-        verified = true;
-        console.log('✅ Apple 영수증 검증 성공');
-      } else {
-        console.warn('⚠️ Apple 영수증 검증 실패:', appleResponse?.status);
-        // 개발 중에는 검증 실패해도 진행 (TODO: 프로덕션에서는 실패 처리)
-        verified = true;
-      }
-    } else {
-      // 영수증 없음 - 개발 모드에서는 허용
-      console.warn('⚠️ 영수증 없음 - 개발 모드 허용');
+    // 샌드박스 응답(21007)이면 샌드박스로 재시도
+    if (appleResponse && appleResponse.status === 21007) {
+      console.log('🍎 샌드박스 영수증 감지 → 샌드박스 검증');
+      appleResponse = await verifyWithApple(receipt, appSharedSecret, APPLE_VERIFY_URL_SANDBOX);
+    }
+
+    if (appleResponse && appleResponse.status === 0) {
       verified = true;
+      console.log('✅ Apple 영수증 검증 성공');
+    } else {
+      // 🔒 검증 실패 시 토큰 지급 거부 (프로덕션)
+      console.error('❌ Apple 영수증 검증 실패:', appleResponse?.status);
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({
+          error: 'Receipt verification failed',
+          appleStatus: appleResponse?.status
+        })
+      };
     }
 
     if (!verified) {

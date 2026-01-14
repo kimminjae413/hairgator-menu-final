@@ -50,23 +50,26 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { action, email, password, name, currentPassword, newPassword } = JSON.parse(event.body || '{}');
+    const { action, email, password, name, currentPassword, newPassword, sessionToken } = JSON.parse(event.body || '{}');
 
     switch (action) {
       case 'login':
         return await handleLogin(email, password, headers);
 
       case 'register':
-        return await handleRegister(email, password, name, headers);
+        // 🔒 관리자 등록: 기존 관리자 인증 필요 (첫 관리자 등록 제외)
+        return await handleRegister(email, password, name, sessionToken, headers);
 
       case 'changePassword':
         return await handleChangePassword(email, currentPassword, newPassword, headers);
 
       case 'delete':
-        return await handleDelete(email, headers);
+        // 🔒 관리자 삭제: 인증 필요
+        return await handleDelete(email, sessionToken, headers);
 
       case 'list':
-        return await handleList(headers);
+        // 🔒 관리자 목록: 인증 필요
+        return await handleList(sessionToken, headers);
 
       default:
         return {
@@ -165,8 +168,34 @@ async function handleLogin(email, password, headers) {
   };
 }
 
-// 관리자 등록
-async function handleRegister(email, password, name, headers) {
+// 🔒 세션 토큰 검증
+async function validateSessionToken(sessionToken) {
+  if (!sessionToken) {
+    return { valid: false, error: '세션 토큰이 필요합니다.' };
+  }
+
+  // 모든 관리자에서 세션 토큰 검색
+  const snapshot = await db.collection('admin_users')
+    .where('sessionToken', '==', sessionToken)
+    .limit(1)
+    .get();
+
+  if (snapshot.empty) {
+    return { valid: false, error: '유효하지 않은 세션입니다.' };
+  }
+
+  const adminData = snapshot.docs[0].data();
+  const expiresAt = adminData.sessionExpiresAt?.toDate?.();
+
+  if (!expiresAt || new Date() > expiresAt) {
+    return { valid: false, error: '세션이 만료되었습니다. 다시 로그인해주세요.' };
+  }
+
+  return { valid: true, adminEmail: adminData.email };
+}
+
+// 관리자 등록 (🔒 보호됨)
+async function handleRegister(email, password, name, sessionToken, headers) {
   if (!email || !password) {
     return {
       statusCode: 400,
@@ -182,6 +211,21 @@ async function handleRegister(email, password, name, headers) {
       headers,
       body: JSON.stringify({ error: '비밀번호는 숫자 6자리여야 합니다.' })
     };
+  }
+
+  // 🔒 관리자가 1명 이상 있으면 인증 필요
+  const adminCount = await db.collection('admin_users').get();
+  if (adminCount.size > 0) {
+    const validation = await validateSessionToken(sessionToken);
+    if (!validation.valid) {
+      console.log(`[admin-auth] 관리자 등록 거부 (인증 실패): ${email}`);
+      return {
+        statusCode: 401,
+        headers,
+        body: JSON.stringify({ error: validation.error })
+      };
+    }
+    console.log(`[admin-auth] 관리자 등록 승인: ${validation.adminEmail} → ${email}`);
   }
 
   const docId = email.replace(/[@.]/g, '_');
@@ -205,7 +249,7 @@ async function handleRegister(email, password, name, headers) {
     createdAt: admin.firestore.FieldValue.serverTimestamp()
   });
 
-  console.log(`[admin-auth] 관리자 등록: ${email}`);
+  console.log(`[admin-auth] 관리자 등록 완료: ${email}`);
 
   return {
     statusCode: 200,
@@ -278,13 +322,33 @@ async function handleChangePassword(email, currentPassword, newPassword, headers
   };
 }
 
-// 관리자 삭제
-async function handleDelete(email, headers) {
+// 관리자 삭제 (🔒 보호됨)
+async function handleDelete(email, sessionToken, headers) {
+  // 🔒 인증 필수
+  const validation = await validateSessionToken(sessionToken);
+  if (!validation.valid) {
+    console.log(`[admin-auth] 관리자 삭제 거부 (인증 실패): ${email}`);
+    return {
+      statusCode: 401,
+      headers,
+      body: JSON.stringify({ error: validation.error })
+    };
+  }
+
   if (!email) {
     return {
       statusCode: 400,
       headers,
       body: JSON.stringify({ error: '이메일을 입력해주세요.' })
+    };
+  }
+
+  // 🔒 자기 자신은 삭제 불가
+  if (email.toLowerCase() === validation.adminEmail.toLowerCase()) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ error: '자기 자신은 삭제할 수 없습니다.' })
     };
   }
 
@@ -301,7 +365,7 @@ async function handleDelete(email, headers) {
 
   await db.collection('admin_users').doc(docId).delete();
 
-  console.log(`[admin-auth] 관리자 삭제: ${email}`);
+  console.log(`[admin-auth] 관리자 삭제 완료: ${validation.adminEmail} → ${email}`);
 
   return {
     statusCode: 200,
@@ -310,8 +374,19 @@ async function handleDelete(email, headers) {
   };
 }
 
-// 관리자 목록
-async function handleList(headers) {
+// 관리자 목록 (🔒 보호됨)
+async function handleList(sessionToken, headers) {
+  // 🔒 인증 필수
+  const validation = await validateSessionToken(sessionToken);
+  if (!validation.valid) {
+    console.log('[admin-auth] 관리자 목록 조회 거부 (인증 실패)');
+    return {
+      statusCode: 401,
+      headers,
+      body: JSON.stringify({ error: validation.error })
+    };
+  }
+
   const snapshot = await db.collection('admin_users').get();
 
   const admins = snapshot.docs.map(doc => {
@@ -324,6 +399,8 @@ async function handleList(headers) {
       lastLoginAt: data.lastLoginAt?.toDate?.()?.toISOString() || null
     };
   });
+
+  console.log(`[admin-auth] 관리자 목록 조회: ${validation.adminEmail}`);
 
   return {
     statusCode: 200,
