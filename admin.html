@@ -3603,7 +3603,8 @@
             const tbody = document.getElementById('adminTableBody');
 
             try {
-                const result = await callAdminAuthAPI('list', {});
+                const stored = JSON.parse(localStorage.getItem('hairgator_admin') || '{}');
+                const result = await callAdminAuthAPI('list', { sessionToken: stored.sessionToken });
 
                 if (result.error) {
                     tbody.innerHTML = `<tr><td colspan="4" style="color: var(--danger);">오류: ${result.error}</td></tr>`;
@@ -3665,7 +3666,8 @@
             }
 
             try {
-                const result = await callAdminAuthAPI('register', { email, password, name });
+                const stored = JSON.parse(localStorage.getItem('hairgator_admin') || '{}');
+                const result = await callAdminAuthAPI('register', { email, password, name, sessionToken: stored.sessionToken });
 
                 if (result.error) {
                     showToast(result.error, 'error');
@@ -3695,7 +3697,8 @@
             }
 
             try {
-                const result = await callAdminAuthAPI('delete', { email });
+                const stored = JSON.parse(localStorage.getItem('hairgator_admin') || '{}');
+                const result = await callAdminAuthAPI('delete', { email, sessionToken: stored.sessionToken });
 
                 if (result.error) {
                     showToast(result.error, 'error');
