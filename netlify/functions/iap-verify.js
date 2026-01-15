@@ -1,4 +1,4 @@
-// netlify/functions/iap-verify.js
+﻿// netlify/functions/iap-verify.js
 // iOS 인앱결제 영수증 검증 및 토큰 충전
 
 const admin = require('firebase-admin');
@@ -187,6 +187,25 @@ exports.handler = async (event) => {
         price: PRODUCT_PRICES[productId],
         platform: 'ios',
         status: 'completed',
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      // 결제 내역 저장 (어드민 통합 조회용)
+      const planKey = productId.replace('hairgator_', '');
+      await db.collection('payments').doc(transactionDoc).set({
+        paymentId: transactionDoc,
+        userId: userId,
+        userName: '',
+        planKey: planKey,
+        amount: PRODUCT_PRICES[productId],
+        tokens: tokens,
+        status: 'completed',
+        platform: 'ios',
+        previousState: {
+          plan: chargeResult.previousPlan,
+          tokens: chargeResult.previousTokens,
+          planExpiresAt: chargeResult.planExpiresAt
+        },
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
 
