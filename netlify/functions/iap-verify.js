@@ -66,7 +66,7 @@ exports.handler = async (event) => {
   try {
     const { productId, receipt, platform, userId } = JSON.parse(event.body);
 
-    console.log('🍎 iOS IAP 검증 요청:', { productId, platform, userId, hasReceipt: !!receipt });
+    console.log('🍎 iOS IAP 검증 요청:', { productId, platform, userId, hasReceipt: !!receipt, receiptLength: receipt?.length, receiptStart: receipt?.substring(0, 50) });
 
     // 필수 파라미터 확인
     if (!productId) {
