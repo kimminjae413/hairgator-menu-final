@@ -2452,10 +2452,10 @@
         <div class="pricing-cards-horizontal" id="pricingCardsContainer">
             <!-- 무료 플랜 -->
             <div class="plan-card plan-card-free" data-plan="free">
-                <h3 class="plan-name">무료</h3>
-                <div class="plan-price">₩0<span class="plan-period">/월</span></div>
-                <div class="plan-credits">200 토큰</div>
-                <div class="plan-usage-example">챗봇 약 20회 사용 가능</div>
+                <h3 class="plan-name" data-i18n="payment.freePlan">무료</h3>
+                <div class="plan-price">₩0<span class="plan-period" data-i18n="payment.perMonth">/월</span></div>
+                <div class="plan-credits">200 <span data-i18n="payment.credits">토큰</span></div>
+                <div class="plan-usage-example" data-i18n="payment.freeUsage">챗봇 약 20회 사용 가능</div>
                 <ul class="plan-features">
                     <li><span class="icon-check">✓</span> 스타일 메뉴판 (무제한)</li>
                     <li class="limited"><span class="icon-partial">○</span> 챗봇 (제한적)</li>
@@ -2464,15 +2464,15 @@
                     <li class="locked"><span class="icon-x">✗</span> 룩북</li>
                     <li class="locked"><span class="icon-x">✗</span> 헤어체험</li>
                 </ul>
-                <button class="plan-btn plan-btn-disabled" disabled>현재 플랜</button>
+                <button class="plan-btn plan-btn-disabled" disabled data-i18n="payment.currentPlanBtn">현재 플랜</button>
             </div>
 
             <!-- 베이직 플랜 -->
             <div class="plan-card plan-card-basic" data-plan="basic">
-                <h3 class="plan-name">베이직</h3>
-                <div class="plan-price">₩22,000<span class="plan-period">/월</span></div>
-                <div class="plan-credits">10,000 토큰</div>
-                <div class="plan-usage-example">룩북 50회 또는 헤어체험 28회</div>
+                <h3 class="plan-name" data-i18n="payment.basicPlan">베이직</h3>
+                <div class="plan-price">₩22,000<span class="plan-period" data-i18n="payment.perMonth">/월</span></div>
+                <div class="plan-credits">10,000 <span data-i18n="payment.credits">토큰</span></div>
+                <div class="plan-usage-example" data-i18n="payment.basicUsage">룩북 50회 또는 헤어체험 28회</div>
                 <ul class="plan-features">
                     <li><span class="icon-check">✓</span> 스타일 메뉴판 (무제한)</li>
                     <li><span class="icon-check">✓</span> 챗봇 (무제한)</li>
@@ -2482,38 +2482,38 @@
                     <li><span class="icon-check">✓</span> 헤어체험</li>
                     <li><span class="icon-check">✓</span> AI 얼굴변환</li>
                 </ul>
-                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('basic')" ontouchend="selectPlanAndPay('basic')">선택하기</button>
+                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('basic')" ontouchend="selectPlanAndPay('basic')" data-i18n="payment.selectPlan">선택하기</button>
             </div>
 
             <!-- 프로 플랜 (추천) -->
             <div class="plan-card plan-card-pro" data-plan="pro">
-                <span class="plan-badge plan-badge-recommended">추천</span>
-                <h3 class="plan-name">프로</h3>
-                <div class="plan-price">₩38,000<span class="plan-period">/월</span></div>
-                <div class="plan-credits">18,000 토큰</div>
-                <div class="plan-usage-example">룩북 90회 또는 헤어체험 51회</div>
-                <div class="plan-efficiency">가성비 UP</div>
+                <span class="plan-badge plan-badge-recommended" data-i18n="payment.recommended">추천</span>
+                <h3 class="plan-name" data-i18n="payment.proPlan">프로</h3>
+                <div class="plan-price">₩38,000<span class="plan-period" data-i18n="payment.perMonth">/월</span></div>
+                <div class="plan-credits">18,000 <span data-i18n="payment.credits">토큰</span></div>
+                <div class="plan-usage-example" data-i18n="payment.proUsage">룩북 90회 또는 헤어체험 51회</div>
+                <div class="plan-efficiency" data-i18n="payment.efficiency4">가성비 UP</div>
                 <ul class="plan-features">
                     <li><span class="icon-check">✓</span> 베이직 플랜 모든 기능</li>
                     <li><span class="icon-bonus">+</span> 1.8배 더 많은 토큰</li>
                     <li><span class="icon-bonus">+</span> 같은 금액 대비 효율 UP</li>
                 </ul>
-                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('pro')" ontouchend="selectPlanAndPay('pro')">선택하기</button>
+                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('pro')" ontouchend="selectPlanAndPay('pro')" data-i18n="payment.selectPlan">선택하기</button>
             </div>
 
             <!-- 비즈니스 플랜 -->
             <div class="plan-card plan-card-business" data-plan="business">
-                <h3 class="plan-name">비즈니스</h3>
-                <div class="plan-price">₩50,000<span class="plan-period">/월</span></div>
-                <div class="plan-credits">25,000 토큰</div>
-                <div class="plan-usage-example">룩북 125회 또는 헤어체험 71회</div>
-                <div class="plan-efficiency">최고 가성비</div>
+                <h3 class="plan-name" data-i18n="payment.businessPlan">비즈니스</h3>
+                <div class="plan-price">₩50,000<span class="plan-period" data-i18n="payment.perMonth">/월</span></div>
+                <div class="plan-credits">25,000 <span data-i18n="payment.credits">토큰</span></div>
+                <div class="plan-usage-example" data-i18n="payment.businessUsage">룩북 125회 또는 헤어체험 71회</div>
+                <div class="plan-efficiency" data-i18n="payment.efficiency11">최고 가성비</div>
                 <ul class="plan-features">
                     <li><span class="icon-check">✓</span> 베이직 플랜 모든 기능</li>
                     <li><span class="icon-bonus">+</span> 2.5배 더 많은 토큰</li>
                     <li><span class="icon-bonus">+</span> 최고 효율 플랜</li>
                 </ul>
-                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('business')" ontouchend="selectPlanAndPay('business')">선택하기</button>
+                <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('business')" ontouchend="selectPlanAndPay('business')" data-i18n="payment.selectPlan">선택하기</button>
             </div>
         </div>
 

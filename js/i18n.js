@@ -1284,7 +1284,11 @@ const HAIRGATOR_I18N = {
       times: '회',
       addonNote: '이 상품은 상품 탭에서만 결제가 가능합니다.',
       payAtProductTab: '상품 탭에서 결제해 주세요',
-      freePlanRestricted: '유료 플랜에서 이용 가능합니다.'
+      freePlanRestricted: '유료 플랜에서 이용 가능합니다.',
+      freeUsage: '챗봇 약 20회 사용 가능',
+      basicUsage: '룩북 50회 또는 헤어체험 28회',
+      proUsage: '룩북 90회 또는 헤어체험 51회',
+      businessUsage: '룩북 125회 또는 헤어체험 71회'
     }
   },
 
@@ -2520,7 +2524,11 @@ const HAIRGATOR_I18N = {
       times: 'times',
       addonNote: 'This product can only be purchased from the Products tab.',
       payAtProductTab: 'Please pay from the Products tab',
-      freePlanRestricted: 'Available with a paid plan.'
+      freePlanRestricted: 'Available with a paid plan.',
+      freeUsage: 'About 20 chatbot uses',
+      basicUsage: '50 lookbooks or 28 hair tries',
+      proUsage: '90 lookbooks or 51 hair tries',
+      businessUsage: '125 lookbooks or 71 hair tries'
     }
   },
 
@@ -3752,7 +3760,11 @@ const HAIRGATOR_I18N = {
       times: '回',
       addonNote: 'この商品は商品タブからのみ購入可能です。',
       payAtProductTab: '商品タブでお支払いください',
-      freePlanRestricted: '有料プランでご利用いただけます。'
+      freePlanRestricted: '有料プランでご利用いただけます。',
+      freeUsage: 'チャットボット約20回利用可能',
+      basicUsage: 'ルックブック50回またはヘアトライ28回',
+      proUsage: 'ルックブック90回またはヘアトライ51回',
+      businessUsage: 'ルックブック125回またはヘアトライ71回'
     }
   },
 
@@ -4987,7 +4999,11 @@ const HAIRGATOR_I18N = {
       times: '次',
       addonNote: '此产品只能在产品标签页购买。',
       payAtProductTab: '请在产品标签页支付',
-      freePlanRestricted: '付费套餐可用。'
+      freePlanRestricted: '付费套餐可用。',
+      freeUsage: '约20次聊天机器人使用',
+      basicUsage: '50次造型册或28次发型体验',
+      proUsage: '90次造型册或51次发型体验',
+      businessUsage: '125次造型册或71次发型体验'
     }
   },
 
@@ -6209,7 +6225,11 @@ const HAIRGATOR_I18N = {
       times: 'lần',
       addonNote: 'Sản phẩm này chỉ có thể mua từ tab Sản phẩm.',
       payAtProductTab: 'Vui lòng thanh toán từ tab Sản phẩm',
-      freePlanRestricted: 'Có thể sử dụng với gói trả phí.'
+      freePlanRestricted: 'Có thể sử dụng với gói trả phí.',
+      freeUsage: 'Khoảng 20 lần sử dụng chatbot',
+      basicUsage: '50 lookbook hoặc 28 lần thử tóc',
+      proUsage: '90 lookbook hoặc 51 lần thử tóc',
+      businessUsage: '125 lookbook hoặc 71 lần thử tóc'
     }
   },
 
@@ -7377,7 +7397,11 @@ const HAIRGATOR_I18N = {
       times: 'kali',
       addonNote: 'Produk ini hanya dapat dibeli dari tab Produk.',
       payAtProductTab: 'Silakan bayar dari tab Produk',
-      freePlanRestricted: 'Tersedia dengan paket berbayar.'
+      freePlanRestricted: 'Tersedia dengan paket berbayar.',
+      freeUsage: 'Sekitar 20 kali penggunaan chatbot',
+      basicUsage: '50 lookbook atau 28 kali coba gaya rambut',
+      proUsage: '90 lookbook atau 51 kali coba gaya rambut',
+      businessUsage: '125 lookbook atau 71 kali coba gaya rambut'
     }
   },
 
@@ -8318,7 +8342,11 @@ const HAIRGATOR_I18N = {
       times: 'veces',
       addonNote: 'Este producto solo se puede comprar desde la pestaña Productos.',
       payAtProductTab: 'Por favor pague desde la pestaña Productos',
-      freePlanRestricted: 'Disponible con plan de pago.'
+      freePlanRestricted: 'Disponible con plan de pago.',
+      freeUsage: 'Aproximadamente 20 usos de chatbot',
+      basicUsage: '50 lookbooks o 28 pruebas de peinado',
+      proUsage: '90 lookbooks o 51 pruebas de peinado',
+      businessUsage: '125 lookbooks o 71 pruebas de peinado'
     }
   }
 };
