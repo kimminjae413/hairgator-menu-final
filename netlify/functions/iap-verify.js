@@ -146,13 +146,34 @@ exports.handler = async (event) => {
     const appSharedSecret = process.env.APPLE_SHARED_SECRET || '';
     console.log('🔑 APPLE_SHARED_SECRET 설정됨:', !!appSharedSecret, 'length:', appSharedSecret.length);
 
-    // 프로덕션 먼저 시도
-    appleResponse = await verifyWithApple(receipt, appSharedSecret, APPLE_VERIFY_URL_PRODUCTION);
+    // StoreKit 2 JWS 형식인지 확인 (eyJ로 시작하면 JWS)
+    const isJWS = receipt.startsWith('eyJ');
+    console.log('📋 영수증 형식:', isJWS ? 'StoreKit 2 JWS' : 'Legacy Receipt');
 
-    // 샌드박스 응답(21007)이면 샌드박스로 재시도
-    if (appleResponse && appleResponse.status === 21007) {
-      console.log('🍎 샌드박스 영수증 감지 → 샌드박스 검증');
-      appleResponse = await verifyWithApple(receipt, appSharedSecret, APPLE_VERIFY_URL_SANDBOX);
+    if (isJWS) {
+      // StoreKit 2 JWS 검증
+      const jwsResult = verifyStoreKit2JWS(receipt);
+      if (jwsResult && jwsResult.verified) {
+        verified = true;
+        appleResponse = { status: 0, jwsTransaction: jwsResult };
+        console.log('✅ StoreKit 2 JWS 검증 성공:', jwsResult.transactionId);
+      } else {
+        console.error('❌ StoreKit 2 JWS 검증 실패');
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: 'JWS verification failed' })
+        };
+      }
+    } else {
+      // 레거시 영수증 검증 (프로덕션 먼저 시도)
+      appleResponse = await verifyWithApple(receipt, appSharedSecret, APPLE_VERIFY_URL_PRODUCTION);
+
+      // 샌드박스 응답(21007)이면 샌드박스로 재시도
+      if (appleResponse && appleResponse.status === 21007) {
+        console.log('🍎 샌드박스 영수증 감지 → 샌드박스 검증');
+        appleResponse = await verifyWithApple(receipt, appSharedSecret, APPLE_VERIFY_URL_SANDBOX);
+      }
     }
 
     if (appleResponse && appleResponse.status === 0) {
