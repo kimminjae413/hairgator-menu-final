@@ -202,7 +202,14 @@ exports.handler = async (event) => {
 
     // 트랜잭션 ID 추출 (중복 방지용)
     let transactionId = null;
-    if (appleResponse?.receipt?.in_app?.length > 0) {
+
+    // JWS 형식인 경우 jwsTransaction에서 추출
+    if (appleResponse?.jwsTransaction?.transactionId) {
+      transactionId = appleResponse.jwsTransaction.transactionId;
+      console.log('📋 JWS transactionId:', transactionId);
+    }
+    // 레거시 영수증인 경우
+    else if (appleResponse?.receipt?.in_app?.length > 0) {
       // 최신 트랜잭션 찾기
       const latestTransaction = appleResponse.receipt.in_app
         .filter(item => item.product_id === productId)
