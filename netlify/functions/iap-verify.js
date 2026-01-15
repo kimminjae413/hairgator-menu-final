@@ -103,6 +103,7 @@ exports.handler = async (event) => {
 
     // App Store 공유 비밀번호 (App Store Connect에서 생성)
     const appSharedSecret = process.env.APPLE_SHARED_SECRET || '';
+    console.log('🔑 APPLE_SHARED_SECRET 설정됨:', !!appSharedSecret, 'length:', appSharedSecret.length);
 
     // 프로덕션 먼저 시도
     appleResponse = await verifyWithApple(receipt, appSharedSecret, APPLE_VERIFY_URL_PRODUCTION);
@@ -118,7 +119,7 @@ exports.handler = async (event) => {
       console.log('✅ Apple 영수증 검증 성공');
     } else {
       // 🔒 검증 실패 시 토큰 지급 거부 (프로덕션)
-      console.error('❌ Apple 영수증 검증 실패:', appleResponse?.status);
+      console.error('❌ Apple 영수증 검증 실패:', JSON.stringify(appleResponse));
       return {
         statusCode: 400,
         headers,
