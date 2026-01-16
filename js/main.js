@@ -864,6 +864,54 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // ⭐ 유료 플랜 체크 유틸리티 함수
+    function checkPaidPlanAccess() {
+        const ALLOWED_PLANS = ['basic', 'pro', 'business'];
+
+        // 모든 소스에서 plan 수집
+        const planSources = {
+            currentDesigner: window.currentDesigner?.plan,
+            bullnabiUser: (typeof window.getBullnabiUser === 'function' && window.getBullnabiUser())?.plan,
+            firebaseBridge: window.FirebaseBridge?.cachedUserData?.plan,
+            localStorage: (() => {
+                try {
+                    const stored = localStorage.getItem('firebase_user');
+                    return stored ? JSON.parse(stored)?.plan : null;
+                } catch(_e) { return null; }
+            })()
+        };
+
+        // 유료 플랜 우선 선택 (free가 아닌 첫 번째 값)
+        let userPlan = 'free';
+        for (const source of Object.values(planSources)) {
+            if (source && ALLOWED_PLANS.includes(source)) {
+                userPlan = source;
+                break;
+            }
+        }
+
+        // 그래도 없으면 첫 번째 유효한 값 사용
+        if (userPlan === 'free') {
+            for (const source of Object.values(planSources)) {
+                if (source) {
+                    userPlan = source;
+                    break;
+                }
+            }
+        }
+
+        const isAllowed = ALLOWED_PLANS.includes(userPlan);
+
+        return { userPlan, isAllowed, planSources };
+    }
+
+    // ⭐ 토큰 잔액 가져오기 유틸리티 함수
+    function getTokenBalance() {
+        return window.currentDesigner?.tokenBalance
+            || (typeof window.getBullnabiUser === 'function' && window.getBullnabiUser())?.tokenBalance
+            || 0;
+    }
+
     // ⭐ 사이드바 메뉴 이벤트 리스너 설정 (재사용 가능)
     function setupSidebarMenuListeners() {
         const themeToggleMenu = document.getElementById('themeToggleMenu');
@@ -881,46 +929,25 @@ document.addEventListener('DOMContentLoaded', function() {
             styleMatchBtn.addEventListener('click', function() {
                 console.log('✨ AI 스타일 매칭 클릭');
 
-                // 플랜 기반 체크 (여러 소스에서 확인)
-                const ALLOWED_PLANS = ['basic', 'pro', 'business'];
-                let userPlan = 'free';
-
-                // 1. currentDesigner에서 확인
-                if (window.currentDesigner?.plan) {
-                    userPlan = window.currentDesigner.plan;
-                }
-                // 2. getBullnabiUser에서 확인
-                else if (typeof window.getBullnabiUser === 'function') {
-                    const bullnabiUser = window.getBullnabiUser();
-                    if (bullnabiUser?.plan) userPlan = bullnabiUser.plan;
-                }
-                // 3. FirebaseBridge.cachedUserData에서 확인
-                else if (window.FirebaseBridge?.cachedUserData?.plan) {
-                    userPlan = window.FirebaseBridge.cachedUserData.plan;
-                }
-                // 4. localStorage에서 확인
-                else {
-                    try {
-                        const stored = localStorage.getItem('firebase_user');
-                        if (stored) {
-                            const parsed = JSON.parse(stored);
-                            if (parsed?.plan) userPlan = parsed.plan;
-                        }
-                    } catch(_e) {}
-                }
-
-                const isAllowed = ALLOWED_PLANS.includes(userPlan);
-
-                console.log('AI 스타일 매칭 접근 체크:', { userPlan, isAllowed });
+                const { userPlan, isAllowed, planSources } = checkPaidPlanAccess();
+                console.log('AI 스타일 매칭 접근 체크:', { userPlan, isAllowed, planSources });
 
                 if (!isAllowed) {
-                    // 업그레이드 모달 표시
                     if (typeof showUpgradeModal === 'function') {
                         showUpgradeModal('AI 스타일 매칭', '베이직 플랜 이상에서 사용 가능합니다.');
-                    } else if (typeof showToast === 'function') {
-                        showToast('베이직 플랜 이상에서 사용 가능합니다.', 'warning');
                     } else {
                         alert('베이직 플랜 이상에서 사용 가능합니다.');
+                    }
+                    return;
+                }
+
+                // 토큰 잔액 체크 (스타일매칭은 200 토큰 필요)
+                const tokenBalance = getTokenBalance();
+                if (tokenBalance < 200) {
+                    if (typeof showUpgradeModal === 'function') {
+                        showUpgradeModal('토큰 부족', `AI 스타일 매칭에 200 토큰이 필요합니다.\n현재 잔액: ${tokenBalance.toLocaleString()} 토큰`);
+                    } else {
+                        alert(`토큰이 부족합니다.\n현재 잔액: ${tokenBalance.toLocaleString()} 토큰`);
                     }
                     return;
                 }
@@ -936,46 +963,25 @@ document.addEventListener('DOMContentLoaded', function() {
             personalColorBtn.addEventListener('click', function() {
                 console.log('🎨 퍼스널 이미지 분석 클릭');
 
-                // 플랜 기반 체크 (여러 소스에서 확인)
-                const ALLOWED_PLANS = ['basic', 'pro', 'business'];
-                let userPlan = 'free';
-
-                // 1. currentDesigner에서 확인
-                if (window.currentDesigner?.plan) {
-                    userPlan = window.currentDesigner.plan;
-                }
-                // 2. getBullnabiUser에서 확인
-                else if (typeof window.getBullnabiUser === 'function') {
-                    const bullnabiUser = window.getBullnabiUser();
-                    if (bullnabiUser?.plan) userPlan = bullnabiUser.plan;
-                }
-                // 3. FirebaseBridge.cachedUserData에서 확인
-                else if (window.FirebaseBridge?.cachedUserData?.plan) {
-                    userPlan = window.FirebaseBridge.cachedUserData.plan;
-                }
-                // 4. localStorage에서 확인
-                else {
-                    try {
-                        const stored = localStorage.getItem('firebase_user');
-                        if (stored) {
-                            const parsed = JSON.parse(stored);
-                            if (parsed?.plan) userPlan = parsed.plan;
-                        }
-                    } catch(_e) {}
-                }
-
-                const isAllowed = ALLOWED_PLANS.includes(userPlan);
-
-                console.log('퍼스널 이미지 분석 접근 체크:', { userPlan, isAllowed });
+                const { userPlan, isAllowed, planSources } = checkPaidPlanAccess();
+                console.log('퍼스널 이미지 분석 접근 체크:', { userPlan, isAllowed, planSources });
 
                 if (!isAllowed) {
-                    // 업그레이드 모달 표시
                     if (typeof showUpgradeModal === 'function') {
                         showUpgradeModal('퍼스널 이미지 분석', '베이직 플랜 이상에서 사용 가능합니다.');
-                    } else if (typeof showToast === 'function') {
-                        showToast('베이직 플랜 이상에서 사용 가능합니다.', 'warning');
                     } else {
                         alert('베이직 플랜 이상에서 사용 가능합니다.');
+                    }
+                    return;
+                }
+
+                // 토큰 잔액 체크 (퍼스널 이미지 분석은 200 토큰 필요)
+                const tokenBalance = getTokenBalance();
+                if (tokenBalance < 200) {
+                    if (typeof showUpgradeModal === 'function') {
+                        showUpgradeModal('토큰 부족', `퍼스널 이미지 분석에 200 토큰이 필요합니다.\n현재 잔액: ${tokenBalance.toLocaleString()} 토큰`);
+                    } else {
+                        alert(`토큰이 부족합니다.\n현재 잔액: ${tokenBalance.toLocaleString()} 토큰`);
                     }
                     return;
                 }
@@ -991,37 +997,46 @@ document.addEventListener('DOMContentLoaded', function() {
             aiTransformBtn.addEventListener('click', function() {
                 console.log('🎭 AI 얼굴변환 클릭');
 
-                // 플랜 기반 체크 (여러 소스에서 확인)
+                // 플랜 기반 체크 (모든 소스에서 수집 후 최종 결정)
                 const ALLOWED_PLANS = ['basic', 'pro', 'business'];
-                let userPlan = 'free';
 
-                // 1. currentDesigner에서 확인
-                if (window.currentDesigner?.plan) {
-                    userPlan = window.currentDesigner.plan;
+                // 모든 소스에서 plan 수집
+                const planSources = {
+                    currentDesigner: window.currentDesigner?.plan,
+                    bullnabiUser: (typeof window.getBullnabiUser === 'function' && window.getBullnabiUser())?.plan,
+                    firebaseBridge: window.FirebaseBridge?.cachedUserData?.plan,
+                    localStorage: (() => {
+                        try {
+                            const stored = localStorage.getItem('firebase_user');
+                            return stored ? JSON.parse(stored)?.plan : null;
+                        } catch(_e) { return null; }
+                    })()
+                };
+
+                console.log('🔍 플랜 소스 체크:', planSources);
+
+                // 유료 플랜 우선 선택 (free가 아닌 첫 번째 값)
+                let userPlan = 'free';
+                for (const source of Object.values(planSources)) {
+                    if (source && ALLOWED_PLANS.includes(source)) {
+                        userPlan = source;
+                        break;
+                    }
                 }
-                // 2. getBullnabiUser에서 확인
-                else if (typeof window.getBullnabiUser === 'function') {
-                    const bullnabiUser = window.getBullnabiUser();
-                    if (bullnabiUser?.plan) userPlan = bullnabiUser.plan;
-                }
-                // 3. FirebaseBridge.cachedUserData에서 확인
-                else if (window.FirebaseBridge?.cachedUserData?.plan) {
-                    userPlan = window.FirebaseBridge.cachedUserData.plan;
-                }
-                // 4. localStorage에서 확인
-                else {
-                    try {
-                        const stored = localStorage.getItem('firebase_user');
-                        if (stored) {
-                            const parsed = JSON.parse(stored);
-                            if (parsed?.plan) userPlan = parsed.plan;
+
+                // 그래도 없으면 첫 번째 유효한 값 사용
+                if (userPlan === 'free') {
+                    for (const source of Object.values(planSources)) {
+                        if (source) {
+                            userPlan = source;
+                            break;
                         }
-                    } catch(_e) {}
+                    }
                 }
 
                 const isAllowed = ALLOWED_PLANS.includes(userPlan);
 
-                console.log('AI 얼굴변환 접근 체크:', { userPlan, isAllowed });
+                console.log('AI 얼굴변환 접근 체크:', { userPlan, isAllowed, planSources });
 
                 if (!isAllowed) {
                     // 업그레이드 모달 표시
@@ -1035,10 +1050,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
+                // 토큰 잔액 체크 (350 토큰 필요)
+                const tokenBalance = window.currentDesigner?.tokenBalance
+                    || (typeof window.getBullnabiUser === 'function' && window.getBullnabiUser())?.tokenBalance
+                    || 0;
+
+                if (tokenBalance < 350) {
+                    if (typeof showUpgradeModal === 'function') {
+                        showUpgradeModal('토큰 부족', `AI 얼굴변환에 350 토큰이 필요합니다.\n현재 잔액: ${tokenBalance.toLocaleString()} 토큰`);
+                    } else {
+                        alert(`토큰이 부족합니다.\nAI 얼굴변환에 350 토큰이 필요합니다.\n현재 잔액: ${tokenBalance.toLocaleString()} 토큰`);
+                    }
+                    return;
+                }
+
                 closeSidebar();
 
                 // 토큰 정보를 URL 파라미터로 전달
-                const tokenBalance = window.currentDesigner?.tokenBalance || 0;
                 const userId = window.currentDesigner?.id || '';
                 window.location.href = `/ai-transform/?token=${tokenBalance}&userId=${encodeURIComponent(userId)}`;
             });

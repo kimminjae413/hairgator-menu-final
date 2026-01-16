@@ -4534,48 +4534,60 @@ function goToProducts() {
     window.location.hash = '#products';
 }
 
-// 플랜에 따라 유료 기능 버튼들 disabled 상태 적용
+// 플랜에 따라 유료 기능 버튼들 숨김/표시 처리
 function applyPlanBasedDisabledState() {
     const allowedPlans = ['basic', 'pro', 'business'];
 
-    // 여러 소스에서 plan 정보 가져오기
-    let userPlan = 'free';
+    // 모든 소스에서 plan 수집 후 유료 플랜 우선
+    const planSources = {
+        currentDesigner: window.currentDesigner?.plan,
+        bullnabiUser: (typeof window.getBullnabiUser === 'function' && window.getBullnabiUser())?.plan,
+        firebaseBridge: window.FirebaseBridge?.cachedUserData?.plan,
+        localStorage: (() => {
+            try {
+                const stored = localStorage.getItem('firebase_user');
+                return stored ? JSON.parse(stored)?.plan : null;
+            } catch(_e) { return null; }
+        })()
+    };
 
-    // 1. window.currentDesigner에서 확인
-    if (window.currentDesigner?.plan) {
-        userPlan = window.currentDesigner.plan;
-    }
-    // 2. getBullnabiUser()에서 확인
-    else if (window.getBullnabiUser) {
-        const bullnabiUser = window.getBullnabiUser();
-        if (bullnabiUser?.plan) {
-            userPlan = bullnabiUser.plan;
+    // 유료 플랜 우선 선택
+    let userPlan = 'free';
+    for (const source of Object.values(planSources)) {
+        if (source && allowedPlans.includes(source)) {
+            userPlan = source;
+            break;
         }
     }
-    // 3. FirebaseBridge에서 확인
-    else if (window.FirebaseBridge?.cachedUserData?.plan) {
-        userPlan = window.FirebaseBridge.cachedUserData.plan;
+    // 그래도 없으면 첫 번째 유효한 값 사용
+    if (userPlan === 'free') {
+        for (const source of Object.values(planSources)) {
+            if (source) {
+                userPlan = source;
+                break;
+            }
+        }
     }
 
     const isAllowed = allowedPlans.includes(userPlan);
 
-    console.log('🔐 플랜 기반 접근 체크:', userPlan, '허용:', isAllowed);
+    console.log('🔐 플랜 기반 접근 체크:', { userPlan, isAllowed, planSources });
 
-    // 유료 플랜 전용 버튼들
+    // 유료 플랜 전용 버튼들 - 무료 플랜에서는 숨김
     const paidFeatureButtons = ['styleMatchBtn', 'personalColorBtn', 'aiTransformBtn'];
 
     paidFeatureButtons.forEach(btnId => {
         const btn = document.getElementById(btnId);
         if (btn) {
             if (isAllowed) {
+                btn.style.display = '';
                 btn.classList.remove('disabled');
                 btn.style.opacity = '';
                 btn.style.filter = '';
                 btn.style.pointerEvents = '';
             } else {
-                btn.classList.add('disabled');
-                btn.style.opacity = '0.4';
-                btn.style.filter = 'grayscale(0.5)';
+                // 무료 플랜 → 버튼 숨김
+                btn.style.display = 'none';
             }
         }
     });
