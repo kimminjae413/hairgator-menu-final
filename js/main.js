@@ -199,6 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function handleHashChange() {
         const hash = window.location.hash.replace('#', '');
+        alert('해시변경: ' + hash);  // 디버그
         console.log('📍 해시 변경:', hash || '(메인)');
 
         // 모든 페이지/섹션 숨기기
