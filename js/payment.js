@@ -72,6 +72,18 @@ const HAIRGATOR_PAYMENT = {
     }));
 
     try {
+      // Flutter WebView 감지 (팝업 차단 문제 방지 → 리다이렉션 강제)
+      const isFlutterWebView = typeof window.FlutterChannel !== 'undefined' ||
+                               typeof window.DownloadChannel !== 'undefined' ||
+                               navigator.userAgent.includes('Flutter');
+
+      // Flutter WebView면 항상 리다이렉션, 아니면 PC=팝업/모바일=리다이렉션
+      const windowType = isFlutterWebView
+        ? { pc: 'REDIRECTION', mobile: 'REDIRECTION' }
+        : { pc: 'POPUP', mobile: 'REDIRECTION' };
+
+      console.log('💳 결제 windowType:', windowType, 'isFlutterWebView:', isFlutterWebView);
+
       // 포트원 V2 결제 요청
       const response = await PortOne.requestPayment({
         storeId: this.storeId,
@@ -81,7 +93,7 @@ const HAIRGATOR_PAYMENT = {
         totalAmount: plan.price,
         currency: 'KRW',
         payMethod: 'CARD',
-        windowType: { pc: 'POPUP', mobile: 'REDIRECTION' },  // PC는 팝업, 모바일은 리다이렉션
+        windowType: windowType,
         customer: {
           customerId: userId,
           email: userEmail || undefined,
@@ -385,12 +397,21 @@ async function requestIdentityVerification(userId) {
     // 고유 인증 ID 생성
     const identityVerificationId = `HG_ID_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+    // Flutter WebView 감지 (팝업 차단 문제 방지)
+    const isFlutterWebView = typeof window.FlutterChannel !== 'undefined' ||
+                             typeof window.DownloadChannel !== 'undefined' ||
+                             navigator.userAgent.includes('Flutter');
+
+    const windowType = isFlutterWebView
+      ? { pc: 'REDIRECTION', mobile: 'REDIRECTION' }
+      : { pc: 'POPUP', mobile: 'REDIRECTION' };
+
     // 포트원 본인인증 요청 (다날 본인인증 채널 사용)
     const response = await PortOne.requestIdentityVerification({
       storeId: HAIRGATOR_PAYMENT.storeId,
       identityVerificationId: identityVerificationId,
       channelKey: HAIRGATOR_PAYMENT.identityChannelKey,
-      windowType: { pc: 'POPUP', mobile: 'REDIRECTION' },
+      windowType: windowType,
       redirectUrl: window.location.origin + '/identity-complete.html'
     });
 
