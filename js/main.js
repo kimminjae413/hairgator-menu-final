@@ -3717,6 +3717,8 @@ async function updateProductsPagePlan() {
         }
 
         console.log('📋 현재 플랜:', currentPlan, '토큰:', tokenBalance, '예정 플랜:', pendingPlan);
+        // 디버그: 현재 플랜 값 alert
+        alert('현재플랜: ' + currentPlan);
 
         // 현재 플랜 정보 표시 업데이트
         const planNames = {
@@ -3775,16 +3777,21 @@ async function updateProductsPagePlan() {
 
         // 모든 카드 리셋
         const allCards = document.querySelectorAll('.plan-card[data-plan]');
+        console.log('🔧 [updateProductsPage] 총 카드 수:', allCards.length, 'currentPlan:', currentPlan);
+
         allCards.forEach(card => {
             const badge = card.querySelector('.plan-badge-current');
             const btn = card.querySelector('.plan-btn');
             const plan = card.getAttribute('data-plan');
+
+            console.log('🔧 [updateProductsPage] 카드 처리:', plan, 'btn 존재:', !!btn);
 
             if (badge) badge.style.display = 'none';
 
             if (btn) {
                 if (plan === currentPlan) {
                     // 현재 플랜 카드
+                    console.log('🔧 [updateProductsPage]', plan, '= 현재 플랜, 비활성화');
                     if (badge) badge.style.display = 'block';
                     btn.className = 'plan-btn plan-btn-disabled';
                     btn.disabled = true;
@@ -3792,10 +3799,12 @@ async function updateProductsPagePlan() {
                     btn.onclick = null;
                 } else {
                     // 다른 플랜 카드
+                    console.log('🔧 [updateProductsPage]', plan, '= 다른 플랜, onclick 설정');
                     btn.className = 'plan-btn plan-btn-primary';
                     btn.disabled = false;
                     btn.textContent = '선택하기';
                     btn.onclick = () => selectPlanAndPay(plan);
+                    console.log('🔧 [updateProductsPage]', plan, 'onclick 설정 완료, btn.onclick:', typeof btn.onclick);
                 }
             }
         });
