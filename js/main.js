@@ -221,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         switch (hash) {
             case 'products':
+                alert('products 페이지 진입!');  // 디버그
                 if (productsPage) {
                     productsPage.style.display = 'block';
                     fixPageScroll(productsPage); // 스크롤 문제 수정
