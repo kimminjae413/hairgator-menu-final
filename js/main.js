@@ -1,4 +1,5 @@
 // HAIRGATOR Main Application - 최종 버전 (goBack display:none 추가)
+alert('main.js 로드됨!');  // 디버그: 파일 로드 확인
 /* eslint-disable no-unused-vars */
 // HTML onclick 핸들러로 사용되는 함수들: goBack, showHistoryPanel, startNewChat, clearChat,
 // selectImageAction, selectGender, selectService, selectCategory, triggerImageUpload,
