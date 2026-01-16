@@ -2447,15 +2447,6 @@
         <div style="width: 48px;"></div>
     </header>
     <div class="page-content">
-        <!-- 디버그용 테스트 버튼 -->
-        <div style="background: red; padding: 20px; margin: 10px; text-align: center;">
-            <button onclick="alert('BASIC 클릭!');" style="padding: 15px 30px; font-size: 18px; background: yellow; border: 3px solid black; margin: 5px;">
-                🧪 BASIC alert만
-            </button>
-            <button onclick="alert('PRO 클릭!');" style="padding: 15px 30px; font-size: 18px; background: lime; border: 3px solid black; margin: 5px;">
-                🧪 PRO alert만
-            </button>
-        </div>
 
         <p class="products-subtitle" data-i18n="payment.unlockPremium">프리미엄 기능을 잠금 해제하세요</p>
 
@@ -2493,6 +2484,8 @@
                     <li><span class="icon-check">✓</span> AI 얼굴변환</li>
                 </ul>
                 <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('basic')" data-i18n="payment.selectPlan">선택하기</button>
+                <!-- 디버그: Basic 카드 안에 테스트 버튼 -->
+                <button onclick="alert('BASIC카드 안 테스트!');" style="margin-top:5px; padding:10px; background:blue; color:white; border:none; width:100%;">🧪테스트</button>
             </div>
 
             <!-- 프로 플랜 (추천) -->
@@ -2509,6 +2502,8 @@
                     <li><span class="icon-bonus">+</span> 같은 금액 대비 효율 UP</li>
                 </ul>
                 <button class="plan-btn plan-btn-primary" onclick="selectPlanAndPay('pro')" data-i18n="payment.selectPlan">선택하기</button>
+                <!-- 디버그: Pro 카드 안에 테스트 버튼 -->
+                <button onclick="alert('PRO카드 안 테스트!');" style="margin-top:5px; padding:10px; background:red; color:white; border:none; width:100%;">🧪테스트</button>
             </div>
 
             <!-- 비즈니스 플랜 -->
