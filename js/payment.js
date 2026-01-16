@@ -1096,12 +1096,11 @@ function requestIOSInAppPurchase(planKey) {
 
   if (!plan || !plan.productId) {
     console.error('[IAP] 유효하지 않은 요금제:', planKey);
-    alert('유효하지 않은 요금제입니다. planKey: ' + planKey);
+    console.error('[IAP] 유효하지 않은 요금제:', planKey);
     return;
   }
 
   console.log('[IAP] iOS 인앱결제 요청:', plan.productId);
-  alert('[IAP] Flutter에 전송: ' + plan.productId);  // 디버그용 alert
 
   // Flutter에 구매 요청 전송
   window.IAPChannel.postMessage(JSON.stringify({

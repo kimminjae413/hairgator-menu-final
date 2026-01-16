@@ -1,5 +1,4 @@
 // HAIRGATOR Main Application - 최종 버전 (goBack display:none 추가)
-alert('main.js 로드됨!');  // 디버그: 파일 로드 확인
 /* eslint-disable no-unused-vars */
 // HTML onclick 핸들러로 사용되는 함수들: goBack, showHistoryPanel, startNewChat, clearChat,
 // selectImageAction, selectGender, selectService, selectCategory, triggerImageUpload,
@@ -200,7 +199,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function handleHashChange() {
         const hash = window.location.hash.replace('#', '');
-        alert('해시변경: ' + hash);  // 디버그
         console.log('📍 해시 변경:', hash || '(메인)');
 
         // 모든 페이지/섹션 숨기기
@@ -223,7 +221,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         switch (hash) {
             case 'products':
-                alert('products 페이지 진입!');  // 디버그
                 if (productsPage) {
                     productsPage.style.display = 'block';
                     fixPageScroll(productsPage); // 스크롤 문제 수정
@@ -521,7 +518,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 플랜 선택 및 결제 (전역 함수)
     window.selectPlanAndPay = async function(planType) {
         console.log('💳💳💳 selectPlanAndPay 호출됨! planType:', planType);
-        alert('selectPlanAndPay 호출: ' + planType);  // 디버그용 alert
 
         // 로그인 확인
         if (typeof firebase !== 'undefined' && firebase.auth) {
@@ -3720,8 +3716,6 @@ async function updateProductsPagePlan() {
         }
 
         console.log('📋 현재 플랜:', currentPlan, '토큰:', tokenBalance, '예정 플랜:', pendingPlan);
-        // 디버그: 현재 플랜 값 alert
-        alert('현재플랜: ' + currentPlan);
 
         // 현재 플랜 정보 표시 업데이트
         const planNames = {
