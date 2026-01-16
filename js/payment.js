@@ -1089,20 +1089,27 @@ function isIOSFlutterApp() {
  * @param {string} planKey - 요금제 키 (basic, pro, business, tokens_5000)
  */
 function requestIOSInAppPurchase(planKey) {
+  console.log('[IAP] requestIOSInAppPurchase 함수 진입, planKey:', planKey);
+
   const plan = HAIRGATOR_PAYMENT.plans[planKey];
+  console.log('[IAP] plan 객체:', plan);
+
   if (!plan || !plan.productId) {
     console.error('[IAP] 유효하지 않은 요금제:', planKey);
-    alert('유효하지 않은 요금제입니다.');
+    alert('유효하지 않은 요금제입니다. planKey: ' + planKey);
     return;
   }
 
   console.log('[IAP] iOS 인앱결제 요청:', plan.productId);
+  alert('[IAP] Flutter에 전송: ' + plan.productId);  // 디버그용 alert
 
   // Flutter에 구매 요청 전송
   window.IAPChannel.postMessage(JSON.stringify({
     action: 'purchase',
     productId: plan.productId
   }));
+
+  console.log('[IAP] IAPChannel.postMessage 완료');
 }
 
 /**
