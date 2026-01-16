@@ -1,11 +1,84 @@
 # HAIRGATOR 챗봇 - Claude 작업 가이드
 
-## 🚨 현재 앱 버전 (2026-01-12 업데이트)
+---
+
+## ⚠️ AI 작업 규칙 (필독!)
+
+### 🔴 불확실성 프로토콜
+
+Claude가 다음 상황에서는 **반드시** "추측입니다" 또는 "확실하지 않습니다"라고 **먼저** 말해야 함:
+
+| 상황 | 반드시 해야 할 말 |
+|------|------------------|
+| 외부 라이브러리/SDK 내부 동작 | "SDK 내부 동작은 추측입니다. 확인하려면..." |
+| 직접 확인하지 않은 파일/코드 | "파일이 있는지 확인해보겠습니다" → ls/Read 실행 |
+| API 동작 방식 (문서 미확인) | "문서를 확인하지 않은 추측입니다" |
+| 에러 원인 분석 | "가능한 원인입니다. 확실히 하려면 테스트 필요" |
+
+**금지 패턴:**
+```
+❌ "원인을 찾았습니다" (테스트 없이)
+❌ "이 파일이 있습니다" (ls 없이)
+❌ "이게 문제입니다" (검증 없이)
+❌ "~하면 됩니다" (확신 없이)
+```
+
+**필수 패턴:**
+```
+✅ "추측입니다. 확인하려면..."
+✅ "~일 가능성이 있습니다. 검증 방법은..."
+✅ "확인해보겠습니다" → 실제 명령 실행 → 결과 공유
+✅ "확실하지 않습니다. 테스트가 필요합니다"
+```
+
+---
+
+### 🔴 변경 범위 제한 규칙
+
+#### 디자인/스타일 변경 요청 시:
+- ✅ CSS, 색상, 폰트, 레이아웃만 수정
+- ❌ JavaScript 로직 수정 금지
+- ❌ 기존 함수 동작 변경 금지
+- ❌ "ついでに 이것도 개선했습니다" 금지
+
+#### 버그 수정 요청 시:
+- ✅ 해당 버그만 수정
+- ❌ 주변 코드 리팩토링 금지
+- ❌ "더 좋아 보여서" 변경 금지
+
+#### 모든 변경 전 반드시:
+1. **"이 파일들을 수정하려고 합니다: [목록]"** 먼저 알림
+2. **로직 변경이 필요하면** 먼저 물어보기
+3. **사용자 승인 후** 진행
+
+#### 금지 행동:
+```
+❌ 요청하지 않은 파일 수정
+❌ 요청하지 않은 리팩토링
+❌ 요청하지 않은 "개선"
+❌ 관련 없는 코드 정리
+```
+
+---
+
+### 🔴 검증 필수 사항
+
+| 주장하기 전 | 반드시 해야 할 것 |
+|------------|------------------|
+| "파일이 있다" | `ls` 또는 `Read` 실행 |
+| "이 코드가 문제다" | 실제 코드 읽고 확인 |
+| "테스트 통과한다" | 실제 테스트 실행 |
+| "빌드 된다" | 실제 빌드 명령 실행 |
+| "이 API가 호출된다" | 로그 또는 코드에서 확인 |
+
+---
+
+## 🚨 현재 앱 버전 (2026-01-15 업데이트)
 
 | 플랫폼 | 스토어 제출 | 최신 빌드 |
 |--------|------------|----------|
-| **Android** | v73 | v85 (WebView 업데이트) |
-| **iOS** | v76 | v85 (Apple 로그인 + WebView 수정) |
+| **Android** | v73 | v86 (스플래시 화면 추가) |
+| **iOS** | v76 | v98 (v94 복원 - IAP 테스트 중) |
 
 ### 빌드 파일 경로
 - **APK**: `D:\hairgator_dev\hairgator_flutter_app\build\app\outputs\flutter-apk\app-release.apk`
@@ -17,7 +90,11 @@
 
 | 버전 | 상태 | 내용 |
 |------|------|------|
-| v85 | ✅ **현재** | webview_flutter 4.13.0 업데이트 (iOS 18.2 클릭 수정) |
+| v98 | 🔄 테스트 중 | v94 코드로 복원 (IAP 작동 확인 필요) |
+| v94 | 작동 확인됨 | restored 구매 무시 추가 |
+| v93 | 빌드됨 | StoreKit 2 JWS serverVerificationData 사용 |
+| v86 | Android | 스플래시 화면 추가 (flutter_native_splash) |
+| v85 | 빌드됨 | webview_flutter 4.13.0 업데이트 (iOS 18.2 클릭 수정) |
 | v84 | 빌드됨 | Apple 로그인 accessToken 수정 |
 | v78 | 스토어 제출됨 | iOS bfcache 스피너 무한표시 수정 (주기적 JS 주입) |
 | v76 | 스토어 제출됨 | 디버그 버튼/콘솔 UI 제거 |
@@ -31,6 +108,13 @@
 - v77: Flutter에서 스크롤 문제 해결 시도 (VerticalDragGestureRecognizer 변경)
 - **결과**: 불필요 - 스크롤 문제는 **웹 코드(menu.js)에서 해결됨**
 - v77 스킵 → v78로 진행
+
+### ⚠️ v95~v97 문제 발생!
+- v95: `_handleIAPRequest` async로 변경 + 상품 로드 체크 추가
+- v96: `TapGestureRecognizer` 추가
+- v97: `EagerGestureRecognizer`로 변경
+- **결과**: WebView 버튼 클릭이 아예 안 됨 (JS 실행 안 됨)
+- **해결**: v94 코드로 복원 → v98
 
 ---
 
@@ -202,6 +286,61 @@ final oauthCredential = OAuthProvider("apple.com").credential(
 **핵심 교훈:**
 - ❌ Firebase Console 설정만으로는 해결 안됨
 - ✅ Dart 코드에서 `accessToken` 파라미터에 `authorizationCode` 전달 필수
+
+---
+
+### iOS 인앱결제 (IAP) 문제들 (2026-01-15 작업 중) - 중요!
+
+**현재 상태: v98 테스트 중**
+
+#### 1. StoreKit 2 JWS 형식 문제 (해결됨)
+- **증상**: Apple 영수증 검증 실패 (에러 코드 21002)
+- **원인**: iOS 15+에서 영수증이 JWS 형식(eyJ...로 시작)으로 변경됨
+- **해결**: `iap-verify.js`에서 JWS 형식 감지 및 디코딩 추가
+```javascript
+// JWS 형식 감지
+const isJWS = receipt.startsWith('eyJ');
+if (isJWS) {
+  const jwsResult = verifyStoreKit2JWS(receipt);
+  // ...
+}
+```
+
+#### 2. 중복 결제 처리 문제 (해결됨)
+- **증상**: 같은 구매가 여러 번 처리되어 토큰 중복 충전
+- **원인**: `PurchaseStatus.restored`도 새 구매처럼 처리됨
+- **해결**: `iap_service.dart`에서 restored는 무시
+```dart
+case PurchaseStatus.restored:
+  // 소모성 상품은 복원 안 함
+  print('[IAP] Ignoring restore: ${purchase.productID}');
+  _completePurchase(purchase);
+  break;
+```
+
+#### 3. JWS transactionId 추출 (해결됨)
+- **증상**: 같은 트랜잭션이 중복 처리됨
+- **원인**: JWS에서 transactionId 추출 안 함 → 랜덤 ID 생성
+- **해결**: `iap-verify.js`에서 JWS 트랜잭션 ID 추출
+```javascript
+if (appleResponse?.jwsTransaction?.transactionId) {
+  transactionId = appleResponse.jwsTransaction.transactionId;
+}
+```
+
+#### 4. WebView 버튼 클릭 안됨 (미해결 - 조사 중)
+- **증상**: Billing 탭에서 "선택하기" 버튼 클릭해도 아무 반응 없음
+- **발생 시점**: v95 이후
+- **시도한 것들**:
+  - v95: `_handleIAPRequest` async 변경 → 문제 발생
+  - v96: `TapGestureRecognizer` 추가 → 해결 안됨
+  - v97: `EagerGestureRecognizer` 변경 → 해결 안됨
+- **현재 조치**: v94 코드로 복원 (v98)
+- **다음 단계**: v98 빌드 후 테스트 필요
+
+**⚠️ gestureRecognizers 주의:**
+- 기존 작동 설정: `VerticalDragGestureRecognizer` + `HorizontalDragGestureRecognizer`
+- `TapGestureRecognizer`, `EagerGestureRecognizer` 추가하면 오히려 클릭 안됨!
 
 ---
 
@@ -550,3 +689,95 @@ html.ios-flutter-app .ios-hide-payment {
 - ❌ `confirm()` 다이얼로그는 iOS WKWebView에서 문제 발생 가능
 - ✅ Flutter 앱 체크는 **가장 먼저** 해야 함 (다른 로직 실행 전에)
 - ✅ iOS 인앱결제는 App Store Connect 계약/상품 등록 필수
+
+---
+
+## 2026-01-13 Android 구글 로그인 + 스플래시 화면 ✅
+
+### Android 구글 로그인 실패 해결
+
+**증상:**
+- "Google 로그인에 실패했습니다" 에러
+
+**원인 및 해결:**
+1. **SHA-1 지문 미등록**: Firebase Console에 SHA-1 인증서 지문 등록
+   - 지문: `EC:F0:E4:72:49:06:DB:83:D9:CB:86:E2:14:AA:B7:F7:05:80:FB:79`
+   - Firebase Console → 프로젝트 설정 → Android 앱 → SHA 인증서 지문 추가
+
+2. **패키지명 불일치**: build.gradle과 google-services.json 패키지명 다름
+   - google-services.json: `kr.hairgator.hairgator`
+   - build.gradle: `com.hairgator` (잘못됨)
+   - **⚠️ Play Store에 `com.hairgator`로 출시됨** → build.gradle 유지, Firebase에 `com.hairgator` 앱 추가
+
+3. **MainActivity.kt 패키지 경로**: 패키지명 변경 시 MainActivity.kt도 이동 필요
+   ```
+   android/app/src/main/kotlin/com/hairgator/MainActivity.kt
+   ```
+   ```kotlin
+   package com.hairgator
+   import io.flutter.embedding.android.FlutterActivity
+   class MainActivity: FlutterActivity()
+   ```
+
+**핵심 교훈:**
+- ❌ Play Store 출시 후 패키지명(applicationId) 변경하면 새 앱으로 인식됨
+- ✅ Firebase에 올바른 패키지명으로 Android 앱 추가
+- ✅ MainActivity.kt 파일 경로와 package 선언이 build.gradle의 namespace와 일치해야 함
+
+---
+
+### 플랜 다운그레이드 예약 기능 추가
+
+**기능:**
+- 유료 플랜 사용자가 무료 플랜으로 전환 예약 가능
+- 만료일까지 현재 플랜 유지 후 자동 전환
+- "X일 후 무료 플랜으로 전환됩니다" 안내 표시
+- 예약 취소 가능
+
+**Firestore 필드:**
+```javascript
+{
+  plan: 'basic',           // 현재 플랜
+  planExpiresAt: timestamp, // 만료일
+  pendingPlan: 'free',     // 예약된 다음 플랜
+  pendingPlanSetAt: timestamp // 예약 설정 시간
+}
+```
+
+**수정 파일:**
+- `index.html`: 다운그레이드 버튼 + 예약 안내 UI + CSS
+- `js/main.js`: `requestDowngrade()`, `cancelPendingDowngrade()` 함수
+- `js/firebase-bridge.js`: `setPendingPlan()`, `getTokenBalance()`에 pendingPlan 추가
+- `netlify/functions/check-plan-expiration.js`: pendingPlan 적용 로직
+
+---
+
+### 스플래시 화면 추가 (v86)
+
+**패키지:** `flutter_native_splash: ^2.4.0`
+
+**설정 (pubspec.yaml):**
+```yaml
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/splash_logo.png
+  android_12:
+    color: "#FFFFFF"
+    image: assets/splash_logo.png
+  ios: true
+  android: true
+```
+
+**로고 파일:**
+- 원본: `C:\Users\김민재\Desktop\로고.png`
+- 복사: `D:\hairgator_dev\hairgator_flutter_app\assets\splash_logo.png`
+
+**생성 명령:**
+```bash
+dart run flutter_native_splash:create
+```
+
+**결과:**
+- Android: `res/drawable-*/splash.png` 생성
+- iOS: `LaunchImage` 업데이트
+- 흰색 배경 + 중앙 HAIRGATOR 로고

@@ -517,7 +517,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 플랜 선택 및 결제 (전역 함수)
     window.selectPlanAndPay = async function(planType) {
-        alert('[DEBUG] selectPlanAndPay: ' + planType + '\nIAPChannel: ' + (typeof window.IAPChannel));
         console.log('💳 플랜 선택:', planType);
 
         // 로그인 확인
