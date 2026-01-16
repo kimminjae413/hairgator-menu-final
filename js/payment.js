@@ -72,17 +72,20 @@ const HAIRGATOR_PAYMENT = {
     }));
 
     try {
-      // Flutter WebView 감지 (팝업 차단 문제 방지 → 리다이렉션 강제)
+      // 터치 기기 또는 모바일/태블릿 감지 → 리다이렉션 강제
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isMobileOrTablet = /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent);
       const isFlutterWebView = typeof window.FlutterChannel !== 'undefined' ||
-                               typeof window.DownloadChannel !== 'undefined' ||
-                               navigator.userAgent.includes('Flutter');
+                               typeof window.DownloadChannel !== 'undefined';
 
-      // Flutter WebView면 항상 리다이렉션, 아니면 PC=팝업/모바일=리다이렉션
-      const windowType = isFlutterWebView
+      // 터치 기기이거나 모바일/태블릿이면 리다이렉션 사용 (WebView 팝업 차단 방지)
+      const forceRedirection = isTouchDevice || isMobileOrTablet || isFlutterWebView;
+
+      const windowType = forceRedirection
         ? { pc: 'REDIRECTION', mobile: 'REDIRECTION' }
         : { pc: 'POPUP', mobile: 'REDIRECTION' };
 
-      console.log('💳 결제 windowType:', windowType, 'isFlutterWebView:', isFlutterWebView);
+      console.log('💳 결제 windowType:', windowType, { isTouchDevice, isMobileOrTablet, isFlutterWebView });
 
       // 포트원 V2 결제 요청
       const response = await PortOne.requestPayment({
@@ -397,12 +400,15 @@ async function requestIdentityVerification(userId) {
     // 고유 인증 ID 생성
     const identityVerificationId = `HG_ID_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // Flutter WebView 감지 (팝업 차단 문제 방지)
+    // 터치 기기 또는 모바일/태블릿 감지 → 리다이렉션 강제
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isMobileOrTablet = /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent);
     const isFlutterWebView = typeof window.FlutterChannel !== 'undefined' ||
-                             typeof window.DownloadChannel !== 'undefined' ||
-                             navigator.userAgent.includes('Flutter');
+                             typeof window.DownloadChannel !== 'undefined';
 
-    const windowType = isFlutterWebView
+    const forceRedirection = isTouchDevice || isMobileOrTablet || isFlutterWebView;
+
+    const windowType = forceRedirection
       ? { pc: 'REDIRECTION', mobile: 'REDIRECTION' }
       : { pc: 'POPUP', mobile: 'REDIRECTION' };
 
