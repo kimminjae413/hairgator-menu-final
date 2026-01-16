@@ -486,13 +486,174 @@ async function requestIdentityVerification(userId) {
 }
 
 /**
+ * 예쁜 확인 모달 표시
+ */
+function showConfirmModal(title, message, onConfirm, onCancel) {
+  // 기존 모달 제거
+  const existingModal = document.getElementById('customConfirmModal');
+  if (existingModal) existingModal.remove();
+
+  const modalHtml = `
+    <div id="customConfirmModal" style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999999;
+      backdrop-filter: blur(4px);
+    ">
+      <div style="
+        background: linear-gradient(145deg, #1a1a2e, #16213e);
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 340px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        text-align: center;
+      ">
+        <div style="
+          font-size: 48px;
+          margin-bottom: 16px;
+        ">🔐</div>
+        <h3 style="
+          color: #fff;
+          font-size: 20px;
+          font-weight: 600;
+          margin: 0 0 12px 0;
+        ">${title}</h3>
+        <p style="
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 14px;
+          line-height: 1.6;
+          margin: 0 0 24px 0;
+        ">${message}</p>
+        <div style="display: flex; gap: 12px;">
+          <button id="confirmModalCancel" style="
+            flex: 1;
+            padding: 14px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+          ">취소</button>
+          <button id="confirmModalOk" style="
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+          ">확인</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  const modal = document.getElementById('customConfirmModal');
+  const okBtn = document.getElementById('confirmModalOk');
+  const cancelBtn = document.getElementById('confirmModalCancel');
+
+  okBtn.onclick = () => {
+    modal.remove();
+    if (onConfirm) onConfirm();
+  };
+
+  cancelBtn.onclick = () => {
+    modal.remove();
+    if (onCancel) onCancel();
+  };
+
+  // 배경 클릭 시 닫기
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      modal.remove();
+      if (onCancel) onCancel();
+    }
+  };
+}
+
+/**
+ * 예쁜 알림 모달 표시
+ */
+function showAlertModal(title, message, icon = '✅') {
+  const existingModal = document.getElementById('customAlertModal');
+  if (existingModal) existingModal.remove();
+
+  const modalHtml = `
+    <div id="customAlertModal" style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999999;
+      backdrop-filter: blur(4px);
+    ">
+      <div style="
+        background: linear-gradient(145deg, #1a1a2e, #16213e);
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 320px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        text-align: center;
+      ">
+        <div style="font-size: 48px; margin-bottom: 16px;">${icon}</div>
+        <h3 style="color: #fff; font-size: 18px; font-weight: 600; margin: 0 0 12px 0;">${title}</h3>
+        <p style="color: rgba(255, 255, 255, 0.7); font-size: 14px; line-height: 1.6; margin: 0 0 24px 0;">${message}</p>
+        <button id="alertModalOk" style="
+          width: 100%;
+          padding: 14px 20px;
+          border: none;
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          color: #fff;
+          border-radius: 12px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        ">확인</button>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  const modal = document.getElementById('customAlertModal');
+  const okBtn = document.getElementById('alertModalOk');
+
+  okBtn.onclick = () => modal.remove();
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+}
+
+/**
  * 본인인증 필수 확인 후 결제 진행
  * @param {string} planKey - 요금제 키
  */
 async function verifyAndPay(planKey) {
   const userId = HAIRGATOR_PAYMENT.getUserId();
   if (!userId) {
-    alert('로그인이 필요합니다.');
+    showAlertModal('로그인 필요', '결제를 진행하려면 로그인이 필요합니다.', '🔒');
     return;
   }
 
@@ -509,26 +670,42 @@ async function verifyAndPay(planKey) {
   const verification = await checkIdentityVerification(userId);
 
   if (!verification) {
-    // 본인인증 필요
-    const confirmed = confirm('결제를 진행하려면 본인인증이 필요합니다.\n본인인증을 진행하시겠습니까?');
-    if (!confirmed) return;
+    // 본인인증 필요 - 예쁜 모달로 확인
+    return new Promise((resolve) => {
+      showConfirmModal(
+        '본인인증 필요',
+        '안전한 결제를 위해 본인인증이 필요합니다.<br>본인인증을 진행하시겠습니까?',
+        async () => {
+          // 확인 클릭
+          try {
+            const result = await requestIdentityVerification(userId);
 
-    try {
-      const result = await requestIdentityVerification(userId);
+            if (result.cancelled) {
+              resolve();
+              return;
+            }
 
-      if (result.cancelled) {
-        return;
-      }
-
-      if (result.success) {
-        alert(`본인인증이 완료되었습니다!\n${result.name}님, 결제를 진행합니다.`);
-        // 본인인증 완료 후 결제 진행
-        await showPaymentOptions(planKey);
-      }
-    } catch (error) {
-      alert(error.message || '본인인증에 실패했습니다.');
-      return;
-    }
+            if (result.success) {
+              showAlertModal('인증 완료', `${result.name}님, 본인인증이 완료되었습니다!<br>결제를 진행합니다.`, '🎉');
+              // 1.5초 후 결제 진행
+              setTimeout(async () => {
+                const alertModal = document.getElementById('customAlertModal');
+                if (alertModal) alertModal.remove();
+                await showPaymentOptions(planKey);
+                resolve();
+              }, 1500);
+            }
+          } catch (error) {
+            showAlertModal('인증 실패', error.message || '본인인증에 실패했습니다.', '❌');
+            resolve();
+          }
+        },
+        () => {
+          // 취소 클릭
+          resolve();
+        }
+      );
+    });
   } else {
     // 이미 본인인증 완료 - 바로 결제
     await showPaymentOptions(planKey);

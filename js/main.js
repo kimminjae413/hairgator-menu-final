@@ -515,27 +515,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // 마이페이지 정보 업데이트 함수 전역 노출
     window.updateMypageInfo = updateMypageInfo;
 
-    // 🔴 디버그 함수 (화면에 메시지 표시)
-    function showDebug(msg) {
-        console.log('🔴 DEBUG:', msg);
-        let debugDiv = document.getElementById('paymentDebug');
-        if (!debugDiv) {
-            debugDiv = document.createElement('div');
-            debugDiv.id = 'paymentDebug';
-            debugDiv.style.cssText = 'position:fixed;top:50px;left:10px;right:10px;background:red;color:white;padding:10px;z-index:999999;font-size:12px;max-height:200px;overflow:auto;';
-            document.body.appendChild(debugDiv);
-        }
-        debugDiv.innerHTML += msg + '<br>';
-    }
-
     // 플랜 선택 및 결제 (전역 함수)
     window.selectPlanAndPay = async function(planType) {
-        showDebug('1. selectPlanAndPay 호출: ' + planType);
+        console.log('💳 selectPlanAndPay 호출:', planType);
 
         // 로그인 확인
         if (typeof firebase !== 'undefined' && firebase.auth) {
             const user = firebase.auth().currentUser;
-            showDebug('2. Firebase user: ' + (user ? user.uid : 'null'));
             if (!user) {
                 alert('로그인이 필요합니다.');
                 window.location.href = 'login.html';
@@ -543,10 +529,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // ⭐ iOS Flutter 앱이면 인앱결제 사용 (payment.js의 isIOSFlutterApp 호출)
-        showDebug('3. isIOSFlutterApp: ' + (typeof window.isIOSFlutterApp === 'function' ? window.isIOSFlutterApp() : 'N/A'));
+        // ⭐ iOS Flutter 앱이면 인앱결제 사용
         if (typeof window.isIOSFlutterApp === 'function' && window.isIOSFlutterApp()) {
-            showDebug('4. iOS IAP 진행');
+            console.log('[IAP] iOS Flutter 앱 감지 → 인앱결제 진행');
             if (typeof window.requestIOSInAppPurchase === 'function') {
                 window.requestIOSInAppPurchase(planType);
                 return;
@@ -554,14 +539,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // 결제 처리 (payment.js 사용)
-        showDebug('5. verifyAndPay 존재: ' + (typeof window.verifyAndPay));
         if (typeof window.verifyAndPay === 'function') {
             try {
-                showDebug('6. verifyAndPay 호출 시작');
                 await window.verifyAndPay(planType);
-                showDebug('7. verifyAndPay 완료');
             } catch (e) {
-                showDebug('ERROR: ' + e.message);
+                console.error('결제 오류:', e);
                 alert('결제 처리 중 오류가 발생했습니다.');
             }
         } else if (typeof window.showPaymentOptions === 'function') {
