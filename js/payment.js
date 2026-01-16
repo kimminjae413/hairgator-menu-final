@@ -163,26 +163,50 @@ const HAIRGATOR_PAYMENT = {
   },
 
   /**
-   * 현재 로그인한 사용자 ID 가져오기
+   * 현재 로그인한 사용자 ID 가져오기 (이메일 기반 문서 ID 우선)
    */
   getUserId() {
-    // 1. URL 파라미터에서 가져오기
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlUserId = urlParams.get('userId');
-    if (urlUserId) return urlUserId;
+    // 이메일을 문서 ID로 변환하는 헬퍼 함수
+    const sanitizeEmail = (email) => {
+      if (!email) return null;
+      return email.replace(/@/g, '_').replace(/\./g, '_');
+    };
 
-    // 2. window.currentDesigner에서 가져오기 (Firebase 기반)
-    if (window.currentDesigner?.id) return window.currentDesigner.id;
+    // 1. 이메일 기반 ID 우선 (currentDesigner.email에서 생성)
+    if (window.currentDesigner?.email) {
+      const emailBasedId = sanitizeEmail(window.currentDesigner.email);
+      console.log('💳 getUserId: 이메일 기반 ID 사용:', emailBasedId);
+      return emailBasedId;
+    }
 
-    // 3. localStorage의 firebase_user에서 가져오기
+    // 2. currentDesigner.id (이미 이메일 기반이어야 함)
+    if (window.currentDesigner?.id && !window.currentDesigner.id.startsWith('kakao_')) {
+      console.log('💳 getUserId: currentDesigner.id 사용:', window.currentDesigner.id);
+      return window.currentDesigner.id;
+    }
+
+    // 3. localStorage의 firebase_user에서 이메일 기반 ID
     try {
       const firebaseUser = localStorage.getItem('firebase_user');
       if (firebaseUser) {
         const parsed = JSON.parse(firebaseUser);
-        if (parsed.id) return parsed.id;
+        if (parsed.email) {
+          const emailBasedId = sanitizeEmail(parsed.email);
+          console.log('💳 getUserId: localStorage 이메일 기반 ID:', emailBasedId);
+          return emailBasedId;
+        }
+        if (parsed.id && !parsed.id.startsWith('kakao_')) {
+          return parsed.id;
+        }
       }
     } catch (_e) {}
 
+    // 4. URL 파라미터 (마지막 수단)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlUserId = urlParams.get('userId');
+    if (urlUserId) return urlUserId;
+
+    console.warn('💳 getUserId: ID를 찾을 수 없음');
     return null;
   },
 
