@@ -67,6 +67,20 @@
             // 이 코드가 없으면 iOS에서 버튼 클릭이 안 됨
             // ⚠️ 절대 삭제 금지! (CLAUDE.md 참조)
             var lastPlanBtnCall = 0;  // 중복 호출 방지용 타임스탬프
+
+            // 🔧 디버그 배너 표시 함수
+            function showDebugBanner(msg) {
+                var banner = document.getElementById('ipad-debug-banner');
+                if (!banner) {
+                    banner = document.createElement('div');
+                    banner.id = 'ipad-debug-banner';
+                    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:10px;font-size:12px;z-index:999999;white-space:pre-wrap;max-height:200px;overflow:auto;';
+                    document.body.appendChild(banner);
+                }
+                banner.textContent = msg;
+                banner.style.display = 'block';
+            }
+
             function handlePlanBtnEvent(e) {
                 var target = e.target;
                 if (target && target.classList && target.classList.contains('plan-btn')) {
@@ -84,6 +98,21 @@
                                 return;
                             }
                             lastPlanBtnCall = now;
+
+                            // 🔧 디버그 정보 수집
+                            var hasIAPChannel = typeof window.IAPChannel !== 'undefined';
+                            var hasPostMessage = hasIAPChannel && typeof window.IAPChannel.postMessage === 'function';
+                            var ua = navigator.userAgent;
+                            var isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                            var isIOSApp = typeof window.isIOSFlutterApp === 'function' ? window.isIOSFlutterApp() : 'N/A';
+
+                            var debugMsg = '[클릭 감지] ' + e.type + ' / plan: ' + planType + '\n' +
+                                'IAPChannel: ' + hasIAPChannel + '\n' +
+                                'postMessage: ' + hasPostMessage + '\n' +
+                                'isIOS: ' + isIOS + '\n' +
+                                'isIOSFlutterApp(): ' + isIOSApp + '\n' +
+                                'UA: ' + ua.substring(0, 100);
+                            showDebugBanner(debugMsg);
 
                             console.log('[iOS-capture] plan-btn 이벤트 감지:', e.type, planType);
                             e.stopPropagation();
