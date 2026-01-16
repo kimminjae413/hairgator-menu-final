@@ -118,17 +118,31 @@
                             e.stopPropagation();
                             e.preventDefault();
 
-                            // 🔧 selectPlanAndPay 호출 전 디버그
-                            try {
-                                if (typeof window.selectPlanAndPay === 'function') {
-                                    showDebugBanner(debugMsg + '\n\n>>> selectPlanAndPay 호출 중...');
-                                    window.selectPlanAndPay(planType);
-                                    showDebugBanner(debugMsg + '\n\n>>> selectPlanAndPay 호출 완료');
-                                } else {
-                                    showDebugBanner(debugMsg + '\n\n❌ selectPlanAndPay 함수 없음!');
+                            // 🔧 iOS 인앱결제 직접 호출 (캐시 우회)
+                            var productIds = {
+                                'basic': 'hairgator_basic',
+                                'pro': 'hairgator_pro',
+                                'business': 'hairgator_business',
+                                'tokens_5000': 'hairgator_tokens_5000'
+                            };
+                            var productId = productIds[planType];
+
+                            if (hasIAPChannel && hasPostMessage && productId) {
+                                try {
+                                    showDebugBanner(debugMsg + '\n\n>>> IAPChannel.postMessage 직접 호출\nproductId: ' + productId);
+                                    window.IAPChannel.postMessage(JSON.stringify({
+                                        action: 'purchase',
+                                        productId: productId
+                                    }));
+                                    showDebugBanner(debugMsg + '\n\n✅ IAPChannel.postMessage 완료!\nproductId: ' + productId);
+                                } catch (err) {
+                                    showDebugBanner(debugMsg + '\n\n❌ postMessage 에러: ' + err.message);
                                 }
-                            } catch (err) {
-                                showDebugBanner(debugMsg + '\n\n❌ 에러: ' + err.message);
+                            } else {
+                                // iOS 앱이 아니면 기존 함수 호출
+                                if (typeof window.selectPlanAndPay === 'function') {
+                                    window.selectPlanAndPay(planType);
+                                }
                             }
                         }
                     }
