@@ -258,6 +258,40 @@ webview_flutter: ^4.13.0  # iOS 18.2 클릭 수정 포함
 
 ---
 
+### 🔴 iOS WebView 클릭 이벤트 capture:true 필수! (2026-01-16) - 절대 삭제 금지!
+
+**증상:**
+- iOS에서 결제 버튼, 플랜 선택 버튼 등 클릭해도 아무 반응 없음
+- Android: 정상 ✅
+- **iOS만 문제** ❌
+
+**원인:**
+- iOS WKWebView에서 이벤트 버블링이 제대로 작동하지 않는 경우 있음
+- document 레벨에서 capture 단계 이벤트 리스너가 있어야 이벤트 전파가 정상화됨
+
+**해결 (index.html - 절대 삭제 금지!):**
+```javascript
+// ⭐ iOS WebView 클릭 이벤트 전파 보장 (capture:true 필수!)
+// 이 코드가 없으면 iOS에서 버튼 클릭이 안 됨
+document.addEventListener('click', function(e) {
+    // 클릭 이벤트 캡처 단계에서 잡아서 전파 보장
+    // 실제 처리는 하지 않음 (버블링에서 처리됨)
+}, true);  // ← capture:true 필수!
+```
+
+**위치:** `index.html` 상단 `<script>` 태그 내 (Flutter 앱 감지 코드 바로 아래)
+
+**⚠️ 경고:**
+- ❌ 이 코드 절대 삭제하지 말 것!
+- ❌ 디버그 코드 정리할 때도 이 코드는 유지!
+- ✅ 빈 함수처럼 보여도 반드시 필요함
+
+**핵심 교훈:**
+- capture:true 이벤트 리스너가 iOS WebView 이벤트 전파를 정상화시킴
+- 함수 내용이 비어있어도 리스너 등록 자체가 중요함
+
+---
+
 ### Apple 로그인 "Invalid OAuth response" 에러 (2026-01-12 수정)
 
 **증상:**
