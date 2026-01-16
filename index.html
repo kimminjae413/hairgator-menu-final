@@ -127,7 +127,8 @@
                             };
                             var productId = productIds[planType];
 
-                            if (hasIAPChannel && hasPostMessage && productId) {
+                            // ⭐ iOS 기기 + IAPChannel 있을 때만 인앱결제
+                            if (isIOS && hasIAPChannel && hasPostMessage && productId) {
                                 try {
                                     showDebugBanner(debugMsg + '\n\n>>> IAPChannel.postMessage 직접 호출\nproductId: ' + productId);
                                     window.IAPChannel.postMessage(JSON.stringify({
@@ -139,7 +140,8 @@
                                     showDebugBanner(debugMsg + '\n\n❌ postMessage 에러: ' + err.message);
                                 }
                             } else {
-                                // iOS 앱이 아니면 기존 함수 호출
+                                // Android 또는 iOS 아닌 경우 → 외부결제 (PortOne)
+                                showDebugBanner(debugMsg + '\n\n>>> 외부결제 호출 (isIOS=' + isIOS + ')');
                                 if (typeof window.selectPlanAndPay === 'function') {
                                     window.selectPlanAndPay(planType);
                                 }
