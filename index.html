@@ -62,6 +62,13 @@
             setTimeout(checkIOSFlutterApp, 500);
             setTimeout(checkIOSFlutterApp, 1000);
             document.addEventListener('DOMContentLoaded', checkIOSFlutterApp);
+
+            // ⭐ iOS WebView 클릭 이벤트 전파 보장 (capture:true 필수!)
+            // 이 코드가 없으면 iOS에서 버튼 클릭이 안 됨
+            document.addEventListener('click', function(e) {
+                // 클릭 이벤트 캡처 단계에서 잡아서 전파 보장
+                // 실제 처리는 하지 않음 (버블링에서 처리됨)
+            }, true);
         })();
     </script>
 
