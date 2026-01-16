@@ -1106,9 +1106,17 @@ async function processPaymentWithNewCard(planKey, userId, fromModal = false) {
  * @returns {boolean}
  */
 function isIOSFlutterApp() {
-  // Flutter WebView에서 IAPChannel이 주입되어 있으면 iOS 인앱결제 사용
-  return typeof window.IAPChannel !== 'undefined' &&
-         typeof window.IAPChannel.postMessage === 'function';
+  // 1. IAPChannel이 있어야 함
+  const hasIAPChannel = typeof window.IAPChannel !== 'undefined' &&
+                        typeof window.IAPChannel.postMessage === 'function';
+
+  // 2. 실제로 iOS 기기여야 함 (Android에서 IAPChannel이 잘못 등록된 경우 방지)
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  console.log('[IAP] isIOSFlutterApp 체크:', { hasIAPChannel, isIOS, userAgent: navigator.userAgent });
+
+  return hasIAPChannel && isIOS;
 }
 
 /**
