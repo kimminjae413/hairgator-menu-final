@@ -63,12 +63,40 @@
             setTimeout(checkIOSFlutterApp, 1000);
             document.addEventListener('DOMContentLoaded', checkIOSFlutterApp);
 
-            // ⭐ iOS WebView 클릭 이벤트 전파 보장 (capture:true 필수!)
+            // ⭐ iOS WebView 클릭/터치 이벤트 직접 처리 (capture:true 필수!)
             // 이 코드가 없으면 iOS에서 버튼 클릭이 안 됨
-            document.addEventListener('click', function(e) {
-                // 클릭 이벤트 캡처 단계에서 잡아서 전파 보장
-                // 실제 처리는 하지 않음 (버블링에서 처리됨)
-            }, true);
+            // ⚠️ 절대 삭제 금지! (CLAUDE.md 참조)
+            var lastPlanBtnCall = 0;  // 중복 호출 방지용 타임스탬프
+            function handlePlanBtnEvent(e) {
+                var target = e.target;
+                if (target && target.classList && target.classList.contains('plan-btn')) {
+                    var planCard = target.closest('[data-plan]');
+                    if (planCard) {
+                        var planType = planCard.getAttribute('data-plan');
+                        // free 플랜은 선택 불가, disabled 버튼도 무시
+                        if (planType && planType !== 'free' && !target.disabled) {
+                            // 중복 호출 방지 (500ms 내 동일 요청 무시)
+                            var now = Date.now();
+                            if (now - lastPlanBtnCall < 500) {
+                                console.log('[iOS-capture] 중복 호출 무시:', e.type);
+                                e.stopPropagation();
+                                e.preventDefault();
+                                return;
+                            }
+                            lastPlanBtnCall = now;
+
+                            console.log('[iOS-capture] plan-btn 이벤트 감지:', e.type, planType);
+                            e.stopPropagation();
+                            e.preventDefault();
+                            if (typeof window.selectPlanAndPay === 'function') {
+                                window.selectPlanAndPay(planType);
+                            }
+                        }
+                    }
+                }
+            }
+            document.addEventListener('click', handlePlanBtnEvent, true);
+            document.addEventListener('touchend', handlePlanBtnEvent, true);
         })();
     </script>
 

@@ -3823,8 +3823,20 @@ async function updateProductsPagePlan() {
                     btn.className = 'plan-btn plan-btn-primary';
                     btn.disabled = false;
                     btn.textContent = '선택하기';
-                    btn.onclick = () => selectPlanAndPay(plan);
-                    console.log('🔧 [updateProductsPage]', plan, 'onclick 설정 완료, btn.onclick:', typeof btn.onclick);
+
+                    // ⭐ iOS WebView 호환성: setAttribute로 인라인 onclick 설정
+                    // JavaScript로 btn.onclick = ... 설정하면 iOS에서 안 먹을 수 있음
+                    btn.setAttribute('onclick', `selectPlanAndPay('${plan}')`);
+
+                    // ⭐ iOS 터치 이벤트 백업 (onclick이 안 먹을 때 대비)
+                    btn.ontouchend = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('[IAP] ontouchend 호출:', plan);
+                        selectPlanAndPay(plan);
+                    };
+
+                    console.log('🔧 [updateProductsPage]', plan, 'onclick 설정 완료');
                 }
             }
         });
