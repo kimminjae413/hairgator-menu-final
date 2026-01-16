@@ -1327,24 +1327,40 @@ function isIOSFlutterApp() {
 function requestIOSInAppPurchase(planKey) {
   console.log('[IAP] requestIOSInAppPurchase 함수 진입, planKey:', planKey);
 
+  // 🔧 디버그 배너 업데이트
+  var banner = document.getElementById('ipad-debug-banner');
+  if (banner) {
+    banner.textContent += '\n\n>>> requestIOSInAppPurchase 진입: ' + planKey;
+  }
+
   const plan = HAIRGATOR_PAYMENT.plans[planKey];
   console.log('[IAP] plan 객체:', plan);
 
   if (!plan || !plan.productId) {
     console.error('[IAP] 유효하지 않은 요금제:', planKey);
-    console.error('[IAP] 유효하지 않은 요금제:', planKey);
+    if (banner) banner.textContent += '\n❌ 유효하지 않은 요금제: ' + planKey;
     return;
   }
+
+  if (banner) banner.textContent += '\n>>> productId: ' + plan.productId;
 
   console.log('[IAP] iOS 인앱결제 요청:', plan.productId);
 
   // Flutter에 구매 요청 전송
-  window.IAPChannel.postMessage(JSON.stringify({
-    action: 'purchase',
-    productId: plan.productId
-  }));
+  try {
+    if (banner) banner.textContent += '\n>>> IAPChannel.postMessage 호출 중...';
 
-  console.log('[IAP] IAPChannel.postMessage 완료');
+    window.IAPChannel.postMessage(JSON.stringify({
+      action: 'purchase',
+      productId: plan.productId
+    }));
+
+    if (banner) banner.textContent += '\n✅ IAPChannel.postMessage 완료!';
+    console.log('[IAP] IAPChannel.postMessage 완료');
+  } catch (err) {
+    console.error('[IAP] postMessage 에러:', err);
+    if (banner) banner.textContent += '\n❌ postMessage 에러: ' + err.message;
+  }
 }
 
 /**

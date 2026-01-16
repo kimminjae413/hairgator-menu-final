@@ -519,9 +519,16 @@ document.addEventListener('DOMContentLoaded', function() {
     window.selectPlanAndPay = async function(planType) {
         console.log('💳 selectPlanAndPay 호출:', planType);
 
+        // 🔧 디버그 배너 업데이트
+        var banner = document.getElementById('ipad-debug-banner');
+        if (banner) {
+            banner.textContent += '\n\n[main.js] selectPlanAndPay 진입: ' + planType;
+        }
+
         // 로그인 확인
         if (typeof firebase !== 'undefined' && firebase.auth) {
             const user = firebase.auth().currentUser;
+            if (banner) banner.textContent += '\n로그인 체크: ' + (user ? user.uid : 'null');
             if (!user) {
                 alert('로그인이 필요합니다.');
                 window.location.href = 'login.html';
@@ -530,11 +537,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // ⭐ iOS Flutter 앱이면 인앱결제 사용
-        if (typeof window.isIOSFlutterApp === 'function' && window.isIOSFlutterApp()) {
+        var isIOSApp = typeof window.isIOSFlutterApp === 'function' && window.isIOSFlutterApp();
+        if (banner) banner.textContent += '\nisIOSFlutterApp: ' + isIOSApp;
+
+        if (isIOSApp) {
             console.log('[IAP] iOS Flutter 앱 감지 → 인앱결제 진행');
+            if (banner) banner.textContent += '\n>>> requestIOSInAppPurchase 호출 예정';
             if (typeof window.requestIOSInAppPurchase === 'function') {
                 window.requestIOSInAppPurchase(planType);
                 return;
+            } else {
+                if (banner) banner.textContent += '\n❌ requestIOSInAppPurchase 함수 없음!';
             }
         }
 
