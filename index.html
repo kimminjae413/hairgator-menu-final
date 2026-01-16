@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <script>alert('HTML 로드됨! 버전: 2026-01-16-A');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HAIRGATOR - Professional Hair Style Menu</title>
@@ -1564,6 +1563,20 @@
 
 </head>
 <body>
+
+    <!-- 🔴 디버그 배너 - 화면 상단에 항상 표시 -->
+    <div id="debugBanner" style="position:fixed; top:0; left:0; right:0; background:red; color:white; padding:10px; z-index:999999; font-size:16px; text-align:center;">
+        🔴 DEBUG: 버전 2026-01-16-B 로드됨
+    </div>
+    <script>
+        // 디버그: 버튼 클릭 감지
+        document.addEventListener('click', function(e) {
+            var banner = document.getElementById('debugBanner');
+            if (banner) {
+                banner.innerHTML = '🟢 클릭됨: ' + (e.target.tagName || 'unknown') + ' - ' + (e.target.className || 'no-class').substring(0,30);
+            }
+        }, true);
+    </script>
 
     <!-- 모바일 감지 안내 모달 -->
     <div id="mobileNoticeModal" class="mobile-notice-modal" style="display: none;">
