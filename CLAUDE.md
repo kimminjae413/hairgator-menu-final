@@ -78,7 +78,7 @@ Claude가 다음 상황에서는 **반드시** "추측입니다" 또는 "확실�
 | 플랫폼 | 스토어 제출 | 최신 빌드 |
 |--------|------------|----------|
 | **Android** | v73 | v86 (스플래시 화면 추가) |
-| **iOS** | v76 | v111 (IAP 디버그 로그 추가) |
+| **iOS** | v76 | v115 (iPad InAppWebView 지원) |
 
 ### 빌드 파일 경로
 - **APK**: `D:\hairgator_dev\hairgator_flutter_app\build\app\outputs\flutter-apk\app-release.apk`
@@ -90,6 +90,9 @@ Claude가 다음 상황에서는 **반드시** "추측입니다" 또는 "확실�
 
 | 버전 | 상태 | 내용 |
 |------|------|------|
+| v115 | 🔄 테스트 중 | iPad InAppWebView + JavaScript Channel 브릿지 완전 구현 |
+| v114 | ✅ iPhone Pro/Biz 작동 | buyNonConsumable 수정 (Non-Renewing Subscription용) |
+| v113 | ❌ 실패 | buyConsumable → buyNonConsumable 변경 시도 |
 | v112 | 🔄 테스트 중 | v107 코드로 롤백 (iPhone 결제 복원 시도) |
 | v111 | ❌ iPhone+iPad 안됨 | IAP 상세 로그 추가 (buyConsumable true인데 결제 팝업 안 뜸) |
 | v110 | ❌ iPhone+iPad 안됨 | 단계별 스낵바 디버그 (1~6번 true까지 나오고 끝) |
