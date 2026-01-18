@@ -88,7 +88,9 @@
       "Bash(unzip:*)",
       "WebFetch(domain:pub.dev)",
       "Bash(adb install:*)",
-      "Bash(D:hairgator_devAndroidSdkplatform-toolsadb.exe install -r \"D:\\\\hairgator_dev\\\\hairgator_flutter_app\\\\build\\\\app\\\\outputs\\\\flutter-apk\\\\app-release.apk\")"
+      "Bash(D:hairgator_devAndroidSdkplatform-toolsadb.exe install -r \"D:\\\\hairgator_dev\\\\hairgator_flutter_app\\\\build\\\\app\\\\outputs\\\\flutter-apk\\\\app-release.apk\")",
+      "Bash(git -C \"D:/hairgator_dev/hairgator_flutter_app\" show 2245602:lib/screens/home_screen.dart)",
+      "Bash(git -C \"D:/hairgator_dev/hairgator_flutter_app\" checkout 2245602 -- lib/screens/home_screen.dart)"
     ],
     "deny": [],
     "ask": []
