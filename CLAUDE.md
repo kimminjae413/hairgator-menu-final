@@ -131,27 +131,19 @@ Claude가 다음 상황에서는 **반드시** "추측입니다" 또는 "확실�
 - **결과**: WebView 버튼 클릭이 아예 안 됨 (JS 실행 안 됨)
 - **해결**: v94 코드로 복원 → v98
 
-### 🔴 v108~v111 iPhone+iPad 모두 결제 안됨! (2026-01-18)
+### v108~v113 문제 정리 (2026-01-18 해결됨)
 
-**증상:**
-- 상품 3개 정상 로드 ✅
-- `buyConsumable` 호출 → true 반환 ✅
-- **Apple 결제 팝업이 안 뜸** ❌
-- iPhone, iPad 모두 동일 증상
+**v108~v111: iPhone+iPad 모두 결제 안됨**
+- 원인: `_runJavaScript` 헬퍼 추가로 iPhone 코드 망가짐
+- 해결: v112에서 v107 코드로 롤백
 
-**v107까지는 iPhone 작동했음!**
+**v112~v113: Basic 플랜만 구매 안됨**
+- 원인: `buyConsumable()` 사용 (Non-Renewing Subscription에 부적합)
+- 해결: v114에서 `buyNonConsumable()` 로 수정
 
-**v108 변경 내용 (의심):**
-- `_runJavaScript` 헬퍼 함수 추가
-- `_sendDebugToWeb`, `_onIAPSuccess`, `_onIAPError`, `_sendProductsToWeb`에서 `_runJavaScript` 사용
-- iPad IAPChannel 콜백에서 `_sendDebugToWeb` 사용
-
-**원인 추측:**
-- v108 코드 변경이 iPhone IAP에 영향을 줬을 가능성
-- 또는 Sandbox 계정 / App Store Connect 문제
-
-**다음 시도:**
-- v107로 롤백해서 iPhone 테스트 필요
+**v114: iPhone Pro/Business 정상, iPad 안됨**
+- 원인: iPad WKWebView Desktop Mode에서 JavaScript Channel 콜백 안됨
+- 해결: v115에서 iPad용 `flutter_inappwebview` 적용
 
 ---
 
@@ -360,9 +352,9 @@ final oauthCredential = OAuthProvider("apple.com").credential(
 
 ---
 
-### iOS 인앱결제 (IAP) 문제들 (2026-01-16 업데이트) - 중요!
+### iOS 인앱결제 (IAP) 문제들 (2026-01-18 업데이트) - 중요!
 
-**현재 상태: v107 테스트 중**
+**현재 상태: v115 테스트 중**
 
 #### 1. StoreKit 2 JWS 형식 문제 (해결됨)
 - **증상**: Apple 영수증 검증 실패 (에러 코드 21002)
@@ -379,59 +371,132 @@ final oauthCredential = OAuthProvider("apple.com").credential(
 - **원인**: JWS에서 transactionId 추출 안 함 → 랜덤 ID 생성
 - **해결**: `iap-verify.js`에서 JWS 트랜잭션 ID 추출
 
-#### 4. ⭐ iPad JavaScript Channel 문제 (진행 중 - 2026-01-16)
+#### 4. ⭐ buyConsumable vs buyNonConsumable (2026-01-18 해결!)
+
+**증상:**
+- Basic 플랜: 구매 불가 ❌ (이미 구매한 상품이라고 뜸)
+- Pro, Business 플랜: 정상 구매 ✅
+
+**원인:**
+- App Store Connect에서 **Non-Renewing Subscription** 타입으로 상품 생성
+- `buyConsumable()` 사용하면 Apple이 이미 구매한 상품으로 인식
+- Non-Renewing Subscription은 `buyNonConsumable()` 사용해야 함!
+
+**해결 (v114 - iap_service.dart):**
+```dart
+// ❌ 잘못된 코드
+final success = await _iap.buyConsumable(
+  purchaseParam: purchaseParam,
+  autoConsume: true,
+);
+
+// ✅ 올바른 코드 - Non-Renewing Subscription은 buyNonConsumable!
+final success = await _iap.buyNonConsumable(
+  purchaseParam: purchaseParam,
+);
+```
+
+**핵심 교훈:**
+- ❌ `buyConsumable()`: 소모품 (게임 아이템 등 무한 재구매 가능)
+- ✅ `buyNonConsumable()`: 비소모품 + Non-Renewing Subscription
+- App Store Connect 상품 타입과 Flutter 구매 메서드 일치시켜야 함!
+
+#### 5. ⭐ iPad JavaScript Channel 문제 (v115에서 해결!)
 
 **증상:**
 - **iPhone**: 결제 버튼 정상 작동 ✅
 - **iPad**: 결제 버튼 클릭해도 Flutter 콜백 실행 안됨 ❌
 - 웹에서 `IAPChannel.postMessage()` 호출은 성공하지만 Flutter가 응답 없음
 
-**원인 분석:**
-- iPad는 WKWebView 너비 375px 이상에서 자동으로 Desktop Mode 전환
-- User-Agent가 `Mozilla/5.0 (Macintosh; Intel Mac OS X...)` 으로 변경됨
-- `webview_flutter`의 JavaScript Channel이 iPad Desktop Mode에서 콜백이 안 됨
+**원인:**
+- iPad는 WKWebView에서 자동으로 Desktop Mode 전환
+- `webview_flutter`의 JavaScript Channel이 iPad Desktop Mode에서 콜백 안 됨
+- `flutter_inappwebview`는 JavaScript Handler 방식으로 콜백 정상 작동
 
-**시도한 해결책들:**
-| 버전 | 시도 | 결과 |
-|------|------|------|
-| v102 | `_handleIAPRequest` async + await | ❌ 효과 없음 |
-| v103 | 웹에 디버그 정보 전송 | ❌ Flutter 응답 없음 |
-| v104 | async 제거 + alert 디버그 | ❌ alert 안 뜸 |
-| v105 | `Platform.isIOS` 체크 제거 | ❌ 효과 없음 |
-| v106 | Mobile User-Agent 강제 설정 | ❌ UA는 바뀌었으나 여전히 안됨 |
-| v107 | `flutter_inappwebview` iPad 전용 적용 | 🔄 **부분 성공** |
-
-**v107 결과 (flutter_inappwebview):**
-- ✅ JavaScript Handler 콜백 실행됨 (alert 떴음!)
-- ✅ 메시지 수신: `{"action":"purchase","productId":"hairgator_basic"}`
-- ❌ 하지만 이후 `_handleIAPRequest` 처리 결과가 웹에 안 보임
-- ❌ 상품 로드 상태, 구매 시작 등의 디버그 메시지 없음
-
-**현재 구조 (v107):**
+**해결 (v115 - home_screen.dart):**
 ```dart
-// iPad 감지 (600dp 이상)
-final isIPad = Platform.isIOS && shortestSide >= 600;
+// 1. iPad 감지 (600dp 이상)
+if (Platform.isIOS) {
+  final shortestSide = MediaQuery.of(context).size.shortestSide;
+  _isIPad = shortestSide >= 600;
+}
 
-// iPad만 InAppWebView 사용
-if (isIPad)
+// 2. iPad는 InAppWebView, 그 외는 webview_flutter
+if (_isIPad)
   _buildIPadWebView()  // flutter_inappwebview
 else
   WebViewWidget(...)   // 기존 webview_flutter (iPhone/Android)
+
+// 3. InAppWebView JavaScript Handler 브릿지 주입
+await controller.evaluateJavascript(source: '''
+  window.IAPChannel = {
+    postMessage: function(msg) {
+      window.flutter_inappwebview.callHandler('IAPChannel', msg);
+    }
+  };
+''');
 ```
-
-**다음 단계:**
-1. `_handleIAPRequest` 내부에서 에러 발생하는지 확인
-2. `_iapService.products` 로드 상태 확인
-3. InAppWebView에서 `_sendDebugToWebInApp` 정상 작동하는지 확인
-
-**참고 링크:**
-- [WKWebView UserAgent changes on iPad](https://developer.apple.com/forums/thread/122189)
-- [webview_flutter iPad blank screen issue #122164](https://github.com/flutter/flutter/issues/122164)
 
 **⚠️ 주의: iPhone/Android 코드 건드리지 말 것!**
 - iPhone: `webview_flutter` 정상 작동 중
 - Android: `webview_flutter` 정상 작동 중
 - iPad만 `flutter_inappwebview` 사용
+
+---
+
+### 🔴 TestFlight 중요 정보 (2026-01-18) - 반드시 숙지!
+
+**TestFlight는 App Store Connect 샌드박스 계정을 사용하지 않는다!**
+
+| 환경 | 계정 타입 | 결제 환경 |
+|------|----------|----------|
+| TestFlight | **일반 Apple ID** | 샌드박스 (자동) |
+| Xcode 직접 빌드 | 샌드박스 계정 필요 | 샌드박스 |
+| App Store 출시 | 일반 Apple ID | 실제 결제 |
+
+**TestFlight 결제 테스트 방법:**
+1. TestFlight에서 앱 설치
+2. **일반 Apple ID로 로그인한 상태에서** 결제 테스트
+3. 자동으로 샌드박스 환경에서 결제됨 (실제 청구 X)
+4. 영수증에 `environment: "Sandbox"` 표시됨
+
+**Non-Consumable/Non-Renewing Subscription 재구매 문제:**
+- 같은 Apple ID로 동일 상품 재구매 불가 (이미 구매했다고 뜸)
+- **해결**: 새 Apple ID로 테스트 (예: eric708+test2@naver.com)
+
+**공개 TestFlight 링크:**
+- https://testflight.apple.com/join/q57ST6h3
+- 이메일 초대 없이 누구나 테스트 가능
+
+**테스터 추가 (App Store Connect):**
+- App Store Connect → 앱 → TestFlight → 외부 테스팅 → 테스터 추가
+- 이메일 초대 또는 공개 링크 사용
+
+---
+
+### 디버그 배너 제거 위치 (2026-01-18)
+
+**빨간색 디버그 배너가 표시되는 경우 제거할 위치:**
+
+1. **index.html** (~line 139-175):
+   - `showDebugBanner()` 함수 전체 삭제
+   - `handlePlanBtnEvent()` 내 `showDebugBanner()` 호출 삭제
+
+2. **js/main.js** (`selectPlanAndPay` 함수):
+   - `var banner = ...` 변수 삭제
+   - `banner.xxx = ...` 관련 코드 삭제
+
+3. **js/payment.js** (`requestIOSInAppPurchase` 함수):
+   - `var banner = ...` 변수 삭제
+   - `banner.xxx = ...` 관련 코드 삭제
+
+**⚠️ 삭제하면 안 되는 코드 (index.html):**
+```javascript
+// ⭐ iOS WebView 클릭 이벤트 전파 보장 (capture:true 필수!)
+document.addEventListener('click', function(e) {
+    // 빈 함수처럼 보여도 필수!
+}, true);
+```
 
 ---
 
