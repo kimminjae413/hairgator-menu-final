@@ -73,12 +73,12 @@ Claude가 다음 상황에서는 **반드시** "추측입니다" 또는 "확실�
 
 ---
 
-## 🚨 현재 앱 버전 (2026-01-16 업데이트)
+## 🚨 현재 앱 버전 (2026-01-18 업데이트)
 
 | 플랫폼 | 스토어 제출 | 최신 빌드 |
 |--------|------------|----------|
 | **Android** | v73 | v86 (스플래시 화면 추가) |
-| **iOS** | v76 | v100 (AI 기능 플랜 체크 개선) |
+| **iOS** | v76 | v111 (IAP 디버그 로그 추가) |
 
 ### 빌드 파일 경로
 - **APK**: `D:\hairgator_dev\hairgator_flutter_app\build\app\outputs\flutter-apk\app-release.apk`
@@ -90,9 +90,20 @@ Claude가 다음 상황에서는 **반드시** "추측입니다" 또는 "확실�
 
 | 버전 | 상태 | 내용 |
 |------|------|------|
-| v100 | 빌드 중 | AI 기능 플랜 체크 로직 개선 + 무료 플랜 버튼 숨김 |
-| v98 | 🔄 테스트 중 | v94 코드로 복원 (IAP 작동 확인 필요) |
-| v94 | 작동 확인됨 | restored 구매 무시 추가 |
+| v112 | 🔄 테스트 중 | v107 코드로 롤백 (iPhone 결제 복원 시도) |
+| v111 | ❌ iPhone+iPad 안됨 | IAP 상세 로그 추가 (buyConsumable true인데 결제 팝업 안 뜸) |
+| v110 | ❌ iPhone+iPad 안됨 | 단계별 스낵바 디버그 (1~6번 true까지 나오고 끝) |
+| v109 | ❌ iPhone+iPad 안됨 | Alert 제거, 스낵바로 디버그 표시 |
+| v108 | ❌ iPhone+iPad 안됨 | _runJavaScript 헬퍼 추가 (⚠️ iPhone 코드 건드려서 망가짐!) |
+| v107 | ✅ iPhone 작동, ❌ iPad 안됨 | iPad 전용 flutter_inappwebview 적용 (JS Channel 부분 성공) |
+| v106 | 실패 | Mobile User-Agent 강제 설정 (UA 바뀌었으나 콜백 안됨) |
+| v105 | 실패 | Platform.isIOS 체크 제거 |
+| v104 | 실패 | async 제거 + alert 디버그 |
+| v103 | 실패 | 웹에 디버그 정보 전송 추가 |
+| v102 | 실패 | _handleIAPRequest async + await |
+| v100 | 빌드됨 | AI 기능 플랜 체크 로직 개선 + 무료 플랜 버튼 숨김 |
+| v98 | 빌드됨 | v94 코드로 복원 |
+| v94 | iPhone 작동 | restored 구매 무시 추가 |
 | v93 | 빌드됨 | StoreKit 2 JWS serverVerificationData 사용 |
 | v86 | Android | 스플래시 화면 추가 (flutter_native_splash) |
 | v85 | 빌드됨 | webview_flutter 4.13.0 업데이트 (iOS 18.2 클릭 수정) |
@@ -116,6 +127,28 @@ Claude가 다음 상황에서는 **반드시** "추측입니다" 또는 "확실�
 - v97: `EagerGestureRecognizer`로 변경
 - **결과**: WebView 버튼 클릭이 아예 안 됨 (JS 실행 안 됨)
 - **해결**: v94 코드로 복원 → v98
+
+### 🔴 v108~v111 iPhone+iPad 모두 결제 안됨! (2026-01-18)
+
+**증상:**
+- 상품 3개 정상 로드 ✅
+- `buyConsumable` 호출 → true 반환 ✅
+- **Apple 결제 팝업이 안 뜸** ❌
+- iPhone, iPad 모두 동일 증상
+
+**v107까지는 iPhone 작동했음!**
+
+**v108 변경 내용 (의심):**
+- `_runJavaScript` 헬퍼 함수 추가
+- `_sendDebugToWeb`, `_onIAPSuccess`, `_onIAPError`, `_sendProductsToWeb`에서 `_runJavaScript` 사용
+- iPad IAPChannel 콜백에서 `_sendDebugToWeb` 사용
+
+**원인 추측:**
+- v108 코드 변경이 iPhone IAP에 영향을 줬을 가능성
+- 또는 Sandbox 계정 / App Store Connect 문제
+
+**다음 시도:**
+- v107로 롤백해서 iPhone 테스트 필요
 
 ---
 
@@ -324,58 +357,78 @@ final oauthCredential = OAuthProvider("apple.com").credential(
 
 ---
 
-### iOS 인앱결제 (IAP) 문제들 (2026-01-15 작업 중) - 중요!
+### iOS 인앱결제 (IAP) 문제들 (2026-01-16 업데이트) - 중요!
 
-**현재 상태: v98 테스트 중**
+**현재 상태: v107 테스트 중**
 
 #### 1. StoreKit 2 JWS 형식 문제 (해결됨)
 - **증상**: Apple 영수증 검증 실패 (에러 코드 21002)
 - **원인**: iOS 15+에서 영수증이 JWS 형식(eyJ...로 시작)으로 변경됨
 - **해결**: `iap-verify.js`에서 JWS 형식 감지 및 디코딩 추가
-```javascript
-// JWS 형식 감지
-const isJWS = receipt.startsWith('eyJ');
-if (isJWS) {
-  const jwsResult = verifyStoreKit2JWS(receipt);
-  // ...
-}
-```
 
 #### 2. 중복 결제 처리 문제 (해결됨)
 - **증상**: 같은 구매가 여러 번 처리되어 토큰 중복 충전
 - **원인**: `PurchaseStatus.restored`도 새 구매처럼 처리됨
 - **해결**: `iap_service.dart`에서 restored는 무시
-```dart
-case PurchaseStatus.restored:
-  // 소모성 상품은 복원 안 함
-  print('[IAP] Ignoring restore: ${purchase.productID}');
-  _completePurchase(purchase);
-  break;
-```
 
 #### 3. JWS transactionId 추출 (해결됨)
 - **증상**: 같은 트랜잭션이 중복 처리됨
 - **원인**: JWS에서 transactionId 추출 안 함 → 랜덤 ID 생성
 - **해결**: `iap-verify.js`에서 JWS 트랜잭션 ID 추출
-```javascript
-if (appleResponse?.jwsTransaction?.transactionId) {
-  transactionId = appleResponse.jwsTransaction.transactionId;
-}
+
+#### 4. ⭐ iPad JavaScript Channel 문제 (진행 중 - 2026-01-16)
+
+**증상:**
+- **iPhone**: 결제 버튼 정상 작동 ✅
+- **iPad**: 결제 버튼 클릭해도 Flutter 콜백 실행 안됨 ❌
+- 웹에서 `IAPChannel.postMessage()` 호출은 성공하지만 Flutter가 응답 없음
+
+**원인 분석:**
+- iPad는 WKWebView 너비 375px 이상에서 자동으로 Desktop Mode 전환
+- User-Agent가 `Mozilla/5.0 (Macintosh; Intel Mac OS X...)` 으로 변경됨
+- `webview_flutter`의 JavaScript Channel이 iPad Desktop Mode에서 콜백이 안 됨
+
+**시도한 해결책들:**
+| 버전 | 시도 | 결과 |
+|------|------|------|
+| v102 | `_handleIAPRequest` async + await | ❌ 효과 없음 |
+| v103 | 웹에 디버그 정보 전송 | ❌ Flutter 응답 없음 |
+| v104 | async 제거 + alert 디버그 | ❌ alert 안 뜸 |
+| v105 | `Platform.isIOS` 체크 제거 | ❌ 효과 없음 |
+| v106 | Mobile User-Agent 강제 설정 | ❌ UA는 바뀌었으나 여전히 안됨 |
+| v107 | `flutter_inappwebview` iPad 전용 적용 | 🔄 **부분 성공** |
+
+**v107 결과 (flutter_inappwebview):**
+- ✅ JavaScript Handler 콜백 실행됨 (alert 떴음!)
+- ✅ 메시지 수신: `{"action":"purchase","productId":"hairgator_basic"}`
+- ❌ 하지만 이후 `_handleIAPRequest` 처리 결과가 웹에 안 보임
+- ❌ 상품 로드 상태, 구매 시작 등의 디버그 메시지 없음
+
+**현재 구조 (v107):**
+```dart
+// iPad 감지 (600dp 이상)
+final isIPad = Platform.isIOS && shortestSide >= 600;
+
+// iPad만 InAppWebView 사용
+if (isIPad)
+  _buildIPadWebView()  // flutter_inappwebview
+else
+  WebViewWidget(...)   // 기존 webview_flutter (iPhone/Android)
 ```
 
-#### 4. WebView 버튼 클릭 안됨 (미해결 - 조사 중)
-- **증상**: Billing 탭에서 "선택하기" 버튼 클릭해도 아무 반응 없음
-- **발생 시점**: v95 이후
-- **시도한 것들**:
-  - v95: `_handleIAPRequest` async 변경 → 문제 발생
-  - v96: `TapGestureRecognizer` 추가 → 해결 안됨
-  - v97: `EagerGestureRecognizer` 변경 → 해결 안됨
-- **현재 조치**: v94 코드로 복원 (v98)
-- **다음 단계**: v98 빌드 후 테스트 필요
+**다음 단계:**
+1. `_handleIAPRequest` 내부에서 에러 발생하는지 확인
+2. `_iapService.products` 로드 상태 확인
+3. InAppWebView에서 `_sendDebugToWebInApp` 정상 작동하는지 확인
 
-**⚠️ gestureRecognizers 주의:**
-- 기존 작동 설정: `VerticalDragGestureRecognizer` + `HorizontalDragGestureRecognizer`
-- `TapGestureRecognizer`, `EagerGestureRecognizer` 추가하면 오히려 클릭 안됨!
+**참고 링크:**
+- [WKWebView UserAgent changes on iPad](https://developer.apple.com/forums/thread/122189)
+- [webview_flutter iPad blank screen issue #122164](https://github.com/flutter/flutter/issues/122164)
+
+**⚠️ 주의: iPhone/Android 코드 건드리지 말 것!**
+- iPhone: `webview_flutter` 정상 작동 중
+- Android: `webview_flutter` 정상 작동 중
+- iPad만 `flutter_inappwebview` 사용
 
 ---
 
