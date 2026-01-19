@@ -7984,6 +7984,7 @@
                             <button class="btn btn-sm btn-primary" onclick="openInquiryReply('${inquiry.id}')">
                                 ${inquiry.status === 'pending' ? '답변하기' : '보기'}
                             </button>
+                            <button class="btn btn-sm" style="background: #EF4444; color: white; margin-left: 4px;" onclick="deleteInquiry('${inquiry.id}', '${escapeHtml(inquiry.subject)}')">🗑️</button>
                         </td>
                     </tr>
                 `;
@@ -8127,6 +8128,22 @@
         }
 
         // 로그인 후 문의 체크
+
+        // 문의 삭제
+        async function deleteInquiry(inquiryId, subject) {
+            if (!confirm(`"${subject}" 문의를 삭제하시겠습니까?\n\n삭제된 문의는 복구할 수 없습니다.`)) {
+                return;
+            }
+
+            try {
+                await db.collection('inquiries').doc(inquiryId).delete();
+                showToast('문의가 삭제되었습니다.', 'success');
+                await loadInquiries();
+            } catch (error) {
+                console.error('문의 삭제 실패:', error);
+                showToast('삭제 실패: ' + error.message, 'error');
+            }
+        }
 
         // ===== 마케팅 이메일 =====
         let marketingImageBase64 = null;
