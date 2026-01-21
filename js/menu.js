@@ -6,6 +6,9 @@
 let currentCategoryStyles = [];  // 현재 카테고리의 모든 스타일
 let currentStyleIndex = 0;       // 현재 표시 중인 스타일 인덱스
 
+// ⭐ 스타일 로딩 요청 버전 관리 (빠른 탭 전환 시 race condition 방지)
+let styleLoadRequestVersion = 0;
+
 // ⭐ Android 소프트 키보드 대응 - 동적 뷰포트 높이 설정
 (function() {
     function setViewportHeight() {
@@ -18,6 +21,20 @@ let currentStyleIndex = 0;       // 현재 표시 중인 스타일 인덱스
     window.addEventListener('orientationchange', function() {
         setTimeout(setViewportHeight, 100);
     });
+})();
+
+// ⭐ Skeleton 로딩 애니메이션 CSS 주입 (스타일 카드 이미지 로딩 중 표시)
+(function() {
+    if (document.getElementById('skeleton-animation-style')) return;
+    const style = document.createElement('style');
+    style.id = 'skeleton-animation-style';
+    style.textContent = `
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    `;
+    document.head.appendChild(style);
 })();
 
 // ⭐ Pull-to-Refresh 비활성화 (웹뷰용) - 스크롤 가능 영역 제외
@@ -827,8 +844,12 @@ function selectSubTab(subCategory, index) {
 
 // ========== 스타일 로드 및 카드 생성 ==========
 
-// 스타일 로드 - Firebase Query 최종 안정화
+// 스타일 로드 - Firebase Query 최종 안정화 + 성능 최적화
 async function loadStyles() {
+    // ⭐ 요청 버전 증가 (빠른 탭 전환 시 이전 요청 무시)
+    styleLoadRequestVersion++;
+    const thisRequestVersion = styleLoadRequestVersion;
+
     // window에서 전역 변수 가져오기
     if (!currentGender && window.currentGender) currentGender = window.currentGender;
     if (!currentMainTab && window.currentMainTab) currentMainTab = window.currentMainTab;
@@ -867,7 +888,7 @@ async function loadStyles() {
         : mainCategoryName;
     const subCategoryName = currentSubTab;
 
-    console.log(`스타일 검색 시작:`, {
+    console.log(`스타일 검색 시작 (v${thisRequestVersion}):`, {
         gender: currentGender,
         mainCategory: dbMainCategoryName,
         subCategory: subCategoryName
@@ -882,21 +903,18 @@ async function loadStyles() {
             throw new Error('Firebase가 초기화되지 않았습니다');
         }
 
-        // 서버에서 최신 데이터 강제 로드 (캐시 우회)
+        // ⭐ 캐시 우선 로드 (성능 개선) - 서버 강제 로드 제거
         const querySnapshot = await db.collection('hairstyles')
             .where('gender', '==', currentGender)
             .where('mainCategory', '==', dbMainCategoryName)
             .where('subCategory', '==', subCategoryName)
-            .get({ source: 'server' })
-            .catch(() => {
-                // 서버 연결 실패 시 캐시에서 로드
-                console.log('서버 연결 실패, 캐시에서 로드');
-                return db.collection('hairstyles')
-                    .where('gender', '==', currentGender)
-                    .where('mainCategory', '==', dbMainCategoryName)
-                    .where('subCategory', '==', subCategoryName)
-                    .get();
-            });
+            .get();
+
+        // ⭐ 요청 버전 체크 - 이미 새로운 요청이 시작되었으면 무시
+        if (thisRequestVersion !== styleLoadRequestVersion) {
+            console.log(`스타일 로드 무시 (v${thisRequestVersion} → v${styleLoadRequestVersion})`);
+            return;
+        }
 
         if (querySnapshot.empty) {
             console.log(`스타일 없음: ${mainCategoryName} - ${subCategoryName}`);
@@ -920,9 +938,15 @@ async function loadStyles() {
             styleCount++;
         });
 
+        // ⭐ 최종 버전 체크 후 DOM 업데이트
+        if (thisRequestVersion !== styleLoadRequestVersion) {
+            console.log(`DOM 업데이트 무시 (v${thisRequestVersion} → v${styleLoadRequestVersion})`);
+            return;
+        }
+
         stylesGrid.appendChild(fragment);
 
-        console.log(`${styleCount}개 스타일 로드 완료: ${mainCategoryName} - ${subCategoryName} (슬라이딩용 저장)`);
+        console.log(`${styleCount}개 스타일 로드 완료 (v${thisRequestVersion}): ${mainCategoryName} - ${subCategoryName}`);
 
     } catch (error) {
         console.error('스타일 로드 오류:', error);
@@ -988,15 +1012,21 @@ function createStyleCard(style, _index = 0) {
         });
     }
 
+    // ⭐ Skeleton 배경색 (이미지 로딩 중 표시)
+    const skeletonBg = isLightTheme
+        ? 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)'
+        : 'linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%)';
+
     card.innerHTML = `
-        <div class="style-image-wrapper" style="width: 100% !important; height: 100% !important; position: relative !important; display: block !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; border-radius: 20px !important;">
+        <div class="style-image-wrapper" style="width: 100% !important; height: 100% !important; position: relative !important; display: block !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; border-radius: 20px !important; background: ${skeletonBg}; background-size: 200% 100%; animation: skeleton-loading 1.5s infinite;">
             <img class="style-image"
                  src="${thumbnailUrl || ''}"
                  data-original="${getOriginalImageUrl(style)}"
                  alt="${style.name || 'Style'}"
                  loading="lazy"
-                 style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; border-radius: 20px !important; margin: 0 !important; padding: 0 !important; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;"
-                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 400%22%3E%3Crect fill=%22%23333%22 width=%22300%22 height=%22400%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23666%22 font-size=%2220%22%3ENo Image%3C/text%3E%3C/svg%3E'">
+                 style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; border-radius: 20px !important; margin: 0 !important; padding: 0 !important; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease !important; opacity: 0;"
+                 onload="this.style.opacity='1'; this.parentElement.style.animation='none';"
+                 onerror="this.style.opacity='1'; this.parentElement.style.animation='none'; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 400%22%3E%3Crect fill=%22%23333%22 width=%22300%22 height=%22400%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23666%22 font-size=%2220%22%3ENo Image%3C/text%3E%3C/svg%3E'">
 
             ${isNew ? '<div class="new-indicator" style="position: absolute !important; top: 8px !important; right: 8px !important; width: 8px !important; height: 8px !important; background: #ff4444 !important; border-radius: 50% !important; z-index: 10 !important; box-shadow: 0 0 0 2px rgba(0,0,0,0.8) !important;"></div>' : ''}
         </div>
