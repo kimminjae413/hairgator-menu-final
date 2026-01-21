@@ -2537,9 +2537,18 @@
 </div>
 
 <!-- ========== 상품 페이지 (#products) ========== -->
+<!-- ⭐ 디버그: iPad 클릭 문제 테스트 -->
+<style>
+#productsPage, #productsPage * {
+    pointer-events: auto !important;
+}
+</style>
 <div id="productsPage" class="page-container" style="display: none;">
     <header class="page-header">
-        <div style="width: 48px;"></div>
+        <div style="width: 48px;">
+            <!-- ⭐ 테스트 버튼 -->
+            <button onclick="alert('헤더 버튼 클릭!')" style="padding: 5px; background: red; color: white; font-size: 10px;">TEST</button>
+        </div>
         <h1 class="page-title" data-i18n="payment.selectPlanTitle">요금제 선택</h1>
         <div style="width: 48px;"></div>
     </header>
