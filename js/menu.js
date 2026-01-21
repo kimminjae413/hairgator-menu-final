@@ -758,15 +758,41 @@ function selectMainTab(category, index) {
 
     // ⭐ 150ms debounce - 빠른 클릭 시 마지막 클릭만 처리
     mainTabDebounceTimer = setTimeout(async () => {
-        // 이미 로딩 중이면 버전 관리로 처리됨
+        const startTime = performance.now();
         console.log(`대분류 선택 (debounced): ${category.name}`);
 
         // 스마트 중분류 탭 표시
+        const subTabStart = performance.now();
         await loadSmartSubTabs(category.name);
+        const subTabTime = Math.round(performance.now() - subTabStart);
 
         // 스타일 로드
-        loadStyles();
+        const styleStart = performance.now();
+        await loadStyles();
+        const styleTime = Math.round(performance.now() - styleStart);
+
+        const totalTime = Math.round(performance.now() - startTime);
+
+        // ⭐ 디버그: 500ms 이상 걸리면 화면에 표시
+        if (totalTime > 500) {
+            showDebugTiming(`${category.name}: 탭=${subTabTime}ms, 스타일=${styleTime}ms, 총=${totalTime}ms`);
+        }
+        console.log(`⏱️ ${category.name}: subTab=${subTabTime}ms, styles=${styleTime}ms, total=${totalTime}ms`);
     }, 150);
+}
+
+// ⭐ 디버그 타이밍 표시 (iPad에서 확인용)
+function showDebugTiming(message) {
+    let debugEl = document.getElementById('debug-timing');
+    if (!debugEl) {
+        debugEl = document.createElement('div');
+        debugEl.id = 'debug-timing';
+        debugEl.style.cssText = 'position:fixed;bottom:20px;left:20px;right:20px;background:rgba(255,0,0,0.9);color:white;padding:12px;border-radius:8px;z-index:99999;font-size:14px;font-family:monospace;';
+        document.body.appendChild(debugEl);
+    }
+    debugEl.textContent = message;
+    debugEl.style.display = 'block';
+    setTimeout(() => { debugEl.style.display = 'none'; }, 5000);
 }
 
 // 카테고리 설명 업데이트
