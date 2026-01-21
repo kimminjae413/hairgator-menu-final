@@ -622,9 +622,8 @@ async function loadMenuForGender(gender) {
         document.body.classList.remove('gender-male', 'gender-female');
         document.body.classList.add(`gender-${gender}`);
 
-        // 캐시 초기화
-        availableSubcategories.clear();
-        categoryNewCounts.clear();
+        // ⭐ 캐시는 유지 (캐시 키에 성별 포함되어 있음: ${gender}-${category})
+        // 성별 전환 시에도 이전 캐시 활용하여 성능 향상
 
         // 대분류 탭 생성 (NEW 표시 포함)
         await createMainTabsWithSmart(categories, gender);
