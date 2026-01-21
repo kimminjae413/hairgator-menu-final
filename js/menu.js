@@ -523,6 +523,17 @@ const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7일 전
 
 // ⭐ 스타일 데이터 캐시 (성능 최적화)
 let stylesCache = new Map();
+const MAX_CACHE_SIZE = 30; // ⭐ 캐시 크기 제한 (메모리 관리)
+
+// ⭐ 캐시 크기 제한 함수
+function limitCacheSize() {
+    if (stylesCache.size > MAX_CACHE_SIZE) {
+        // 가장 오래된 항목 삭제 (FIFO)
+        const firstKey = stylesCache.keys().next().value;
+        stylesCache.delete(firstKey);
+        console.log(`캐시 정리: ${firstKey} 삭제 (현재 ${stylesCache.size}개)`);
+    }
+}
 
 // ========== 스마트 필터링 & NEW 표시 시스템 ==========
 
@@ -777,6 +788,12 @@ function selectMainTab(category, index) {
     // ⭐ 150ms debounce - 빠른 클릭 시 마지막 클릭만 처리
     mainTabDebounceTimer = setTimeout(async () => {
         const startTime = performance.now();
+
+        // ⭐ DOM/메모리 상태 진단 (누적 문제 확인)
+        const imgCount = document.querySelectorAll('img').length;
+        const observerCount = document.querySelectorAll('.lazy-image').length;
+        console.log(`🔍 [${currentGender}] DOM상태: img=${imgCount}, lazy=${observerCount}, 캐시=${stylesCache.size}개`);
+
         console.log(`대분류 선택 (debounced): ${category.name}`);
 
         // 스마트 중분류 탭 표시
@@ -1019,6 +1036,7 @@ async function loadStyles() {
 
             if (querySnapshot.empty) {
                 console.log(`스타일 없음: ${mainCategoryName} - ${subCategoryName}`);
+                limitCacheSize();
                 stylesCache.set(cacheKey, []); // 빈 결과도 캐시
                 showEmptyState(stylesGrid);
                 return;
@@ -1030,9 +1048,10 @@ async function loadStyles() {
                 styles.push({ ...doc.data(), id: doc.id });
             });
 
-            // ⭐ 캐시에 저장
+            // ⭐ 캐시에 저장 (크기 제한 적용)
+            limitCacheSize();
             stylesCache.set(cacheKey, styles);
-            console.log(`스타일 캐시 저장: ${cacheKey} (${styles.length}개)`);
+            console.log(`스타일 캐시 저장: ${cacheKey} (${styles.length}개, 총 ${stylesCache.size}개)`);
 
         } catch (error) {
             console.error('스타일 로드 오류:', error);
@@ -1052,12 +1071,33 @@ async function loadStyles() {
         return;
     }
 
-    // ⭐ 진단: 이미지 URL 소스 확인
+    // ⭐ 진단: 남녀 데이터 차이 상세 비교
     const firstUrl = styles[0]?.thumbnailUrl || styles[0]?.imageUrl || '';
     const urlHost = firstUrl.includes('firebasestorage') ? 'Firebase' :
                     (firstUrl.includes('rnbsoft') ? 'RNBsoft' :
                     (firstUrl.includes('storage.googleapis') ? 'GCS' : 'Other'));
-    showDebugTiming(`${currentGender}: ${styles.length}개, 소스=${urlHost}`);
+
+    // ⭐ 데이터 크기 분석
+    let totalUrlLength = 0;
+    let totalFieldCount = 0;
+    let hasSubCatCount = 0;
+    styles.forEach(s => {
+        const url = s.thumbnailUrl || s.imageUrl || '';
+        totalUrlLength += url.length;
+        totalFieldCount += Object.keys(s).length;
+        if (s.subCategory) hasSubCatCount++;
+    });
+    const avgUrlLen = Math.round(totalUrlLength / styles.length);
+    const avgFields = Math.round(totalFieldCount / styles.length);
+
+    console.log(`📊 [${currentGender}] 데이터 분석:`, {
+        스타일수: styles.length,
+        평균URL길이: avgUrlLen,
+        평균필드수: avgFields,
+        subCategory있음: hasSubCatCount,
+        첫번째URL: firstUrl.substring(0, 100)
+    });
+    showDebugTiming(`${currentGender}: ${styles.length}개, URL=${avgUrlLen}자, 필드=${avgFields}개`);
 
     // 스타일 카드 생성
     const cardCreateStart = performance.now();
@@ -1100,12 +1140,40 @@ async function loadStyles() {
 
 // ⭐ Intersection Observer 기반 이미지 lazy loading (iOS WebView 호환)
 let lazyLoadObserver = null;
+let imageLoadQueue = []; // 이미지 로딩 큐
+let activeImageLoads = 0; // 현재 로딩 중인 이미지 수
+const MAX_CONCURRENT_LOADS = 4; // ⭐ 동시 로딩 제한 (iPad WKWebView 최적화)
+
+// ⭐ 배치 이미지 로딩 (동시 연결 수 제한)
+function loadImageBatch() {
+    while (imageLoadQueue.length > 0 && activeImageLoads < MAX_CONCURRENT_LOADS) {
+        const img = imageLoadQueue.shift();
+        const src = img.dataset.src;
+
+        if (src && !img.src) {
+            activeImageLoads++;
+            img.onload = () => {
+                activeImageLoads--;
+                loadImageBatch(); // 다음 이미지 로드
+            };
+            img.onerror = () => {
+                activeImageLoads--;
+                loadImageBatch(); // 실패해도 다음 이미지 로드
+            };
+            img.src = src;
+        }
+    }
+}
 
 function initLazyLoading(container) {
     // 기존 observer 정리
     if (lazyLoadObserver) {
         lazyLoadObserver.disconnect();
     }
+
+    // ⭐ 이전 큐 정리
+    imageLoadQueue = [];
+    activeImageLoads = 0;
 
     // Intersection Observer 생성
     lazyLoadObserver = new IntersectionObserver((entries) => {
@@ -1115,11 +1183,14 @@ function initLazyLoading(container) {
                 const src = img.dataset.src;
 
                 if (src && !img.src) {
-                    img.src = src;
+                    // ⭐ 큐에 추가하고 배치 로딩
+                    imageLoadQueue.push(img);
                     lazyLoadObserver.unobserve(img);
                 }
             }
         });
+        // ⭐ 새 이미지가 큐에 추가되면 배치 로딩 시작
+        loadImageBatch();
     }, {
         root: container.closest('.styles-container') || null,
         rootMargin: '100px', // 100px 전에 미리 로드
