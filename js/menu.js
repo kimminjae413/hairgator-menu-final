@@ -4279,6 +4279,25 @@ window.setFullscreenMode = function(isFullscreen) {
     }
 };
 
+// ⭐ 전역 진단 함수: 이미지 URL 샘플 비교
+window.compareImageUrls = async function() {
+    console.log('🔍 남녀 이미지 URL 패턴 비교...');
+
+    for (const gender of ['male', 'female']) {
+        const snapshot = await db.collection('hairstyles')
+            .where('gender', '==', gender)
+            .limit(5)
+            .get();
+
+        console.log(`📷 ${gender} 이미지 URL 샘플:`);
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const url = data.thumbnailUrl || data.imageUrl || 'NO URL';
+            console.log(`   ${data.mainCategory}/${data.subCategory}: ${url.substring(0, 100)}...`);
+        });
+    }
+};
+
 // ⭐ 전역 진단 함수: 남녀 Firestore 데이터 비교
 window.compareGenderData = async function() {
     console.log('🔍 남녀 Firestore 데이터 비교 시작...');
