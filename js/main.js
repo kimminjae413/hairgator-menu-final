@@ -223,7 +223,13 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'products':
                 if (productsPage) {
                     productsPage.style.display = 'block';
+                    // ⭐ iPad 클릭 문제 해결: 강제 리플로우 트리거
+                    void productsPage.offsetHeight;
                     fixPageScroll(productsPage); // 스크롤 문제 수정
+                    // ⭐ 버튼들의 pointer-events 강제 활성화
+                    productsPage.querySelectorAll('.plan-btn').forEach(function(btn) {
+                        btn.style.pointerEvents = 'auto';
+                    });
                     updateProductsPagePlan(); // 현재 플랜 표시 업데이트
                     console.log('📦 상품 페이지 표시');
                 }
@@ -231,6 +237,8 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'mypage':
                 if (mypagePage) {
                     mypagePage.style.display = 'block';
+                    // ⭐ iPad 클릭 문제 해결: 강제 리플로우 트리거
+                    void mypagePage.offsetHeight;
                     fixPageScroll(mypagePage); // 스크롤 문제 수정
                     updateMypageInfo(); // 마이페이지 정보 업데이트
                     console.log('👤 마이페이지 표시');
