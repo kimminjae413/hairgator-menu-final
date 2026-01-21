@@ -1101,9 +1101,13 @@ async function loadStyles() {
     // ⭐ 전역 배열 초기화 (모달 슬라이딩용)
     currentCategoryStyles = styles;
 
+    // ⭐ iPad 최적화: 처음 15개만 이미지 로드, 나머지는 스크롤 시 로드
+    const INITIAL_LOAD_COUNT = 15;
+
     let styleCount = 0;
-    styles.forEach(style => {
-        const card = createStyleCard(style, styleCount);
+    styles.forEach((style, index) => {
+        // 처음 15개만 이미지 src 설정, 나머지는 data-src만
+        const card = createStyleCard(style, styleCount, index >= INITIAL_LOAD_COUNT);
         fragment.appendChild(card);
         styleCount++;
     });
@@ -1124,7 +1128,11 @@ async function loadStyles() {
             return;
         }
         stylesGrid.appendChild(fragment);
-        console.log(`${styleCount}개 스타일 렌더링 완료 (v${thisRequestVersion})`);
+
+        // ⭐ 스크롤 시 나머지 이미지 로드 (Intersection Observer)
+        initLazyLoadingObserver(stylesGrid);
+
+        console.log(`${styleCount}개 스타일 렌더링 완료 (처음 ${INITIAL_LOAD_COUNT}개 즉시 로드, v${thisRequestVersion})`);
     });
 }
 
@@ -1180,7 +1188,7 @@ function initLazyLoadingObserver(container) {
 }
 
 // 스타일 카드 생성 (NEW 표시 + 스태거 애니메이션 포함)
-function createStyleCard(style, _index = 0) {
+function createStyleCard(style, _index = 0, deferImage = false) {
     const card = document.createElement('div');
     card.className = 'style-card';
 
@@ -1242,11 +1250,14 @@ function createStyleCard(style, _index = 0) {
         ? 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)'
         : 'linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%)';
 
-    // ⭐ src 직접 사용 (lazy loading 제거 - 안정성 우선)
+    // ⭐ deferImage가 true면 data-src 사용 (나중에 스크롤 시 로드)
+    const imgSrcAttr = deferImage ? `data-src="${thumbnailUrl || ''}"` : `src="${thumbnailUrl || ''}"`;
+    const imgClass = deferImage ? 'style-image lazy-image' : 'style-image';
+
     card.innerHTML = `
         <div class="style-image-wrapper" style="width: 100% !important; height: 100% !important; position: relative !important; display: block !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; border-radius: 20px !important; background: ${skeletonBg}; background-size: 200% 100%; animation: skeleton-loading 1.5s infinite;">
-            <img class="style-image"
-                 src="${thumbnailUrl || ''}"
+            <img class="${imgClass}"
+                 ${imgSrcAttr}
                  data-original="${getOriginalImageUrl(style)}"
                  alt="${style.name || 'Style'}"
                  loading="lazy"
