@@ -646,6 +646,7 @@ async function loadMenuForGender(gender) {
 }
 
 // 대분류 탭 생성 (스마트 필터링 + NEW 표시)
+// ⭐ 성능 최적화: 탭 UI 먼저 표시 → 첫 번째만 즉시 로드 → 나머지 백그라운드
 async function createMainTabsWithSmart(categories, gender) {
     const mainTabsContainer = document.getElementById('categoryTabs');
     if (!mainTabsContainer) {
@@ -655,44 +656,57 @@ async function createMainTabsWithSmart(categories, gender) {
 
     mainTabsContainer.innerHTML = '';
 
-    // 모든 카테고리의 서브카테고리 정보를 병렬로 확인
-    const categoryPromises = categories.map(category =>
-        checkSubcategoriesAndNew(gender, category.name)
-    );
-    const categoryInfos = await Promise.all(categoryPromises);
-
+    // ⭐ 1단계: 탭 UI 먼저 생성 (NEW 표시 없이) - 즉시 표시
+    const tabs = [];
     categories.forEach((category, index) => {
         const tab = document.createElement('button');
         tab.className = `category-tab main-tab ${gender}`;
+        tab.id = `main-tab-${gender}-${index}`;
 
-        // 모바일용 짧은 이름 + 데스크탑용 전체 이름
         const fullName = category.name;
         const shortName = category.shortName || fullName;
         tab.innerHTML = `<span class="tab-name-full">${fullName}</span><span class="tab-name-short">${shortName}</span>`;
         tab.onclick = () => selectMainTab(category, index);
 
-        const categoryInfo = categoryInfos[index];
-
-        // 첫 번째 탭 기본 선택
         if (index === 0) {
             tab.classList.add('active');
             currentMainTab = category;
-            window.currentMainTab = category; // window 동기화
+            window.currentMainTab = category;
             console.log(`기본 선택: ${category.name}`, category);
         }
 
-        // NEW 표시 추가 (카테고리에 신규 아이템이 있으면)
-        if (categoryInfo.totalNewCount > 0) {
-            tab.appendChild(createNewIndicator());
-            console.log(`NEW 표시 추가: ${category.name} (${categoryInfo.totalNewCount}개)`);
-        }
-
         mainTabsContainer.appendChild(tab);
-
-        console.log(`카테고리 생성: ${category.name} (신규: ${categoryInfo.totalNewCount}개)`);
+        tabs.push(tab);
     });
 
-    console.log(`${categories.length}개 대분류 탭 생성 완료`);
+    console.log(`${categories.length}개 대분류 탭 UI 생성 완료 (NEW 표시 로딩 중...)`);
+
+    // ⭐ 2단계: 첫 번째 카테고리만 즉시 로드 (사용자가 바로 볼 화면)
+    try {
+        const firstCategoryInfo = await checkSubcategoriesAndNew(gender, categories[0].name);
+        if (firstCategoryInfo.totalNewCount > 0 && !tabs[0].querySelector('.new-indicator')) {
+            tabs[0].appendChild(createNewIndicator());
+            console.log(`NEW 표시 추가: ${categories[0].name} (${firstCategoryInfo.totalNewCount}개)`);
+        }
+    } catch (e) {
+        console.warn('첫 번째 카테고리 로드 실패:', e);
+    }
+
+    // ⭐ 3단계: 나머지 카테고리는 백그라운드에서 순차 로드 (iPad 부하 방지)
+    setTimeout(async () => {
+        for (let i = 1; i < categories.length; i++) {
+            try {
+                const categoryInfo = await checkSubcategoriesAndNew(gender, categories[i].name);
+                if (categoryInfo.totalNewCount > 0 && tabs[i] && !tabs[i].querySelector('.new-indicator')) {
+                    tabs[i].appendChild(createNewIndicator());
+                    console.log(`NEW 표시 추가 (백그라운드): ${categories[i].name} (${categoryInfo.totalNewCount}개)`);
+                }
+            } catch (e) {
+                console.warn(`카테고리 ${i} 로드 실패:`, e);
+            }
+        }
+        console.log('백그라운드 카테고리 NEW 표시 로드 완료');
+    }, 100);
 }
 
 // 카테고리 설명 영역 확인/생성
