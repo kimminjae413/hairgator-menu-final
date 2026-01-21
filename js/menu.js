@@ -1143,10 +1143,17 @@ async function loadStyles() {
         // ⭐ 이미지 순차 로드 (4개씩, 병목 방지)
         const allImages = stylesGrid.querySelectorAll('.lazy-image');
         const BATCH_SIZE = 4;
-        const MAX_INSTANT = 16; // 화면에 보이는 약 16개까지만
+        const MAX_INSTANT = 16;
         let loaded = 0;
+        const myVersion = thisRequestVersion; // 이 요청의 버전 저장
 
         function loadBatch() {
+            // ⭐ 버전 바뀌면 즉시 중단 (이전 요청 취소)
+            if (myVersion !== styleLoadRequestVersion) {
+                console.log(`이미지 로드 중단 (v${myVersion} → v${styleLoadRequestVersion})`);
+                return;
+            }
+
             for (let i = 0; i < BATCH_SIZE && loaded < MAX_INSTANT && loaded < allImages.length; i++) {
                 const img = allImages[loaded];
                 const src = img.dataset.src;
@@ -1154,11 +1161,10 @@ async function loadStyles() {
                 loaded++;
             }
             if (loaded < MAX_INSTANT && loaded < allImages.length) {
-                setTimeout(loadBatch, 30); // 30ms 간격
+                setTimeout(loadBatch, 30);
             } else {
-                // 나머지는 스크롤 시 로드
                 initLazyLoadingObserver(stylesGrid);
-                console.log(`${loaded}개 즉시 로드, 나머지 스크롤 시 로드`);
+                console.log(`${loaded}개 즉시 로드 완료 (v${myVersion})`);
             }
         }
         loadBatch();
