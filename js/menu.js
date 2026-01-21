@@ -4334,6 +4334,18 @@ window.compareGenderData = async function() {
 
     console.log('📊 남자 데이터:', results.male);
     console.log('📊 여자 데이터:', results.female);
+
+    // ⭐ 카테고리별 상세 출력
+    console.log('📂 남자 mainCategory별:');
+    Object.entries(results.male.mainCategory별).forEach(([cat, count]) => {
+        console.log(`   ${cat}: ${count}개`);
+    });
+
+    console.log('📂 여자 mainCategory별:');
+    Object.entries(results.female.mainCategory별).forEach(([cat, count]) => {
+        console.log(`   ${cat}: ${count}개`);
+    });
+
     console.log('🔴 차이점:', {
         문서수차이: results.male.총문서수 - results.female.총문서수,
         thumb비율차이: results.male.thumbnailUrl있음 - results.female.thumbnailUrl있음
