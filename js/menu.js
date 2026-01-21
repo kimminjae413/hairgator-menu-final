@@ -1057,13 +1057,10 @@ async function loadStyles() {
         return;
     }
 
-    // ⭐ 진단: thumbnailUrl 유무 카운트
+    // ⭐ 진단: thumbnailUrl 유무 카운트 (항상 표시)
     const withThumbnail = styles.filter(s => s.thumbnailUrl).length;
     const withoutThumbnail = styles.length - withThumbnail;
-    if (withoutThumbnail > 0) {
-        showDebugTiming(`⚠️ ${currentGender}: 썸네일 ${withThumbnail}개, 원본 ${withoutThumbnail}개`);
-        console.log(`⚠️ [${currentGender}] thumbnailUrl 없음: ${withoutThumbnail}/${styles.length}개`);
-    }
+    showDebugTiming(`${currentGender}: 총${styles.length}개, 썸네일${withThumbnail}, 원본${withoutThumbnail}`);
 
     // 스타일 카드 생성
     const cardCreateStart = performance.now();
