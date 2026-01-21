@@ -1101,13 +1101,11 @@ async function loadStyles() {
     // ⭐ 전역 배열 초기화 (모달 슬라이딩용)
     currentCategoryStyles = styles;
 
-    // ⭐ iPad 최적화: 처음 15개만 이미지 로드, 나머지는 스크롤 시 로드
-    const INITIAL_LOAD_COUNT = 15;
-
+    // ⭐ iPad 최적화: 모든 이미지를 지연 로드 (빠른 전환 시 요청 큐 방지)
     let styleCount = 0;
     styles.forEach((style, index) => {
-        // 처음 15개만 이미지 src 설정, 나머지는 data-src만
-        const card = createStyleCard(style, styleCount, index >= INITIAL_LOAD_COUNT);
+        // 모든 이미지를 data-src로 (즉시 로드 안 함)
+        const card = createStyleCard(style, styleCount, true);
         fragment.appendChild(card);
         styleCount++;
     });
@@ -1120,7 +1118,7 @@ async function loadStyles() {
         return;
     }
 
-    // ⭐ requestAnimationFrame으로 DOM 업데이트 지연 (메인 스레드 안정화 후 렌더링)
+    // ⭐ requestAnimationFrame으로 DOM 업데이트
     requestAnimationFrame(() => {
         // 버전 재확인
         if (thisRequestVersion !== styleLoadRequestVersion) {
@@ -1128,11 +1126,19 @@ async function loadStyles() {
             return;
         }
         stylesGrid.appendChild(fragment);
+        console.log(`${styleCount}개 스타일 카드 렌더링 완료 (v${thisRequestVersion})`);
 
-        // ⭐ 스크롤 시 나머지 이미지 로드 (Intersection Observer)
-        initLazyLoadingObserver(stylesGrid);
-
-        console.log(`${styleCount}개 스타일 렌더링 완료 (처음 ${INITIAL_LOAD_COUNT}개 즉시 로드, v${thisRequestVersion})`);
+        // ⭐ 300ms 후에 이미지 로드 시작 (빠른 전환 시 요청 큐 방지)
+        setTimeout(() => {
+            // 버전이 바뀌었으면 이미지 로드 안 함
+            if (thisRequestVersion !== styleLoadRequestVersion) {
+                console.log(`이미지 로드 취소 (v${thisRequestVersion} → v${styleLoadRequestVersion})`);
+                return;
+            }
+            // 이미지 로드 시작
+            initLazyLoadingObserver(stylesGrid);
+            console.log(`이미지 로드 시작 (v${thisRequestVersion})`);
+        }, 300);
     });
 }
 
