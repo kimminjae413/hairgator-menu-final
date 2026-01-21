@@ -1095,8 +1095,51 @@ async function loadStyles() {
             return;
         }
         stylesGrid.appendChild(fragment);
+
+        // ⭐ Intersection Observer로 lazy loading 시작
+        initLazyLoading(stylesGrid);
+
         console.log(`${styleCount}개 스타일 렌더링 완료 (v${thisRequestVersion})`);
     });
+}
+
+// ⭐ Intersection Observer 기반 이미지 lazy loading (iOS WebView 호환)
+let lazyLoadObserver = null;
+
+function initLazyLoading(container) {
+    // 기존 observer 정리
+    if (lazyLoadObserver) {
+        lazyLoadObserver.disconnect();
+    }
+
+    // Intersection Observer 생성
+    lazyLoadObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                const src = img.dataset.src;
+
+                if (src && !img.src) {
+                    img.src = src;
+                    lazyLoadObserver.unobserve(img);
+                }
+            }
+        });
+    }, {
+        root: container.closest('.styles-container') || null,
+        rootMargin: '100px', // 100px 전에 미리 로드
+        threshold: 0.01
+    });
+
+    // lazy-image 클래스를 가진 모든 이미지 관찰
+    const lazyImages = container.querySelectorAll('.lazy-image');
+    lazyImages.forEach(img => {
+        if (img.dataset.src && !img.src) {
+            lazyLoadObserver.observe(img);
+        }
+    });
+
+    console.log(`Lazy loading 초기화: ${lazyImages.length}개 이미지`);
 }
 
 // 스타일 카드 생성 (NEW 표시 + 스태거 애니메이션 포함)
@@ -1162,15 +1205,14 @@ function createStyleCard(style, _index = 0) {
         ? 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)'
         : 'linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%)';
 
+    // ⭐ data-src 사용 (Intersection Observer로 lazy load)
     card.innerHTML = `
         <div class="style-image-wrapper" style="width: 100% !important; height: 100% !important; position: relative !important; display: block !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; border-radius: 20px !important; background: ${skeletonBg}; background-size: 200% 100%; animation: skeleton-loading 1.5s infinite;">
-            <img class="style-image"
-                 src="${thumbnailUrl || ''}"
+            <img class="style-image lazy-image"
+                 data-src="${thumbnailUrl || ''}"
                  data-original="${getOriginalImageUrl(style)}"
                  alt="${style.name || 'Style'}"
-                 loading="lazy"
                  decoding="async"
-                 fetchpriority="low"
                  style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; border-radius: 20px !important; margin: 0 !important; padding: 0 !important; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease !important; opacity: 0;"
                  onload="this.style.opacity='1'; this.parentElement.style.animation='none';"
                  onerror="this.style.opacity='1'; this.parentElement.style.animation='none'; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 400%22%3E%3Crect fill=%22%23333%22 width=%22300%22 height=%22400%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23666%22 font-size=%2220%22%3ENo Image%3C/text%3E%3C/svg%3E'">
