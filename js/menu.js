@@ -9,6 +9,9 @@ let currentStyleIndex = 0;       // 현재 표시 중인 스타일 인덱스
 // ⭐ 스타일 로딩 요청 버전 관리 (빠른 탭 전환 시 race condition 방지)
 let styleLoadRequestVersion = 0;
 
+// ⭐ 서브탭 로딩 요청 버전 관리 (빠른 탭 전환 시 race condition 방지)
+let subTabLoadRequestVersion = 0;
+
 // ⭐ 대분류 탭 선택 debounce (빠른 클릭 시 마지막 클릭만 처리)
 let mainTabDebounceTimer = null;
 let isMainTabLoading = false;
@@ -846,6 +849,10 @@ function updateCategoryDescription(category) {
 
 // 스마트 중분류 탭 로드 (필터링 + NEW 표시 + 비활성화)
 async function loadSmartSubTabs(categoryName) {
+    // ⭐ 요청 버전 증가 (빠른 탭 전환 시 이전 요청 무시)
+    subTabLoadRequestVersion++;
+    const thisRequestVersion = subTabLoadRequestVersion;
+
     const subTabsContainer = document.getElementById('subTabs');
     if (!subTabsContainer) {
         console.error('subTabs 요소를 찾을 수 없습니다');
@@ -856,6 +863,12 @@ async function loadSmartSubTabs(categoryName) {
 
     // 해당 카테고리의 서브카테고리 정보 가져오기
     const subInfo = await checkSubcategoriesAndNew(currentGender, categoryName);
+
+    // ⭐ 요청 버전 체크 - 이미 새로운 요청이 시작되었으면 무시
+    if (thisRequestVersion !== subTabLoadRequestVersion) {
+        console.log(`서브탭 로드 무시 (v${thisRequestVersion} → v${subTabLoadRequestVersion})`);
+        return;
+    }
 
     let firstAvailableIndex = -1;
 
@@ -1044,7 +1057,16 @@ async function loadStyles() {
         return;
     }
 
+    // ⭐ 진단: thumbnailUrl 유무 카운트
+    const withThumbnail = styles.filter(s => s.thumbnailUrl).length;
+    const withoutThumbnail = styles.length - withThumbnail;
+    if (withoutThumbnail > 0) {
+        showDebugTiming(`⚠️ ${currentGender}: 썸네일 ${withThumbnail}개, 원본 ${withoutThumbnail}개`);
+        console.log(`⚠️ [${currentGender}] thumbnailUrl 없음: ${withoutThumbnail}/${styles.length}개`);
+    }
+
     // 스타일 카드 생성
+    const cardCreateStart = performance.now();
     stylesGrid.innerHTML = '';
     const fragment = document.createDocumentFragment();
 
@@ -1058,15 +1080,23 @@ async function loadStyles() {
         styleCount++;
     });
 
+    const cardCreateTime = Math.round(performance.now() - cardCreateStart);
+
     // ⭐ 최종 버전 체크 후 DOM 업데이트
     if (thisRequestVersion !== styleLoadRequestVersion) {
         console.log(`DOM 업데이트 무시 (v${thisRequestVersion} → v${styleLoadRequestVersion})`);
         return;
     }
 
+    const domAppendStart = performance.now();
     stylesGrid.appendChild(fragment);
+    const domAppendTime = Math.round(performance.now() - domAppendStart);
 
-    console.log(`${styleCount}개 스타일 로드 완료 (v${thisRequestVersion}): ${mainCategoryName} - ${subCategoryName}`);
+    // ⭐ 100ms 이상 걸리면 표시
+    if (cardCreateTime > 100 || domAppendTime > 100) {
+        showDebugTiming(`카드생성=${cardCreateTime}ms, DOM추가=${domAppendTime}ms`);
+    }
+    console.log(`${styleCount}개 스타일 로드 완료 (v${thisRequestVersion}): 카드=${cardCreateTime}ms, DOM=${domAppendTime}ms`);
 }
 
 // 스타일 카드 생성 (NEW 표시 + 스태거 애니메이션 포함)

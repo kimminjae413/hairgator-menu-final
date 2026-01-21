@@ -937,3 +937,60 @@ dart run flutter_native_splash:create
 - Android: `res/drawable-*/splash.png` 생성
 - iOS: `LaunchImage` 업데이트
 - 흰색 배경 + 중앙 HAIRGATOR 로고
+
+---
+
+## 2026-01-19 작업 내용
+
+### 어드민 1:1 문의 삭제 기능 추가 ✅
+
+- `admin.html`에 삭제 버튼 및 `deleteInquiry()` 함수 추가
+- 삭제 전 확인 창 표시
+- 커밋: `8dc5e02`
+
+### 공지사항 삭제 기능 - 이미 있음 확인 ✅
+
+- `admin.html` line 7692에 삭제 버튼 이미 존재
+- `deleteNotice()` 함수 이미 구현됨
+
+### iOS 인앱결제 환불 정책 확인 ✅
+
+| 상황 | Apple 처리 |
+|------|-----------|
+| 7일 이내 환불 요청 | 승인 가능 |
+| 29일 쓰고 환불 요청 | **거부** |
+| 반복 악용 | 계정 제재 |
+
+**결론:** iOS 인앱결제 환불은 Apple이 알아서 처리. 우리가 할 일 없음.
+
+### 마케팅 이메일 발송 대상 문제 분석
+
+**문제:** 어드민 마케팅 이메일에서 6821명 중 2명만 발송 가능으로 표시
+
+**원인:**
+- 마이그레이션 시 `isMarketing` 필드 누락
+- 몽고DB 덤프에 `isMarketing`, `marketingAgreeDate` 필드 존재
+
+**몽고DB 통계:**
+| 항목 | 수 |
+|------|---|
+| 총 사용자 | 7,505명 |
+| 마케팅 동의 (True) | 3,471명 |
+| 마케팅 동의 + 이메일 | 3,366명 |
+
+**해결 스크립트:** `scripts/update-marketing-consent.py` (미실행)
+- 몽고DB `isMarketing: True` → Firestore `termsAgreement.marketing: true` 업데이트
+- 실행 시 3,366명 발송 가능으로 변경됨
+
+### 소개 영상 기획
+
+- **타겟:** 미용사
+- **채널:** 인스타그램 릴스 (9:16 세로, 45초)
+- **스타일:** 태블릿 목업 + 자막 + BGM
+- **스토리보드:** 대화에서 정리됨
+
+### 프로모션 이미지
+
+- **파일:** `C:\Users\김민재\Desktop\hairgator-promo.html`
+- **내용:** 1:1 앱 다운로드 유도 이미지 (Play Store, App Store 검색 안내)
+- 브라우저에서 열고 스크린샷으로 저장
