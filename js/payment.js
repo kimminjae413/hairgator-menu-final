@@ -1337,7 +1337,7 @@ function requestIOSInAppPurchase(planKey) {
 
   console.log('[IAP] iOS 인앱결제 요청:', plan.productId);
 
-  // ⭐ 1순위: IAPChannel (JavaScript Channel)
+  // ⭐ 1순위: IAPChannel (JavaScript Channel) - iPhone에서 작동
   if (window.IAPChannel && typeof window.IAPChannel.postMessage === 'function') {
     try {
       console.log('[IAP] IAPChannel 사용');
@@ -1348,9 +1348,9 @@ function requestIOSInAppPurchase(planKey) {
     }
   }
 
-  // ⭐ 2순위: URL scheme 폴백
-  console.log('[IAP] URL scheme 폴백 → hairgator://iap/' + plan.productId);
-  window.location.href = 'hairgator://iap/' + plan.productId;
+  // ⭐ 2순위: 전역 변수에 저장 (Flutter polling으로 감지) - iPad용
+  console.log('[IAP] pendingIAPRequest 설정:', plan.productId);
+  window.pendingIAPRequest = plan.productId;
 }
 
 /**
