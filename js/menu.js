@@ -543,40 +543,35 @@ async function checkSubcategoriesAndNew(gender, categoryName) {
     try {
         const queryStart = performance.now();
 
-        // 복합 인덱스 없이 작동하도록 수정
+        // ⭐ 최적화: 100개로 제한 (서브카테고리 확인에는 충분)
         const snapshot = await db.collection('hairstyles')
             .where('gender', '==', gender)
             .where('mainCategory', '==', dbCategoryName)
+            .limit(100)
             .get();
 
         const queryTime = Math.round(performance.now() - queryStart);
         console.log(`🔍 Firestore: gender=${gender}, mainCategory="${dbCategoryName}" → ${snapshot.size}개 (${queryTime}ms)`);
 
-        // ⭐ 항상 표시 (디버그용)
         showDebugTiming(`쿼리: ${dbCategoryName} → ${snapshot.size}개, ${queryTime}ms`);
 
-        const processStart = performance.now();
         const availableSubs = new Set();
         const newCounts = {};
         let totalNewInCategory = 0;
         const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
 
+        // ⭐ 간단한 처리 (100개 이하이므로 빠름)
         snapshot.forEach(doc => {
             const data = doc.data();
             availableSubs.add(data.subCategory);
 
-            // 클라이언트에서 7일 이내 확인 (Firebase 쿼리 대신)
+            // NEW 체크 (100개 샘플에서)
             const createdAt = data.createdAt?.toDate?.() || new Date(0);
             if (createdAt.getTime() > sevenDaysAgo) {
                 newCounts[data.subCategory] = (newCounts[data.subCategory] || 0) + 1;
                 totalNewInCategory++;
             }
         });
-
-        const processTime = Math.round(performance.now() - processStart);
-        if (processTime > 100) {
-            showDebugTiming(`처리: ${dbCategoryName} ${snapshot.size}개 → ${processTime}ms`);
-        }
 
         const result = {
             available: Array.from(availableSubs),
