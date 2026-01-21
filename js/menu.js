@@ -810,9 +810,15 @@ function showDebugTiming(message) {
         debugEl.style.cssText = 'position:fixed;bottom:20px;left:20px;right:20px;background:rgba(255,0,0,0.9);color:white;padding:12px;border-radius:8px;z-index:99999;font-size:14px;font-family:monospace;';
         document.body.appendChild(debugEl);
     }
-    debugEl.textContent = message;
+    // 메시지 누적 (최대 5개)
+    const lines = debugEl.textContent ? debugEl.textContent.split('\n') : [];
+    lines.push(message);
+    if (lines.length > 5) lines.shift();
+    debugEl.textContent = lines.join('\n');
     debugEl.style.display = 'block';
-    setTimeout(() => { debugEl.style.display = 'none'; }, 5000);
+    debugEl.style.whiteSpace = 'pre-line';
+    clearTimeout(window._debugTimer);
+    window._debugTimer = setTimeout(() => { debugEl.style.display = 'none'; debugEl.textContent = ''; }, 5000);
 }
 
 // 카테고리 설명 업데이트
