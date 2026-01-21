@@ -1337,9 +1337,19 @@ function requestIOSInAppPurchase(planKey) {
 
   console.log('[IAP] iOS 인앱결제 요청:', plan.productId);
 
-  // ⭐ iOS Flutter 앱에서는 무조건 URL scheme 사용 (JavaScript Channel 불안정)
-  // URL scheme: hairgator://iap/product_id → Flutter NavigationDelegate에서 intercept
-  console.log('[IAP] URL scheme 사용 → hairgator://iap/' + plan.productId);
+  // ⭐ 1순위: IAPChannel (JavaScript Channel)
+  if (window.IAPChannel && typeof window.IAPChannel.postMessage === 'function') {
+    try {
+      console.log('[IAP] IAPChannel 사용');
+      window.IAPChannel.postMessage(plan.productId);
+      return;
+    } catch (e) {
+      console.error('[IAP] IAPChannel 에러:', e);
+    }
+  }
+
+  // ⭐ 2순위: URL scheme 폴백
+  console.log('[IAP] URL scheme 폴백 → hairgator://iap/' + plan.productId);
   window.location.href = 'hairgator://iap/' + plan.productId;
 }
 
