@@ -952,11 +952,30 @@ function selectSubTab(subCategory, index) {
 
 // ========== 스타일 로드 및 카드 생성 ==========
 
+// ⭐ 이미지 요청 취소 함수 (WKWebView 연결 제한 문제 해결)
+function cancelPendingImageLoads() {
+    const allImages = document.querySelectorAll('#stylesGrid img');
+    let cancelCount = 0;
+    allImages.forEach(img => {
+        if (img.src && !img.complete) {
+            // 로딩 중인 이미지 요청 취소
+            img.src = '';
+            cancelCount++;
+        }
+    });
+    if (cancelCount > 0) {
+        console.log(`⛔ ${cancelCount}개 이미지 요청 취소됨`);
+    }
+}
+
 // 스타일 로드 - Firebase Query 최종 안정화 + 성능 최적화
 async function loadStyles() {
     // ⭐ 요청 버전 증가 (빠른 탭 전환 시 이전 요청 무시)
     styleLoadRequestVersion++;
     const thisRequestVersion = styleLoadRequestVersion;
+
+    // ⭐ 이전 이미지 요청 취소 (WKWebView 동시 연결 제한 문제 방지)
+    cancelPendingImageLoads();
 
     // window에서 전역 변수 가져오기
     if (!currentGender && window.currentGender) currentGender = window.currentGender;
@@ -1072,22 +1091,49 @@ async function loadStyles() {
     }
 
     // ⭐ 진단: 남녀 데이터 차이 상세 비교
-    const firstUrl = styles[0]?.thumbnailUrl || styles[0]?.imageUrl || '';
-    const urlHost = firstUrl.includes('firebasestorage') ? 'Firebase' :
-                    (firstUrl.includes('rnbsoft') ? 'RNBsoft' :
-                    (firstUrl.includes('storage.googleapis') ? 'GCS' : 'Other'));
+    let withThumbnail = 0;
+    let withoutThumbnail = 0;
+    let totalImageSize = 0;
+    let thumbsPathCount = 0;
+    let firebaseCount = 0;
+    let rnbsoftCount = 0;
+    let otherHostCount = 0;
 
-    // ⭐ 데이터 크기 분석
-    let totalUrlLength = 0;
-    let totalFieldCount = 0;
-    let hasSubCatCount = 0;
     styles.forEach(s => {
-        const url = s.thumbnailUrl || s.imageUrl || '';
-        totalUrlLength += url.length;
-        totalFieldCount += Object.keys(s).length;
-        if (s.subCategory) hasSubCatCount++;
+        // thumbnailUrl 유무 체크
+        if (s.thumbnailUrl) {
+            withThumbnail++;
+            if (s.thumbnailUrl.includes('/thumbs/')) thumbsPathCount++;
+            if (s.thumbnailUrl.includes('firebasestorage')) firebaseCount++;
+            else if (s.thumbnailUrl.includes('rnbsoft')) rnbsoftCount++;
+            else otherHostCount++;
+        } else {
+            withoutThumbnail++;
+            // thumbnailUrl 없으면 imageUrl 체크
+            if (s.imageUrl) {
+                if (s.imageUrl.includes('firebasestorage')) firebaseCount++;
+                else if (s.imageUrl.includes('rnbsoft')) rnbsoftCount++;
+                else otherHostCount++;
+            }
+        }
     });
-    const avgUrlLen = Math.round(totalUrlLength / styles.length);
+
+    // ⭐ 핵심 차이점 로그
+    console.log(`🔍 [${currentGender}] Firestore 데이터 분석:`, {
+        총스타일: styles.length,
+        'thumbnailUrl있음': withThumbnail,
+        'thumbnailUrl없음': withoutThumbnail,
+        'thumbs경로': thumbsPathCount,
+        'Firebase호스팅': firebaseCount,
+        'RNBsoft호스팅': rnbsoftCount,
+        '기타호스팅': otherHostCount
+    });
+
+    // ⭐ 화면에 표시
+    const thumbRatio = Math.round((withThumbnail / styles.length) * 100);
+    showDebugTiming(`${currentGender}: ${styles.length}개, thumb=${thumbRatio}%, FB=${firebaseCount}, RNB=${rnbsoftCount}`);
+
+    const avgUrlLen = 0; // 사용 안함
     const avgFields = Math.round(totalFieldCount / styles.length);
 
     console.log(`📊 [${currentGender}] 데이터 분석:`, {
@@ -4231,6 +4277,69 @@ window.setFullscreenMode = function(isFullscreen) {
         document.body.classList.remove('fullscreen-mode');
         console.log('📱 전체화면 모드 비활성화 (네이티브 호출)');
     }
+};
+
+// ⭐ 전역 진단 함수: 남녀 Firestore 데이터 비교
+window.compareGenderData = async function() {
+    console.log('🔍 남녀 Firestore 데이터 비교 시작...');
+
+    const results = { male: {}, female: {} };
+
+    for (const gender of ['male', 'female']) {
+        const snapshot = await db.collection('hairstyles')
+            .where('gender', '==', gender)
+            .get();
+
+        let total = 0;
+        let withThumb = 0;
+        let withThumbsPath = 0;
+        let firebaseHost = 0;
+        let rnbsoftHost = 0;
+        let otherHost = 0;
+        let avgDocSize = 0;
+        const mainCats = {};
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            total++;
+            avgDocSize += JSON.stringify(data).length;
+
+            // mainCategory별 카운트
+            const mc = data.mainCategory || 'unknown';
+            mainCats[mc] = (mainCats[mc] || 0) + 1;
+
+            // thumbnailUrl 분석
+            const url = data.thumbnailUrl || data.imageUrl || '';
+            if (data.thumbnailUrl) {
+                withThumb++;
+                if (data.thumbnailUrl.includes('/thumbs/')) withThumbsPath++;
+            }
+            if (url.includes('firebasestorage')) firebaseHost++;
+            else if (url.includes('rnbsoft')) rnbsoftHost++;
+            else if (url) otherHost++;
+        });
+
+        results[gender] = {
+            총문서수: total,
+            thumbnailUrl있음: withThumb,
+            thumbnailUrl비율: Math.round((withThumb/total)*100) + '%',
+            thumbs경로사용: withThumbsPath,
+            Firebase호스팅: firebaseHost,
+            RNBsoft호스팅: rnbsoftHost,
+            기타호스팅: otherHost,
+            평균문서크기: Math.round(avgDocSize/total) + 'bytes',
+            mainCategory별: mainCats
+        };
+    }
+
+    console.log('📊 남자 데이터:', results.male);
+    console.log('📊 여자 데이터:', results.female);
+    console.log('🔴 차이점:', {
+        문서수차이: results.male.총문서수 - results.female.총문서수,
+        thumb비율차이: results.male.thumbnailUrl있음 - results.female.thumbnailUrl있음
+    });
+
+    return results;
 };
 
 // ========== 이벤트 리스너 ==========
