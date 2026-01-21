@@ -1128,17 +1128,26 @@ async function loadStyles() {
         stylesGrid.appendChild(fragment);
         console.log(`${styleCount}개 스타일 카드 렌더링 완료 (v${thisRequestVersion})`);
 
-        // ⭐ 300ms 후에 이미지 로드 시작 (빠른 전환 시 요청 큐 방지)
-        setTimeout(() => {
-            // 버전이 바뀌었으면 이미지 로드 안 함
-            if (thisRequestVersion !== styleLoadRequestVersion) {
-                console.log(`이미지 로드 취소 (v${thisRequestVersion} → v${styleLoadRequestVersion})`);
-                return;
+        // ⭐ 즉시 처음 15개 이미지 로드 (딜레이 제거)
+        const allImages = stylesGrid.querySelectorAll('.lazy-image');
+        const INSTANT_LOAD_COUNT = 15;
+
+        allImages.forEach((img, idx) => {
+            if (idx < INSTANT_LOAD_COUNT) {
+                // 처음 15개는 즉시 로드
+                const src = img.dataset.src;
+                if (src && !img.src) {
+                    img.src = src;
+                }
             }
-            // 이미지 로드 시작
+        });
+        console.log(`처음 ${Math.min(INSTANT_LOAD_COUNT, allImages.length)}개 이미지 즉시 로드`);
+
+        // 나머지는 Intersection Observer로 스크롤 시 로드
+        // (이미 src 설정된 이미지는 자동으로 스킵됨)
+        if (allImages.length > INSTANT_LOAD_COUNT) {
             initLazyLoadingObserver(stylesGrid);
-            console.log(`이미지 로드 시작 (v${thisRequestVersion})`);
-        }, 300);
+        }
     });
 }
 
