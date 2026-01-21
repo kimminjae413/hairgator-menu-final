@@ -518,6 +518,9 @@ let newItemsCache = new Map();
 let categoryNewCounts = new Map();
 const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7일 전
 
+// ⭐ 스타일 데이터 캐시 (성능 최적화)
+let stylesCache = new Map();
+
 // ========== 스마트 필터링 & NEW 표시 시스템 ==========
 
 // 사용 가능한 서브카테고리 & NEW 아이템 확인 (인덱스 불필요 버전)
@@ -922,64 +925,95 @@ async function loadStyles() {
         subCategory: subCategoryName
     });
 
-    // 로딩 상태 표시
-    showLoadingState(stylesGrid);
+    // ⭐ 캐시 키 생성
+    const cacheKey = `${currentGender}-${dbMainCategoryName}-${subCategoryName}`;
 
-    try {
-        // Firebase 연결 확인
-        if (typeof db === 'undefined') {
-            throw new Error('Firebase가 초기화되지 않았습니다');
-        }
+    // ⭐ 캐시에서 먼저 확인 (Firestore 쿼리 스킵)
+    let styles = stylesCache.get(cacheKey);
 
-        // ⭐ 캐시 우선 로드 (성능 개선) - 서버 강제 로드 제거
-        const querySnapshot = await db.collection('hairstyles')
-            .where('gender', '==', currentGender)
-            .where('mainCategory', '==', dbMainCategoryName)
-            .where('subCategory', '==', subCategoryName)
-            .get();
+    if (styles) {
+        console.log(`스타일 캐시 히트 (v${thisRequestVersion}): ${cacheKey} (${styles.length}개)`);
+    } else {
+        // 로딩 상태 표시 (캐시 미스일 때만)
+        showLoadingState(stylesGrid);
 
-        // ⭐ 요청 버전 체크 - 이미 새로운 요청이 시작되었으면 무시
-        if (thisRequestVersion !== styleLoadRequestVersion) {
-            console.log(`스타일 로드 무시 (v${thisRequestVersion} → v${styleLoadRequestVersion})`);
+        try {
+            // Firebase 연결 확인
+            if (typeof db === 'undefined') {
+                throw new Error('Firebase가 초기화되지 않았습니다');
+            }
+
+            // Firestore 쿼리 실행
+            const querySnapshot = await db.collection('hairstyles')
+                .where('gender', '==', currentGender)
+                .where('mainCategory', '==', dbMainCategoryName)
+                .where('subCategory', '==', subCategoryName)
+                .get();
+
+            // ⭐ 요청 버전 체크 - 이미 새로운 요청이 시작되었으면 무시
+            if (thisRequestVersion !== styleLoadRequestVersion) {
+                console.log(`스타일 로드 무시 (v${thisRequestVersion} → v${styleLoadRequestVersion})`);
+                return;
+            }
+
+            if (querySnapshot.empty) {
+                console.log(`스타일 없음: ${mainCategoryName} - ${subCategoryName}`);
+                stylesCache.set(cacheKey, []); // 빈 결과도 캐시
+                showEmptyState(stylesGrid);
+                return;
+            }
+
+            // 스타일 데이터 추출
+            styles = [];
+            querySnapshot.forEach(doc => {
+                styles.push({ ...doc.data(), id: doc.id });
+            });
+
+            // ⭐ 캐시에 저장
+            stylesCache.set(cacheKey, styles);
+            console.log(`스타일 캐시 저장: ${cacheKey} (${styles.length}개)`);
+
+        } catch (error) {
+            console.error('스타일 로드 오류:', error);
+            showErrorState(stylesGrid, `로드 실패: ${error.message}`);
             return;
         }
-
-        if (querySnapshot.empty) {
-            console.log(`스타일 없음: ${mainCategoryName} - ${subCategoryName}`);
-            showEmptyState(stylesGrid);
-            return;
-        }
-
-        // 스타일 카드 생성 (스태거 애니메이션 포함)
-        stylesGrid.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-
-        // ⭐ 전역 배열 초기화 (모달 슬라이딩용)
-        currentCategoryStyles = [];
-
-        let styleCount = 0;
-        querySnapshot.forEach(doc => {
-            const style = { ...doc.data(), id: doc.id };
-            currentCategoryStyles.push(style);  // ⭐ 전역 배열에 저장
-            const card = createStyleCard(style, styleCount);
-            fragment.appendChild(card);
-            styleCount++;
-        });
-
-        // ⭐ 최종 버전 체크 후 DOM 업데이트
-        if (thisRequestVersion !== styleLoadRequestVersion) {
-            console.log(`DOM 업데이트 무시 (v${thisRequestVersion} → v${styleLoadRequestVersion})`);
-            return;
-        }
-
-        stylesGrid.appendChild(fragment);
-
-        console.log(`${styleCount}개 스타일 로드 완료 (v${thisRequestVersion}): ${mainCategoryName} - ${subCategoryName}`);
-
-    } catch (error) {
-        console.error('스타일 로드 오류:', error);
-        showErrorState(stylesGrid, `로드 실패: ${error.message}`);
     }
+
+    // ⭐ 요청 버전 체크
+    if (thisRequestVersion !== styleLoadRequestVersion) {
+        console.log(`스타일 렌더링 무시 (v${thisRequestVersion} → v${styleLoadRequestVersion})`);
+        return;
+    }
+
+    if (!styles || styles.length === 0) {
+        showEmptyState(stylesGrid);
+        return;
+    }
+
+    // 스타일 카드 생성
+    stylesGrid.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+
+    // ⭐ 전역 배열 초기화 (모달 슬라이딩용)
+    currentCategoryStyles = styles;
+
+    let styleCount = 0;
+    styles.forEach(style => {
+        const card = createStyleCard(style, styleCount);
+        fragment.appendChild(card);
+        styleCount++;
+    });
+
+    // ⭐ 최종 버전 체크 후 DOM 업데이트
+    if (thisRequestVersion !== styleLoadRequestVersion) {
+        console.log(`DOM 업데이트 무시 (v${thisRequestVersion} → v${styleLoadRequestVersion})`);
+        return;
+    }
+
+    stylesGrid.appendChild(fragment);
+
+    console.log(`${styleCount}개 스타일 로드 완료 (v${thisRequestVersion}): ${mainCategoryName} - ${subCategoryName}`);
 }
 
 // 스타일 카드 생성 (NEW 표시 + 스태거 애니메이션 포함)
