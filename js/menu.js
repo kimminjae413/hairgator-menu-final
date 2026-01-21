@@ -533,6 +533,7 @@ async function checkSubcategoriesAndNew(gender, categoryName) {
     const cacheKey = `${gender}-${dbCategoryName}`;
 
     if (availableSubcategories.has(cacheKey)) {
+        showDebugTiming(`캐시: ${dbCategoryName} ✓`);
         return availableSubcategories.get(cacheKey);
     }
 
@@ -994,6 +995,7 @@ async function loadStyles() {
 
     if (styles) {
         console.log(`스타일 캐시 히트 (v${thisRequestVersion}): ${cacheKey} (${styles.length}개)`);
+        showDebugTiming(`스타일 캐시: ${subCategoryName} (${styles.length}개) ✓`);
     } else {
         // 로딩 상태 표시 (캐시 미스일 때만)
         showLoadingState(stylesGrid);
