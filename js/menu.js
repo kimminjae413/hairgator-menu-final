@@ -831,24 +831,10 @@ function selectMainTab(category, index) {
     }, 150);
 }
 
-// ⭐ 디버그 타이밍 표시 (iPad에서 확인용)
+// ⭐ 디버그 타이밍 표시 (비활성화됨)
 function showDebugTiming(message) {
-    let debugEl = document.getElementById('debug-timing');
-    if (!debugEl) {
-        debugEl = document.createElement('div');
-        debugEl.id = 'debug-timing';
-        debugEl.style.cssText = 'position:fixed;bottom:20px;left:20px;right:20px;background:rgba(255,0,0,0.9);color:white;padding:12px;border-radius:8px;z-index:99999;font-size:14px;font-family:monospace;';
-        document.body.appendChild(debugEl);
-    }
-    // 메시지 누적 (최대 5개)
-    const lines = debugEl.textContent ? debugEl.textContent.split('\n') : [];
-    lines.push(message);
-    if (lines.length > 5) lines.shift();
-    debugEl.textContent = lines.join('\n');
-    debugEl.style.display = 'block';
-    debugEl.style.whiteSpace = 'pre-line';
-    clearTimeout(window._debugTimer);
-    window._debugTimer = setTimeout(() => { debugEl.style.display = 'none'; debugEl.textContent = ''; }, 5000);
+    // 디버그 모드에서만 활성화 (기본 비활성화)
+    // console.log('[DEBUG]', message);
 }
 
 // 카테고리 설명 업데이트
