@@ -1057,10 +1057,12 @@ async function loadStyles() {
         return;
     }
 
-    // ⭐ 진단: thumbnailUrl 유무 및 URL 패턴 확인
-    const withThumbnail = styles.filter(s => s.thumbnailUrl).length;
-    const withThumbsPath = styles.filter(s => s.thumbnailUrl && s.thumbnailUrl.includes('/thumbs/')).length;
-    showDebugTiming(`${currentGender}: 총${styles.length}, thumb경로${withThumbsPath}/${withThumbnail}`);
+    // ⭐ 진단: 이미지 URL 소스 확인
+    const firstUrl = styles[0]?.thumbnailUrl || styles[0]?.imageUrl || '';
+    const urlHost = firstUrl.includes('firebasestorage') ? 'Firebase' :
+                    (firstUrl.includes('rnbsoft') ? 'RNBsoft' :
+                    (firstUrl.includes('storage.googleapis') ? 'GCS' : 'Other'));
+    showDebugTiming(`${currentGender}: ${styles.length}개, 소스=${urlHost}`);
 
     // 스타일 카드 생성
     const cardCreateStart = performance.now();
