@@ -1140,26 +1140,28 @@ async function loadStyles() {
         stylesGrid.appendChild(fragment);
         console.log(`${styleCount}개 스타일 카드 렌더링 완료 (v${thisRequestVersion})`);
 
-        // ⭐ 즉시 처음 15개 이미지 로드 (딜레이 제거)
+        // ⭐ 이미지 순차 로드 (4개씩, 병목 방지)
         const allImages = stylesGrid.querySelectorAll('.lazy-image');
-        const INSTANT_LOAD_COUNT = 15;
+        const BATCH_SIZE = 4;
+        const MAX_INSTANT = 16; // 화면에 보이는 약 16개까지만
+        let loaded = 0;
 
-        allImages.forEach((img, idx) => {
-            if (idx < INSTANT_LOAD_COUNT) {
-                // 처음 15개는 즉시 로드
+        function loadBatch() {
+            for (let i = 0; i < BATCH_SIZE && loaded < MAX_INSTANT && loaded < allImages.length; i++) {
+                const img = allImages[loaded];
                 const src = img.dataset.src;
-                if (src && !img.src) {
-                    img.src = src;
-                }
+                if (src && !img.src) img.src = src;
+                loaded++;
             }
-        });
-        console.log(`처음 ${Math.min(INSTANT_LOAD_COUNT, allImages.length)}개 이미지 즉시 로드`);
-
-        // 나머지는 Intersection Observer로 스크롤 시 로드
-        // (이미 src 설정된 이미지는 자동으로 스킵됨)
-        if (allImages.length > INSTANT_LOAD_COUNT) {
-            initLazyLoadingObserver(stylesGrid);
+            if (loaded < MAX_INSTANT && loaded < allImages.length) {
+                setTimeout(loadBatch, 30); // 30ms 간격
+            } else {
+                // 나머지는 스크롤 시 로드
+                initLazyLoadingObserver(stylesGrid);
+                console.log(`${loaded}개 즉시 로드, 나머지 스크롤 시 로드`);
+            }
         }
+        loadBatch();
     });
 }
 
