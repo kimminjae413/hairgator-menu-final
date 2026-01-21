@@ -766,6 +766,9 @@ function ensureCategoryDescriptionArea() {
 
 // 대분류 탭 선택 (debounce 적용 - 빠른 클릭 시 마지막 클릭만 처리)
 function selectMainTab(category, index) {
+    // ⭐ 이전 이미지 요청 즉시 취소 (WKWebView 연결 풀 고갈 방지)
+    cancelPendingImageLoads();
+
     // ⭐ 탭 UI는 즉시 업데이트 (사용자 피드백)
     currentMainTab = category;
     window.currentMainTab = category;
