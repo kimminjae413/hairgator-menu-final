@@ -1087,15 +1087,16 @@ async function loadStyles() {
         return;
     }
 
-    const domAppendStart = performance.now();
-    stylesGrid.appendChild(fragment);
-    const domAppendTime = Math.round(performance.now() - domAppendStart);
-
-    // ⭐ 100ms 이상 걸리면 표시
-    if (cardCreateTime > 100 || domAppendTime > 100) {
-        showDebugTiming(`카드생성=${cardCreateTime}ms, DOM추가=${domAppendTime}ms`);
-    }
-    console.log(`${styleCount}개 스타일 로드 완료 (v${thisRequestVersion}): 카드=${cardCreateTime}ms, DOM=${domAppendTime}ms`);
+    // ⭐ requestAnimationFrame으로 DOM 업데이트 지연 (메인 스레드 안정화 후 렌더링)
+    requestAnimationFrame(() => {
+        // 버전 재확인
+        if (thisRequestVersion !== styleLoadRequestVersion) {
+            console.log(`rAF DOM 업데이트 무시 (v${thisRequestVersion} → v${styleLoadRequestVersion})`);
+            return;
+        }
+        stylesGrid.appendChild(fragment);
+        console.log(`${styleCount}개 스타일 렌더링 완료 (v${thisRequestVersion})`);
+    });
 }
 
 // 스타일 카드 생성 (NEW 표시 + 스태거 애니메이션 포함)
@@ -1168,6 +1169,8 @@ function createStyleCard(style, _index = 0) {
                  data-original="${getOriginalImageUrl(style)}"
                  alt="${style.name || 'Style'}"
                  loading="lazy"
+                 decoding="async"
+                 fetchpriority="low"
                  style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; border-radius: 20px !important; margin: 0 !important; padding: 0 !important; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease !important; opacity: 0;"
                  onload="this.style.opacity='1'; this.parentElement.style.animation='none';"
                  onerror="this.style.opacity='1'; this.parentElement.style.animation='none'; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 400%22%3E%3Crect fill=%22%23333%22 width=%22300%22 height=%22400%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23666%22 font-size=%2220%22%3ENo Image%3C/text%3E%3C/svg%3E'">
