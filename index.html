@@ -69,6 +69,10 @@
             var lastPlanBtnCall = 0;  // 중복 호출 방지용 타임스탬프
 
             function handlePlanBtnEvent(e) {
+                // ⭐ 디버그: 모든 클릭 이벤트 확인
+                if (e.target && e.target.tagName === 'BUTTON') {
+                    alert('[DEBUG 0] 버튼 클릭! tagName=' + e.target.tagName + ', className=' + e.target.className);
+                }
                 var target = e.target;
                 if (target && target.classList && target.classList.contains('plan-btn')) {
                     var planCard = target.closest('[data-plan]');
