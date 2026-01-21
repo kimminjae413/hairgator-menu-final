@@ -548,11 +548,10 @@ async function checkSubcategoriesAndNew(gender, categoryName) {
         const queryTime = Math.round(performance.now() - queryStart);
         console.log(`🔍 Firestore: gender=${gender}, mainCategory="${dbCategoryName}" → ${snapshot.size}개 (${queryTime}ms)`);
 
-        // ⭐ 결과가 0개이거나 1초 이상 걸리면 화면에 표시
-        if (snapshot.size === 0 || queryTime > 1000) {
-            showDebugTiming(`${gender}/${dbCategoryName}: ${snapshot.size}개, ${queryTime}ms`);
-        }
+        // ⭐ 항상 표시 (디버그용)
+        showDebugTiming(`쿼리: ${dbCategoryName} → ${snapshot.size}개, ${queryTime}ms`);
 
+        const processStart = performance.now();
         const availableSubs = new Set();
         const newCounts = {};
         let totalNewInCategory = 0;
@@ -569,6 +568,11 @@ async function checkSubcategoriesAndNew(gender, categoryName) {
                 totalNewInCategory++;
             }
         });
+
+        const processTime = Math.round(performance.now() - processStart);
+        if (processTime > 100) {
+            showDebugTiming(`처리: ${dbCategoryName} ${snapshot.size}개 → ${processTime}ms`);
+        }
 
         const result = {
             available: Array.from(availableSubs),
@@ -723,8 +727,12 @@ async function createMainTabsWithSmart(categories, gender) {
     }
 
     // ⭐ 3단계: 나머지 카테고리는 백그라운드에서 순차 로드 (iPad 부하 방지)
+    // 각 쿼리 사이에 UI 스레드에 제어권 양보
     setTimeout(async () => {
         for (let i = 1; i < categories.length; i++) {
+            // ⭐ UI 스레드 양보 (프리징 방지)
+            await new Promise(resolve => setTimeout(resolve, 50));
+
             try {
                 const categoryInfo = await checkSubcategoriesAndNew(gender, categories[i].name);
                 if (categoryInfo.totalNewCount > 0 && tabs[i] && !tabs[i].querySelector('.new-indicator')) {
@@ -736,7 +744,7 @@ async function createMainTabsWithSmart(categories, gender) {
             }
         }
         console.log('백그라운드 카테고리 NEW 표시 로드 완료');
-    }, 100);
+    }, 500);  // 첫 화면 로드 후 시작
 }
 
 // 카테고리 설명 영역 확인/생성
