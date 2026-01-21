@@ -270,9 +270,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 -webkit-overflow-scrolling: touch !important;
                 padding: 20px 16px !important;
                 padding-bottom: 100px !important;
+                pointer-events: auto !important;
             `;
             pageContent.scrollTop = 0;
         }
+
+        // ⭐ 페이지 요소 자체에도 pointer-events 보장
+        pageElement.style.pointerEvents = 'auto';
 
         console.log('🔧 페이지 스크롤 수정 적용:', pageElement.id);
     }
