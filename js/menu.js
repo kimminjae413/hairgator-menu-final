@@ -537,11 +537,21 @@ async function checkSubcategoriesAndNew(gender, categoryName) {
     }
 
     try {
+        const queryStart = performance.now();
+
         // 복합 인덱스 없이 작동하도록 수정
         const snapshot = await db.collection('hairstyles')
             .where('gender', '==', gender)
             .where('mainCategory', '==', dbCategoryName)
             .get();
+
+        const queryTime = Math.round(performance.now() - queryStart);
+        console.log(`🔍 Firestore: gender=${gender}, mainCategory="${dbCategoryName}" → ${snapshot.size}개 (${queryTime}ms)`);
+
+        // ⭐ 결과가 0개이거나 1초 이상 걸리면 화면에 표시
+        if (snapshot.size === 0 || queryTime > 1000) {
+            showDebugTiming(`${gender}/${dbCategoryName}: ${snapshot.size}개, ${queryTime}ms`);
+        }
 
         const availableSubs = new Set();
         const newCounts = {};
@@ -612,6 +622,23 @@ async function loadMenuForGender(gender) {
             console.warn('Firebase 미연결 - 3초 후 재시도');
             setTimeout(() => loadMenuForGender(gender), 3000);
             return;
+        }
+
+        // ⭐ 디버그: Firestore에서 실제 mainCategory 값 확인 (한 번만)
+        if (!window._debugMainCategories) {
+            window._debugMainCategories = true;
+            try {
+                const sample = await db.collection('hairstyles')
+                    .where('gender', '==', gender)
+                    .limit(20)
+                    .get();
+                const categories = new Set();
+                sample.forEach(doc => categories.add(doc.data().mainCategory));
+                console.log(`📊 Firestore ${gender} mainCategory 값들:`, Array.from(categories));
+                showDebugTiming(`DB ${gender}: ${Array.from(categories).join(', ')}`);
+            } catch (e) {
+                console.error('mainCategory 확인 실패:', e);
+            }
         }
 
         // DOM 준비 확인
