@@ -736,9 +736,21 @@ async function createMainTabsWithSmart(categories, gender) {
         console.warn('첫 번째 카테고리 로드 실패:', e);
     }
 
-    // ⭐ 3단계: 백그라운드 로드 비활성화 (테스트)
-    // NEW 표시는 탭 클릭 시 로드됨
-    console.log('백그라운드 NEW 표시 로드 비활성화됨 (테스트)');
+    // ⭐ 3단계: 나머지 카테고리 NEW 표시 백그라운드 로드
+    setTimeout(async () => {
+        for (let i = 1; i < categories.length; i++) {
+            try {
+                const info = await checkSubcategoriesAndNew(gender, categories[i].name);
+                if (info.totalNewCount > 0 && tabs[i] && !tabs[i].querySelector('.new-indicator')) {
+                    tabs[i].appendChild(createNewIndicator());
+                    console.log(`NEW 표시 추가: ${categories[i].name} (${info.totalNewCount}개)`);
+                }
+            } catch (e) {
+                console.warn(`카테고리 ${categories[i].name} NEW 체크 실패:`, e);
+            }
+        }
+        console.log('모든 대분류 NEW 표시 로드 완료');
+    }, 500); // 500ms 후 백그라운드 로드
 }
 
 // 카테고리 설명 영역 확인/생성
