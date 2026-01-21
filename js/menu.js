@@ -249,10 +249,12 @@ function getThumbnailUrl(style) {
         url = style.imageUrl || (style.media && style.media.images && style.media.images[0]) || '';
     }
 
-    // 캐시 우회: updatedAt 또는 현재 날짜를 캐시 버스터로 사용
-    if (url && style.updatedAt) {
-        const cacheBuster = style.updatedAt.seconds || style.updatedAt;
-        url += (url.includes('?') ? '&' : '?') + 'v=' + cacheBuster;
+    // 캐시 버스터: 주 단위 타임스탬프 (CDN 캐시 활용)
+    // 기존: 매번 새 timestamp → CDN 캐시 미적중
+    // 변경: 주 단위 timestamp → CDN 캐시 적중률 향상
+    if (url) {
+        const weekTimestamp = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+        url += (url.includes('?') ? '&' : '?') + 'v=' + weekTimestamp;
     }
 
     return url;

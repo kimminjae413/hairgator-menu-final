@@ -1890,14 +1890,19 @@
                 }
             }
 
-            // Firebase에서 동의 여부 확인 (localStorage 사용 안 함)
-            let hasAgreedTerms = false;
-            if (typeof checkTermsAgreedFromFirebase === 'function') {
+            // 동의 여부 확인 (localStorage 우선 → Firebase 백업)
+            let hasAgreedTerms = localStorage.getItem('hairgator_terms_agreed') === 'true';
+            console.log('🔍 localStorage 동의 확인:', hasAgreedTerms);
+
+            // localStorage에 없으면 Firebase 확인
+            if (!hasAgreedTerms && typeof checkTermsAgreedFromFirebase === 'function') {
                 console.log('🔍 Firebase에서 동의 여부 확인 중...');
                 hasAgreedTerms = await checkTermsAgreedFromFirebase();
                 console.log('🔍 Firebase 결과:', hasAgreedTerms);
-            } else {
-                console.log('⚠️ checkTermsAgreedFromFirebase 함수 없음');
+                // Firebase에서 확인되면 localStorage에 캐시
+                if (hasAgreedTerms) {
+                    localStorage.setItem('hairgator_terms_agreed', 'true');
+                }
             }
 
             if (!hasLanguage) {
@@ -1923,10 +1928,13 @@
             updateI18nTexts();
             const hasSeenNotice = sessionStorage.getItem('mobileNoticeShown');
 
-            // Firebase에서 동의 확인
-            let hasAgreedTerms = false;
-            if (typeof checkTermsAgreedFromFirebase === 'function') {
+            // 동의 확인 (localStorage 우선)
+            let hasAgreedTerms = localStorage.getItem('hairgator_terms_agreed') === 'true';
+            if (!hasAgreedTerms && typeof checkTermsAgreedFromFirebase === 'function') {
                 hasAgreedTerms = await checkTermsAgreedFromFirebase();
+                if (hasAgreedTerms) {
+                    localStorage.setItem('hairgator_terms_agreed', 'true');
+                }
             }
 
             if (isMobilePhone() && !hasSeenNotice) {
@@ -1957,11 +1965,15 @@
             }
         }
 
-        // 저작권 동의 (Firebase에만 저장)
+        // 저작권 동의 (localStorage + Firebase 저장)
         async function agreeTerms() {
             console.log('📋 agreeTerms() 호출됨');
+
+            // localStorage에 즉시 저장 (빠른 캐시)
+            localStorage.setItem('hairgator_terms_agreed', 'true');
+
             try {
-                // Firebase에 저장
+                // Firebase에도 저장 (백업)
                 if (typeof saveTermsAgreedToFirebase === 'function') {
                     const result = await saveTermsAgreedToFirebase();
                     console.log('✅ Firebase 저장 결과:', result);
