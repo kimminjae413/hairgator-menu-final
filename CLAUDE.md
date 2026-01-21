@@ -994,3 +994,80 @@ dart run flutter_native_splash:create
 - **파일:** `C:\Users\김민재\Desktop\hairgator-promo.html`
 - **내용:** 1:1 앱 다운로드 유도 이미지 (Play Store, App Store 검색 안내)
 - 브라우저에서 열고 스크린샷으로 저장
+
+---
+
+## 2026-01-21 작업 내용
+
+### iPad #products 페이지 클릭 안됨 문제 디버깅 🔄
+
+**증상:**
+- iPad 앱에서 #products 페이지(Plan & Billing 탭) 버튼 클릭 전혀 안됨
+- 같은 앱에서 스타일 메뉴, 마이페이지 탭은 정상 작동 ✅
+- 웹 브라우저에서는 모든 페이지 정상 작동 ✅
+- **iPad 앱 #products 페이지만 문제** ❌
+
+**시도한 해결책들:**
+
+#### 1. 디버그 CSS 제거 (실패)
+- 이전 디버깅 시 추가한 `position: fixed; z-index: 99999` 제거
+- 결과: 클릭 안됨
+
+#### 2. pointer-events 추가 (실패)
+- `fixPageScroll()`에서 `pointer-events: auto !important` 추가
+- `.page-container` 및 자식 요소에 `pointer-events: auto` CSS 추가
+- 결과: 여전히 안됨
+
+#### 3. ontouchend 핸들러 추가 (실패)
+- #productsPage 버튼에 `ontouchend` 핸들러 추가 (mypage 버튼처럼)
+- 결과: 아무 반응 없음
+
+#### 4. 강제 리플로우 트리거 (실패)
+- `void productsPage.offsetHeight` 추가하여 강제 리플로우
+- 결과: 웹 변경만으로는 해결 안됨
+
+#### 5. Flutter TapGestureRecognizer 추가 (테스트 중) 🔄
+- `home_screen.dart` WebViewWidget gestureRecognizers에 추가:
+```dart
+Factory<TapGestureRecognizer>(
+  () => TapGestureRecognizer(),
+),
+Factory<LongPressGestureRecognizer>(
+  () => LongPressGestureRecognizer(),
+),
+```
+- ⚠️ 주의: v96에서 TapGestureRecognizer가 문제 일으킨 적 있음
+- 현재 상황은 다름 (v96은 전체 안됨, 현재는 #products만 안됨)
+
+**수정된 파일:**
+
+| 파일 | 변경 내용 |
+|------|----------|
+| `index.html` | 디버그 CSS 제거, pointer-events 추가, ontouchend 추가 |
+| `js/main.js` | fixPageScroll()에 pointer-events, #products 강제 리플로우 |
+| `js/payment.js` | 디버그 alert 제거 |
+| `home_screen.dart` | TapGestureRecognizer, LongPressGestureRecognizer 추가 |
+
+### Codemagic 자동 빌드 설정 ✅
+
+- GitHub main 브랜치 push 시 자동으로 iOS 빌드 시작
+- `codemagic.yaml` 파일 생성 완료
+- TestFlight 자동 업로드 설정
+
+```yaml
+triggering:
+  events:
+    - push
+  branch_patterns:
+    - pattern: main
+      include: true
+```
+
+### 내일 할 일
+
+1. **TestFlight 업데이트 확인** - Codemagic 빌드 완료 후
+2. **iPad #products 클릭 테스트** - TapGestureRecognizer 적용된 빌드
+3. **결과에 따른 조치:**
+   - 성공 시: 문제 해결 ✅
+   - 실패 시 (v96처럼 전체 안됨): TapGestureRecognizer 제거하고 다른 방법 시도
+   - 실패 시 (여전히 #products만 안됨): InAppWebView 쪽 추가 조사 필요
