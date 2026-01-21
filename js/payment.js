@@ -1307,17 +1307,27 @@ async function processPaymentWithNewCard(planKey, userId, fromModal = false) {
  * @returns {boolean}
  */
 function isIOSFlutterApp() {
-  // 1. IAPChannel이 있어야 함
+  // 1. Flutter 앱 감지 (여러 방법)
   const hasIAPChannel = typeof window.IAPChannel !== 'undefined' &&
                         typeof window.IAPChannel.postMessage === 'function';
+  const hasFlutterChannel = typeof window.FlutterChannel !== 'undefined';
+  const isFlutterApp = hasIAPChannel || hasFlutterChannel;
 
-  // 2. 실제로 iOS 기기여야 함 (Android에서 IAPChannel이 잘못 등록된 경우 방지)
+  // 2. 실제로 iOS 기기여야 함
   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-  console.log('[IAP] isIOSFlutterApp 체크:', { hasIAPChannel, isIOS, userAgent: navigator.userAgent });
+  console.log('[IAP] isIOSFlutterApp 체크:', {
+    hasIAPChannel,
+    hasFlutterChannel,
+    isFlutterApp,
+    isIOS,
+    userAgent: navigator.userAgent,
+    platform: navigator.platform,
+    maxTouchPoints: navigator.maxTouchPoints
+  });
 
-  return hasIAPChannel && isIOS;
+  return isFlutterApp && isIOS;
 }
 
 /**
