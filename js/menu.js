@@ -727,25 +727,9 @@ async function createMainTabsWithSmart(categories, gender) {
         console.warn('첫 번째 카테고리 로드 실패:', e);
     }
 
-    // ⭐ 3단계: 나머지 카테고리는 백그라운드에서 순차 로드 (iPad 부하 방지)
-    // 각 쿼리 사이에 UI 스레드에 제어권 양보
-    setTimeout(async () => {
-        for (let i = 1; i < categories.length; i++) {
-            // ⭐ UI 스레드 양보 (프리징 방지)
-            await new Promise(resolve => setTimeout(resolve, 50));
-
-            try {
-                const categoryInfo = await checkSubcategoriesAndNew(gender, categories[i].name);
-                if (categoryInfo.totalNewCount > 0 && tabs[i] && !tabs[i].querySelector('.new-indicator')) {
-                    tabs[i].appendChild(createNewIndicator());
-                    console.log(`NEW 표시 추가 (백그라운드): ${categories[i].name} (${categoryInfo.totalNewCount}개)`);
-                }
-            } catch (e) {
-                console.warn(`카테고리 ${i} 로드 실패:`, e);
-            }
-        }
-        console.log('백그라운드 카테고리 NEW 표시 로드 완료');
-    }, 500);  // 첫 화면 로드 후 시작
+    // ⭐ 3단계: 백그라운드 로드 비활성화 (테스트)
+    // NEW 표시는 탭 클릭 시 로드됨
+    console.log('백그라운드 NEW 표시 로드 비활성화됨 (테스트)');
 }
 
 // 카테고리 설명 영역 확인/생성
