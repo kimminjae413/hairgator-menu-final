@@ -1138,59 +1138,40 @@ async function loadStyles() {
     });
 }
 
-// ⭐ Intersection Observer 기반 이미지 lazy loading (iOS WebView 호환)
-let lazyLoadObserver = null;
-let imageLoadQueue = []; // 이미지 로딩 큐
-let activeImageLoads = 0; // 현재 로딩 중인 이미지 수
-const MAX_CONCURRENT_LOADS = 4; // ⭐ 동시 로딩 제한 (iPad WKWebView 최적화)
+// ⭐ 이미지 로딩 - 단순화 (data-src → src 직접 변환)
+function initLazyLoading(container) {
+    // ⭐ 뷰포트에 보이는 이미지만 바로 로드 (간단한 방식)
+    const lazyImages = container.querySelectorAll('.lazy-image');
 
-// ⭐ 배치 이미지 로딩 (동시 연결 수 제한)
-function loadImageBatch() {
-    while (imageLoadQueue.length > 0 && activeImageLoads < MAX_CONCURRENT_LOADS) {
-        const img = imageLoadQueue.shift();
+    lazyImages.forEach(img => {
         const src = img.dataset.src;
-
         if (src && !img.src) {
-            activeImageLoads++;
-            img.onload = () => {
-                activeImageLoads--;
-                loadImageBatch(); // 다음 이미지 로드
-            };
-            img.onerror = () => {
-                activeImageLoads--;
-                loadImageBatch(); // 실패해도 다음 이미지 로드
-            };
+            // 바로 src 설정 (복잡한 큐 시스템 제거)
             img.src = src;
         }
-    }
+    });
+
+    console.log(`이미지 로딩 시작: ${lazyImages.length}개`);
 }
 
-function initLazyLoading(container) {
-    // 기존 observer 정리
+// ⭐ 기존 Intersection Observer (사용 안함 - 백업용)
+let lazyLoadObserver = null;
+function initLazyLoadingObserver(container) {
     if (lazyLoadObserver) {
         lazyLoadObserver.disconnect();
     }
 
-    // ⭐ 이전 큐 정리
-    imageLoadQueue = [];
-    activeImageLoads = 0;
-
-    // Intersection Observer 생성
     lazyLoadObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const img = entry.target;
                 const src = img.dataset.src;
-
                 if (src && !img.src) {
-                    // ⭐ 큐에 추가하고 배치 로딩
-                    imageLoadQueue.push(img);
+                    img.src = src;
                     lazyLoadObserver.unobserve(img);
                 }
             }
         });
-        // ⭐ 새 이미지가 큐에 추가되면 배치 로딩 시작
-        loadImageBatch();
     }, {
         root: container.closest('.styles-container') || null,
         rootMargin: '100px', // 100px 전에 미리 로드
