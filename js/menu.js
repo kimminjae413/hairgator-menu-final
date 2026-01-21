@@ -9,6 +9,10 @@ let currentStyleIndex = 0;       // 현재 표시 중인 스타일 인덱스
 // ⭐ 스타일 로딩 요청 버전 관리 (빠른 탭 전환 시 race condition 방지)
 let styleLoadRequestVersion = 0;
 
+// ⭐ 대분류 탭 선택 debounce (빠른 클릭 시 마지막 클릭만 처리)
+let mainTabDebounceTimer = null;
+let isMainTabLoading = false;
+
 // ⭐ Android 소프트 키보드 대응 - 동적 뷰포트 높이 설정
 (function() {
     function setViewportHeight() {
@@ -713,14 +717,12 @@ function ensureCategoryDescriptionArea() {
     }
 }
 
-// 대분류 탭 선택
-async function selectMainTab(category, index) {
+// 대분류 탭 선택 (debounce 적용 - 빠른 클릭 시 마지막 클릭만 처리)
+function selectMainTab(category, index) {
+    // ⭐ 탭 UI는 즉시 업데이트 (사용자 피드백)
     currentMainTab = category;
-    window.currentMainTab = category; // window 전역 변수 동기화
+    window.currentMainTab = category;
 
-    console.log(`대분류 선택: ${category.name}`, category);
-
-    // 탭 활성화 상태 변경
     document.querySelectorAll('.main-tab').forEach((tab, i) => {
         tab.classList.remove('active', 'male', 'female');
         if (i === index) {
@@ -731,11 +733,22 @@ async function selectMainTab(category, index) {
     // 카테고리 설명 업데이트
     updateCategoryDescription(category);
 
-    // 스마트 중분류 탭 표시
-    await loadSmartSubTabs(category.name);
+    // ⭐ 이전 debounce 타이머 취소
+    if (mainTabDebounceTimer) {
+        clearTimeout(mainTabDebounceTimer);
+    }
 
-    // 스타일 로드
-    loadStyles();
+    // ⭐ 150ms debounce - 빠른 클릭 시 마지막 클릭만 처리
+    mainTabDebounceTimer = setTimeout(async () => {
+        // 이미 로딩 중이면 버전 관리로 처리됨
+        console.log(`대분류 선택 (debounced): ${category.name}`);
+
+        // 스마트 중분류 탭 표시
+        await loadSmartSubTabs(category.name);
+
+        // 스타일 로드
+        loadStyles();
+    }, 150);
 }
 
 // 카테고리 설명 업데이트
