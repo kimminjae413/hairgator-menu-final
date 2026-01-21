@@ -974,9 +974,6 @@ async function loadStyles() {
     styleLoadRequestVersion++;
     const thisRequestVersion = styleLoadRequestVersion;
 
-    // ⭐ 이전 이미지 요청 취소 (WKWebView 동시 연결 제한 문제 방지)
-    cancelPendingImageLoads();
-
     // window에서 전역 변수 가져오기
     if (!currentGender && window.currentGender) currentGender = window.currentGender;
     if (!currentMainTab && window.currentMainTab) currentMainTab = window.currentMainTab;
@@ -1176,10 +1173,6 @@ async function loadStyles() {
             return;
         }
         stylesGrid.appendChild(fragment);
-
-        // ⭐ Intersection Observer로 lazy loading 시작
-        initLazyLoading(stylesGrid);
-
         console.log(`${styleCount}개 스타일 렌더링 완료 (v${thisRequestVersion})`);
     });
 }
@@ -1298,13 +1291,14 @@ function createStyleCard(style, _index = 0) {
         ? 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)'
         : 'linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%)';
 
-    // ⭐ data-src 사용 (Intersection Observer로 lazy load)
+    // ⭐ src 직접 사용 (lazy loading 제거 - 안정성 우선)
     card.innerHTML = `
         <div class="style-image-wrapper" style="width: 100% !important; height: 100% !important; position: relative !important; display: block !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; border-radius: 20px !important; background: ${skeletonBg}; background-size: 200% 100%; animation: skeleton-loading 1.5s infinite;">
-            <img class="style-image lazy-image"
-                 data-src="${thumbnailUrl || ''}"
+            <img class="style-image"
+                 src="${thumbnailUrl || ''}"
                  data-original="${getOriginalImageUrl(style)}"
                  alt="${style.name || 'Style'}"
+                 loading="lazy"
                  decoding="async"
                  style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; border-radius: 20px !important; margin: 0 !important; padding: 0 !important; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease !important; opacity: 0;"
                  onload="this.style.opacity='1'; this.parentElement.style.animation='none';"
