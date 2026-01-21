@@ -1337,35 +1337,10 @@ function requestIOSInAppPurchase(planKey) {
 
   console.log('[IAP] iOS 인앱결제 요청:', plan.productId);
 
-  // ⭐ iPad는 URL scheme 사용 (webview_flutter에서 JavaScript Channel 안됨)
-  // iPhone은 IAPChannel 사용
-  const isIPad = /iPad|Macintosh/.test(navigator.userAgent) && 'ontouchend' in document;
-
-  if (isIPad) {
-    // iPad: URL scheme으로 Flutter에 IAP 요청
-    console.log('[IAP] iPad 감지 → URL scheme 사용');
-    window.location.href = 'hairgator://iap/' + plan.productId;
-    return;
-  }
-
-  // iPhone: JavaScript Channel 사용
-  try {
-    if (window.IAPChannel && typeof window.IAPChannel.postMessage === 'function') {
-      window.IAPChannel.postMessage(JSON.stringify({
-        action: 'purchase',
-        productId: plan.productId
-      }));
-      console.log('[IAP] IAPChannel.postMessage 완료');
-    } else {
-      // IAPChannel 없으면 URL scheme 폴백
-      console.log('[IAP] IAPChannel 없음 → URL scheme 폴백');
-      window.location.href = 'hairgator://iap/' + plan.productId;
-    }
-  } catch (err) {
-    console.error('[IAP] postMessage 에러:', err);
-    // 에러 시 URL scheme 폴백
-    window.location.href = 'hairgator://iap/' + plan.productId;
-  }
+  // ⭐ iOS Flutter 앱에서는 무조건 URL scheme 사용 (JavaScript Channel 불안정)
+  // URL scheme: hairgator://iap/product_id → Flutter NavigationDelegate에서 intercept
+  console.log('[IAP] URL scheme 사용 → hairgator://iap/' + plan.productId);
+  window.location.href = 'hairgator://iap/' + plan.productId;
 }
 
 /**
