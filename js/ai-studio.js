@@ -3591,13 +3591,26 @@ class AIStudio {
 // ==================== Global Functions ====================
 
 function goBack() {
-  // 브라우저 히스토리가 있으면 뒤로가기
-  if (window.history.length > 1) {
-    history.back();
-  } else {
-    // 히스토리가 없으면 메인 페이지로
-    window.location.href = 'index.html';
+  // ⭐ 저장된 성별로 메인 페이지로 직접 이동 (bfcache 문제 방지)
+  const savedGender = sessionStorage.getItem('hairgatorGender');
+
+  // Flutter 앱인 경우 firebaseToken도 유지
+  const params = new URLSearchParams(window.location.search);
+  const newParams = new URLSearchParams();
+
+  if (savedGender) {
+    newParams.set('gender', savedGender);
   }
+  if (params.has('firebaseToken')) {
+    newParams.set('firebaseToken', params.get('firebaseToken'));
+  }
+  if (params.has('isFlutterApp')) {
+    newParams.set('isFlutterApp', 'true');
+  }
+
+  const baseUrl = window.location.origin + '/';
+  const newUrl = baseUrl + (newParams.toString() ? '?' + newParams.toString() : '');
+  window.location.href = newUrl;
 }
 
 // 모바일에서 히스토리 패널 표시

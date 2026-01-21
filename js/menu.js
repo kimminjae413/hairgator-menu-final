@@ -4446,6 +4446,9 @@ window.selectGender = function (gender) {
     currentGender = gender;
     window.currentGender = gender;
 
+    // ⭐ sessionStorage에도 저장 (AI Studio 뒤로가기 시 복원용)
+    sessionStorage.setItem('hairgatorGender', gender);
+
     // 크리스마스 효과 제거 (다크모드 + 라이트모드 모두)
     document.querySelectorAll('.snowflake, .snow-pile, .christmas-tree, .christmas-gifts, .snowball-fight-container, .rudolph-decoration, .merry-christmas-light, .footprints-container').forEach(el => el.remove());
 
@@ -4646,6 +4649,9 @@ function navigateToRecipe(style, service = 'cut') {
 
     // 스타일 모달 닫기
     closeStyleModal();
+
+    // ⭐ sessionStorage에 성별 저장 (뒤로가기 시 복원용)
+    sessionStorage.setItem('hairgatorGender', gender);
 
     // AI Studio 페이지로 이동
     window.location.href = `/ai-studio.html?${params.toString()}`;

@@ -1321,6 +1321,16 @@ function isIOSFlutterApp() {
 }
 
 /**
+ * iPad 감지 함수
+ * @returns {boolean}
+ */
+function isIPad() {
+  // iPad Pro 등은 navigator.platform이 'MacIntel'로 나옴
+  return /iPad/i.test(navigator.userAgent) ||
+         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+/**
  * iOS 인앱결제 요청
  * @param {string} planKey - 요금제 키 (basic, pro, business, tokens_5000)
  */
@@ -1337,10 +1347,21 @@ function requestIOSInAppPurchase(planKey) {
 
   console.log('[IAP] iOS 인앱결제 요청:', plan.productId);
 
-  // ⭐ 1순위: IAPChannel (JavaScript Channel) - iPhone에서 작동
+  // ⭐ iPad 감지 - Desktop Mode에서 IAPChannel 콜백이 안되므로 바로 polling 사용
+  const iPad = isIPad();
+  console.log('[IAP] iPad 감지:', iPad);
+
+  if (iPad) {
+    // iPad: 바로 pendingIAPRequest 설정 (polling 방식)
+    console.log('[IAP] iPad → pendingIAPRequest 설정:', plan.productId);
+    window.pendingIAPRequest = plan.productId;
+    return;
+  }
+
+  // ⭐ iPhone: IAPChannel (JavaScript Channel) 사용
   if (window.IAPChannel && typeof window.IAPChannel.postMessage === 'function') {
     try {
-      console.log('[IAP] IAPChannel 사용');
+      console.log('[IAP] iPhone → IAPChannel 사용');
       window.IAPChannel.postMessage(plan.productId);
       return;
     } catch (e) {
@@ -1348,8 +1369,8 @@ function requestIOSInAppPurchase(planKey) {
     }
   }
 
-  // ⭐ 2순위: 전역 변수에 저장 (Flutter polling으로 감지) - iPad용
-  console.log('[IAP] pendingIAPRequest 설정:', plan.productId);
+  // Fallback: 전역 변수에 저장
+  console.log('[IAP] Fallback → pendingIAPRequest 설정:', plan.productId);
   window.pendingIAPRequest = plan.productId;
 }
 

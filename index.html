@@ -5000,6 +5000,11 @@ if (window.innerWidth >= 768 && window.innerWidth <= 1024) {
 
 // AI Studio 이동
 function openAIStudio() {
+  // ⭐ 현재 선택된 성별을 sessionStorage에 저장 (뒤로가기 시 복원용)
+  const currentGender = window.currentGender || sessionStorage.getItem('hairgatorGender');
+  if (currentGender) {
+    sessionStorage.setItem('hairgatorGender', currentGender);
+  }
   window.location.href = 'ai-studio.html';
 }
 </script>
