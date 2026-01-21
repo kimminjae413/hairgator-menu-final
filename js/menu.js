@@ -1087,60 +1087,8 @@ async function loadStyles() {
         return;
     }
 
-    // ⭐ 진단: 남녀 데이터 차이 상세 비교
-    let withThumbnail = 0;
-    let withoutThumbnail = 0;
-    let totalImageSize = 0;
-    let thumbsPathCount = 0;
-    let firebaseCount = 0;
-    let rnbsoftCount = 0;
-    let otherHostCount = 0;
-
-    styles.forEach(s => {
-        // thumbnailUrl 유무 체크
-        if (s.thumbnailUrl) {
-            withThumbnail++;
-            if (s.thumbnailUrl.includes('/thumbs/')) thumbsPathCount++;
-            if (s.thumbnailUrl.includes('firebasestorage')) firebaseCount++;
-            else if (s.thumbnailUrl.includes('rnbsoft')) rnbsoftCount++;
-            else otherHostCount++;
-        } else {
-            withoutThumbnail++;
-            // thumbnailUrl 없으면 imageUrl 체크
-            if (s.imageUrl) {
-                if (s.imageUrl.includes('firebasestorage')) firebaseCount++;
-                else if (s.imageUrl.includes('rnbsoft')) rnbsoftCount++;
-                else otherHostCount++;
-            }
-        }
-    });
-
-    // ⭐ 핵심 차이점 로그
-    console.log(`🔍 [${currentGender}] Firestore 데이터 분석:`, {
-        총스타일: styles.length,
-        'thumbnailUrl있음': withThumbnail,
-        'thumbnailUrl없음': withoutThumbnail,
-        'thumbs경로': thumbsPathCount,
-        'Firebase호스팅': firebaseCount,
-        'RNBsoft호스팅': rnbsoftCount,
-        '기타호스팅': otherHostCount
-    });
-
-    // ⭐ 화면에 표시
-    const thumbRatio = Math.round((withThumbnail / styles.length) * 100);
-    showDebugTiming(`${currentGender}: ${styles.length}개, thumb=${thumbRatio}%, FB=${firebaseCount}, RNB=${rnbsoftCount}`);
-
-    const avgUrlLen = 0; // 사용 안함
-    const avgFields = Math.round(totalFieldCount / styles.length);
-
-    console.log(`📊 [${currentGender}] 데이터 분석:`, {
-        스타일수: styles.length,
-        평균URL길이: avgUrlLen,
-        평균필드수: avgFields,
-        subCategory있음: hasSubCatCount,
-        첫번째URL: firstUrl.substring(0, 100)
-    });
-    showDebugTiming(`${currentGender}: ${styles.length}개, URL=${avgUrlLen}자, 필드=${avgFields}개`);
+    // 스타일 수 로그
+    console.log(`스타일 로드 완료: ${currentGender} - ${styles.length}개`);
 
     // 스타일 카드 생성
     const cardCreateStart = performance.now();
