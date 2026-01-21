@@ -1057,10 +1057,10 @@ async function loadStyles() {
         return;
     }
 
-    // ⭐ 진단: thumbnailUrl 유무 카운트 (항상 표시)
+    // ⭐ 진단: thumbnailUrl 유무 및 URL 패턴 확인
     const withThumbnail = styles.filter(s => s.thumbnailUrl).length;
-    const withoutThumbnail = styles.length - withThumbnail;
-    showDebugTiming(`${currentGender}: 총${styles.length}개, 썸네일${withThumbnail}, 원본${withoutThumbnail}`);
+    const withThumbsPath = styles.filter(s => s.thumbnailUrl && s.thumbnailUrl.includes('/thumbs/')).length;
+    showDebugTiming(`${currentGender}: 총${styles.length}, thumb경로${withThumbsPath}/${withThumbnail}`);
 
     // 스타일 카드 생성
     const cardCreateStart = performance.now();
