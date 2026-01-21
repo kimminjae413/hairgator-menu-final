@@ -519,9 +519,6 @@ document.addEventListener('DOMContentLoaded', function() {
     window.selectPlanAndPay = async function(planType) {
         console.log('💳 selectPlanAndPay 호출:', planType);
 
-        // ⭐ 디버그
-        alert('[DEBUG A] selectPlanAndPay 진입: ' + planType);
-
         // 로그인 확인
         if (typeof firebase !== 'undefined' && firebase.auth) {
             const user = firebase.auth().currentUser;
@@ -536,14 +533,9 @@ document.addEventListener('DOMContentLoaded', function() {
         var hasIsIOSFlutterApp = typeof window.isIOSFlutterApp === 'function';
         var isIOSApp = hasIsIOSFlutterApp && window.isIOSFlutterApp();
 
-        // ⭐ 디버그
-        alert('[DEBUG B] hasIsIOSFlutterApp=' + hasIsIOSFlutterApp + ', isIOSApp=' + isIOSApp);
-
         if (isIOSApp) {
             console.log('[IAP] iOS Flutter 앱 감지 → 인앱결제 진행');
-            var hasRequestIAP = typeof window.requestIOSInAppPurchase === 'function';
-            alert('[DEBUG C] hasRequestIOSInAppPurchase=' + hasRequestIAP);
-            if (hasRequestIAP) {
+            if (typeof window.requestIOSInAppPurchase === 'function') {
                 window.requestIOSInAppPurchase(planType);
                 return;
             }

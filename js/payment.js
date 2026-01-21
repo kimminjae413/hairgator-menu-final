@@ -1347,15 +1347,11 @@ function isIPad() {
 function requestIOSInAppPurchase(planKey) {
   console.log('[IAP] requestIOSInAppPurchase 함수 진입, planKey:', planKey);
 
-  // ⭐ 디버그: 함수 진입 확인
-  alert('[DEBUG 1] requestIOSInAppPurchase 진입: ' + planKey);
-
   const plan = HAIRGATOR_PAYMENT.plans[planKey];
   console.log('[IAP] plan 객체:', plan);
 
   if (!plan || !plan.productId) {
     console.error('[IAP] 유효하지 않은 요금제:', planKey);
-    alert('[DEBUG ERROR] 유효하지 않은 요금제: ' + planKey);
     return;
   }
 
@@ -1365,14 +1361,10 @@ function requestIOSInAppPurchase(planKey) {
   const iPad = isIPad();
   console.log('[IAP] iPad 감지:', iPad);
 
-  // ⭐ 디버그: iPad 감지 결과
-  alert('[DEBUG 2] iPad=' + iPad + ', productId=' + plan.productId);
-
   if (iPad) {
     // iPad: 바로 pendingIAPRequest 설정 (polling 방식)
     console.log('[IAP] iPad → pendingIAPRequest 설정:', plan.productId);
     window.pendingIAPRequest = plan.productId;
-    alert('[DEBUG 3] pendingIAPRequest 설정 완료! Flutter가 polling으로 감지해야 함');
     return;
   }
 

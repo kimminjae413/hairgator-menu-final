@@ -69,10 +69,6 @@
             var lastPlanBtnCall = 0;  // 중복 호출 방지용 타임스탬프
 
             function handlePlanBtnEvent(e) {
-                // ⭐ 디버그: 모든 클릭 이벤트 확인
-                if (e.target && e.target.tagName === 'BUTTON') {
-                    alert('[DEBUG 0] 버튼 클릭! tagName=' + e.target.tagName + ', className=' + e.target.className);
-                }
                 var target = e.target;
                 if (target && target.classList && target.classList.contains('plan-btn')) {
                     var planCard = target.closest('[data-plan]');
@@ -113,7 +109,6 @@
                                     // iPad: polling 방식 (IAPChannel 콜백 안됨)
                                     console.log('[iOS-capture] iPad → pendingIAPRequest 설정:', productId);
                                     window.pendingIAPRequest = productId;
-                                    alert('[DEBUG] iPad IAP: pendingIAPRequest=' + productId);
                                 } else {
                                     // iPhone: IAPChannel 사용
                                     var hasIAPChannel = typeof window.IAPChannel !== 'undefined';
@@ -2537,26 +2532,9 @@
 </div>
 
 <!-- ========== 상품 페이지 (#products) ========== -->
-<!-- ⭐ 디버그: iPad 클릭 문제 테스트 -->
-<style>
-#productsPage, #productsPage * {
-    pointer-events: auto !important;
-}
-#productsPage {
-    z-index: 99999 !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 60px !important;
-}
-</style>
 <div id="productsPage" class="page-container" style="display: none;">
     <header class="page-header">
-        <div style="width: 48px;">
-            <!-- ⭐ 테스트 버튼 -->
-            <button onclick="alert('헤더 버튼 클릭!')" style="padding: 5px; background: red; color: white; font-size: 10px;">TEST</button>
-        </div>
+        <div style="width: 48px;"></div>
         <h1 class="page-title" data-i18n="payment.selectPlanTitle">요금제 선택</h1>
         <div style="width: 48px;"></div>
     </header>
