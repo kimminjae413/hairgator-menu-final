@@ -92,7 +92,10 @@
       "Bash(git -C \"D:/hairgator_dev/hairgator_flutter_app\" show 2245602:lib/screens/home_screen.dart)",
       "Bash(git -C \"D:/hairgator_dev/hairgator_flutter_app\" checkout 2245602 -- lib/screens/home_screen.dart)",
       "Bash(magick identify:*)",
-      "Bash(identify:*)"
+      "Bash(identify:*)",
+      "Bash(git -C \"D:/hairgator_dev/hairgator_flutter_app\" add -A)",
+      "Bash(git -C \"D:/hairgator_dev/hairgator_flutter_app\" commit -m \"debug: v124 purchase\\(\\) 결과 추적\n\n- iap_service.dart: purchase\\(\\) 내 상세 로그 추가\n  - isAvailable 확인\n  - 상품 검색 과정\n  - buyNonConsumable 호출 전후 로그\n- home_screen.dart: purchase\\(\\) 반환값 스낵바 표시\n  - 성공 시 청록색 ''결제 팝업 대기 중...''\n  - 실패 시 빨간색 ''false 반환''\")",
+      "Bash(git -C \"D:/hairgator_dev/hairgator_flutter_app\" push origin main)"
     ],
     "deny": [],
     "ask": []
