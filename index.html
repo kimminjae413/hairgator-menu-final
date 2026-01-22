@@ -127,19 +127,20 @@
                                 // 디버그 5: IAPChannel 상태
                                 document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:150px;left:0;right:0;background:yellow;color:black;padding:5px;z-index:999994;font-size:11px;">IAPChannel=' + hasIAPChannel + ', postMessage=' + hasPostMessage + ', productId=' + productId + '</div>');
 
+                                // ⭐ 항상 pendingIAPRequest 설정 (polling fallback 보장)
+                                window.pendingIAPRequest = productId;
+                                document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:180px;left:0;right:0;background:orange;color:black;padding:5px;z-index:999993;font-size:11px;">pendingIAPRequest 설정: ' + productId + '</div>');
+
                                 if (hasPostMessage) {
                                     try {
-                                        document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:180px;left:0;right:0;background:lime;color:black;padding:5px;z-index:999993;font-size:11px;">IAPChannel.postMessage 호출!</div>');
+                                        document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:210px;left:0;right:0;background:lime;color:black;padding:5px;z-index:999992;font-size:11px;">IAPChannel.postMessage 호출!</div>');
                                         window.IAPChannel.postMessage(productId);
                                     } catch (err) {
-                                        document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:180px;left:0;right:0;background:red;color:white;padding:5px;z-index:999993;font-size:11px;">postMessage 에러: ' + err + '</div>');
-                                        // 실패하면 polling fallback
-                                        window.pendingIAPRequest = productId;
+                                        document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:210px;left:0;right:0;background:red;color:white;padding:5px;z-index:999992;font-size:11px;">postMessage 에러: ' + err + '</div>');
                                     }
                                 } else {
-                                    // IAPChannel 없으면 polling fallback
-                                    document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:180px;left:0;right:0;background:pink;color:black;padding:5px;z-index:999993;font-size:11px;">IAPChannel 없음! polling fallback</div>');
-                                    window.pendingIAPRequest = productId;
+                                    // IAPChannel 없으면 polling만 사용
+                                    document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:210px;left:0;right:0;background:pink;color:black;padding:5px;z-index:999992;font-size:11px;">IAPChannel 없음! polling만 사용</div>');
                                 }
                             } else {
                                 // Android 또는 iOS 아닌 경우 → 외부결제 (PortOne)
