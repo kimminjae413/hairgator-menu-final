@@ -70,12 +70,14 @@
 
             function handlePlanBtnEvent(e) {
                 var target = e.target;
-                if (target && target.classList && target.classList.contains('plan-btn')) {
-                    var planCard = target.closest('[data-plan]');
+                // ⭐ closest 사용 - 버튼 내부 텍스트 클릭해도 버튼 찾기
+                var planBtn = target.closest('.plan-btn');
+                if (planBtn) {
+                    var planCard = planBtn.closest('[data-plan]');
                     if (planCard) {
                         var planType = planCard.getAttribute('data-plan');
                         // free 플랜은 선택 불가, disabled 버튼도 무시
-                        if (planType && planType !== 'free' && !target.disabled) {
+                        if (planType && planType !== 'free' && !planBtn.disabled) {
                             // 중복 호출 방지 (500ms 내 동일 요청 무시)
                             var now = Date.now();
                             if (now - lastPlanBtnCall < 500) {
