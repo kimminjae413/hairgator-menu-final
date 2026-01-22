@@ -75,16 +75,24 @@
                 var target = e.target;
                 // ⭐ closest 사용 - 버튼 내부 텍스트 클릭해도 버튼 찾기
                 var planBtn = target.closest('.plan-btn');
+
+                // 디버그 2: planBtn 찾았는지
+                document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:60px;left:0;right:0;background:green;color:white;padding:5px;z-index:999997;font-size:11px;">planBtn=' + (planBtn ? 'FOUND' : 'NULL') + '</div>');
+
                 if (planBtn) {
                     var planCard = planBtn.closest('[data-plan]');
+
+                    // 디버그 3: planCard, planType
+                    var planType = planCard ? planCard.getAttribute('data-plan') : null;
+                    document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:90px;left:0;right:0;background:purple;color:white;padding:5px;z-index:999996;font-size:11px;">planCard=' + (planCard ? 'FOUND' : 'NULL') + ', planType=' + planType + '</div>');
+
                     if (planCard) {
-                        var planType = planCard.getAttribute('data-plan');
                         // free 플랜은 선택 불가, disabled 버튼도 무시
                         if (planType && planType !== 'free' && !planBtn.disabled) {
                             // 중복 호출 방지 (500ms 내 동일 요청 무시)
                             var now = Date.now();
                             if (now - lastPlanBtnCall < 500) {
-                                console.log('[iOS-capture] 중복 호출 무시:', e.type);
+                                document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:120px;left:0;right:0;background:orange;color:black;padding:5px;z-index:999995;font-size:11px;">중복호출 무시</div>');
                                 e.stopPropagation();
                                 e.preventDefault();
                                 return;
@@ -95,7 +103,9 @@
                             var isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
                             var isIPad = /iPad/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-                            console.log('[iOS-capture] plan-btn 이벤트 감지:', e.type, planType, 'isIOS:', isIOS, 'isIPad:', isIPad);
+                            // 디버그 4: iOS 감지
+                            document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:120px;left:0;right:0;background:cyan;color:black;padding:5px;z-index:999995;font-size:11px;">isIOS=' + isIOS + ', isIPad=' + isIPad + '</div>');
+
                             e.stopPropagation();
                             e.preventDefault();
 
@@ -113,20 +123,22 @@
                             if (isIOS && productId) {
                                 var hasIAPChannel = typeof window.IAPChannel !== 'undefined';
                                 var hasPostMessage = hasIAPChannel && typeof window.IAPChannel.postMessage === 'function';
-                                console.log('[iOS-capture] iOS 감지, IAPChannel:', hasIAPChannel, 'postMessage:', hasPostMessage, 'isIPad:', isIPad);
+
+                                // 디버그 5: IAPChannel 상태
+                                document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:150px;left:0;right:0;background:yellow;color:black;padding:5px;z-index:999994;font-size:11px;">IAPChannel=' + hasIAPChannel + ', postMessage=' + hasPostMessage + ', productId=' + productId + '</div>');
 
                                 if (hasPostMessage) {
                                     try {
-                                        console.log('[iOS-capture] IAPChannel 호출:', productId);
+                                        document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:180px;left:0;right:0;background:lime;color:black;padding:5px;z-index:999993;font-size:11px;">IAPChannel.postMessage 호출!</div>');
                                         window.IAPChannel.postMessage(productId);
                                     } catch (err) {
-                                        console.error('[iOS-capture] postMessage 에러:', err);
+                                        document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:180px;left:0;right:0;background:red;color:white;padding:5px;z-index:999993;font-size:11px;">postMessage 에러: ' + err + '</div>');
                                         // 실패하면 polling fallback
                                         window.pendingIAPRequest = productId;
                                     }
                                 } else {
                                     // IAPChannel 없으면 polling fallback
-                                    console.log('[iOS-capture] IAPChannel 없음 → polling fallback:', productId);
+                                    document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:180px;left:0;right:0;background:pink;color:black;padding:5px;z-index:999993;font-size:11px;">IAPChannel 없음! polling fallback</div>');
                                     window.pendingIAPRequest = productId;
                                 }
                             } else {
