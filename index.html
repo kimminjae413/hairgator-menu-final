@@ -105,29 +105,26 @@
                             };
                             var productId = productIds[planType];
 
-                            // ⭐ iOS 기기면 인앱결제 (iPad는 polling 방식)
+                            // ⭐ iOS 기기면 인앱결제 (iPhone/iPad 모두 IAPChannel 사용)
+                            // webview_flutter는 iPad에서도 JavaScript Channel 지원
                             if (isIOS && productId) {
-                                if (isIPad) {
-                                    // iPad: polling 방식 (IAPChannel 콜백 안됨)
-                                    console.log('[iOS-capture] iPad → pendingIAPRequest 설정:', productId);
-                                    window.pendingIAPRequest = productId;
-                                } else {
-                                    // iPhone: IAPChannel 사용
-                                    var hasIAPChannel = typeof window.IAPChannel !== 'undefined';
-                                    var hasPostMessage = hasIAPChannel && typeof window.IAPChannel.postMessage === 'function';
-                                    if (hasPostMessage) {
-                                        try {
-                                            console.log('[iOS-capture] iPhone → IAPChannel 호출:', productId);
-                                            window.IAPChannel.postMessage(productId);
-                                        } catch (err) {
-                                            console.error('[iOS-capture] postMessage 에러:', err);
-                                        }
-                                    } else {
-                                        // IAPChannel 없으면 selectPlanAndPay
-                                        if (typeof window.selectPlanAndPay === 'function') {
-                                            window.selectPlanAndPay(planType);
-                                        }
+                                var hasIAPChannel = typeof window.IAPChannel !== 'undefined';
+                                var hasPostMessage = hasIAPChannel && typeof window.IAPChannel.postMessage === 'function';
+                                console.log('[iOS-capture] iOS 감지, IAPChannel:', hasIAPChannel, 'postMessage:', hasPostMessage, 'isIPad:', isIPad);
+
+                                if (hasPostMessage) {
+                                    try {
+                                        console.log('[iOS-capture] IAPChannel 호출:', productId);
+                                        window.IAPChannel.postMessage(productId);
+                                    } catch (err) {
+                                        console.error('[iOS-capture] postMessage 에러:', err);
+                                        // 실패하면 polling fallback
+                                        window.pendingIAPRequest = productId;
                                     }
+                                } else {
+                                    // IAPChannel 없으면 polling fallback
+                                    console.log('[iOS-capture] IAPChannel 없음 → polling fallback:', productId);
+                                    window.pendingIAPRequest = productId;
                                 }
                             } else {
                                 // Android 또는 iOS 아닌 경우 → 외부결제 (PortOne)
