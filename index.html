@@ -69,6 +69,9 @@
             var lastPlanBtnCall = 0;  // 중복 호출 방지용 타임스탬프
 
             function handlePlanBtnEvent(e) {
+                // ⭐ 디버그 1: 함수 호출 확인
+                alert('DEBUG1: handlePlanBtnEvent 호출됨, type=' + e.type);
+
                 var target = e.target;
                 // ⭐ closest 사용 - 버튼 내부 텍스트 클릭해도 버튼 찾기
                 var planBtn = target.closest('.plan-btn');
