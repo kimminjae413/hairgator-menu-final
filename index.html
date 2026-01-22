@@ -127,31 +127,18 @@
                                 // 디버그 5: IAPChannel 상태
                                 document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:150px;left:0;right:0;background:yellow;color:black;padding:5px;z-index:999994;font-size:11px;">IAPChannel=' + hasIAPChannel + ', postMessage=' + hasPostMessage + ', productId=' + productId + '</div>');
 
-                                // ⭐ iPad는 URL scheme 방식 사용 (JavaScript Channel 안됨)
-                                if (isIPad) {
-                                    var schemeUrl = 'hairgator://iap/' + productId;
-                                    document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:180px;left:0;right:0;background:orange;color:black;padding:5px;z-index:999993;font-size:11px;">iPad → URL scheme: ' + schemeUrl + '</div>');
-
-                                    // iframe 방식으로 URL scheme 트리거 (iOS에서 더 안정적)
-                                    var iframe = document.createElement('iframe');
-                                    iframe.style.display = 'none';
-                                    iframe.src = schemeUrl;
-                                    document.body.appendChild(iframe);
-                                    setTimeout(function() { iframe.remove(); }, 100);
-
-                                    document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:210px;left:0;right:0;background:lime;color:black;padding:5px;z-index:999992;font-size:11px;">iframe 생성됨!</div>');
-                                } else if (hasPostMessage) {
-                                    // iPhone은 IAPChannel 사용
+                                // ⭐ iOS는 모두 IAPChannel 사용 (iPad는 InAppWebView, iPhone은 webview_flutter)
+                                if (hasPostMessage) {
                                     try {
-                                        document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:180px;left:0;right:0;background:lime;color:black;padding:5px;z-index:999993;font-size:11px;">iPhone → IAPChannel.postMessage!</div>');
+                                        document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:180px;left:0;right:0;background:lime;color:black;padding:5px;z-index:999993;font-size:11px;">IAPChannel.postMessage 호출: ' + productId + '</div>');
                                         window.IAPChannel.postMessage(productId);
                                     } catch (err) {
                                         document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:180px;left:0;right:0;background:red;color:white;padding:5px;z-index:999993;font-size:11px;">postMessage 에러: ' + err + '</div>');
                                         window.pendingIAPRequest = productId;
                                     }
                                 } else {
-                                    // fallback
-                                    document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:180px;left:0;right:0;background:pink;color:black;padding:5px;z-index:999993;font-size:11px;">fallback: pendingIAPRequest</div>');
+                                    // IAPChannel 없으면 fallback
+                                    document.body.insertAdjacentHTML('afterbegin', '<div style="position:fixed;top:180px;left:0;right:0;background:pink;color:black;padding:5px;z-index:999993;font-size:11px;">IAPChannel 없음 → pendingIAPRequest</div>');
                                     window.pendingIAPRequest = productId;
                                 }
                             } else {
