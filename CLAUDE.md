@@ -1095,3 +1095,84 @@ triggering:
    - 성공 시: 문제 해결 ✅
    - 실패 시 (v96처럼 전체 안됨): TapGestureRecognizer 제거하고 다른 방법 시도
    - 실패 시 (여전히 #products만 안됨): InAppWebView 쪽 추가 조사 필요
+
+---
+
+## 2026-01-23 작업 내용
+
+### 세미나 시스템 기능 추가
+
+#### 1. 무료 세미나 지원 ✅
+
+**사용법:** 어드민에서 세미나 생성 시 참가비를 **0원**으로 설정
+
+| 항목 | 유료 세미나 | 무료 세미나 |
+|------|------------|------------|
+| 참가비 표시 | 50,000원 | 무료 |
+| 버튼 텍스트 | 결제하고 참가 신청하기 | 참가 신청하기 |
+| 결제 플로우 | 포트원 결제창 → 검증 | 즉시 등록 완료 |
+| paymentMethod | card | free |
+
+**수정 파일:**
+- `seminar-register.js`: price=0이면 결제 없이 바로 등록 완료 처리
+- `seminar/app.js`: 무료 세미나 UI 처리 (버튼 텍스트, 가격 표시)
+
+#### 2. 세미나 마감/재오픈 기능 ✅
+
+어드민에서 정원 미달이어도 수동으로 모집 마감 가능
+
+| 상태 | 버튼 | 동작 |
+|------|------|------|
+| 접수중 (open) | **마감** | → closed 상태로 변경 |
+| 마감 (closed) | **재오픈** | → open 상태로 변경 |
+
+**수정 파일:**
+- `admin.html`: 마감/재오픈 버튼 및 함수 추가
+- `seminar-api.js`: `updateSeminarStatus` 액션 추가
+
+#### 3. 결제 실패 후 재등록 허용 ✅
+
+**문제:** 결제 실패한 사용자가 다시 신청하면 "이미 등록된 연락처" 에러
+
+**해결:** `pending` 상태 등록은 삭제하고 재등록 허용, `paid` 상태만 차단
+
+```javascript
+// seminar-register.js
+if (data.paymentStatus === 'paid') {
+  return { error: '이미 등록된 연락처입니다' };
+}
+if (data.paymentStatus === 'pending') {
+  await doc.ref.delete();  // 기존 pending 삭제 후 재등록 허용
+}
+```
+
+### YouTube 영상 화질 개선
+
+#### PC 화질 설정
+- 컨테이너 크기: **1280px** (HD 해상도)
+- URL 파라미터: `vq=hd1080&rel=0&modestbranding=1&playsinline=1`
+
+#### 모바일 화질 개선
+- 768px 이하에서 비디오 **전체 너비** 표시
+- 좌우 여백 제거 → YouTube가 더 높은 화질 스트림 제공
+
+```css
+@media (max-width: 768px) {
+    .video-container {
+        max-width: 100%;
+        border-radius: 0;
+        margin-left: -24px;
+        margin-right: -24px;
+        width: calc(100% + 48px);
+    }
+}
+```
+
+**참고:** YouTube는 플레이어 크기와 네트워크 속도에 따라 자동으로 화질 조절. `vq=hd1080`은 요청일 뿐 강제되지 않음.
+
+### 세미나 랜딩 페이지 UI 개선
+
+- 문제 카드 레이아웃: 3+1 → **2x2 그리드**로 변경 (균형 개선)
+- OG 이미지 생성: 카카오톡 공유 시 **1200x630 썸네일** 표시
+  - 텍스트: "HAIRGATOR AI 세미나 - 미용사를 위한 AI 파트너"
+  - 파일: `seminar/og-image.png`
