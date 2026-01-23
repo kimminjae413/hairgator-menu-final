@@ -9347,7 +9347,7 @@
             document.getElementById('seminarCapacity').value = '';
             document.getElementById('seminarStatus').value = 'draft';
 
-            document.getElementById('seminarModal').classList.add('active');
+            document.getElementById('seminarModal').classList.add('show');
         }
 
         // 세미나 수정 모달
@@ -9367,7 +9367,7 @@
             document.getElementById('seminarCapacity').value = seminar.capacity || '';
             document.getElementById('seminarStatus').value = seminar.status || 'draft';
 
-            document.getElementById('seminarModal').classList.add('active');
+            document.getElementById('seminarModal').classList.add('show');
         }
 
         // 세미나 저장
@@ -9500,7 +9500,7 @@
                 </div>
             `;
 
-            document.getElementById('registrationDetailModal').classList.add('active');
+            document.getElementById('registrationDetailModal').classList.add('show');
         }
 
         // 환불 모달 열기
@@ -9512,7 +9512,7 @@
             document.getElementById('refundName').textContent = reg.name;
             document.getElementById('refundReason').value = '';
 
-            document.getElementById('refundModal').classList.add('active');
+            document.getElementById('refundModal').classList.add('show');
         }
 
         // 환불 처리
@@ -9590,7 +9590,7 @@
             document.getElementById('customMessageGroup').style.display = 'none';
             updateSMSPreview();
 
-            document.getElementById('seminarSMSModal').classList.add('active');
+            document.getElementById('seminarSMSModal').classList.add('show');
         }
 
         // SMS 미리보기 업데이트
