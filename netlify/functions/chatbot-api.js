@@ -642,42 +642,10 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
 
   console.log(`🎯 필터링 후: ${filteredChunks.length}개`);
 
-  // ⭐ theory_indexes의 textContent 병합 (키워드 매칭)
-  const theoryIndexes = await loadTheoryIndexes();
-  console.log(`📚 theory_indexes 로드: ${theoryIndexes ? theoryIndexes.length : 0}개`);
-
-  if (theoryIndexes && theoryIndexes.length > 0) {
-    const queryLower = normalizedQuery.toLowerCase();
-    const normalizedQueryNoSpace = queryLower.replace(/\s+/g, '').replace(/[의은는이가을를에서로와과]/g, '');
-    console.log(`🔎 매칭 시도: queryLower="${queryLower}", noSpace="${normalizedQueryNoSpace}"`);
-
-    let matchCount = 0;
-    for (const idx of theoryIndexes) {
-      if (!idx.textContent || idx.textContent.length < 50) continue;
-
-      // 키워드 매칭 확인
-      const matched = idx.keywords.some(kw => {
-        const kwNormalized = kw.toLowerCase().replace(/\s+/g, '');
-        return queryLower.includes(kw) || normalizedQueryNoSpace.includes(kwNormalized);
-      });
-
-      if (matched) {
-        matchCount++;
-        // theory_chunks 형식으로 변환하여 추가
-        filteredChunks.push({
-          section_title: idx.title_ko || idx.term,
-          category_code: idx.category || idx.type,
-          content_ko: idx.textContent,
-          content: idx.textContent,
-          vector_similarity: 0.85,
-          combined_score: 0.85,
-          source: 'theory_indexes'
-        });
-        console.log(`📎 theory_indexes 매칭: ${idx.term} (${idx.textContent.length}자)`);
-      }
-    }
-    console.log(`✅ theory_indexes 총 매칭: ${matchCount}개, filteredChunks 총: ${filteredChunks.length}개`);
-  }
+  // ⭐ [2025-01-23] theory_indexes 키워드 매칭 제거
+  // Gemini File Search Store (77개 파일)가 시맨틱 검색으로 더 효과적으로 RAG 처리
+  // 이전: theory_indexes에서 키워드 매칭 → filteredChunks에 추가
+  // 현재: Gemini File Search만 사용 (generateGeminiFileSearchResponse 함수)
 
   // 4. 검색 결과에 따라 프롬프트 생성
   let systemPrompt;
@@ -2467,42 +2435,10 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
   );
   console.log(`🎯 필터링 후: ${filteredChunks.length}개`);
 
-  // ⭐ theory_indexes의 textContent 병합 (키워드 매칭)
-  const theoryIndexes = await loadTheoryIndexes();
-  console.log(`📚 theory_indexes 로드: ${theoryIndexes ? theoryIndexes.length : 0}개`);
-
-  if (theoryIndexes && theoryIndexes.length > 0) {
-    const queryLower = normalizedQuery.toLowerCase();
-    const normalizedQueryNoSpace = queryLower.replace(/\s+/g, '').replace(/[의은는이가을를에서로와과]/g, '');
-    console.log(`🔎 매칭 시도: queryLower="${queryLower}", noSpace="${normalizedQueryNoSpace}"`);
-
-    let matchCount = 0;
-    for (const idx of theoryIndexes) {
-      if (!idx.textContent || idx.textContent.length < 50) continue;
-
-      // 키워드 매칭 확인
-      const matched = idx.keywords.some(kw => {
-        const kwNormalized = kw.toLowerCase().replace(/\s+/g, '');
-        return queryLower.includes(kw) || normalizedQueryNoSpace.includes(kwNormalized);
-      });
-
-      if (matched) {
-        matchCount++;
-        // theory_chunks 형식으로 변환하여 추가
-        filteredChunks.push({
-          section_title: idx.title_ko || idx.term,
-          category_code: idx.category || idx.type,
-          content_ko: idx.textContent,
-          content: idx.textContent,
-          vector_similarity: 0.85,
-          combined_score: 0.85,
-          source: 'theory_indexes'
-        });
-        console.log(`📎 theory_indexes 매칭: ${idx.term} (${idx.textContent.length}자)`);
-      }
-    }
-    console.log(`✅ theory_indexes 총 매칭: ${matchCount}개, filteredChunks 총: ${filteredChunks.length}개`);
-  }
+  // ⭐ [2025-01-23] theory_indexes 키워드 매칭 제거
+  // Gemini File Search Store (77개 파일)가 시맨틱 검색으로 더 효과적으로 RAG 처리
+  // 이전: theory_indexes에서 키워드 매칭 → filteredChunks에 추가
+  // 현재: Gemini File Search만 사용 (generateGeminiFileSearchResponse 함수)
 
   // 시스템 프롬프트 빌드 (개선된 버전 사용)
   let systemPrompt;
@@ -4134,50 +4070,10 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
     // ⭐ 시스템 프롬프트 생성 (레시피 컨텍스트 포함)
     let systemPrompt = buildGeminiSystemPrompt(userLanguage);
 
-    // ⭐ theory_indexes의 textContent 병합 (키워드 매칭)
-    const theoryIndexes = await loadTheoryIndexes();
-    if (theoryIndexes && theoryIndexes.length > 0) {
-      const queryLower = user_query.toLowerCase();
-      const normalizedQueryNoSpace = queryLower.replace(/\s+/g, '').replace(/[의은는이가을를에서로와과]/g, '');
-
-      const matchedContexts = [];
-      for (const idx of theoryIndexes) {
-        if (!idx.textContent || idx.textContent.length < 50) continue;
-
-        // 키워드 매칭 확인
-        const matched = idx.keywords.some(kw => {
-          const kwNormalized = kw.toLowerCase().replace(/\s+/g, '');
-          return queryLower.includes(kw) || normalizedQueryNoSpace.includes(kwNormalized);
-        });
-
-        if (matched) {
-          matchedContexts.push({
-            title: idx.title_ko || idx.term,
-            content: idx.textContent
-          });
-          console.log(`📎 theory_indexes textContent 매칭: ${idx.term} (${idx.textContent.length}자)`);
-        }
-      }
-
-      // 매칭된 컨텍스트를 시스템 프롬프트에 추가
-      if (matchedContexts.length > 0) {
-        const contextSection = matchedContexts.map(ctx =>
-          `\n【참고 자료: ${ctx.title}】\n${ctx.content.substring(0, 8000)}`
-        ).join('\n\n');
-
-        systemPrompt += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️⚠️⚠️ 절대 중요 ⚠️⚠️⚠️
-아래 참고 자료는 당신이 속한 헤어 시스템의 공식 이론입니다.
-이 자료에 나온 내용은 "사실"입니다. 일반 상식이나 외부 지식으로 반박하지 마세요!
-
-예: 자료에 "키와 퍼스널 톤이 연관있다"고 되어있으면, "연관 없다"고 답하면 안 됩니다.
-자료의 구체적 수치(150cm, 160~170cm, 180cm 등)를 그대로 인용하세요.
-
-⚠️ 금지: "일반적으로 연관이 없습니다", "과학적으로 관계 없습니다" 등의 부정적 답변
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━${contextSection}`;
-        console.log(`✅ theory_indexes ${matchedContexts.length}개 컨텍스트 추가 완료`);
-      }
-    }
+    // ⭐ [2025-01-23] theory_indexes 키워드 매칭 제거
+    // Gemini File Search Store (77개 파일)가 시맨틱 검색으로 더 효과적으로 RAG 처리함
+    // 이전: theory_indexes에서 키워드 매칭 → 시스템 프롬프트에 추가
+    // 현재: Gemini File Search만 사용
 
     // ⭐ 레시피 컨텍스트가 있으면 추가
     if (recipe_context && recipe_context.analysis) {
