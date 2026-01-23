@@ -41,6 +41,7 @@ async function loadSeminarInfo() {
         // 세미나 목록인 경우 첫 번째 세미나 선택
         if (result.seminars) {
             if (result.seminars.length === 0) {
+                document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('noSeminarState').style.display = 'block';
                 return;
             }
@@ -48,6 +49,7 @@ async function loadSeminarInfo() {
         } else if (result.seminar) {
             currentSeminar = result.seminar;
         } else {
+            document.getElementById('loadingState').style.display = 'none';
             document.getElementById('noSeminarState').style.display = 'block';
             return;
         }
