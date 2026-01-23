@@ -75,35 +75,55 @@ function renderSeminarInfo() {
         day: 'numeric',
         weekday: 'long'
     }) : '-';
+    const dateTimeStr = dateStr + (currentSeminar.time ? ` ${currentSeminar.time}` : '');
 
-    // Hero 섹션
-    document.getElementById('seminarTitle').textContent = currentSeminar.title || '-';
-    document.getElementById('seminarDescription').textContent = currentSeminar.description?.substring(0, 100) || '';
-    document.getElementById('seminarDate').textContent = dateStr;
-    document.getElementById('seminarTime').textContent = currentSeminar.time || '-';
-    document.getElementById('seminarLocation').textContent = currentSeminar.location || '-';
+    // Hero 섹션 (동적 데이터)
+    const seminarTitle = document.getElementById('seminarTitle');
+    if (seminarTitle) seminarTitle.textContent = currentSeminar.title || '-';
 
-    // 세미나 정보 섹션
-    const descriptionHtml = (currentSeminar.description || '')
-        .split('\n')
-        .map(p => p.trim() ? `<p>${escapeHtml(p)}</p>` : '')
-        .join('');
-    document.getElementById('seminarFullDescription').innerHTML = descriptionHtml || '<p>상세 내용이 없습니다.</p>';
+    const seminarDate = document.getElementById('seminarDate');
+    if (seminarDate) seminarDate.textContent = dateStr;
 
-    document.getElementById('seminarPrice').textContent = `${(currentSeminar.price || 0).toLocaleString()}원`;
-    document.getElementById('seminarCurrent').textContent = currentSeminar.currentCount || 0;
-    document.getElementById('seminarCapacity').textContent = currentSeminar.capacity || 0;
-    document.getElementById('seminarLocationDetail').textContent =
-        currentSeminar.locationDetail || currentSeminar.location || '-';
+    const seminarTime = document.getElementById('seminarTime');
+    if (seminarTime) seminarTime.textContent = currentSeminar.time || '-';
+
+    const seminarLocation = document.getElementById('seminarLocation');
+    if (seminarLocation) seminarLocation.textContent = currentSeminar.location || '-';
+
+    // 정원 노트 업데이트
+    const capacityNote = document.getElementById('seminarCapacityNote');
+    if (capacityNote) capacityNote.textContent = `정원 ${currentSeminar.capacity || 30}명`;
+
+    // Info 섹션 (새 HTML 구조)
+    const infoDate = document.getElementById('infoDate');
+    if (infoDate) infoDate.textContent = dateTimeStr;
+
+    const infoLocation = document.getElementById('infoLocation');
+    if (infoLocation) infoLocation.textContent = currentSeminar.locationDetail || currentSeminar.location || '-';
+
+    const infoPrice = document.getElementById('infoPrice');
+    if (infoPrice) infoPrice.textContent = `${(currentSeminar.price || 0).toLocaleString()}원`;
+
+    const currentCount = document.getElementById('currentCount');
+    if (currentCount) currentCount.textContent = currentSeminar.currentCount || 0;
+
+    const totalCapacity = document.getElementById('totalCapacity');
+    if (totalCapacity) totalCapacity.textContent = currentSeminar.capacity || 0;
 
     // 가격 요약
-    document.getElementById('summaryPrice').textContent = `${(currentSeminar.price || 0).toLocaleString()}원`;
-    document.getElementById('summaryTotal').textContent = `${(currentSeminar.price || 0).toLocaleString()}원`;
+    const summaryPrice = document.getElementById('summaryPrice');
+    if (summaryPrice) summaryPrice.textContent = `${(currentSeminar.price || 0).toLocaleString()}원`;
+
+    const summaryTotal = document.getElementById('summaryTotal');
+    if (summaryTotal) summaryTotal.textContent = `${(currentSeminar.price || 0).toLocaleString()}원`;
 
     // 정원 마감 체크
     if (currentSeminar.isFull || (currentSeminar.currentCount || 0) >= currentSeminar.capacity) {
-        document.getElementById('soldOutMessage').style.display = 'block';
-        document.getElementById('registrationForm').style.display = 'none';
+        const soldOutMessage = document.getElementById('soldOutMessage');
+        if (soldOutMessage) soldOutMessage.style.display = 'block';
+
+        const registrationForm = document.getElementById('registrationForm');
+        if (registrationForm) registrationForm.style.display = 'none';
     }
 }
 
@@ -256,7 +276,8 @@ async function verifyPayment(regId, paymentId) {
     // 세미나 정보 업데이트 (인원 수)
     if (currentSeminar) {
         currentSeminar.currentCount = (currentSeminar.currentCount || 0) + 1;
-        document.getElementById('seminarCurrent').textContent = currentSeminar.currentCount;
+        const currentCountEl = document.getElementById('currentCount');
+        if (currentCountEl) currentCountEl.textContent = currentSeminar.currentCount;
     }
 }
 
