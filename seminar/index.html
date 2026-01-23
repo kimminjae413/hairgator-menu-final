@@ -525,6 +525,25 @@
             flex-shrink: 0;
         }
 
+        .solution-video {
+            margin-top: 20px;
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 비율 */
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .solution-video iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
         /* Seminar Info Section */
         .info-section {
             padding: 120px 24px;
@@ -1133,6 +1152,9 @@
                             <li>두상접근법까지 상세 안내</li>
                             <li>어떤 스타일도 시술 가능</li>
                         </ul>
+                        <div class="solution-video">
+                            <iframe src="https://www.youtube.com/embed/fA6Gx7P0paA" title="AI 헤어레시피 소개" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </div>
                     </div>
                     <div class="solution-card fade-in">
                         <div class="solution-icon">🎨</div>
