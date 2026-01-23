@@ -260,20 +260,17 @@ async function getRegistrations(body, headers) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'seminarId 필요' }) };
   }
 
+  // 복합 인덱스 없이 쿼리 (JavaScript에서 정렬)
   let query = db.collection('seminar_registrations')
-    .where('seminarId', '==', seminarId)
-    .orderBy('createdAt', 'desc');
+    .where('seminarId', '==', seminarId);
 
   if (paymentStatus) {
-    query = db.collection('seminar_registrations')
-      .where('seminarId', '==', seminarId)
-      .where('paymentStatus', '==', paymentStatus)
-      .orderBy('createdAt', 'desc');
+    query = query.where('paymentStatus', '==', paymentStatus);
   }
 
   const snapshot = await query.limit(limit).get();
 
-  const registrations = snapshot.docs.map(doc => {
+  let registrations = snapshot.docs.map(doc => {
     const data = doc.data();
     return {
       id: doc.id,
@@ -286,6 +283,13 @@ async function getRegistrations(body, headers) {
         dueDate: data.virtualAccount.dueDate?.toDate?.()?.toISOString() || null
       } : null
     };
+  });
+
+  // JavaScript에서 createdAt 내림차순 정렬
+  registrations.sort((a, b) => {
+    if (!a.createdAt) return 1;
+    if (!b.createdAt) return -1;
+    return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
   return {
@@ -425,14 +429,20 @@ async function exportRegistrations(body, headers) {
   const seminarDoc = await db.collection('seminars').doc(seminarId).get();
   const seminar = seminarDoc.exists ? seminarDoc.data() : {};
 
-  // 결제 완료된 등록자만 조회
+  // 결제 완료된 등록자만 조회 (복합 인덱스 없이)
   const snapshot = await db.collection('seminar_registrations')
     .where('seminarId', '==', seminarId)
     .where('paymentStatus', '==', 'paid')
-    .orderBy('paidAt', 'asc')
     .get();
 
-  const registrations = snapshot.docs.map((doc, index) => {
+  // JavaScript에서 paidAt 기준 오름차순 정렬 후 매핑
+  const sortedDocs = snapshot.docs.sort((a, b) => {
+    const aTime = a.data().paidAt?.toDate?.()?.getTime() || 0;
+    const bTime = b.data().paidAt?.toDate?.()?.getTime() || 0;
+    return aTime - bTime;
+  });
+
+  const registrations = sortedDocs.map((doc, index) => {
     const data = doc.data();
     return {
       번호: index + 1,
