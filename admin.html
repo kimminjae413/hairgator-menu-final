@@ -9232,6 +9232,8 @@
                         </td>
                         <td>${(seminar.price || 0).toLocaleString()}원</td>
                         <td>
+                            ${seminar.status === 'open' ? `<button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); closeSeminar('${seminar.id}')" style="margin-right: 4px;">마감</button>` : ''}
+                            ${seminar.status === 'closed' ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation(); reopenSeminar('${seminar.id}')" style="margin-right: 4px;">재오픈</button>` : ''}
                             <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); editSeminar('${seminar.id}')">수정</button>
                             <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteSeminar('${seminar.id}')">삭제</button>
                         </td>
@@ -9419,6 +9421,36 @@
                 alert('세미나가 삭제되었습니다.');
             } catch (error) {
                 alert('삭제 실패: ' + error.message);
+            }
+        }
+
+        // 세미나 마감
+        async function closeSeminar(seminarId) {
+            if (!confirm('이 세미나 모집을 마감하시겠습니까?\n마감 후에도 재오픈이 가능합니다.')) return;
+
+            try {
+                const result = await callSeminarAPI('updateSeminarStatus', { seminarId, status: 'closed' });
+                if (result.error) throw new Error(result.error);
+
+                loadSeminars();
+                alert('세미나 모집이 마감되었습니다.');
+            } catch (error) {
+                alert('마감 실패: ' + error.message);
+            }
+        }
+
+        // 세미나 재오픈
+        async function reopenSeminar(seminarId) {
+            if (!confirm('이 세미나 모집을 다시 오픈하시겠습니까?')) return;
+
+            try {
+                const result = await callSeminarAPI('updateSeminarStatus', { seminarId, status: 'open' });
+                if (result.error) throw new Error(result.error);
+
+                loadSeminars();
+                alert('세미나 모집이 다시 오픈되었습니다.');
+            } catch (error) {
+                alert('재오픈 실패: ' + error.message);
             }
         }
 

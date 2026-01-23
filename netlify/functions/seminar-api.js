@@ -50,6 +50,8 @@ exports.handler = async (event) => {
         return await updateSeminar(body, headers);
       case 'deleteSeminar':
         return await deleteSeminar(body, headers);
+      case 'updateSeminarStatus':
+        return await updateSeminarStatus(body, headers);
 
       // ==================== 등록자 관리 ====================
       case 'getRegistrations':
@@ -248,6 +250,39 @@ async function deleteSeminar(body, headers) {
     statusCode: 200,
     headers,
     body: JSON.stringify({ success: true })
+  };
+}
+
+// 세미나 상태 변경 (마감/재오픈)
+async function updateSeminarStatus(body, headers) {
+  const { seminarId, status } = body;
+
+  if (!seminarId || !status) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'seminarId와 status 필요' }) };
+  }
+
+  // 허용된 상태 값 확인
+  const allowedStatuses = ['draft', 'open', 'closed', 'cancelled'];
+  if (!allowedStatuses.includes(status)) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: '유효하지 않은 상태 값입니다' }) };
+  }
+
+  const seminarRef = db.collection('seminars').doc(seminarId);
+  const seminarDoc = await seminarRef.get();
+
+  if (!seminarDoc.exists) {
+    return { statusCode: 404, headers, body: JSON.stringify({ error: '세미나를 찾을 수 없습니다' }) };
+  }
+
+  await seminarRef.update({
+    status: status,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+  });
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ success: true, status })
   };
 }
 
