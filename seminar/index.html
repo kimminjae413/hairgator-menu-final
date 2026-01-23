@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HAIRGATOR AI 세미나 - 헤어레시피의 새로운 패러다임</title>
+    <meta name="description" content="HAIRGATOR AI를 활용한 헤어레시피 세미나에 참가하세요. 미용사를 위한 AI 기술 활용법을 배워보세요.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="HAIRGATOR AI 세미나">
+    <meta property="og:description" content="미용사를 위한 AI 헤어레시피 세미나">
+    <meta property="og:image" content="https://hairgator.kr/logo512.png">
+    <meta property="og:url" content="https://hairgator.kr/seminar/">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/logo512.png">
+    <link rel="apple-touch-icon" href="/logo512.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- PortOne SDK -->
+    <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
+
+    <style>
+        :root {
+            --primary: #E91E63;
+            --primary-dark: #C2185B;
+            --primary-light: #FCE4EC;
+            --bg: #FFFFFF;
+            --bg-gray: #F8F9FA;
+            --text: #1A1D21;
+            --text-muted: #6B7280;
+            --border: #E5E8EB;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            height: 32px;
+        }
+
+        .header-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .hero-inner {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .hero-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+
+        .hero-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            font-size: 14px;
+        }
+
+        .hero-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Content Sections */
+        .section {
+            padding: 50px 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--text);
+        }
+
+        .section-content {
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .section-content p {
+            margin-bottom: 16px;
+        }
+
+        /* Info Cards */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .info-card {
+            background: var(--bg-gray);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .info-card-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .info-card-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* Registration Form */
+        .registration-section {
+            background: var(--bg-gray);
+            padding: 50px 20px;
+        }
+
+        .registration-card {
+            max-width: 500px;
+            margin: 0 auto;
+            background: var(--bg);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .registration-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .registration-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .form-label .required {
+            color: var(--danger);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .payment-method {
+            flex: 1;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .payment-method.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .payment-method-icon {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .payment-method-label {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .price-summary {
+            background: var(--bg-gray);
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .price-row:last-child {
+            margin-bottom: 0;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .submit-btn:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        /* Status Messages */
+        .status-message {
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #D1FAE5;
+            color: #059669;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #FEE2E2;
+            color: #DC2626;
+            display: block;
+        }
+
+        .status-message.warning {
+            background: #FEF3C7;
+            color: #D97706;
+            display: block;
+        }
+
+        /* Virtual Account Info */
+        .virtual-account-info {
+            background: #EFF6FF;
+            border: 1px solid #BFDBFE;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .virtual-account-info.show {
+            display: block;
+        }
+
+        .va-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1E40AF;
+        }
+
+        .va-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #DBEAFE;
+        }
+
+        .va-row:last-child {
+            border-bottom: none;
+        }
+
+        .va-label {
+            color: #6B7280;
+        }
+
+        .va-value {
+            font-weight: 500;
+            color: #1E40AF;
+        }
+
+        .copy-btn {
+            margin-left: 8px;
+            padding: 4px 8px;
+            background: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-gray);
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-logo {
+            height: 24px;
+            margin-bottom: 16px;
+        }
+
+        .footer-text {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .footer-link {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* Sold Out / Closed */
+        .sold-out-badge {
+            background: var(--danger);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .closed-message {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .hero {
+                padding: 40px 20px;
+            }
+
+            .hero-title {
+                font-size: 26px;
+            }
+
+            .hero-meta {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .registration-card {
+                padding: 24px 20px;
+            }
+
+            .payment-methods {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <img src="/logo512.png" alt="HAIRGATOR" class="logo">
+            <a href="https://hairgator.kr" class="header-link">앱 바로가기 →</a>
+        </div>
+    </header>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading">
+        <div class="loading-spinner"></div>
+        <p>세미나 정보를 불러오는 중...</p>
+    </div>
+
+    <!-- No Seminar State -->
+    <div id="noSeminarState" class="closed-message" style="display: none;">
+        <h2 style="margin-bottom: 16px;">현재 접수 중인 세미나가 없습니다</h2>
+        <p>새로운 세미나 일정이 공지되면 안내해드리겠습니다.</p>
+        <a href="https://hairgator.kr" style="display: inline-block; margin-top: 24px; color: var(--primary);">HAIRGATOR 앱 바로가기 →</a>
+    </div>
+
+    <!-- Main Content (동적으로 채워짐) -->
+    <main id="mainContent" style="display: none;">
+        <!-- Hero -->
+        <section class="hero">
+            <div class="hero-inner">
+                <span class="hero-badge">🎓 HAIRGATOR 공식 세미나</span>
+                <h1 class="hero-title" id="seminarTitle">-</h1>
+                <p class="hero-subtitle" id="seminarDescription">-</p>
+                <div class="hero-meta">
+                    <div class="hero-meta-item">
+                        <span>📅</span>
+                        <span id="seminarDate">-</span>
+                    </div>
+                    <div class="hero-meta-item">
+                        <span>⏰</span>
+                        <span id="seminarTime">-</span>
+                    </div>
+                    <div class="hero-meta-item">
+                        <span>📍</span>
+                        <span id="seminarLocation">-</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seminar Info -->
+        <section class="section">
+            <h2 class="section-title">📋 세미나 안내</h2>
+            <div class="section-content" id="seminarFullDescription">
+                <!-- 동적으로 채워짐 -->
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-card-label">참가비</div>
+                    <div class="info-card-value" id="seminarPrice">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">정원</div>
+                    <div class="info-card-value"><span id="seminarCurrent">0</span> / <span id="seminarCapacity">0</span>명</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">장소</div>
+                    <div class="info-card-value" id="seminarLocationDetail">-</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Registration Form -->
+        <section class="registration-section" id="registrationSection">
+            <div class="registration-card">
+                <h2 class="registration-title">세미나 참가 신청</h2>
+                <p class="registration-subtitle">아래 정보를 입력하고 결제를 완료해주세요</p>
+
+                <!-- Status Message -->
+                <div id="statusMessage" class="status-message"></div>
+
+                <!-- Sold Out Message -->
+                <div id="soldOutMessage" style="display: none; text-align: center; padding: 20px;">
+                    <span class="sold-out-badge">마감</span>
+                    <p style="color: var(--text-muted); margin-top: 12px;">정원이 마감되었습니다.<br>다음 세미나를 기다려주세요!</p>
+                </div>
+
+                <!-- Registration Form -->
+                <form id="registrationForm">
+                    <div class="form-group">
+                        <label class="form-label">이름 <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="regName" placeholder="홍길동" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">연락처 <span class="required">*</span></label>
+                        <input type="tel" class="form-input" id="regPhone" placeholder="010-1234-5678" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">이메일</label>
+                        <input type="email" class="form-input" id="regEmail" placeholder="example@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">미용실명</label>
+                        <input type="text" class="form-input" id="regStore" placeholder="OO헤어">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">직급</label>
+                        <select class="form-input form-select" id="regPosition">
+                            <option value="">선택하세요</option>
+                            <option value="원장">원장</option>
+                            <option value="실장">실장</option>
+                            <option value="디자이너">디자이너</option>
+                            <option value="스타일리스트">스타일리스트</option>
+                            <option value="인턴">인턴</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">경력</label>
+                        <input type="text" class="form-input" id="regExperience" placeholder="예: 5년">
+                    </div>
+
+                    <!-- Payment Method Selection -->
+                    <label class="form-label">결제 방법</label>
+                    <div class="payment-methods">
+                        <div class="payment-method active" data-method="card" onclick="selectPaymentMethod('card')">
+                            <div class="payment-method-icon">💳</div>
+                            <div class="payment-method-label">카드 결제</div>
+                        </div>
+                        <div class="payment-method" data-method="virtual" onclick="selectPaymentMethod('virtual')">
+                            <div class="payment-method-icon">🏦</div>
+                            <div class="payment-method-label">가상계좌</div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Selection (가상계좌) -->
+                    <div class="form-group" id="bankSelectGroup" style="display: none;">
+                        <label class="form-label">입금 은행 선택</label>
+                        <select class="form-input form-select" id="bankCode">
+                            <option value="KB_KOOKMIN">국민은행</option>
+                            <option value="SHINHAN">신한은행</option>
+                            <option value="WOORI">우리은행</option>
+                            <option value="HANA">하나은행</option>
+                            <option value="NH_NONGHYUP">농협은행</option>
+                        </select>
+                    </div>
+
+                    <!-- Price Summary -->
+                    <div class="price-summary">
+                        <div class="price-row">
+                            <span>참가비</span>
+                            <span id="summaryPrice">-</span>
+                        </div>
+                        <div class="price-row">
+                            <span>총 결제금액</span>
+                            <span id="summaryTotal">-</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        결제하고 참가 신청하기
+                    </button>
+                </form>
+
+                <!-- Virtual Account Info (발급 후 표시) -->
+                <div id="virtualAccountInfo" class="virtual-account-info">
+                    <div class="va-title">💰 가상계좌 입금 안내</div>
+                    <div class="va-row">
+                        <span class="va-label">은행</span>
+                        <span class="va-value" id="vaBank">-</span>
+                    </div>
+                    <div class="va-row">
+                        <span class="va-label">계좌번호</span>
+                        <span class="va-value">
+                            <span id="vaAccount">-</span>
+                            <button class="copy-btn" onclick="copyAccount()">복사</button>
+                        </span>
+                    </div>
+                    <div class="va-row">
+                        <span class="va-label">예금주</span>
+                        <span class="va-value" id="vaHolder">HAIRGATOR</span>
+                    </div>
+                    <div class="va-row">
+                        <span class="va-label">입금금액</span>
+                        <span class="va-value" id="vaAmount">-</span>
+                    </div>
+                    <div class="va-row">
+                        <span class="va-label">입금기한</span>
+                        <span class="va-value" id="vaDueDate">-</span>
+                    </div>
+                    <p style="margin-top: 16px; font-size: 13px; color: #6B7280;">
+                        ⚠️ 입금 기한 내 미입금 시 자동 취소됩니다.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <img src="/logo512.png" alt="HAIRGATOR" class="footer-logo">
+        <p class="footer-text">
+            © 2026 HAIRGATOR. All rights reserved.<br>
+            문의: <a href="mailto:support@hairgator.kr" class="footer-link">support@hairgator.kr</a>
+        </p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -69,6 +69,26 @@
   node_bundler = "esbuild"
   timeout = 26
 
+# ⭐ 세미나 관리 API
+[functions."seminar-api"]
+  node_bundler = "esbuild"
+  timeout = 26
+
+# ⭐ 세미나 등록 (결제 포함)
+[functions."seminar-register"]
+  node_bundler = "esbuild"
+  timeout = 26
+
+# ⭐ 세미나 가상계좌 웹훅
+[functions."seminar-webhook"]
+  node_bundler = "esbuild"
+  timeout = 26
+
+# ⭐ 세미나 알림톡 발송
+[functions."seminar-sms"]
+  node_bundler = "esbuild"
+  timeout = 26
+
 # ========== 캐시 설정 (개발/업데이트 빈번) ==========
 # HTML 파일 - 캐시 비활성화
 [[headers]]
@@ -210,6 +230,17 @@
 [[redirects]]
   from = "/lookbook"
   to = "/lookbook.html"
+  status = 200
+
+# 세미나 페이지 (SPA 예외)
+[[redirects]]
+  from = "/seminar"
+  to = "/seminar/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/seminar/"
+  to = "/seminar/index.html"
   status = 200
 
 [[redirects]]

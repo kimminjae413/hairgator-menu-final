@@ -529,6 +529,37 @@
         .badge-warning { background: #FEF3C7; color: #D97706; }
         .badge-danger { background: #FEE2E2; color: #DC2626; }
 
+        /* 상태 배지 */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+
+        /* 상세 정보 행 */
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        .detail-value {
+            color: var(--text);
+            font-size: 14px;
+            text-align: right;
+        }
+
         /* 페이지네이션 */
         .pagination-container {
             display: flex;
@@ -1479,6 +1510,10 @@
                 <span class="nav-item-icon">📧</span>
                 <span>마케팅 이메일</span>
             </div>
+            <div class="nav-item" onclick="showPage('seminars')">
+                <span class="nav-item-icon">📚</span>
+                <span>세미나 관리</span>
+            </div>
         </nav>
 
         <nav class="nav-section">
@@ -2308,6 +2343,238 @@
                 <div class="modal-footer">
                     <button class="btn btn-secondary" onclick="closeModal('marketingPreviewModal')">닫기</button>
                     <button class="btn btn-primary" onclick="closeModal('marketingPreviewModal'); sendMarketingEmail();">📤 발송하기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 세미나 관리 페이지 -->
+        <div id="page-seminars" class="page">
+            <div class="page-header">
+                <h2 class="page-title">📚 세미나 관리</h2>
+                <button class="btn btn-primary" onclick="openSeminarModal()">+ 새 세미나 등록</button>
+            </div>
+
+            <!-- 세미나 통계 -->
+            <div class="stats-grid" style="margin-bottom: 20px;">
+                <div class="stat-card">
+                    <div class="stat-label">전체 세미나</div>
+                    <div class="stat-value" id="seminarStatTotal">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">접수 중</div>
+                    <div class="stat-value" id="seminarStatOpen">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">총 등록자</div>
+                    <div class="stat-value" id="seminarStatRegistered">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">총 매출</div>
+                    <div class="stat-value" id="seminarStatRevenue">0원</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">세미나 목록</div>
+                    <button class="btn btn-secondary btn-sm" onclick="loadSeminars()">🔄 새로고침</button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">상태</th>
+                                <th>제목</th>
+                                <th style="width: 120px;">일시</th>
+                                <th style="width: 150px;">장소</th>
+                                <th style="width: 100px;">등록/정원</th>
+                                <th style="width: 100px;">금액</th>
+                                <th style="width: 160px;">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="seminarsTableBody">
+                            <tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">로딩 중...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 등록자 목록 섹션 (세미나 선택 시 표시) -->
+            <div class="card" id="seminarRegistrationsCard" style="display: none; margin-top: 20px;">
+                <div class="card-header">
+                    <div class="card-title">📋 등록자 목록 - <span id="selectedSeminarTitle"></span></div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-secondary btn-sm" onclick="exportSeminarExcel()">📥 엑셀 다운로드</button>
+                        <button class="btn btn-info btn-sm" onclick="openSeminarSMSModal()">📱 알림톡 발송</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"><input type="checkbox" id="selectAllRegistrations" onchange="toggleAllRegistrations()"></th>
+                                <th style="width: 80px;">이름</th>
+                                <th>미용실</th>
+                                <th style="width: 80px;">직급</th>
+                                <th style="width: 120px;">연락처</th>
+                                <th style="width: 100px;">결제상태</th>
+                                <th style="width: 100px;">결제일</th>
+                                <th style="width: 120px;">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registrationsTableBody">
+                            <tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">세미나를 선택하세요</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 세미나 생성/수정 모달 -->
+        <div class="modal-overlay" id="seminarModal">
+            <div class="modal" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="seminarModalTitle">새 세미나 등록</h3>
+                    <button class="modal-close" onclick="closeModal('seminarModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="seminarEditId">
+                    <div class="form-group">
+                        <label class="form-label">세미나 제목 *</label>
+                        <input type="text" class="form-input" id="seminarTitle" placeholder="예: HAIRGATOR AI 헤어레시피 세미나">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">상세 설명</label>
+                        <textarea class="form-input" id="seminarDescription" rows="4" placeholder="세미나 상세 내용을 입력하세요..."></textarea>
+                    </div>
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">날짜 *</label>
+                            <input type="date" class="form-input" id="seminarDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">시간</label>
+                            <input type="text" class="form-input" id="seminarTime" placeholder="예: 14:00 - 17:00">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">장소 *</label>
+                        <input type="text" class="form-input" id="seminarLocation" placeholder="예: 서울 강남구 테헤란로 123">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">상세 위치</label>
+                        <input type="text" class="form-input" id="seminarLocationDetail" placeholder="예: 3층 대회의실">
+                    </div>
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">참가비 (원) *</label>
+                            <input type="number" class="form-input" id="seminarPrice" placeholder="50000">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">정원 *</label>
+                            <input type="number" class="form-input" id="seminarCapacity" placeholder="30">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">상태</label>
+                        <select class="form-input" id="seminarStatus">
+                            <option value="draft">초안 (비공개)</option>
+                            <option value="open">접수 중 (공개)</option>
+                            <option value="closed">접수 마감</option>
+                            <option value="cancelled">취소됨</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('seminarModal')">취소</button>
+                    <button class="btn btn-primary" onclick="saveSeminar()">저장</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 등록자 상세 모달 -->
+        <div class="modal-overlay" id="registrationDetailModal">
+            <div class="modal" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">등록자 상세 정보</h3>
+                    <button class="modal-close" onclick="closeModal('registrationDetailModal')">&times;</button>
+                </div>
+                <div class="modal-body" id="registrationDetailContent">
+                    <!-- 동적으로 채워짐 -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('registrationDetailModal')">닫기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 환불 모달 -->
+        <div class="modal-overlay" id="refundModal">
+            <div class="modal" style="max-width: 450px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">환불 처리</h3>
+                    <button class="modal-close" onclick="closeModal('refundModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="refundRegistrationId">
+                    <p style="margin-bottom: 16px;">
+                        <strong id="refundName"></strong>님의 결제를 환불 처리합니다.
+                    </p>
+                    <div class="form-group">
+                        <label class="form-label">환불 사유</label>
+                        <textarea class="form-input" id="refundReason" rows="3" placeholder="환불 사유를 입력하세요..."></textarea>
+                    </div>
+                    <p style="color: var(--warning); font-size: 13px;">
+                        ⚠️ 카드 결제의 경우 포트원을 통해 자동 환불됩니다.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('refundModal')">취소</button>
+                    <button class="btn btn-danger" onclick="processRefund()">환불 처리</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 알림톡 발송 모달 -->
+        <div class="modal-overlay" id="seminarSMSModal">
+            <div class="modal" style="max-width: 550px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">📱 알림톡 발송</h3>
+                    <button class="modal-close" onclick="closeModal('seminarSMSModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">발송 대상</label>
+                        <select class="form-input" id="smsTarget">
+                            <option value="all">전체 결제 완료자</option>
+                            <option value="selected">선택한 등록자만</option>
+                        </select>
+                        <small style="color: var(--text-muted); margin-top: 4px; display: block;">
+                            선택된 등록자: <span id="selectedRegistrationCount">0</span>명
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">메시지 템플릿</label>
+                        <select class="form-input" id="smsTemplate" onchange="updateSMSPreview()">
+                            <option value="REMINDER">리마인더 (D-1 안내)</option>
+                            <option value="REGISTRATION_COMPLETE">등록 완료 안내</option>
+                            <option value="CUSTOM">커스텀 메시지</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="customMessageGroup" style="display: none;">
+                        <label class="form-label">커스텀 메시지</label>
+                        <textarea class="form-input" id="customSMSMessage" rows="6" placeholder="메시지 내용을 입력하세요..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">미리보기</label>
+                        <div style="background: var(--bg-body); padding: 16px; border-radius: 8px; font-size: 13px; white-space: pre-line;" id="smsPreview">
+                            메시지 미리보기가 여기에 표시됩니다.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('seminarSMSModal')">취소</button>
+                    <button class="btn btn-primary" onclick="sendSeminarSMS()">📤 발송</button>
                 </div>
             </div>
         </div>
@@ -3811,6 +4078,7 @@
             if (pageName === 'inquiries') loadInquiries();
             if (pageName === 'marketing') loadMarketingRecipients();
             if (pageName === 'legal') loadLegalDocuments();
+            if (pageName === 'seminars') loadSeminars();
         }
 
         // 대시보드 로드
@@ -8876,6 +9144,550 @@
                 setTimeout(checkUnreadInquiries, 1000);
             }
         });
+
+        // ==================== 세미나 관리 ====================
+
+        let seminarsData = [];
+        let selectedSeminarId = null;
+        let registrationsData = [];
+        let selectedRegistrations = new Set();
+
+        // 세미나 API 호출
+        async function callSeminarAPI(action, data = {}) {
+            const response = await fetch('/.netlify/functions/seminar-api', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, ...data })
+            });
+            return response.json();
+        }
+
+        // SMS API 호출
+        async function callSeminarSMSAPI(action, data = {}) {
+            const response = await fetch('/.netlify/functions/seminar-sms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, ...data })
+            });
+            return response.json();
+        }
+
+        // 세미나 목록 로드
+        async function loadSeminars() {
+            try {
+                // 통계 로드
+                const statsResult = await callSeminarAPI('getSeminarStats');
+                if (statsResult.success) {
+                    const stats = statsResult.stats;
+                    document.getElementById('seminarStatTotal').textContent = stats.totalSeminars;
+                    document.getElementById('seminarStatOpen').textContent = stats.openSeminars;
+                    document.getElementById('seminarStatRegistered').textContent = stats.totalRegistered;
+                    document.getElementById('seminarStatRevenue').textContent = stats.totalRevenue.toLocaleString() + '원';
+                }
+
+                // 세미나 목록 로드
+                const result = await callSeminarAPI('getSeminars');
+                if (result.error) throw new Error(result.error);
+
+                seminarsData = result.seminars || [];
+                renderSeminarsTable();
+            } catch (error) {
+                console.error('세미나 목록 로드 오류:', error);
+                document.getElementById('seminarsTableBody').innerHTML =
+                    '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--danger);">로드 실패: ' + error.message + '</td></tr>';
+            }
+        }
+
+        // 세미나 테이블 렌더링
+        function renderSeminarsTable() {
+            const tbody = document.getElementById('seminarsTableBody');
+
+            if (seminarsData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">등록된 세미나가 없습니다</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = seminarsData.map(seminar => {
+                const date = seminar.date ? new Date(seminar.date) : null;
+                const dateStr = date ? date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) : '-';
+
+                const statusBadge = {
+                    'draft': '<span class="status-badge" style="background: var(--text-muted);">초안</span>',
+                    'open': '<span class="status-badge" style="background: var(--success);">접수중</span>',
+                    'closed': '<span class="status-badge" style="background: var(--warning);">마감</span>',
+                    'cancelled': '<span class="status-badge" style="background: var(--danger);">취소</span>'
+                }[seminar.status] || seminar.status;
+
+                const isFull = (seminar.currentCount || 0) >= seminar.capacity;
+
+                return `
+                    <tr style="cursor: pointer;" onclick="selectSeminar('${seminar.id}')">
+                        <td>${statusBadge}</td>
+                        <td><strong>${escapeHtml(seminar.title || '')}</strong></td>
+                        <td>${dateStr} ${seminar.time || ''}</td>
+                        <td>${escapeHtml(seminar.location || '')}</td>
+                        <td>
+                            <strong style="color: ${isFull ? 'var(--danger)' : 'var(--text)'}">${seminar.currentCount || 0}</strong> / ${seminar.capacity}
+                            ${isFull ? '<span style="color: var(--danger); font-size: 11px;"> (마감)</span>' : ''}
+                        </td>
+                        <td>${(seminar.price || 0).toLocaleString()}원</td>
+                        <td onclick="event.stopPropagation();">
+                            <button class="btn btn-secondary btn-sm" onclick="editSeminar('${seminar.id}')">수정</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteSeminar('${seminar.id}')">삭제</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 세미나 선택 (등록자 목록 표시)
+        async function selectSeminar(seminarId) {
+            selectedSeminarId = seminarId;
+            const seminar = seminarsData.find(s => s.id === seminarId);
+
+            document.getElementById('seminarRegistrationsCard').style.display = 'block';
+            document.getElementById('selectedSeminarTitle').textContent = seminar?.title || '';
+
+            await loadRegistrations(seminarId);
+        }
+
+        // 등록자 목록 로드
+        async function loadRegistrations(seminarId) {
+            try {
+                const result = await callSeminarAPI('getRegistrations', { seminarId });
+                if (result.error) throw new Error(result.error);
+
+                registrationsData = result.registrations || [];
+                selectedRegistrations.clear();
+                renderRegistrationsTable();
+            } catch (error) {
+                console.error('등록자 목록 로드 오류:', error);
+                document.getElementById('registrationsTableBody').innerHTML =
+                    '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--danger);">로드 실패: ' + error.message + '</td></tr>';
+            }
+        }
+
+        // 등록자 테이블 렌더링
+        function renderRegistrationsTable() {
+            const tbody = document.getElementById('registrationsTableBody');
+
+            if (registrationsData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">등록자가 없습니다</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = registrationsData.map(reg => {
+                const paidAt = reg.paidAt ? new Date(reg.paidAt).toLocaleDateString('ko-KR') : '-';
+
+                const statusBadge = {
+                    'pending': '<span class="status-badge" style="background: var(--warning);">대기</span>',
+                    'paid': '<span class="status-badge" style="background: var(--success);">완료</span>',
+                    'refunded': '<span class="status-badge" style="background: var(--text-muted);">환불</span>',
+                    'cancelled': '<span class="status-badge" style="background: var(--danger);">취소</span>',
+                    'expired': '<span class="status-badge" style="background: var(--text-light);">만료</span>'
+                }[reg.paymentStatus] || reg.paymentStatus;
+
+                const paymentMethod = reg.paymentMethod === 'card' ? '카드' : '가상계좌';
+
+                return `
+                    <tr>
+                        <td><input type="checkbox" onchange="toggleRegistration('${reg.id}')" ${selectedRegistrations.has(reg.id) ? 'checked' : ''}></td>
+                        <td><strong>${escapeHtml(reg.name || '')}</strong></td>
+                        <td>${escapeHtml(reg.store || '-')}</td>
+                        <td>${escapeHtml(reg.position || '-')}</td>
+                        <td>${escapeHtml(reg.phone || '-')}</td>
+                        <td>${statusBadge}<br><small style="color: var(--text-muted);">${paymentMethod}</small></td>
+                        <td>${paidAt}</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="showRegistrationDetail('${reg.id}')">상세</button>
+                            ${reg.paymentStatus === 'paid' ? `<button class="btn btn-danger btn-sm" onclick="openRefundModal('${reg.id}')">환불</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            updateSelectedCount();
+        }
+
+        // 등록자 체크박스 토글
+        function toggleRegistration(registrationId) {
+            if (selectedRegistrations.has(registrationId)) {
+                selectedRegistrations.delete(registrationId);
+            } else {
+                selectedRegistrations.add(registrationId);
+            }
+            updateSelectedCount();
+        }
+
+        function toggleAllRegistrations() {
+            const checked = document.getElementById('selectAllRegistrations').checked;
+            if (checked) {
+                registrationsData.forEach(r => selectedRegistrations.add(r.id));
+            } else {
+                selectedRegistrations.clear();
+            }
+            renderRegistrationsTable();
+        }
+
+        function updateSelectedCount() {
+            document.getElementById('selectedRegistrationCount').textContent = selectedRegistrations.size;
+        }
+
+        // 세미나 모달 열기
+        function openSeminarModal() {
+            document.getElementById('seminarEditId').value = '';
+            document.getElementById('seminarModalTitle').textContent = '새 세미나 등록';
+            document.getElementById('seminarTitle').value = '';
+            document.getElementById('seminarDescription').value = '';
+            document.getElementById('seminarDate').value = '';
+            document.getElementById('seminarTime').value = '';
+            document.getElementById('seminarLocation').value = '';
+            document.getElementById('seminarLocationDetail').value = '';
+            document.getElementById('seminarPrice').value = '';
+            document.getElementById('seminarCapacity').value = '';
+            document.getElementById('seminarStatus').value = 'draft';
+
+            document.getElementById('seminarModal').classList.add('active');
+        }
+
+        // 세미나 수정 모달
+        function editSeminar(seminarId) {
+            const seminar = seminarsData.find(s => s.id === seminarId);
+            if (!seminar) return;
+
+            document.getElementById('seminarEditId').value = seminarId;
+            document.getElementById('seminarModalTitle').textContent = '세미나 수정';
+            document.getElementById('seminarTitle').value = seminar.title || '';
+            document.getElementById('seminarDescription').value = seminar.description || '';
+            document.getElementById('seminarDate').value = seminar.date ? seminar.date.split('T')[0] : '';
+            document.getElementById('seminarTime').value = seminar.time || '';
+            document.getElementById('seminarLocation').value = seminar.location || '';
+            document.getElementById('seminarLocationDetail').value = seminar.locationDetail || '';
+            document.getElementById('seminarPrice').value = seminar.price || '';
+            document.getElementById('seminarCapacity').value = seminar.capacity || '';
+            document.getElementById('seminarStatus').value = seminar.status || 'draft';
+
+            document.getElementById('seminarModal').classList.add('active');
+        }
+
+        // 세미나 저장
+        async function saveSeminar() {
+            const seminarId = document.getElementById('seminarEditId').value;
+            const title = document.getElementById('seminarTitle').value.trim();
+            const description = document.getElementById('seminarDescription').value.trim();
+            const date = document.getElementById('seminarDate').value;
+            const time = document.getElementById('seminarTime').value.trim();
+            const location = document.getElementById('seminarLocation').value.trim();
+            const locationDetail = document.getElementById('seminarLocationDetail').value.trim();
+            const price = document.getElementById('seminarPrice').value;
+            const capacity = document.getElementById('seminarCapacity').value;
+            const status = document.getElementById('seminarStatus').value;
+
+            if (!title || !date || !price || !capacity) {
+                alert('필수 항목을 입력해주세요 (제목, 날짜, 참가비, 정원)');
+                return;
+            }
+
+            try {
+                const action = seminarId ? 'updateSeminar' : 'createSeminar';
+                const data = {
+                    seminarId,
+                    title, description, date, time, location, locationDetail, price, capacity, status
+                };
+
+                const result = await callSeminarAPI(action, data);
+                if (result.error) throw new Error(result.error);
+
+                closeModal('seminarModal');
+                loadSeminars();
+                alert(seminarId ? '세미나가 수정되었습니다.' : '세미나가 등록되었습니다.');
+            } catch (error) {
+                alert('저장 실패: ' + error.message);
+            }
+        }
+
+        // 세미나 삭제
+        async function deleteSeminar(seminarId) {
+            if (!confirm('이 세미나를 삭제하시겠습니까?\n결제 완료된 등록자가 있으면 삭제할 수 없습니다.')) return;
+
+            try {
+                const result = await callSeminarAPI('deleteSeminar', { seminarId });
+                if (result.error) throw new Error(result.error);
+
+                loadSeminars();
+                document.getElementById('seminarRegistrationsCard').style.display = 'none';
+                alert('세미나가 삭제되었습니다.');
+            } catch (error) {
+                alert('삭제 실패: ' + error.message);
+            }
+        }
+
+        // 등록자 상세 보기
+        function showRegistrationDetail(registrationId) {
+            const reg = registrationsData.find(r => r.id === registrationId);
+            if (!reg) return;
+
+            const statusText = {
+                'pending': '결제 대기',
+                'paid': '결제 완료',
+                'refunded': '환불됨',
+                'cancelled': '취소됨',
+                'expired': '만료됨'
+            }[reg.paymentStatus] || reg.paymentStatus;
+
+            const paymentMethod = reg.paymentMethod === 'card' ? '카드 결제' : '가상계좌';
+
+            let virtualAccountInfo = '';
+            if (reg.virtualAccount) {
+                virtualAccountInfo = `
+                    <div class="detail-row">
+                        <span class="detail-label">입금 계좌</span>
+                        <span class="detail-value">${reg.virtualAccount.bankName || ''} ${reg.virtualAccount.accountNumber || ''}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">입금 기한</span>
+                        <span class="detail-value">${reg.virtualAccount.dueDate ? new Date(reg.virtualAccount.dueDate).toLocaleString('ko-KR') : '-'}</span>
+                    </div>
+                `;
+            }
+
+            document.getElementById('registrationDetailContent').innerHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">이름</span>
+                    <span class="detail-value"><strong>${escapeHtml(reg.name || '-')}</strong></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">미용실</span>
+                    <span class="detail-value">${escapeHtml(reg.store || '-')}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">직급</span>
+                    <span class="detail-value">${escapeHtml(reg.position || '-')}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">연락처</span>
+                    <span class="detail-value">${escapeHtml(reg.phone || '-')}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">이메일</span>
+                    <span class="detail-value">${escapeHtml(reg.email || '-')}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">경력</span>
+                    <span class="detail-value">${escapeHtml(reg.experience || '-')}</span>
+                </div>
+                <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--border);">
+                <div class="detail-row">
+                    <span class="detail-label">결제 상태</span>
+                    <span class="detail-value"><strong>${statusText}</strong></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">결제 방법</span>
+                    <span class="detail-value">${paymentMethod}</span>
+                </div>
+                ${virtualAccountInfo}
+                <div class="detail-row">
+                    <span class="detail-label">결제 금액</span>
+                    <span class="detail-value">${reg.paidAmount ? reg.paidAmount.toLocaleString() + '원' : '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">결제일</span>
+                    <span class="detail-value">${reg.paidAt ? new Date(reg.paidAt).toLocaleString('ko-KR') : '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">등록일</span>
+                    <span class="detail-value">${reg.createdAt ? new Date(reg.createdAt).toLocaleString('ko-KR') : '-'}</span>
+                </div>
+            `;
+
+            document.getElementById('registrationDetailModal').classList.add('active');
+        }
+
+        // 환불 모달 열기
+        function openRefundModal(registrationId) {
+            const reg = registrationsData.find(r => r.id === registrationId);
+            if (!reg) return;
+
+            document.getElementById('refundRegistrationId').value = registrationId;
+            document.getElementById('refundName').textContent = reg.name;
+            document.getElementById('refundReason').value = '';
+
+            document.getElementById('refundModal').classList.add('active');
+        }
+
+        // 환불 처리
+        async function processRefund() {
+            const registrationId = document.getElementById('refundRegistrationId').value;
+            const refundReason = document.getElementById('refundReason').value.trim();
+
+            if (!confirm('정말 환불 처리하시겠습니까?')) return;
+
+            try {
+                const result = await callSeminarAPI('processRefund', { registrationId, refundReason });
+                if (result.error) throw new Error(result.error);
+
+                closeModal('refundModal');
+                await loadRegistrations(selectedSeminarId);
+                await loadSeminars(); // 통계 갱신
+                alert('환불 처리가 완료되었습니다.');
+            } catch (error) {
+                alert('환불 실패: ' + error.message);
+            }
+        }
+
+        // 엑셀 내보내기
+        async function exportSeminarExcel() {
+            if (!selectedSeminarId) {
+                alert('세미나를 먼저 선택해주세요.');
+                return;
+            }
+
+            try {
+                const result = await callSeminarAPI('exportRegistrations', { seminarId: selectedSeminarId });
+                if (result.error) throw new Error(result.error);
+
+                const registrations = result.registrations || [];
+                if (registrations.length === 0) {
+                    alert('내보낼 등록자가 없습니다.');
+                    return;
+                }
+
+                // CSV 생성
+                const headers = ['번호', '이름', '미용실', '직급', '연락처', '이메일', '경력', '결제방법', '결제금액', '결제일시'];
+                const rows = registrations.map(r => [
+                    r['번호'], r['이름'], r['미용실'], r['직급'], r['연락처'],
+                    r['이메일'], r['경력'], r['결제방법'], r['결제금액'], r['결제일시']
+                ]);
+
+                let csv = '\uFEFF'; // BOM for Excel
+                csv += headers.join(',') + '\n';
+                rows.forEach(row => {
+                    csv += row.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+                });
+
+                // 다운로드
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `세미나_등록자_${result.seminarTitle || ''}_${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('내보내기 실패: ' + error.message);
+            }
+        }
+
+        // 알림톡 모달 열기
+        function openSeminarSMSModal() {
+            if (!selectedSeminarId) {
+                alert('세미나를 먼저 선택해주세요.');
+                return;
+            }
+
+            document.getElementById('smsTarget').value = 'all';
+            document.getElementById('smsTemplate').value = 'REMINDER';
+            document.getElementById('customMessageGroup').style.display = 'none';
+            updateSMSPreview();
+
+            document.getElementById('seminarSMSModal').classList.add('active');
+        }
+
+        // SMS 미리보기 업데이트
+        function updateSMSPreview() {
+            const template = document.getElementById('smsTemplate').value;
+            const seminar = seminarsData.find(s => s.id === selectedSeminarId);
+
+            document.getElementById('customMessageGroup').style.display = template === 'CUSTOM' ? 'block' : 'none';
+
+            if (template === 'CUSTOM') {
+                document.getElementById('smsPreview').textContent = document.getElementById('customSMSMessage').value || '커스텀 메시지를 입력하세요.';
+                return;
+            }
+
+            const dateStr = seminar?.date ? new Date(seminar.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+
+            const templates = {
+                'REMINDER': `[HAIRGATOR 세미나 안내]
+{이름}님, 내일 세미나가 있습니다!
+
+세미나: ${seminar?.title || ''}
+일시: ${dateStr} ${seminar?.time || ''}
+장소: ${seminar?.location || ''}
+${seminar?.locationDetail || ''}
+
+시간에 맞춰 참석 부탁드립니다.
+문의: hairgator.kr`,
+                'REGISTRATION_COMPLETE': `[HAIRGATOR 세미나]
+{이름}님, 등록이 완료되었습니다!
+
+세미나: ${seminar?.title || ''}
+일시: ${dateStr} ${seminar?.time || ''}
+장소: ${seminar?.location || ''}
+
+세미나 당일 뵙겠습니다.
+문의: hairgator.kr`
+            };
+
+            document.getElementById('smsPreview').textContent = templates[template] || '';
+        }
+
+        // 알림톡 발송
+        async function sendSeminarSMS() {
+            const target = document.getElementById('smsTarget').value;
+            const template = document.getElementById('smsTemplate').value;
+            const customMessage = template === 'CUSTOM' ? document.getElementById('customSMSMessage').value.trim() : null;
+
+            if (target === 'selected' && selectedRegistrations.size === 0) {
+                alert('발송할 등록자를 선택해주세요.');
+                return;
+            }
+
+            if (!confirm(`${target === 'all' ? '전체' : selectedRegistrations.size + '명의'} 결제 완료자에게 알림톡을 발송하시겠습니까?`)) return;
+
+            try {
+                let result;
+                if (target === 'all') {
+                    result = await callSeminarSMSAPI(template === 'REMINDER' ? 'sendReminder' : 'sendToAll', {
+                        seminarId: selectedSeminarId,
+                        templateType: template,
+                        customMessage
+                    });
+                } else {
+                    // 선택한 등록자에게 개별 발송
+                    let sentCount = 0;
+                    for (const regId of selectedRegistrations) {
+                        const regResult = await callSeminarSMSAPI('sendToOne', {
+                            registrationId: regId,
+                            templateType: template,
+                            customMessage
+                        });
+                        if (regResult.success) sentCount++;
+                    }
+                    result = { success: true, sent: sentCount, total: selectedRegistrations.size };
+                }
+
+                closeModal('seminarSMSModal');
+
+                if (result.success) {
+                    alert(`알림톡 발송 완료!\n발송: ${result.sent || 0}건${result.failed ? `, 실패: ${result.failed}건` : ''}`);
+                } else {
+                    throw new Error(result.error || '발송 실패');
+                }
+            } catch (error) {
+                alert('발송 실패: ' + error.message);
+            }
+        }
+
+        // escapeHtml 함수 (이미 정의되어 있으면 제거)
+        if (typeof escapeHtml !== 'function') {
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
     </script>
 </body>
 </html>
