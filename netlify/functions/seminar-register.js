@@ -220,7 +220,62 @@ async function registerWithCard(body, headers) {
     }
   }
 
-  // 등록 문서 생성
+  // 무료 세미나인 경우 바로 등록 완료
+  if (!seminar.price || seminar.price === 0) {
+    const seminarRef = db.collection('seminars').doc(seminarId);
+
+    // 트랜잭션으로 등록 처리
+    const registrationId = await db.runTransaction(async (transaction) => {
+      const currentSeminar = await transaction.get(seminarRef);
+      const currentCount = currentSeminar.data()?.currentCount || 0;
+
+      // 정원 초과 확인
+      if (currentCount >= seminar.capacity) {
+        throw new Error('정원이 마감되었습니다.');
+      }
+
+      // 등록 문서 생성
+      const registrationRef = db.collection('seminar_registrations').doc();
+      transaction.set(registrationRef, {
+        seminarId,
+        name,
+        store: store || '',
+        position: position || '',
+        phone,
+        email: email || '',
+        experience: experience || '',
+        paymentMethod: 'free',
+        paymentStatus: 'paid',
+        paymentId: null,
+        paidAt: admin.firestore.FieldValue.serverTimestamp(),
+        paidAmount: 0,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      // 세미나 현재 인원 증가
+      transaction.update(seminarRef, {
+        currentCount: currentCount + 1,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      return registrationRef.id;
+    });
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        registrationId,
+        seminarTitle: seminar.title,
+        price: 0,
+        isFree: true,
+        message: '무료 세미나 등록이 완료되었습니다!'
+      })
+    };
+  }
+
+  // 유료 세미나 - 등록 문서 생성 (결제 대기)
   const registrationData = {
     seminarId,
     name,
@@ -247,6 +302,7 @@ async function registerWithCard(body, headers) {
       registrationId: registrationRef.id,
       seminarTitle: seminar.title,
       price: seminar.price,
+      isFree: false,
       message: '등록이 생성되었습니다. 결제를 진행해주세요.'
     })
   };

@@ -117,11 +117,20 @@ function renderSeminarInfo() {
     if (totalCapacity) totalCapacity.textContent = currentSeminar.capacity || 0;
 
     // 가격 요약
+    const isFree = !currentSeminar.price || currentSeminar.price === 0;
+    const priceText = isFree ? '무료' : `${currentSeminar.price.toLocaleString()}원`;
+
     const summaryPrice = document.getElementById('summaryPrice');
-    if (summaryPrice) summaryPrice.textContent = `${(currentSeminar.price || 0).toLocaleString()}원`;
+    if (summaryPrice) summaryPrice.textContent = priceText;
 
     const summaryTotal = document.getElementById('summaryTotal');
-    if (summaryTotal) summaryTotal.textContent = `${(currentSeminar.price || 0).toLocaleString()}원`;
+    if (summaryTotal) summaryTotal.textContent = priceText;
+
+    // 무료 세미나면 버튼 텍스트 변경
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn && isFree) {
+        submitBtn.textContent = '참가 신청하기';
+    }
 
     // 정원 마감 체크
     if (currentSeminar.isFull || (currentSeminar.currentCount || 0) >= currentSeminar.capacity) {
@@ -183,7 +192,8 @@ async function handleSubmit(e) {
     } catch (error) {
         showMessage('오류가 발생했습니다: ' + error.message, 'error');
         submitBtn.disabled = false;
-        submitBtn.textContent = '결제하고 참가 신청하기';
+        const isFree = !currentSeminar.price || currentSeminar.price === 0;
+        submitBtn.textContent = isFree ? '참가 신청하기' : '결제하고 참가 신청하기';
     }
 }
 
@@ -207,9 +217,24 @@ async function handleCardPayment(formData) {
     }
 
     registrationId = registerResult.registrationId;
+
+    // 무료 세미나인 경우 결제 없이 바로 완료
+    if (registerResult.isFree) {
+        showMessage('🎉 무료 세미나 참가 신청이 완료되었습니다! 세미나 당일 뵙겠습니다.', 'success');
+        document.getElementById('registrationForm').style.display = 'none';
+
+        // 세미나 정보 업데이트 (인원 수)
+        if (currentSeminar) {
+            currentSeminar.currentCount = (currentSeminar.currentCount || 0) + 1;
+            const currentCountEl = document.getElementById('currentCount');
+            if (currentCountEl) currentCountEl.textContent = currentSeminar.currentCount;
+        }
+        return;
+    }
+
     const paymentId = `SEMINAR_${currentSeminar.id}_${Date.now()}`;
 
-    // 2. 포트원 결제 요청
+    // 2. 포트원 결제 요청 (유료 세미나)
     const paymentResponse = await PortOne.requestPayment({
         storeId: PORTONE_STORE_ID,
         channelKey: PORTONE_CHANNEL_KEY,
