@@ -585,6 +585,30 @@ client.file_search_stores.upload_to_file_search_store(
 ```
 **Store ID**: `fileSearchStores/hairgator-theory-final-2025-kkb6n1ftfbf2`
 
+### 🔴 RAG 파일 추가 시 반드시 업로드 실행! (2026-01-23 추가)
+
+**rag_data 폴더에 새 파일 추가 시 반드시 RAG Store에 업로드해야 함!**
+
+| 파일 | 업로드 스크립트 |
+|------|----------------|
+| hair_basic_science.txt | `python scripts/upload-hair-science-to-rag.py` |
+| hair_diagram_glossary.txt | `python scripts/upload-glossary-to-rag.py` |
+| perm_index_ko.txt, perm_index_en.txt | `python scripts/extract-perm-index-to-rag.py` |
+| facial_landmark_algorithm.txt | `python scripts/upload-facial-algorithm-to-rag.py` |
+| color_theory_for_rag.txt | `python scripts/upload-color-theory-to-rag.py` |
+
+**실행 방법:**
+```bash
+cd C:\Users\김민재\Desktop\Hairgator_chatbot
+set GEMINI_API_KEY=AIzaSyDq0-xxRoRsA6KvQ-r_LkiVbmbaBH76l2s
+python scripts/upload-hair-science-to-rag.py
+```
+
+**⚠️ 주의:**
+- 스크립트 만들고 실행 안 하면 RAG 검색에서 해당 내용 못 찾음
+- 업로드 후 Store 문서 수 확인 (현재 68개)
+- "염색의 원리" 같은 질문에 "찾을 수 없다"고 나오면 RAG 업로드 누락 의심
+
 ### style-match vs 메인 서비스
 - **메인 서비스**: `index.html` + `menu.js` (스타일 이미 로드됨)
 - **style-match**: `/style-match/index.html` + `app.js` (스타일 API 별도 로드)
