@@ -525,23 +525,44 @@
             flex-shrink: 0;
         }
 
-        .solution-video {
-            margin-top: 20px;
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%; /* 16:9 비율 */
-            border-radius: 12px;
-            overflow: hidden;
-            background: #000;
+        /* Video Showcase Section */
+        .video-showcase {
+            margin-top: 80px;
+            text-align: center;
         }
 
-        .solution-video iframe {
+        .video-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            color: var(--text-primary);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding-bottom: 50.625%; /* 16:9 비율 (max-width 기준) */
+            border-radius: 20px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 20px 60px rgba(233, 30, 140, 0.2);
+        }
+
+        .video-container iframe {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             border: none;
+        }
+
+        @media (max-width: 900px) {
+            .video-container {
+                padding-bottom: 56.25%; /* 16:9 비율 */
+            }
         }
 
         /* Seminar Info Section */
@@ -1152,9 +1173,6 @@
                             <li>두상접근법까지 상세 안내</li>
                             <li>어떤 스타일도 시술 가능</li>
                         </ul>
-                        <div class="solution-video">
-                            <iframe src="https://www.youtube.com/embed/fA6Gx7P0paA" title="AI 헤어레시피 소개" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                        </div>
                     </div>
                     <div class="solution-card fade-in">
                         <div class="solution-icon">🎨</div>
@@ -1165,6 +1183,19 @@
                             <li>드레이프 모드 지원</li>
                             <li>프리미엄 상담 가능</li>
                         </ul>
+                    </div>
+                </div>
+
+                <!-- AI 헤어레시피 영상 -->
+                <div class="video-showcase fade-in">
+                    <h3 class="video-title">AI 헤어레시피 미리보기</h3>
+                    <div class="video-container">
+                        <iframe
+                            src="https://www.youtube.com/embed/fA6Gx7P0paA"
+                            title="AI 헤어레시피 소개 영상"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen>
+                        </iframe>
                     </div>
                 </div>
             </div>
