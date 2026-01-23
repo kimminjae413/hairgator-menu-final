@@ -600,7 +600,7 @@ client.file_search_stores.upload_to_file_search_store(
 **실행 방법:**
 ```bash
 cd C:\Users\김민재\Desktop\Hairgator_chatbot
-set GEMINI_API_KEY=AIzaSyDq0-xxRoRsA6KvQ-r_LkiVbmbaBH76l2s
+# GEMINI_API_KEY는 .env 파일에서 자동 로드됨
 python scripts/upload-hair-science-to-rag.py
 ```
 
