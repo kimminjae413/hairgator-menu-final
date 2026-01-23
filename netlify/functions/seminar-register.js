@@ -75,9 +75,9 @@ async function getSeminarInfo(body, headers) {
 
   if (!seminarId) {
     // seminarId 없으면 open 상태 세미나 목록 반환
+    // 복합 인덱스 없이 쿼리하기 위해 status만으로 필터링 후 JS에서 정렬
     const snapshot = await db.collection('seminars')
       .where('status', '==', 'open')
-      .orderBy('date', 'asc')
       .get();
 
     const seminars = snapshot.docs.map(doc => {
@@ -95,6 +95,13 @@ async function getSeminarInfo(body, headers) {
         currentCount: data.currentCount || 0,
         isFull: (data.currentCount || 0) >= data.capacity
       };
+    });
+
+    // 날짜순 정렬 (오름차순)
+    seminars.sort((a, b) => {
+      if (!a.date) return 1;
+      if (!b.date) return -1;
+      return new Date(a.date) - new Date(b.date);
     });
 
     return {

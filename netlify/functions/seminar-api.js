@@ -87,7 +87,8 @@ exports.handler = async (event) => {
 async function getSeminars(body, headers) {
   const { status, limit = 50 } = body;
 
-  let query = db.collection('seminars').orderBy('date', 'desc');
+  // 복합 인덱스 없이 쿼리하기 위해 조건부로 처리
+  let query = db.collection('seminars');
 
   if (status) {
     query = query.where('status', '==', status);
@@ -95,13 +96,20 @@ async function getSeminars(body, headers) {
 
   const snapshot = await query.limit(limit).get();
 
-  const seminars = snapshot.docs.map(doc => ({
+  let seminars = snapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data(),
     date: doc.data().date?.toDate?.()?.toISOString() || null,
     createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || null,
     updatedAt: doc.data().updatedAt?.toDate?.()?.toISOString() || null
   }));
+
+  // JavaScript에서 날짜순 정렬 (내림차순)
+  seminars.sort((a, b) => {
+    if (!a.date) return 1;
+    if (!b.date) return -1;
+    return new Date(b.date) - new Date(a.date);
+  });
 
   return {
     statusCode: 200,
