@@ -205,11 +205,19 @@ async function registerWithCard(body, headers) {
   const existingRegistration = await db.collection('seminar_registrations')
     .where('seminarId', '==', seminarId)
     .where('phone', '==', phone)
-    .where('paymentStatus', 'in', ['pending', 'paid'])
     .get();
 
-  if (!existingRegistration.empty) {
-    return { statusCode: 400, headers, body: JSON.stringify({ error: '이미 등록된 연락처입니다' }) };
+  for (const doc of existingRegistration.docs) {
+    const data = doc.data();
+    if (data.paymentStatus === 'paid') {
+      // 이미 결제 완료된 등록이 있으면 거부
+      return { statusCode: 400, headers, body: JSON.stringify({ error: '이미 등록된 연락처입니다' }) };
+    }
+    // pending 상태(결제 실패/취소)는 삭제하고 재등록 허용
+    if (data.paymentStatus === 'pending') {
+      await doc.ref.delete();
+      console.log('기존 pending 등록 삭제:', doc.id);
+    }
   }
 
   // 등록 문서 생성
