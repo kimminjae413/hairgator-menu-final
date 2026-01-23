@@ -9231,9 +9231,9 @@
                             ${isFull ? '<span style="color: var(--danger); font-size: 11px;"> (마감)</span>' : ''}
                         </td>
                         <td>${(seminar.price || 0).toLocaleString()}원</td>
-                        <td onclick="event.stopPropagation();">
-                            <button class="btn btn-secondary btn-sm" onclick="editSeminar('${seminar.id}')">수정</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteSeminar('${seminar.id}')">삭제</button>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); editSeminar('${seminar.id}')">수정</button>
+                            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteSeminar('${seminar.id}')">삭제</button>
                         </td>
                     </tr>
                 `;
