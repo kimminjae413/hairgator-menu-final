@@ -556,7 +556,18 @@
         .info-card h2 {
             font-size: clamp(24px, 4vw, 36px);
             font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .seminar-description {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.8;
             margin-bottom: 40px;
+            white-space: pre-line;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .info-grid {
@@ -1142,6 +1153,7 @@
             <div class="container">
                 <div class="info-card fade-in">
                     <h2 id="seminarTitle">HAIRGATOR AI 헤어레시피 세미나</h2>
+                    <p class="seminar-description" id="seminarDescription"></p>
                     <div class="info-grid">
                         <div class="info-item">
                             <div class="icon">📅</div>

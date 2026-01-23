@@ -80,6 +80,13 @@ function renderSeminarInfo() {
     const seminarTitle = document.getElementById('seminarTitle');
     if (seminarTitle) seminarTitle.textContent = currentSeminar.title || '-';
 
+    // 상세설명
+    const seminarDescription = document.getElementById('seminarDescription');
+    if (seminarDescription) {
+        seminarDescription.textContent = currentSeminar.description || '';
+        seminarDescription.style.display = currentSeminar.description ? 'block' : 'none';
+    }
+
     const seminarDate = document.getElementById('seminarDate');
     if (seminarDate) seminarDate.textContent = dateStr;
 
