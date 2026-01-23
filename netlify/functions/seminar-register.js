@@ -325,14 +325,15 @@ async function registerWithVirtualAccount(body, headers) {
       const errorText = await virtualAccountResponse.text();
       console.error('포트원 가상계좌 발급 오류:', virtualAccountResponse.status, errorText);
 
-      // 가상계좌 발급 실패 시 카드 결제로 안내
+      // 가상계좌 발급 실패 시 카드 결제로 안내 (에러 상세 포함)
       return {
         statusCode: 200,
         headers,
         body: JSON.stringify({
           success: false,
           fallbackToCard: true,
-          message: '가상계좌 발급에 실패했습니다. 카드 결제를 이용해주세요.'
+          message: '가상계좌 발급에 실패했습니다. 카드 결제를 이용해주세요.',
+          debugError: `${virtualAccountResponse.status}: ${errorText}`
         })
       };
     }
