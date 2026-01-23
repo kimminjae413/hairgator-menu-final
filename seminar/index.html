@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HAIRGATOR AI 세미나 - 헤어레시피의 새로운 패러다임</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAIRGATOR AI 헤어레시피 세미나</title>
     <meta name="description" content="HAIRGATOR AI를 활용한 헤어레시피 세미나에 참가하세요. 미용사를 위한 AI 기술 활용법을 배워보세요.">
 
     <!-- Open Graph -->
@@ -16,26 +16,28 @@
     <link rel="icon" type="image/png" href="/icons/icon-512.png">
     <link rel="apple-touch-icon" href="/icons/icon-512.png">
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Bebas+Neue&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 
     <!-- PortOne SDK -->
     <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
 
     <style>
         :root {
-            --primary: #E91E63;
-            --primary-dark: #C2185B;
-            --primary-light: #FCE4EC;
-            --bg: #FFFFFF;
-            --bg-gray: #F8F9FA;
-            --text: #1A1D21;
-            --text-muted: #6B7280;
-            --border: #E5E8EB;
+            --primary: #E91E8C;
+            --primary-dark: #C4177A;
+            --primary-light: #FF4DA6;
+            --bg-dark: #0A0A0F;
+            --bg-card: #12121A;
+            --bg-card-hover: #1A1A25;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0A0B0;
+            --text-muted: #606070;
+            --gradient-primary: linear-gradient(135deg, #E91E8C 0%, #FF6B9D 50%, #E91E8C 100%);
+            --gradient-glow: linear-gradient(135deg, rgba(233, 30, 140, 0.4) 0%, rgba(255, 77, 166, 0.2) 100%);
+            --shadow-glow: 0 0 60px rgba(233, 30, 140, 0.3);
             --success: #10B981;
-            --warning: #F59E0B;
             --danger: #EF4444;
         }
 
@@ -50,317 +52,767 @@
         }
 
         body {
-            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
         }
 
-        /* Header */
-        .header {
-            background: var(--bg);
-            border-bottom: 1px solid var(--border);
-            padding: 16px 20px;
-            position: sticky;
+        /* Noise Texture Overlay */
+        body::before {
+            content: '';
+            position: fixed;
             top: 0;
-            z-index: 100;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1000;
         }
 
-        .header-inner {
-            max-width: 800px;
+        /* Animated Background Grid */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(233, 30, 140, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(233, 30, 140, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Loading State */
+        .loading-state {
+            min-height: 100vh;
             display: flex;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            justify-content: space-between;
+            text-align: center;
         }
 
-        .logo {
-            height: 32px;
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(233, 30, 140, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
         }
 
-        .header-link {
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* No Seminar State */
+        .no-seminar-state {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .no-seminar-state h2 {
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+
+        .no-seminar-state p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .no-seminar-state a {
             color: var(--primary);
             text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
         }
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 60px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             text-align: center;
+            position: relative;
+            padding: 100px 24px;
         }
 
-        .hero-inner {
-            max-width: 700px;
-            margin: 0 auto;
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(233, 30, 140, 0.15) 0%, transparent 70%);
+            pointer-events: none;
         }
 
         .hero-badge {
-            display: inline-block;
-            background: rgba(255,255,255,0.2);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(233, 30, 140, 0.1);
+            border: 1px solid rgba(233, 30, 140, 0.3);
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--primary-light);
+            margin-bottom: 32px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
         }
 
         .hero-title {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            line-height: 1.3;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: clamp(32px, 7vw, 72px);
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 24px;
+            animation: fadeInUp 0.8s ease-out 0.1s both;
+        }
+
+        .hero-title .highlight {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .hero-subtitle {
-            font-size: 16px;
-            opacity: 0.9;
-            margin-bottom: 30px;
+            font-size: clamp(18px, 3vw, 24px);
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 48px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .hero-cta {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            animation: fadeInUp 0.8s ease-out 0.3s both;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 48px;
+            background: var(--gradient-primary);
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 40px rgba(233, 30, 140, 0.4);
+        }
+
+        .hero-note {
+            font-size: 14px;
+            color: var(--text-muted);
         }
 
         .hero-meta {
             display: flex;
             justify-content: center;
-            gap: 24px;
+            gap: 32px;
             flex-wrap: wrap;
-            font-size: 14px;
+            margin-top: 32px;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
         }
 
         .hero-meta-item {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            font-size: 16px;
+            color: var(--text-secondary);
         }
 
-        /* Content Sections */
-        .section {
-            padding: 50px 20px;
-            max-width: 800px;
-            margin: 0 auto;
+        .hero-meta-item span:first-child {
+            font-size: 20px;
         }
 
-        .section-title {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 24px;
-            color: var(--text);
-        }
-
-        .section-content {
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
             color: var(--text-muted);
-            font-size: 15px;
-            line-height: 1.8;
+            font-size: 12px;
+            animation: bounce 2s infinite;
         }
 
-        .section-content p {
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Section Styles */
+        .section-label {
+            display: inline-block;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 14px;
+            letter-spacing: 3px;
+            color: var(--primary);
             margin-bottom: 16px;
         }
 
-        /* Info Cards */
-        .info-grid {
+        .section-title {
+            font-size: clamp(28px, 5vw, 48px);
+            font-weight: 700;
+            margin-bottom: 24px;
+            line-height: 1.3;
+        }
+
+        /* Problem Section */
+        .problem-section {
+            padding: 120px 24px;
+            position: relative;
+        }
+
+        .problem-intro {
+            max-width: 700px;
+            margin-bottom: 64px;
+        }
+
+        .problem-intro p {
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        .problem-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-top: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
         }
 
-        .info-card {
-            background: var(--bg-gray);
-            padding: 20px;
-            border-radius: 12px;
-        }
-
-        .info-card-label {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-
-        .info-card-value {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        /* Registration Form */
-        .registration-section {
-            background: var(--bg-gray);
-            padding: 50px 20px;
-        }
-
-        .registration-card {
-            max-width: 500px;
-            margin: 0 auto;
-            background: var(--bg);
-            border-radius: 16px;
+        .problem-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
             padding: 32px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        .registration-title {
+        .problem-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .problem-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-5px);
+            border-color: rgba(233, 30, 140, 0.2);
+        }
+
+        .problem-card:hover::before {
+            opacity: 1;
+        }
+
+        .problem-icon {
+            width: 56px;
+            height: 56px;
+            background: rgba(233, 30, 140, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .problem-card h3 {
             font-size: 20px;
             font-weight: 700;
-            margin-bottom: 8px;
-            text-align: center;
+            margin-bottom: 12px;
         }
 
-        .registration-subtitle {
-            color: var(--text-muted);
-            font-size: 14px;
-            text-align: center;
-            margin-bottom: 24px;
+        .problem-card p {
+            color: var(--text-secondary);
+            font-size: 15px;
         }
 
-        .form-group {
+        /* Solution Section */
+        .solution-section {
+            padding: 120px 24px;
+        }
+
+        .solution-header {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 80px;
+        }
+
+        .solution-header h2 {
+            font-size: clamp(28px, 5vw, 48px);
+            font-weight: 700;
             margin-bottom: 20px;
         }
 
-        .form-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: var(--text);
+        .solution-header p {
+            font-size: 18px;
+            color: var(--text-secondary);
         }
 
-        .form-label .required {
-            color: var(--danger);
+        .solution-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
         }
 
-        .form-input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
+        @media (max-width: 900px) {
+            .solution-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .solution-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 40px 32px;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .solution-card.featured {
+            background: linear-gradient(135deg, rgba(233, 30, 140, 0.15) 0%, var(--bg-card) 100%);
+            border-color: rgba(233, 30, 140, 0.3);
+            transform: scale(1.05);
+        }
+
+        .solution-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(233, 30, 140, 0.3);
+        }
+
+        .solution-card.featured:hover {
+            transform: scale(1.05) translateY(-8px);
+        }
+
+        .solution-card .badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-primary);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 16px;
+            border-radius: 20px;
+        }
+
+        .solution-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: rgba(233, 30, 140, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+        }
+
+        .solution-card h3 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .solution-card p {
+            color: var(--text-secondary);
             font-size: 15px;
-            font-family: inherit;
-            transition: border-color 0.2s;
+            margin-bottom: 20px;
         }
 
-        .form-input:focus {
+        .solution-features {
+            text-align: left;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            list-style: none;
+        }
+
+        .solution-features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .solution-features li:last-child {
+            margin-bottom: 0;
+        }
+
+        .solution-features li::before {
+            content: '✓';
+            color: var(--primary);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* Seminar Info Section */
+        .info-section {
+            padding: 120px 24px;
+            background: linear-gradient(180deg, transparent 0%, rgba(233, 30, 140, 0.05) 100%);
+        }
+
+        .info-card {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid rgba(233, 30, 140, 0.2);
+            border-radius: 32px;
+            padding: 48px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .info-card h2 {
+            font-size: clamp(24px, 4vw, 36px);
+            font-weight: 700;
+            margin-bottom: 40px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 700px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-item .icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(233, 30, 140, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 16px;
+        }
+
+        .info-item .label {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .info-item .value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .info-item .value.highlight {
+            color: var(--primary);
+        }
+
+        /* Registration Form Section */
+        .form-section {
+            padding: 120px 24px;
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .form-header h2 {
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .form-header p {
+            font-size: 17px;
+            color: var(--text-secondary);
+        }
+
+        .registration-form {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group label .required {
+            color: var(--primary);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
             outline: none;
             border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(233, 30, 140, 0.1);
         }
 
-        .form-select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 16px center;
-            padding-right: 40px;
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: var(--text-muted);
         }
 
+        .form-group select option {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+        }
+
+        /* Payment Methods */
         .payment-methods {
             display: flex;
-            gap: 12px;
+            gap: 16px;
             margin-bottom: 24px;
         }
 
         .payment-method {
             flex: 1;
-            padding: 16px;
-            border: 2px solid var(--border);
-            border-radius: 10px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
         }
 
         .payment-method.active {
             border-color: var(--primary);
-            background: var(--primary-light);
+            background: rgba(233, 30, 140, 0.1);
         }
 
         .payment-method-icon {
-            font-size: 24px;
-            margin-bottom: 6px;
+            font-size: 28px;
+            margin-bottom: 8px;
         }
 
         .payment-method-label {
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 14px;
+            font-weight: 600;
         }
 
+        /* Bank Select */
+        #bankSelectGroup {
+            display: none;
+        }
+
+        /* Price Summary */
         .price-summary {
-            background: var(--bg-gray);
-            padding: 16px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
         }
 
         .price-row {
             display: flex;
             justify-content: space-between;
-            font-size: 14px;
-            margin-bottom: 8px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .price-row:last-child {
-            margin-bottom: 0;
-            padding-top: 8px;
-            border-top: 1px solid var(--border);
-            font-weight: 600;
-            font-size: 16px;
+            border-bottom: none;
+            padding-top: 16px;
+            font-size: 20px;
+            font-weight: 700;
         }
 
-        .submit-btn {
+        .price-row .label {
+            color: var(--text-secondary);
+        }
+
+        .price-row .value {
+            color: var(--primary);
+        }
+
+        .form-submit {
             width: 100%;
-            padding: 16px;
-            background: var(--primary);
+            padding: 20px;
+            background: var(--gradient-primary);
             color: white;
+            font-size: 18px;
+            font-weight: 700;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 16px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s ease;
         }
 
-        .submit-btn:hover {
-            background: var(--primary-dark);
+        .form-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
         }
 
-        .submit-btn:disabled {
-            background: var(--text-muted);
+        .form-submit:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
         }
 
         /* Status Messages */
         .status-message {
-            padding: 16px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
             display: none;
+            font-size: 15px;
         }
 
         .status-message.success {
-            background: #D1FAE5;
-            color: #059669;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10B981;
             display: block;
         }
 
         .status-message.error {
-            background: #FEE2E2;
-            color: #DC2626;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #EF4444;
             display: block;
         }
 
         .status-message.warning {
-            background: #FEF3C7;
-            color: #D97706;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #F59E0B;
             display: block;
         }
 
         /* Virtual Account Info */
         .virtual-account-info {
-            background: #EFF6FF;
-            border: 1px solid #BFDBFE;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
             display: none;
         }
 
@@ -369,16 +821,17 @@
         }
 
         .va-title {
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: #1E40AF;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #60A5FA;
+            font-size: 16px;
         }
 
         .va-row {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #DBEAFE;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
         }
 
         .va-row:last-child {
@@ -386,307 +839,462 @@
         }
 
         .va-label {
-            color: #6B7280;
+            color: var(--text-secondary);
         }
 
         .va-value {
-            font-weight: 500;
-            color: #1E40AF;
+            font-weight: 600;
+            color: #60A5FA;
         }
 
         .copy-btn {
             margin-left: 8px;
-            padding: 4px 8px;
+            padding: 4px 12px;
             background: #3B82F6;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 12px;
             cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #2563EB;
+        }
+
+        .va-note {
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Sold Out */
+        .sold-out-message {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .sold-out-badge {
+            display: inline-block;
+            background: var(--danger);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 700;
+            margin-bottom: 16px;
         }
 
         /* Footer */
         .footer {
-            background: var(--bg-gray);
-            padding: 40px 20px;
+            padding: 60px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
             text-align: center;
-            border-top: 1px solid var(--border);
         }
 
         .footer-logo {
-            height: 24px;
-            margin-bottom: 16px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            letter-spacing: 2px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 24px;
         }
 
-        .footer-text {
-            color: var(--text-muted);
-            font-size: 13px;
+        .footer-contact {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 24px;
         }
 
-        .footer-link {
-            color: var(--primary);
+        .footer-contact a {
+            color: var(--text-secondary);
             text-decoration: none;
+            font-size: 15px;
+            transition: color 0.3s ease;
         }
 
-        /* Sold Out / Closed */
-        .sold-out-badge {
-            background: var(--danger);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 600;
-            display: inline-block;
-            margin-bottom: 20px;
+        .footer-contact a:hover {
+            color: var(--primary);
         }
 
-        .closed-message {
-            text-align: center;
-            padding: 40px;
+        .footer-copyright {
+            font-size: 13px;
             color: var(--text-muted);
         }
 
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-muted);
+        /* Urgency Banner */
+        .urgency-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            z-index: 100;
+            transform: translateY(100%);
+            animation: slideUp 0.5s ease-out 2s forwards;
         }
 
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+            }
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .urgency-banner p {
+            font-size: 15px;
+            font-weight: 500;
         }
 
-        /* Responsive */
+        .urgency-banner .btn-small {
+            padding: 10px 24px;
+            background: white;
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .urgency-banner .btn-small:hover {
+            transform: scale(1.05);
+        }
+
         @media (max-width: 600px) {
-            .hero {
-                padding: 40px 20px;
-            }
-
-            .hero-title {
-                font-size: 26px;
-            }
-
-            .hero-meta {
+            .urgency-banner {
                 flex-direction: column;
                 gap: 12px;
-            }
-
-            .registration-card {
-                padding: 24px 20px;
+                text-align: center;
             }
 
             .payment-methods {
                 flex-direction: column;
             }
         }
+
+        /* Scroll animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s ease-out;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-inner">
-            <img src="/icons/icon-512.png" alt="HAIRGATOR" class="logo">
-            <a href="https://hairgator.kr" class="header-link">앱 바로가기 →</a>
-        </div>
-    </header>
+    <div class="bg-grid"></div>
 
     <!-- Loading State -->
-    <div id="loadingState" class="loading">
+    <div id="loadingState" class="loading-state">
         <div class="loading-spinner"></div>
         <p>세미나 정보를 불러오는 중...</p>
     </div>
 
     <!-- No Seminar State -->
-    <div id="noSeminarState" class="closed-message" style="display: none;">
-        <h2 style="margin-bottom: 16px;">현재 접수 중인 세미나가 없습니다</h2>
+    <div id="noSeminarState" class="no-seminar-state" style="display: none;">
+        <h2>현재 접수 중인 세미나가 없습니다</h2>
         <p>새로운 세미나 일정이 공지되면 안내해드리겠습니다.</p>
-        <a href="https://hairgator.kr" style="display: inline-block; margin-top: 24px; color: var(--primary);">HAIRGATOR 앱 바로가기 →</a>
+        <a href="https://hairgator.kr">HAIRGATOR 앱 바로가기 →</a>
     </div>
 
-    <!-- Main Content (동적으로 채워짐) -->
+    <!-- Main Content -->
     <main id="mainContent" style="display: none;">
-        <!-- Hero -->
+        <!-- Hero Section -->
         <section class="hero">
-            <div class="hero-inner">
-                <span class="hero-badge">🎓 HAIRGATOR 공식 세미나</span>
-                <h1 class="hero-title" id="seminarTitle">-</h1>
-                <p class="hero-subtitle" id="seminarDescription">-</p>
-                <div class="hero-meta">
-                    <div class="hero-meta-item">
-                        <span>📅</span>
-                        <span id="seminarDate">-</span>
+            <div class="hero-badge">
+                <span>AI 시대, 당신의 경쟁력</span>
+            </div>
+            <h1 class="hero-title">
+                혼자 다 배울 필요 없습니다<br>
+                <span class="highlight">AI 파트너</span>가 있으니까
+            </h1>
+            <p class="hero-subtitle" id="seminarDescription">
+                얼굴 분석, 스타일 추천, 커트·펌 레시피까지<br>
+                30년 베테랑의 노하우를 AI로 만나보세요
+            </p>
+            <div class="hero-cta">
+                <a href="#register" class="btn-primary">
+                    세미나 신청하기
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+                <p class="hero-note">선착순 마감 · <span id="seminarCapacityNote">정원 30명</span></p>
+            </div>
+            <div class="hero-meta">
+                <div class="hero-meta-item">
+                    <span>📅</span>
+                    <span id="seminarDate">-</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span>⏰</span>
+                    <span id="seminarTime">-</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span>📍</span>
+                    <span id="seminarLocation">-</span>
+                </div>
+            </div>
+            <div class="scroll-indicator">
+                <span>스크롤하여 더 알아보기</span>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12l7 7 7-7"/>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Problem Section -->
+        <section class="problem-section">
+            <div class="container">
+                <div class="problem-intro fade-in">
+                    <span class="section-label">PROBLEM</span>
+                    <h2 class="section-title">솔직히, 불안하지 않으셨나요?</h2>
+                    <p>AI 시대라는데 나만 뒤처지는 것 같고, 배워야 할 건 많은데 시간은 없고... 고객은 점점 더 많은 걸 원하는데, 감각만으로는 설명이 안 되는 순간들.</p>
+                </div>
+                <div class="problem-cards">
+                    <div class="problem-card fade-in">
+                        <div class="problem-icon">😰</div>
+                        <h3>"AI 시대인데, 나만 뒤처지는 것 같아요"</h3>
+                        <p>주변에서 AI 얘기가 나올 때마다 불안해지고, 뭔가 해야 할 것 같은데 어디서부터 시작해야 할지 모르겠다면</p>
                     </div>
-                    <div class="hero-meta-item">
-                        <span>⏰</span>
-                        <span id="seminarTime">-</span>
+                    <div class="problem-card fade-in">
+                        <div class="problem-icon">🤔</div>
+                        <h3>"왜 이 스타일이 어울리는지" 설명하기 어려워요</h3>
+                        <p>고객에게 직관적으로 스타일을 추천할 수 있지만, "왜?"라고 물으면 감각적인 설명밖에 못하는 현실</p>
                     </div>
-                    <div class="hero-meta-item">
-                        <span>📍</span>
-                        <span id="seminarLocation">-</span>
+                    <div class="problem-card fade-in">
+                        <div class="problem-icon">📚</div>
+                        <h3>공부해야 할 건 많은데, 시간이 없어요</h3>
+                        <p>얼굴형 분석, 퍼스널 컬러, 새로운 트렌드... 다 배우려면 끝이 없고, 현장 일에 치여 학습할 여유가 없습니다</p>
+                    </div>
+                    <div class="problem-card fade-in">
+                        <div class="problem-icon">😓</div>
+                        <h3>익숙하지 않은 스타일은 자신이 없어요</h3>
+                        <p>수백 가지 기법을 기억에만 의존하다 보니, 새로운 스타일 요청이 오면 부담되고 실수가 걱정됩니다</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Seminar Info -->
-        <section class="section">
-            <h2 class="section-title">📋 세미나 안내</h2>
-            <div class="section-content" id="seminarFullDescription">
-                <!-- 동적으로 채워짐 -->
-            </div>
-
-            <div class="info-grid">
-                <div class="info-card">
-                    <div class="info-card-label">참가비</div>
-                    <div class="info-card-value" id="seminarPrice">-</div>
+        <!-- Solution Section -->
+        <section class="solution-section">
+            <div class="container">
+                <div class="solution-header fade-in">
+                    <span class="section-label">SOLUTION</span>
+                    <h2>HAIRGATOR가 제공하는 것</h2>
+                    <p>디자이너의 감각에 AI의 데이터를 더해, 상담은 더 쉽고 시술 결과는 더 안정적으로</p>
                 </div>
-                <div class="info-card">
-                    <div class="info-card-label">정원</div>
-                    <div class="info-card-value"><span id="seminarCurrent">0</span> / <span id="seminarCapacity">0</span>명</div>
-                </div>
-                <div class="info-card">
-                    <div class="info-card-label">장소</div>
-                    <div class="info-card-value" id="seminarLocationDetail">-</div>
+                <div class="solution-grid">
+                    <div class="solution-card fade-in">
+                        <div class="solution-icon">👤</div>
+                        <h3>AI 스타일 매칭</h3>
+                        <p>얼굴 랜드마크 분석으로 고객에게 딱 맞는 스타일 추천</p>
+                        <ul class="solution-features">
+                            <li>얼굴형 자동 분석</li>
+                            <li>데이터 기반 추천 근거</li>
+                            <li>"왜 어울리는지" 설명 가능</li>
+                        </ul>
+                    </div>
+                    <div class="solution-card featured fade-in">
+                        <div class="badge">핵심 기능</div>
+                        <div class="solution-icon">📋</div>
+                        <h3>AI 헤어레시피</h3>
+                        <p>30년 베테랑의 노하우, 이제 AI가 즉시 알려드립니다</p>
+                        <ul class="solution-features">
+                            <li>섹션, 각도, 방향 자동 생성</li>
+                            <li>두상접근법까지 상세 안내</li>
+                            <li>어떤 스타일도 시술 가능</li>
+                        </ul>
+                    </div>
+                    <div class="solution-card fade-in">
+                        <div class="solution-icon">🎨</div>
+                        <h3>퍼스널 컬러 진단</h3>
+                        <p>AI가 피부톤을 분석해 최적의 컬러 추천</p>
+                        <ul class="solution-features">
+                            <li>AI 피부톤 분석</li>
+                            <li>드레이프 모드 지원</li>
+                            <li>프리미엄 상담 가능</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Registration Form -->
-        <section class="registration-section" id="registrationSection">
-            <div class="registration-card">
-                <h2 class="registration-title">세미나 참가 신청</h2>
-                <p class="registration-subtitle">아래 정보를 입력하고 결제를 완료해주세요</p>
-
-                <!-- Status Message -->
-                <div id="statusMessage" class="status-message"></div>
-
-                <!-- Sold Out Message -->
-                <div id="soldOutMessage" style="display: none; text-align: center; padding: 20px;">
-                    <span class="sold-out-badge">마감</span>
-                    <p style="color: var(--text-muted); margin-top: 12px;">정원이 마감되었습니다.<br>다음 세미나를 기다려주세요!</p>
-                </div>
-
-                <!-- Registration Form -->
-                <form id="registrationForm">
-                    <div class="form-group">
-                        <label class="form-label">이름 <span class="required">*</span></label>
-                        <input type="text" class="form-input" id="regName" placeholder="홍길동" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">연락처 <span class="required">*</span></label>
-                        <input type="tel" class="form-input" id="regPhone" placeholder="010-1234-5678" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">이메일</label>
-                        <input type="email" class="form-input" id="regEmail" placeholder="example@email.com">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">미용실명</label>
-                        <input type="text" class="form-input" id="regStore" placeholder="OO헤어">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">직급</label>
-                        <select class="form-input form-select" id="regPosition">
-                            <option value="">선택하세요</option>
-                            <option value="원장">원장</option>
-                            <option value="실장">실장</option>
-                            <option value="디자이너">디자이너</option>
-                            <option value="스타일리스트">스타일리스트</option>
-                            <option value="인턴">인턴</option>
-                            <option value="기타">기타</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">경력</label>
-                        <input type="text" class="form-input" id="regExperience" placeholder="예: 5년">
-                    </div>
-
-                    <!-- Payment Method Selection -->
-                    <label class="form-label">결제 방법</label>
-                    <div class="payment-methods">
-                        <div class="payment-method active" data-method="card" onclick="selectPaymentMethod('card')">
-                            <div class="payment-method-icon">💳</div>
-                            <div class="payment-method-label">카드 결제</div>
+        <!-- Seminar Info Section -->
+        <section class="info-section">
+            <div class="container">
+                <div class="info-card fade-in">
+                    <h2 id="seminarTitle">HAIRGATOR AI 헤어레시피 세미나</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="icon">📅</div>
+                            <div class="label">일시</div>
+                            <div class="value highlight" id="infoDate">-</div>
                         </div>
-                        <div class="payment-method" data-method="virtual" onclick="selectPaymentMethod('virtual')">
-                            <div class="payment-method-icon">🏦</div>
-                            <div class="payment-method-label">가상계좌</div>
+                        <div class="info-item">
+                            <div class="icon">📍</div>
+                            <div class="label">장소</div>
+                            <div class="value highlight" id="infoLocation">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="icon">💰</div>
+                            <div class="label">참가비</div>
+                            <div class="value highlight" id="infoPrice">-</div>
                         </div>
                     </div>
-
-                    <!-- Bank Selection (가상계좌) -->
-                    <div class="form-group" id="bankSelectGroup" style="display: none;">
-                        <label class="form-label">입금 은행 선택</label>
-                        <select class="form-input form-select" id="bankCode">
-                            <option value="KB_KOOKMIN">국민은행</option>
-                            <option value="SHINHAN">신한은행</option>
-                            <option value="WOORI">우리은행</option>
-                            <option value="HANA">하나은행</option>
-                            <option value="NH_NONGHYUP">농협은행</option>
-                        </select>
-                    </div>
-
-                    <!-- Price Summary -->
-                    <div class="price-summary">
-                        <div class="price-row">
-                            <span>참가비</span>
-                            <span id="summaryPrice">-</span>
-                        </div>
-                        <div class="price-row">
-                            <span>총 결제금액</span>
-                            <span id="summaryTotal">-</span>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="submit-btn" id="submitBtn">
-                        결제하고 참가 신청하기
-                    </button>
-                </form>
-
-                <!-- Virtual Account Info (발급 후 표시) -->
-                <div id="virtualAccountInfo" class="virtual-account-info">
-                    <div class="va-title">💰 가상계좌 입금 안내</div>
-                    <div class="va-row">
-                        <span class="va-label">은행</span>
-                        <span class="va-value" id="vaBank">-</span>
-                    </div>
-                    <div class="va-row">
-                        <span class="va-label">계좌번호</span>
-                        <span class="va-value">
-                            <span id="vaAccount">-</span>
-                            <button class="copy-btn" onclick="copyAccount()">복사</button>
-                        </span>
-                    </div>
-                    <div class="va-row">
-                        <span class="va-label">예금주</span>
-                        <span class="va-value" id="vaHolder">HAIRGATOR</span>
-                    </div>
-                    <div class="va-row">
-                        <span class="va-label">입금금액</span>
-                        <span class="va-value" id="vaAmount">-</span>
-                    </div>
-                    <div class="va-row">
-                        <span class="va-label">입금기한</span>
-                        <span class="va-value" id="vaDueDate">-</span>
-                    </div>
-                    <p style="margin-top: 16px; font-size: 13px; color: #6B7280;">
-                        ⚠️ 입금 기한 내 미입금 시 자동 취소됩니다.
+                    <p class="info-note" id="infoNote">
+                        현재 <strong id="currentCount">0</strong>명 신청 / 정원 <strong id="totalCapacity">30</strong>명
                     </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Registration Form Section -->
+        <section class="form-section" id="register">
+            <div class="container">
+                <div class="form-container">
+                    <div class="form-header fade-in">
+                        <span class="section-label">REGISTRATION</span>
+                        <h2>세미나 참가 신청</h2>
+                        <p>아래 정보를 입력하고 결제를 완료해주세요</p>
+                    </div>
+
+                    <!-- Status Message -->
+                    <div id="statusMessage" class="status-message"></div>
+
+                    <!-- Sold Out Message -->
+                    <div id="soldOutMessage" class="sold-out-message">
+                        <span class="sold-out-badge">마감</span>
+                        <p style="color: var(--text-secondary);">정원이 마감되었습니다.<br>다음 세미나를 기다려주세요!</p>
+                    </div>
+
+                    <!-- Registration Form -->
+                    <form class="registration-form fade-in" id="registrationForm">
+                        <div class="form-group">
+                            <label>이름 <span class="required">*</span></label>
+                            <input type="text" id="regName" placeholder="홍길동" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>연락처 <span class="required">*</span></label>
+                            <input type="tel" id="regPhone" placeholder="010-1234-5678" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>이메일</label>
+                            <input type="email" id="regEmail" placeholder="example@email.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label>미용실명</label>
+                            <input type="text" id="regStore" placeholder="OO헤어">
+                        </div>
+
+                        <div class="form-group">
+                            <label>직급</label>
+                            <select id="regPosition">
+                                <option value="">선택하세요</option>
+                                <option value="원장">원장</option>
+                                <option value="실장">실장</option>
+                                <option value="디자이너">디자이너</option>
+                                <option value="스타일리스트">스타일리스트</option>
+                                <option value="인턴">인턴</option>
+                                <option value="기타">기타</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>경력</label>
+                            <input type="text" id="regExperience" placeholder="예: 5년">
+                        </div>
+
+                        <!-- Payment Method Selection -->
+                        <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 12px;">결제 방법</label>
+                        <div class="payment-methods">
+                            <div class="payment-method active" data-method="card" onclick="selectPaymentMethod('card')">
+                                <div class="payment-method-icon">💳</div>
+                                <div class="payment-method-label">카드 결제</div>
+                            </div>
+                            <div class="payment-method" data-method="virtual" onclick="selectPaymentMethod('virtual')">
+                                <div class="payment-method-icon">🏦</div>
+                                <div class="payment-method-label">가상계좌</div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Selection (가상계좌) -->
+                        <div class="form-group" id="bankSelectGroup">
+                            <label>입금 은행 선택</label>
+                            <select id="bankCode">
+                                <option value="KB_KOOKMIN">국민은행</option>
+                                <option value="SHINHAN">신한은행</option>
+                                <option value="WOORI">우리은행</option>
+                                <option value="HANA">하나은행</option>
+                                <option value="NH_NONGHYUP">농협은행</option>
+                            </select>
+                        </div>
+
+                        <!-- Price Summary -->
+                        <div class="price-summary">
+                            <div class="price-row">
+                                <span class="label">참가비</span>
+                                <span class="value" id="summaryPrice">-</span>
+                            </div>
+                            <div class="price-row">
+                                <span class="label">총 결제금액</span>
+                                <span class="value" id="summaryTotal">-</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="form-submit" id="submitBtn">
+                            결제하고 참가 신청하기
+                        </button>
+                    </form>
+
+                    <!-- Virtual Account Info -->
+                    <div id="virtualAccountInfo" class="virtual-account-info">
+                        <div class="va-title">💰 가상계좌 입금 안내</div>
+                        <div class="va-row">
+                            <span class="va-label">은행</span>
+                            <span class="va-value" id="vaBank">-</span>
+                        </div>
+                        <div class="va-row">
+                            <span class="va-label">계좌번호</span>
+                            <span class="va-value">
+                                <span id="vaAccount">-</span>
+                                <button class="copy-btn" onclick="copyAccount()">복사</button>
+                            </span>
+                        </div>
+                        <div class="va-row">
+                            <span class="va-label">예금주</span>
+                            <span class="va-value" id="vaHolder">HAIRGATOR</span>
+                        </div>
+                        <div class="va-row">
+                            <span class="va-label">입금금액</span>
+                            <span class="va-value" id="vaAmount">-</span>
+                        </div>
+                        <div class="va-row">
+                            <span class="va-label">입금기한</span>
+                            <span class="va-value" id="vaDueDate">-</span>
+                        </div>
+                        <p class="va-note">⚠️ 입금 기한 내 미입금 시 자동 취소됩니다.</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -694,13 +1302,56 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <img src="/icons/icon-512.png" alt="HAIRGATOR" class="footer-logo">
-        <p class="footer-text">
-            © 2026 HAIRGATOR. All rights reserved.<br>
-            문의: <a href="mailto:support@hairgator.kr" class="footer-link">support@hairgator.kr</a>
-        </p>
+        <div class="container">
+            <div class="footer-logo">HAIRGATOR</div>
+            <p style="color: var(--text-secondary); margin-bottom: 24px;">디자이너의 감각에, AI의 데이터를 더하다</p>
+            <div class="footer-contact">
+                <a href="mailto:support@hairgator.kr">support@hairgator.kr</a>
+                <a href="https://hairgator.kr" target="_blank">hairgator.kr</a>
+            </div>
+            <p class="footer-copyright">© 2026 HAIRGATOR. All rights reserved.</p>
+        </div>
     </footer>
 
+    <!-- Urgency Banner -->
+    <div class="urgency-banner" id="urgencyBanner">
+        <p>🔥 선착순 마감 — AI 시대, 당신의 경쟁력을 업그레이드하세요</p>
+        <a href="#register" class="btn-small">지금 신청하기</a>
+    </div>
+
     <script src="app.js"></script>
+    <script>
+        // Scroll Animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
