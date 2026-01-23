@@ -2,7 +2,6 @@
 
 // 전역 변수
 let currentSeminar = null;
-let selectedPaymentMethod = 'card';
 let registrationId = null;
 
 // 포트원 설정
@@ -145,23 +144,6 @@ function setupFormListeners() {
     });
 }
 
-// 결제 방법 선택
-function selectPaymentMethod(method) {
-    selectedPaymentMethod = method;
-
-    document.querySelectorAll('.payment-method').forEach(el => {
-        el.classList.remove('active');
-    });
-    document.querySelector(`.payment-method[data-method="${method}"]`).classList.add('active');
-
-    // 가상계좌 선택 시 은행 선택 표시
-    document.getElementById('bankSelectGroup').style.display = method === 'virtual' ? 'block' : 'none';
-
-    // 버튼 텍스트 변경
-    document.getElementById('submitBtn').textContent =
-        method === 'card' ? '결제하고 참가 신청하기' : '가상계좌 발급받기';
-}
-
 // 폼 제출 핸들러
 async function handleSubmit(e) {
     e.preventDefault();
@@ -190,15 +172,11 @@ async function handleSubmit(e) {
     submitBtn.textContent = '처리 중...';
 
     try {
-        if (selectedPaymentMethod === 'card') {
-            await handleCardPayment({ name, phone, email, store, position, experience });
-        } else {
-            await handleVirtualAccount({ name, phone, email, store, position, experience });
-        }
+        await handleCardPayment({ name, phone, email, store, position, experience });
     } catch (error) {
         showMessage('오류가 발생했습니다: ' + error.message, 'error');
         submitBtn.disabled = false;
-        submitBtn.textContent = selectedPaymentMethod === 'card' ? '결제하고 참가 신청하기' : '가상계좌 발급받기';
+        submitBtn.textContent = '결제하고 참가 신청하기';
     }
 }
 
@@ -279,70 +257,6 @@ async function verifyPayment(regId, paymentId) {
         const currentCountEl = document.getElementById('currentCount');
         if (currentCountEl) currentCountEl.textContent = currentSeminar.currentCount;
     }
-}
-
-// 가상계좌 처리
-async function handleVirtualAccount(formData) {
-    const bankCode = document.getElementById('bankCode').value;
-
-    const response = await fetch('/.netlify/functions/seminar-register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            action: 'registerVirtual',
-            seminarId: currentSeminar.id,
-            bankCode: bankCode,
-            ...formData
-        })
-    });
-
-    const result = await response.json();
-
-    if (result.error) {
-        throw new Error(result.error);
-    }
-
-    if (result.fallbackToCard) {
-        showMessage(result.message, 'warning');
-        selectPaymentMethod('card');
-        document.getElementById('submitBtn').disabled = false;
-        document.getElementById('submitBtn').textContent = '결제하고 참가 신청하기';
-        return;
-    }
-
-    // 가상계좌 정보 표시
-    registrationId = result.registrationId;
-    const va = result.virtualAccount;
-
-    document.getElementById('vaBank').textContent = va.bankName || va.bank;
-    document.getElementById('vaAccount').textContent = va.accountNumber;
-    document.getElementById('vaHolder').textContent = va.accountHolder || 'HAIRGATOR';
-    document.getElementById('vaAmount').textContent = `${currentSeminar.price.toLocaleString()}원`;
-    document.getElementById('vaDueDate').textContent = va.dueDate
-        ? new Date(va.dueDate).toLocaleString('ko-KR')
-        : '24시간 이내';
-
-    document.getElementById('virtualAccountInfo').classList.add('show');
-    document.getElementById('registrationForm').style.display = 'none';
-
-    showMessage('✅ 가상계좌가 발급되었습니다. 기한 내에 입금해주세요.', 'success');
-}
-
-// 계좌번호 복사
-function copyAccount() {
-    const accountNumber = document.getElementById('vaAccount').textContent;
-    navigator.clipboard.writeText(accountNumber).then(() => {
-        alert('계좌번호가 복사되었습니다.');
-    }).catch(() => {
-        // Fallback
-        const textArea = document.createElement('textarea');
-        textArea.value = accountNumber;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        alert('계좌번호가 복사되었습니다.');
-    });
 }
 
 // 메시지 표시

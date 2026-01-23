@@ -79,11 +79,6 @@
   node_bundler = "esbuild"
   timeout = 26
 
-# ⭐ 세미나 가상계좌 웹훅
-[functions."seminar-webhook"]
-  node_bundler = "esbuild"
-  timeout = 26
-
 # ⭐ 세미나 알림톡 발송
 [functions."seminar-sms"]
   node_bundler = "esbuild"

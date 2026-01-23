@@ -1225,31 +1225,6 @@
                             <input type="text" id="regExperience" placeholder="예: 5년">
                         </div>
 
-                        <!-- Payment Method Selection -->
-                        <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 12px;">결제 방법</label>
-                        <div class="payment-methods">
-                            <div class="payment-method active" data-method="card" onclick="selectPaymentMethod('card')">
-                                <div class="payment-method-icon">💳</div>
-                                <div class="payment-method-label">카드 결제</div>
-                            </div>
-                            <div class="payment-method" data-method="virtual" onclick="selectPaymentMethod('virtual')">
-                                <div class="payment-method-icon">🏦</div>
-                                <div class="payment-method-label">가상계좌</div>
-                            </div>
-                        </div>
-
-                        <!-- Bank Selection (가상계좌) -->
-                        <div class="form-group" id="bankSelectGroup">
-                            <label>입금 은행 선택</label>
-                            <select id="bankCode">
-                                <option value="KB_KOOKMIN">국민은행</option>
-                                <option value="SHINHAN">신한은행</option>
-                                <option value="WOORI">우리은행</option>
-                                <option value="HANA">하나은행</option>
-                                <option value="NH_NONGHYUP">농협은행</option>
-                            </select>
-                        </div>
-
                         <!-- Price Summary -->
                         <div class="price-summary">
                             <div class="price-row">
@@ -1267,34 +1242,6 @@
                         </button>
                     </form>
 
-                    <!-- Virtual Account Info -->
-                    <div id="virtualAccountInfo" class="virtual-account-info">
-                        <div class="va-title">💰 가상계좌 입금 안내</div>
-                        <div class="va-row">
-                            <span class="va-label">은행</span>
-                            <span class="va-value" id="vaBank">-</span>
-                        </div>
-                        <div class="va-row">
-                            <span class="va-label">계좌번호</span>
-                            <span class="va-value">
-                                <span id="vaAccount">-</span>
-                                <button class="copy-btn" onclick="copyAccount()">복사</button>
-                            </span>
-                        </div>
-                        <div class="va-row">
-                            <span class="va-label">예금주</span>
-                            <span class="va-value" id="vaHolder">HAIRGATOR</span>
-                        </div>
-                        <div class="va-row">
-                            <span class="va-label">입금금액</span>
-                            <span class="va-value" id="vaAmount">-</span>
-                        </div>
-                        <div class="va-row">
-                            <span class="va-label">입금기한</span>
-                            <span class="va-value" id="vaDueDate">-</span>
-                        </div>
-                        <p class="va-note">⚠️ 입금 기한 내 미입금 시 자동 취소됩니다.</p>
-                    </div>
                 </div>
             </div>
         </section>
