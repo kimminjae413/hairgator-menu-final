@@ -541,9 +541,9 @@
         .video-container {
             position: relative;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1280px;
             margin: 0 auto;
-            padding-bottom: 56.25%; /* 16:9 비율 */
+            aspect-ratio: 16 / 9;
             border-radius: 20px;
             overflow: hidden;
             background: #000;
@@ -559,9 +559,9 @@
             border: none;
         }
 
-        @media (max-width: 1100px) {
+        @media (max-width: 1300px) {
             .video-container {
-                max-width: 100%;
+                max-width: calc(100% - 48px);
             }
         }
 
