@@ -51,7 +51,7 @@
 <body>
     <div class="container">
         <h1>HAIRGATOR 개인정보처리방침</h1>
-        <p class="updated">최종 업데이트: 2026년 1월 23일 (Last Updated: January 23, 2026)</p>
+        <p class="updated">최종 업데이트: 2026년 1월 24일 (Last Updated: January 24, 2026)</p>
 
         <h2>1. 수집하는 개인정보</h2>
         <p>HAIRGATOR(이하 "서비스")는 다음과 같은 개인정보를 수집합니다:</p>
@@ -107,19 +107,22 @@
         <p>AI 분석 및 시뮬레이션을 수행하기 위해 얼굴 이미지 데이터는 다음 제3자에게 전송됩니다:</p>
         <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 14px;">
             <tr style="background: #f5f5f5;">
-                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">제공받는 자 (Third Party)</th>
-                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">제공 목적 (Purpose)</th>
-                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">보유 기간 (Retention)</th>
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">제공받는 자<br>(Third Party)</th>
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">제공 목적<br>(Purpose)</th>
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">보유 기간<br>(Retention Period)</th>
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">보유 이유<br>(Reason for Retention Period)</th>
             </tr>
             <tr>
                 <td style="border: 1px solid #ddd; padding: 10px;"><strong>Google LLC</strong><br>(Gemini API)</td>
                 <td style="border: 1px solid #ddd; padding: 10px;">얼굴형 분석 및 스타일 추천<br>Face shape analysis & style recommendation</td>
-                <td style="border: 1px solid #ddd; padding: 10px;">처리 직후 삭제<br>Deleted immediately after processing</td>
+                <td style="border: 1px solid #ddd; padding: 10px;"><strong>0초 (즉시 삭제)</strong><br>0 seconds (immediately deleted)</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">API 요청 처리 후 데이터 보관 불필요<br>No data retention needed after API request processing</td>
             </tr>
             <tr>
                 <td style="border: 1px solid #ddd; padding: 10px;"><strong>vModel Inc.</strong><br>(vModel API)</td>
                 <td style="border: 1px solid #ddd; padding: 10px;">가상 헤어스타일 시뮬레이션<br>Virtual hairstyle simulation</td>
-                <td style="border: 1px solid #ddd; padding: 10px;">최대 24시간 후 삭제<br>Deleted within 24 hours</td>
+                <td style="border: 1px solid #ddd; padding: 10px;"><strong>최대 24시간</strong><br>Up to 24 hours</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">이미지 생성 작업 큐 처리 및 결과 전달을 위한 기술적 필요<br>Technical necessity for processing queue and delivering results</td>
             </tr>
         </table>
 
@@ -129,13 +132,32 @@
             <li><strong>vModel API:</strong> AI 기반 가상 헤어스타일 합성 기술을 활용하여 시뮬레이션 이미지를 생성하기 위함입니다. (To generate simulation images using AI-based virtual hairstyle synthesis technology.)</li>
         </ul>
 
-        <h3 style="margin-top: 20px; font-size: 16px; color: #555;">5.5 제3자의 데이터 처리 (Third-Party Privacy Practices)</h3>
-        <ul>
-            <li><strong>Google LLC:</strong> Google은 자체 개인정보 처리방침(<a href="https://policies.google.com/privacy" target="_blank">https://policies.google.com/privacy</a>)에 따라 데이터를 처리합니다. Gemini API는 API 요청 데이터를 모델 학습에 사용하지 않습니다. 처리 직후 이미지가 삭제됩니다.</li>
-            <li><strong>vModel Inc.:</strong> vModel은 자체 개인정보 처리방침(<a href="https://vmodel.ai/privacy" target="_blank">https://vmodel.ai/privacy</a>)에 따라 데이터를 처리합니다. 이미지는 시뮬레이션 처리 후 최대 24시간 내에 자동 삭제됩니다. vModel은 사용자 이미지를 AI 모델 학습 목적으로 사용하지 않습니다.</li>
-        </ul>
-        <p style="background: #e8f5e9; padding: 10px; border-radius: 5px; font-size: 14px;">
-            <strong>English Summary:</strong> Google processes data per their privacy policy and does NOT use API request data for model training. Images are deleted immediately after processing. vModel processes data per their privacy policy and deletes images within 24 hours. Neither third party uses user images for AI model training purposes.
+        <h3 style="margin-top: 20px; font-size: 16px; color: #555;">5.5 제3자의 데이터 처리 (Third-Party Data Storage Practices)</h3>
+
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #E91E63;">
+            <h4 style="margin: 0 0 10px 0; color: #333;">Google LLC (Gemini API)</h4>
+            <ul style="margin: 0;">
+                <li><strong>저장 여부 (Does Google store face data?):</strong> 아니오. Google Gemini API는 API 요청에 포함된 이미지 데이터를 영구 저장하지 않습니다.<br><em>No. Google Gemini API does NOT permanently store image data included in API requests.</em></li>
+                <li><strong>보유 기간 (Retention period):</strong> 0초 - API 응답 생성 직후 즉시 삭제됩니다.<br><em>0 seconds - deleted immediately after generating the API response.</em></li>
+                <li><strong>보유 이유 (Why this retention period):</strong> Google은 API 요청을 처리하는 동안에만 일시적으로 데이터를 메모리에 보관합니다. 응답이 반환되면 더 이상 데이터가 필요하지 않으므로 즉시 삭제됩니다.<br><em>Google only temporarily holds data in memory while processing the API request. Once the response is returned, the data is no longer needed and is immediately discarded.</em></li>
+                <li><strong>AI 학습 사용 (Used for AI training?):</strong> 아니오. Google Cloud API 서비스 약관에 따라 API 요청 데이터는 모델 학습에 사용되지 않습니다.<br><em>No. Per Google Cloud API Terms of Service, API request data is not used for model training.</em></li>
+                <li><strong>개인정보 처리방침:</strong> <a href="https://policies.google.com/privacy" target="_blank">https://policies.google.com/privacy</a></li>
+            </ul>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #2196F3;">
+            <h4 style="margin: 0 0 10px 0; color: #333;">vModel Inc. (vModel API)</h4>
+            <ul style="margin: 0;">
+                <li><strong>저장 여부 (Does vModel store face data?):</strong> 예, 일시적으로. 이미지 처리 큐 및 결과 전달을 위해 최대 24시간 보관합니다.<br><em>Yes, temporarily. Images are retained for up to 24 hours for processing queue and result delivery.</em></li>
+                <li><strong>보유 기간 (Retention period):</strong> 최대 24시간<br><em>Up to 24 hours maximum</em></li>
+                <li><strong>보유 이유 (Why this retention period):</strong> vModel의 AI 이미지 생성 시스템은 비동기 작업 큐를 사용합니다. 사용자가 결과를 다운로드할 수 있도록 생성된 이미지를 일시적으로 보관해야 합니다. 24시간은 사용자가 결과를 확인하기에 충분하면서도 개인정보 보호를 위해 최소한으로 설정된 기간입니다. 24시간 후 원본 얼굴 이미지와 생성된 결과물 모두 자동 삭제됩니다.<br><em>vModel's AI image generation system uses an asynchronous job queue. Generated images must be temporarily stored so users can download results. 24 hours provides sufficient time for users to retrieve results while being the minimum period necessary for privacy protection. After 24 hours, both the original face image and generated results are automatically deleted.</em></li>
+                <li><strong>AI 학습 사용 (Used for AI training?):</strong> 아니오. vModel은 사용자가 업로드한 이미지를 AI 모델 학습 목적으로 사용하지 않습니다.<br><em>No. vModel does NOT use user-uploaded images for AI model training purposes.</em></li>
+                <li><strong>개인정보 처리방침:</strong> <a href="https://vmodel.ai/privacy" target="_blank">https://vmodel.ai/privacy</a></li>
+            </ul>
+        </div>
+
+        <p style="background: #e8f5e9; padding: 15px; border-radius: 5px; font-size: 14px; margin-top: 20px;">
+            <strong>Summary:</strong> Neither third party stores face data indefinitely. Google deletes immediately (0 seconds). vModel retains for maximum 24 hours for technical processing needs, then automatically deletes. Neither party uses face data for AI model training.
         </p>
 
         <h3 style="margin-top: 20px; font-size: 16px; color: #555;">5.6 사용자 권리 (User Rights)</h3>
@@ -169,7 +191,8 @@
 
         <h2>9. 개정 이력 (Revision History)</h2>
         <ul>
-            <li><strong>2026년 1월 23일:</strong> 얼굴 데이터 정책 상세화 - Apple App Store 가이드라인 5.1.1 준수 (제3자 제공 상세, 보유기간 명시, 제3자 개인정보 처리방침 링크 추가)</li>
+            <li><strong>2026년 1월 24일:</strong> 제3자 데이터 보유 이유 상세 추가 - Apple App Store 가이드라인 5.1.1 준수 강화 (Google/vModel 보유기간 및 보유 이유 명시, 영구 저장하지 않음 명확화)</li>
+            <li>2026년 1월 23일: 얼굴 데이터 정책 상세화 (제3자 제공 상세, 보유기간 명시, 제3자 개인정보 처리방침 링크 추가)</li>
             <li>2026년 1월 21일: 얼굴 데이터(Face Data) 수집 및 이용 조항 추가</li>
             <li>2025년 12월 29일: 최초 제정</li>
         </ul>
