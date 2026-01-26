@@ -1274,6 +1274,7 @@ const HAIRGATOR_I18N = {
       note: '* 토큰은 매월 초기화되며, 미사용 토큰은 이월되지 않습니다.',
       feature: {
         styleMenu: '스타일 메뉴판',
+        styleMatch: 'AI 스타일 매칭',
         personalColor: '퍼스널컬러 분석',
         drapeMode: '드레이프 모드',
         chatbotLimited: '챗봇 (토큰 사용)',
@@ -2521,6 +2522,7 @@ const HAIRGATOR_I18N = {
       note: '* Credits reset monthly. Unused credits do not roll over.',
       feature: {
         styleMenu: 'Style Menu',
+        styleMatch: 'AI Style Matching',
         personalColor: 'Personal Color Analysis',
         drapeMode: 'Drape Mode',
         chatbotLimited: 'Chatbot (Uses Tokens)',
@@ -3764,6 +3766,7 @@ const HAIRGATOR_I18N = {
       note: '※クレジットは毎月リセットされます。未使用分は繰り越されません。',
       feature: {
         styleMenu: 'スタイルメニュー',
+        styleMatch: 'AIスタイルマッチング',
         personalColor: 'パーソナルカラー分析',
         drapeMode: 'ドレープモード',
         chatbotLimited: 'チャットボット（トークン使用）',
@@ -5010,6 +5013,7 @@ const HAIRGATOR_I18N = {
       note: '* 积分每月重置，未使用的积分不予保留。',
       feature: {
         styleMenu: '造型菜单',
+        styleMatch: 'AI风格匹配',
         personalColor: '个人色彩分析',
         drapeMode: '披巾模式',
         chatbotLimited: '聊天机器人（使用代币）',
@@ -6243,6 +6247,7 @@ const HAIRGATOR_I18N = {
       note: '* Điểm được đặt lại hàng tháng. Điểm chưa sử dụng không được chuyển sang.',
       feature: {
         styleMenu: 'Menu kiểu tóc',
+        styleMatch: 'AI Ghép Phong Cách',
         personalColor: 'Phân tích màu sắc cá nhân',
         drapeMode: 'Chế độ khăn choàng',
         chatbotLimited: 'Chatbot (Dùng Token)',
@@ -7422,6 +7427,7 @@ const HAIRGATOR_I18N = {
       note: '* Kredit direset setiap bulan. Kredit yang tidak digunakan tidak akan dipindahkan.',
       feature: {
         styleMenu: 'Menu Gaya',
+        styleMatch: 'AI Pencocokan Gaya',
         personalColor: 'Analisis Warna Personal',
         drapeMode: 'Mode Drape',
         chatbotLimited: 'Chatbot (Pakai Token)',
@@ -8374,6 +8380,7 @@ const HAIRGATOR_I18N = {
       note: '* Los créditos se reinician mensualmente. Los créditos no utilizados no se transfieren.',
       feature: {
         styleMenu: 'Menú de Estilos',
+        styleMatch: 'Coincidencia de Estilo IA',
         personalColor: 'Análisis de Color Personal',
         drapeMode: 'Modo Drape',
         chatbotLimited: 'Chatbot (Usa Tokens)',
