@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.id = 'fullscreen-toggle-btn';
         fullscreenBtn.innerHTML = '⛶';
-        fullscreenBtn.title = '전체화면 토글';
+        fullscreenBtn.title = t('ui.fullscreenToggle') || '전체화면 토글';
         fullscreenBtn.style.cssText = `
             position: fixed;
             bottom: 70px;
@@ -476,15 +476,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 'amex': 'American Express',
                 'jcb': 'JCB',
                 'unionpay': 'UnionPay',
-                'bc': 'BC카드',
-                'samsung': '삼성카드',
-                'hyundai': '현대카드',
-                'shinhan': '신한카드',
-                'lotte': '롯데카드',
-                'kb': 'KB국민카드',
-                'hana': '하나카드',
-                'woori': '우리카드',
-                'nh': 'NH농협카드'
+                'bc': t('ui.cardBrandBC') || 'BC카드',
+                'samsung': t('ui.cardBrandSamsung') || '삼성카드',
+                'hyundai': t('ui.cardBrandHyundai') || '현대카드',
+                'shinhan': t('ui.cardBrandShinhan') || '신한카드',
+                'lotte': t('ui.cardBrandLotte') || '롯데카드',
+                'kb': t('ui.cardBrandKB') || 'KB국민카드',
+                'hana': t('ui.cardBrandHana') || '하나카드',
+                'woori': t('ui.cardBrandWoori') || '우리카드',
+                'nh': t('ui.cardBrandNH') || 'NH농협카드'
             };
 
             if (cardBrandEl) cardBrandEl.textContent = brandNames[savedCard.brand?.toLowerCase()] || savedCard.brand || t('ui.card') || '카드';
@@ -542,7 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (typeof firebase !== 'undefined' && firebase.auth) {
             const user = firebase.auth().currentUser;
             if (!user) {
-                alert('로그인이 필요합니다.');
+                alert(t('ui.loginRequired') || '로그인이 필요합니다.');
                 window.location.href = 'login.html';
                 return;
             }
@@ -951,10 +951,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('AI 스타일 매칭 접근 체크:', { userPlan, isAllowed, planSources });
 
                 if (!isAllowed) {
+                    const featureName = t('ui.featureAIStyleMatch') || 'AI 스타일 매칭';
+                    const planRequired = t('ui.basicPlanRequired') || '베이직 플랜 이상에서 사용 가능합니다.';
                     if (typeof showUpgradeModal === 'function') {
-                        showUpgradeModal('AI 스타일 매칭', '베이직 플랜 이상에서 사용 가능합니다.');
+                        showUpgradeModal(featureName, planRequired);
                     } else {
-                        alert('베이직 플랜 이상에서 사용 가능합니다.');
+                        alert(planRequired);
                     }
                     return;
                 }
@@ -962,10 +964,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 토큰 잔액 체크 (스타일매칭은 200 토큰 필요)
                 const tokenBalance = getTokenBalance();
                 if (tokenBalance < 200) {
+                    const featureName = t('ui.featureAIStyleMatch') || 'AI 스타일 매칭';
+                    const tokenShortageTitle = t('ui.tokenShortage') || '토큰 부족';
+                    const tokensRequired = (t('ui.tokensRequiredFor') || '{feature}에 {amount} 토큰이 필요합니다.')
+                        .replace('{feature}', featureName)
+                        .replace('{amount}', '200');
+                    const currentBalanceLabel = t('ui.currentBalance') || '현재 잔액';
+                    const insufficientMsg = `${tokensRequired}\n${currentBalanceLabel}: ${tokenBalance.toLocaleString()} ${t('ui.tokens') || '토큰'}`;
                     if (typeof showUpgradeModal === 'function') {
-                        showUpgradeModal('토큰 부족', `AI 스타일 매칭에 200 토큰이 필요합니다.\n현재 잔액: ${tokenBalance.toLocaleString()} 토큰`);
+                        showUpgradeModal(tokenShortageTitle, insufficientMsg);
                     } else {
-                        alert(`토큰이 부족합니다.\n현재 잔액: ${tokenBalance.toLocaleString()} 토큰`);
+                        alert(insufficientMsg);
                     }
                     return;
                 }
@@ -985,10 +994,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('퍼스널 이미지 분석 접근 체크:', { userPlan, isAllowed, planSources });
 
                 if (!isAllowed) {
+                    const featureName = t('ui.featurePersonalColor') || '퍼스널 이미지 분석';
+                    const planRequired = t('ui.basicPlanRequired') || '베이직 플랜 이상에서 사용 가능합니다.';
                     if (typeof showUpgradeModal === 'function') {
-                        showUpgradeModal('퍼스널 이미지 분석', '베이직 플랜 이상에서 사용 가능합니다.');
+                        showUpgradeModal(featureName, planRequired);
                     } else {
-                        alert('베이직 플랜 이상에서 사용 가능합니다.');
+                        alert(planRequired);
                     }
                     return;
                 }
@@ -996,10 +1007,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 토큰 잔액 체크 (퍼스널 이미지 분석은 200 토큰 필요)
                 const tokenBalance = getTokenBalance();
                 if (tokenBalance < 200) {
+                    const featureName = t('ui.featurePersonalColor') || '퍼스널 이미지 분석';
+                    const tokenShortageTitle = t('ui.tokenShortage') || '토큰 부족';
+                    const tokensRequired = (t('ui.tokensRequiredFor') || '{feature}에 {amount} 토큰이 필요합니다.')
+                        .replace('{feature}', featureName)
+                        .replace('{amount}', '200');
+                    const currentBalanceLabel = t('ui.currentBalance') || '현재 잔액';
+                    const insufficientMsg = `${tokensRequired}\n${currentBalanceLabel}: ${tokenBalance.toLocaleString()} ${t('ui.tokens') || '토큰'}`;
                     if (typeof showUpgradeModal === 'function') {
-                        showUpgradeModal('토큰 부족', `퍼스널 이미지 분석에 200 토큰이 필요합니다.\n현재 잔액: ${tokenBalance.toLocaleString()} 토큰`);
+                        showUpgradeModal(tokenShortageTitle, insufficientMsg);
                     } else {
-                        alert(`토큰이 부족합니다.\n현재 잔액: ${tokenBalance.toLocaleString()} 토큰`);
+                        alert(insufficientMsg);
                     }
                     return;
                 }
@@ -1058,12 +1076,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (!isAllowed) {
                     // 업그레이드 모달 표시
+                    const featureName = t('ui.featureAITransform') || 'AI 얼굴변환';
+                    const planRequired = t('ui.basicPlanRequired') || '베이직 플랜 이상에서 사용 가능합니다.';
                     if (typeof showUpgradeModal === 'function') {
-                        showUpgradeModal('AI 얼굴변환', '베이직 플랜 이상에서 사용 가능합니다.');
+                        showUpgradeModal(featureName, planRequired);
                     } else if (typeof showToast === 'function') {
-                        showToast('베이직 플랜 이상에서 사용 가능합니다.', 'warning');
+                        showToast(planRequired, 'warning');
                     } else {
-                        alert('베이직 플랜 이상에서 사용 가능합니다.');
+                        alert(planRequired);
                     }
                     return;
                 }
@@ -1074,10 +1094,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     || 0;
 
                 if (tokenBalance < 350) {
+                    const featureName = t('ui.featureAITransform') || 'AI 얼굴변환';
+                    const tokenShortageTitle = t('ui.tokenShortage') || '토큰 부족';
+                    const tokensRequired = (t('ui.tokensRequiredFor') || '{feature}에 {amount} 토큰이 필요합니다.')
+                        .replace('{feature}', featureName)
+                        .replace('{amount}', '350');
+                    const currentBalanceLabel = t('ui.currentBalance') || '현재 잔액';
+                    const insufficientMsg = `${tokensRequired}\n${currentBalanceLabel}: ${tokenBalance.toLocaleString()} ${t('ui.tokens') || '토큰'}`;
                     if (typeof showUpgradeModal === 'function') {
-                        showUpgradeModal('토큰 부족', `AI 얼굴변환에 350 토큰이 필요합니다.\n현재 잔액: ${tokenBalance.toLocaleString()} 토큰`);
+                        showUpgradeModal(tokenShortageTitle, insufficientMsg);
                     } else {
-                        alert(`토큰이 부족합니다.\nAI 얼굴변환에 350 토큰이 필요합니다.\n현재 잔액: ${tokenBalance.toLocaleString()} 토큰`);
+                        alert(insufficientMsg);
                     }
                     return;
                 }
@@ -1171,7 +1198,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 loginInfoTimeout = null;
             }
             // 이름 표시: bullnabiUser.name (이미 window.currentDesigner?.name 폴백 포함)
-            const displayName = bullnabiUser.name || window.currentDesigner?.name || '사용자';
+            const displayName = bullnabiUser.name || window.currentDesigner?.name || t('ui.defaultUser') || '사용자';
             if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${displayName}`;
 
             // 플랜 & 토큰 표시
@@ -3115,11 +3142,11 @@ window.registerNewCard = async function() {
         }
 
         if (result.success) {
-            alert('카드가 등록되었습니다!');
+            alert(t('ui.cardRegistered') || '카드가 등록되었습니다!');
             await loadSavedCardsForMypage();
         }
     } catch (error) {
-        alert(error.message || '카드 등록에 실패했습니다.');
+        alert(error.message || t('ui.cardRegisterFailed') || '카드 등록에 실패했습니다.');
     }
 };
 
@@ -3127,7 +3154,7 @@ window.registerNewCard = async function() {
  * 마이페이지에서 카드 삭제
  */
 window.deleteCardFromMypage = async function(billingKey) {
-    if (!confirm('이 카드를 삭제하시겠습니까?')) {
+    if (!confirm(t('ui.deleteThisCard') || '이 카드를 삭제하시겠습니까?')) {
         return;
     }
 
@@ -3136,10 +3163,10 @@ window.deleteCardFromMypage = async function(billingKey) {
 
     try {
         await window.deleteSavedCard(billingKey, userId);
-        alert('카드가 삭제되었습니다.');
+        alert(t('ui.cardDeleted') || '카드가 삭제되었습니다.');
         await loadSavedCardsForMypage();
     } catch (error) {
-        alert(error.message || '카드 삭제에 실패했습니다.');
+        alert(error.message || t('ui.cardDeleteFailed') || '카드 삭제에 실패했습니다.');
     }
 };
 
@@ -3635,7 +3662,7 @@ window.openInquiryDetail = async function(inquiryId) {
     try {
         const doc = await firebase.firestore().collection('inquiries').doc(inquiryId).get();
         if (!doc.exists) {
-            alert('문의를 찾을 수 없습니다.');
+            alert(t('ui.inquiryNotFound') || '문의를 찾을 수 없습니다.');
             return;
         }
 
@@ -3689,7 +3716,7 @@ window.openInquiryDetail = async function(inquiryId) {
 
     } catch (error) {
         console.error('문의 상세 로드 실패:', error);
-        alert('문의를 불러오는데 실패했습니다.');
+        alert(t('ui.inquiryLoadFailed') || '문의를 불러오는데 실패했습니다.');
     }
 };
 
