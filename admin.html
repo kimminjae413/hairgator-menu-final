@@ -528,6 +528,9 @@
         .badge-success { background: #D1FAE5; color: #059669; }
         .badge-warning { background: #FEF3C7; color: #D97706; }
         .badge-danger { background: #FEE2E2; color: #DC2626; }
+        .badge-primary { background: #DBEAFE; color: #2563EB; }
+        .badge-secondary { background: #F3F4F6; color: #6B7280; }
+        .badge-info { background: #E0F2FE; color: #0284C7; }
 
         /* 상태 배지 */
         .status-badge {
@@ -1493,6 +1496,10 @@
                 <span class="nav-item-icon">📋</span>
                 <span>활동 로그</span>
             </div>
+            <div class="nav-item" onclick="showPage('styleFeedback')">
+                <span class="nav-item-icon">🎯</span>
+                <span>스타일 피드백</span>
+            </div>
         </nav>
 
         <nav class="nav-section">
@@ -2055,6 +2062,85 @@
                             </td></tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 스타일 피드백 로그 페이지 -->
+        <div id="page-styleFeedback" class="page">
+            <div class="page-header">
+                <h2 class="page-title">🎯 스타일 피드백 로그</h2>
+                <button class="btn btn-primary" onclick="loadStyleFeedbackLogs()">🔄 새로고침</button>
+            </div>
+
+            <!-- 요약 통계 카드 -->
+            <div class="stats-grid" style="margin-bottom: 24px;">
+                <div class="stat-card">
+                    <div class="stat-icon">👁️</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="feedbackStatImpressions">0</div>
+                        <div class="stat-label">총 노출 (Impressions)</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👆</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="feedbackStatClicks">0</div>
+                        <div class="stat-label">총 클릭 (Clicks)</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="feedbackStatCTR">0%</div>
+                        <div class="stat-label">CTR (클릭률)</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="feedbackStatAvgDwell">0초</div>
+                        <div class="stat-label">평균 체류시간</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">피드백 로그</div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select class="form-input" id="feedbackEventFilter" style="width: 150px;" onchange="loadStyleFeedbackLogs()">
+                            <option value="">모든 이벤트</option>
+                            <option value="impression">노출 (Impression)</option>
+                            <option value="click">클릭 (Click)</option>
+                            <option value="dwell_time">체류시간 (Dwell)</option>
+                            <option value="positive_action">긍정 액션</option>
+                        </select>
+                        <input type="date" class="form-input" id="feedbackDateFilter" style="width: 150px;" onchange="loadStyleFeedbackLogs()">
+                    </div>
+                </div>
+                <div class="table-container" style="max-height: 600px; overflow-y: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 150px;">시간</th>
+                                <th style="width: 100px;">이벤트</th>
+                                <th>사용자 ID</th>
+                                <th>스타일 ID</th>
+                                <th style="width: 60px;">순위</th>
+                                <th style="width: 60px;">점수</th>
+                                <th>상세</th>
+                            </tr>
+                        </thead>
+                        <tbody id="styleFeedbackTableBody">
+                            <tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">로딩 중...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="padding: 16px; text-align: center; border-top: 1px solid var(--border);">
+                    <button class="btn btn-secondary" id="loadMoreFeedbackBtn" onclick="loadMoreStyleFeedbackLogs()" style="display: none;">
+                        더 보기
+                    </button>
                 </div>
             </div>
         </div>
@@ -4082,6 +4168,7 @@
             if (pageName === 'marketing') loadMarketingRecipients();
             if (pageName === 'legal') loadLegalDocuments();
             if (pageName === 'seminars') loadSeminars();
+            if (pageName === 'styleFeedback') loadStyleFeedbackLogs();
         }
 
         // 대시보드 로드
@@ -5221,6 +5308,174 @@
                 }).join('');
             } catch (error) {
                 tbody.innerHTML = `<tr><td colspan="6" style="color: var(--danger);">오류: ${error.message}</td></tr>`;
+            }
+        }
+
+        // ============ 스타일 피드백 로그 ============
+        let lastFeedbackDoc = null;  // 페이지네이션용
+
+        async function loadStyleFeedbackLogs(loadMore = false) {
+            const eventFilter = document.getElementById('feedbackEventFilter').value;
+            const dateFilter = document.getElementById('feedbackDateFilter').value;
+            const tbody = document.getElementById('styleFeedbackTableBody');
+            const loadMoreBtn = document.getElementById('loadMoreFeedbackBtn');
+
+            if (!loadMore) {
+                lastFeedbackDoc = null;
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;"><div class="loading"></div></td></tr>';
+            }
+
+            try {
+                let query = db.collection('style_feedback_logs')
+                    .orderBy('timestamp', 'desc')
+                    .limit(50);
+
+                // 이벤트 타입 필터
+                if (eventFilter) {
+                    query = query.where('eventType', '==', eventFilter);
+                }
+
+                // 날짜 필터
+                if (dateFilter) {
+                    const startDate = new Date(dateFilter);
+                    const endDate = new Date(dateFilter);
+                    endDate.setDate(endDate.getDate() + 1);
+                    query = query.where('timestamp', '>=', startDate)
+                                 .where('timestamp', '<', endDate);
+                }
+
+                // 페이지네이션
+                if (loadMore && lastFeedbackDoc) {
+                    query = query.startAfter(lastFeedbackDoc);
+                }
+
+                const snapshot = await query.get();
+                const logs = [];
+
+                snapshot.forEach(doc => {
+                    logs.push({ id: doc.id, ...doc.data() });
+                    lastFeedbackDoc = doc;
+                });
+
+                // 통계 계산 (첫 로드 시에만)
+                if (!loadMore) {
+                    await calculateFeedbackStats();
+                }
+
+                if (logs.length === 0 && !loadMore) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">데이터 없음</td></tr>';
+                    loadMoreBtn.style.display = 'none';
+                    return;
+                }
+
+                const rows = logs.map(log => {
+                    const time = log.timestamp?.toDate ?
+                        log.timestamp.toDate().toLocaleString('ko-KR') :
+                        (log.clientTimestamp || '-');
+
+                    const eventBadge = getEventBadge(log.eventType);
+                    const detail = getLogDetail(log);
+
+                    return `
+                        <tr>
+                            <td style="font-size: 12px; color: var(--text-muted);">${time}</td>
+                            <td><span class="badge ${eventBadge.class}">${eventBadge.label}</span></td>
+                            <td style="font-size: 12px;">${log.userId || '-'}</td>
+                            <td style="font-size: 12px;">${log.styleId || '-'}</td>
+                            <td style="text-align: center;">${log.rankPosition || '-'}</td>
+                            <td style="text-align: center;">${log.score || '-'}</td>
+                            <td style="font-size: 12px; color: var(--text-muted);">${detail}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                if (loadMore) {
+                    tbody.innerHTML += rows;
+                } else {
+                    tbody.innerHTML = rows;
+                }
+
+                // 더 보기 버튼 표시/숨김
+                loadMoreBtn.style.display = logs.length >= 50 ? 'inline-block' : 'none';
+
+            } catch (error) {
+                console.error('스타일 피드백 로드 오류:', error);
+                if (!loadMore) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="color: var(--danger);">오류: ${error.message}</td></tr>`;
+                }
+            }
+        }
+
+        function loadMoreStyleFeedbackLogs() {
+            loadStyleFeedbackLogs(true);
+        }
+
+        function getEventBadge(eventType) {
+            const badges = {
+                'impression': { label: '노출', class: 'badge-secondary' },
+                'click': { label: '클릭', class: 'badge-primary' },
+                'dwell_time': { label: '체류', class: 'badge-info' },
+                'positive_action': { label: '긍정', class: 'badge-success' }
+            };
+            return badges[eventType] || { label: eventType, class: 'badge-secondary' };
+        }
+
+        function getLogDetail(log) {
+            switch (log.eventType) {
+                case 'impression':
+                    return `${log.faceShape || ''} / ${log.gender || ''} / 카테고리: ${log.categoryName || '-'}`;
+                case 'click':
+                    return `카테고리: ${log.categoryName || '-'}`;
+                case 'dwell_time':
+                    return `${log.dwellTimeSec || 0}초 / 액션: ${log.exitAction || 'close'}`;
+                case 'positive_action':
+                    return `액션: ${log.actionType || '-'}`;
+                default:
+                    return '-';
+            }
+        }
+
+        async function calculateFeedbackStats() {
+            try {
+                // 오늘 날짜 기준 통계
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                // 각 이벤트 타입별 카운트
+                const impressionsSnap = await db.collection('style_feedback_logs')
+                    .where('eventType', '==', 'impression')
+                    .where('timestamp', '>=', today)
+                    .get();
+
+                const clicksSnap = await db.collection('style_feedback_logs')
+                    .where('eventType', '==', 'click')
+                    .where('timestamp', '>=', today)
+                    .get();
+
+                const dwellSnap = await db.collection('style_feedback_logs')
+                    .where('eventType', '==', 'dwell_time')
+                    .where('timestamp', '>=', today)
+                    .get();
+
+                const impressions = impressionsSnap.size;
+                const clicks = clicksSnap.size;
+                const ctr = impressions > 0 ? ((clicks / impressions) * 100).toFixed(1) : 0;
+
+                // 평균 체류시간 계산
+                let totalDwell = 0;
+                dwellSnap.forEach(doc => {
+                    totalDwell += doc.data().dwellTimeSec || 0;
+                });
+                const avgDwell = dwellSnap.size > 0 ? Math.round(totalDwell / dwellSnap.size) : 0;
+
+                // UI 업데이트
+                document.getElementById('feedbackStatImpressions').textContent = impressions.toLocaleString();
+                document.getElementById('feedbackStatClicks').textContent = clicks.toLocaleString();
+                document.getElementById('feedbackStatCTR').textContent = ctr + '%';
+                document.getElementById('feedbackStatAvgDwell').textContent = avgDwell + '초';
+
+            } catch (error) {
+                console.error('피드백 통계 계산 오류:', error);
             }
         }
 
