@@ -3764,10 +3764,10 @@ async function updateProductsPagePlan() {
 
         // 현재 플랜 정보 표시 업데이트
         const planNames = {
-            free: '무료',
-            basic: '베이직',
-            pro: '프로',
-            business: '비즈니스'
+            free: t('payment.freePlan') || '무료',
+            basic: t('payment.basicPlan') || '베이직',
+            pro: t('payment.proPlan') || '프로',
+            business: t('payment.businessPlan') || '비즈니스'
         };
 
         const currentPlanNameEl = document.getElementById('currentPlanName');
@@ -3789,7 +3789,9 @@ async function updateProductsPagePlan() {
         if (currentPlanExpiryEl) {
             if (planExpiry) {
                 const expiryDate = planExpiry.toDate ? planExpiry.toDate() : new Date(planExpiry);
-                currentPlanExpiryEl.textContent = expiryDate.toLocaleDateString('ko-KR');
+                const currentLang = window.currentLanguage || 'ko';
+                const localeMap = { ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN', vi: 'vi-VN', id: 'id-ID', es: 'es-ES' };
+                currentPlanExpiryEl.textContent = expiryDate.toLocaleDateString(localeMap[currentLang] || 'ko-KR');
                 daysRemaining = Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24));
             } else {
                 // 만료일 정보 없으면 모든 플랜에서 '-' 표시
@@ -3837,14 +3839,14 @@ async function updateProductsPagePlan() {
                     if (badge) badge.style.display = 'block';
                     btn.className = 'plan-btn plan-btn-disabled';
                     btn.disabled = true;
-                    btn.textContent = '현재 플랜';
+                    btn.textContent = t('payment.currentPlanBtn') || '현재 플랜';
                     btn.onclick = null;
                 } else {
                     // 다른 플랜 카드
                     console.log('🔧 [updateProductsPage]', plan, '= 다른 플랜, onclick 설정');
                     btn.className = 'plan-btn plan-btn-primary';
                     btn.disabled = false;
-                    btn.textContent = '선택하기';
+                    btn.textContent = t('payment.selectPlan') || '선택하기';
 
                     // ⭐ iOS WebView 호환성: setAttribute로 인라인 onclick 설정
                     // JavaScript로 btn.onclick = ... 설정하면 iOS에서 안 먹을 수 있음
