@@ -250,15 +250,12 @@ class AIStudio {
     });
   }
 
-  // 캔버스 탭 전환
+  // 캔버스 탭 전환 (히스토리 탭 제거됨 - 사이드바로 이동)
   switchCanvasTab(tabName) {
     const resultContainer = document.getElementById('canvas-result');
-    const historyContainer = document.getElementById('canvas-history');
     const emptyState = document.getElementById('canvas-empty');
 
     if (tabName === 'result') {
-      // 결과 탭
-      if (historyContainer) historyContainer.classList.add('hidden');
       // 결과가 있으면 결과 보여주고, 없으면 empty state
       if (resultContainer && resultContainer.innerHTML.trim()) {
         resultContainer.classList.remove('hidden');
@@ -268,11 +265,8 @@ class AIStudio {
         if (emptyState) emptyState.classList.remove('hidden');
       }
     } else if (tabName === 'history') {
-      // 히스토리 탭
-      if (resultContainer) resultContainer.classList.add('hidden');
-      if (emptyState) emptyState.classList.add('hidden');
-      if (historyContainer) historyContainer.classList.remove('hidden');
-      this.loadHistoryToCanvas();
+      // 히스토리는 사이드바로 대체됨
+      toggleHistorySidebar();
     }
   }
 
@@ -476,8 +470,10 @@ class AIStudio {
         m => m.sessionId !== session.sessionId
       );
 
-      // UI 새로고침
-      this.loadHistoryToCanvas();
+      // UI 새로고침 (사이드바)
+      if (typeof loadSidebarHistory === 'function') {
+        loadSidebarHistory();
+      }
 
     } catch (e) {
       console.error('❌ 삭제 실패:', e);
@@ -4054,18 +4050,9 @@ function filterHistoryList(query) {
   });
 }
 
-// 모바일에서 히스토리 패널 표시 (기존 함수 유지 - 캔버스 탭용)
+// 모바일에서 히스토리 패널 표시 → 사이드바로 대체
 function showHistoryPanel() {
-  const canvasPanel = document.getElementById('canvas-panel');
-  canvasPanel.classList.add('active');
-
-  // 히스토리 탭 활성화
-  document.querySelectorAll('.canvas-tab').forEach(tab => tab.classList.remove('active'));
-  const historyTab = document.querySelector('.canvas-tab[data-tab="history"]');
-  if (historyTab) historyTab.classList.add('active');
-
-  // 히스토리 로드
-  window.aiStudio.switchCanvasTab('history');
+  toggleHistorySidebar();
 }
 
 // 새 채팅 시작 (기존 대화는 유지, 새로운 대화 시작)
