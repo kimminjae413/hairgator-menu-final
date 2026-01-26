@@ -13362,6 +13362,9 @@ async function validateHairstyleImage(imageBase64, mimeType, geminiKey) {
 - 만화/일러스트 캐릭터
 - 너무 흐릿하거나 머리 일부만 보이는 사진
 - 극단적으로 특이한 예술적 헤어 (모히칸, 레인보우 염색 등 일반 살롱에서 재현 어려운 스타일)
+- 머그샷/체포사진/증명사진 (배경이 단색이고 정면 응시하는 신분증 스타일)
+- 머리가 헝클어지거나 정돈되지 않은 상태의 사진
+- 여러 명의 작은 얼굴이 모자이크처럼 배열된 합성 이미지
 
 JSON만 응답: {"is_valid": true/false, "reason": "<1문장 설명>", "confidence": "high/medium/low"}`;
 
