@@ -2614,15 +2614,15 @@
                 <!-- 다운그레이드 예정 안내 (pendingPlan이 있을 때 표시) -->
                 <div class="pending-downgrade-notice" id="pendingDowngradeNotice" style="display: none;">
                     <div class="pending-notice-icon">⏰</div>
-                    <div class="pending-notice-text">
-                        <span id="pendingDowngradeDays">0</span>일 후 <strong>무료 플랜</strong>으로 전환됩니다
+                    <div class="pending-notice-text" id="pendingDowngradeText">
+                        <span id="pendingDowngradeDays">0</span><span data-i18n="ui.daysUntilDowngrade">일 후 무료 플랜으로 전환됩니다</span>
                     </div>
-                    <button class="pending-cancel-btn" onclick="cancelPendingDowngrade()" ontouchend="cancelPendingDowngrade()">
+                    <button class="pending-cancel-btn" onclick="cancelPendingDowngrade()" ontouchend="cancelPendingDowngrade()" data-i18n="ui.cancel">
                         취소
                     </button>
                 </div>
                 <!-- 다운그레이드 버튼 (유료 플랜이고 pendingPlan이 없을 때 표시) -->
-                <button class="downgrade-btn" id="downgradeBtn" style="display: none;" onclick="requestDowngrade()" ontouchend="requestDowngrade()">
+                <button class="downgrade-btn" id="downgradeBtn" style="display: none;" onclick="requestDowngrade()" ontouchend="requestDowngrade()" data-i18n="ui.downgradeToFree">
                     무료 플랜으로 전환
                 </button>
             </div>
@@ -2670,7 +2670,7 @@
         <div id="mypagePlanExpiry" class="mypage-section" style="display: none;">
             <div class="mypage-card" style="width: 100%; flex-direction: row; justify-content: space-between; align-items: center;">
                 <div>
-                    <div class="card-label" style="margin-bottom: 4px;">플랜 만료일</div>
+                    <div class="card-label" style="margin-bottom: 4px;" data-i18n="ui.planExpiry">플랜 만료일</div>
                     <div class="card-value" id="mypageExpiryDate" style="font-size: 16px;">-</div>
                 </div>
                 <div id="mypageExpiryBadge" style="padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">
@@ -2682,15 +2682,15 @@
         <!-- 저장된 카드 (토글 섹션) -->
         <div id="mypageSavedCardSection" class="mypage-toggle-section" style="display: none; padding: 0 20px; margin-bottom: 16px;">
             <div style="background: var(--card-bg); border-radius: 12px; padding: 16px;">
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">저장된 결제 수단</div>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);" data-i18n="ui.savedPaymentMethod">저장된 결제 수단</div>
                 <div id="mypageSavedCardInfo" style="display: flex; align-items: center; gap: 12px;">
                     <div style="font-size: 24px;">💳</div>
                     <div>
-                        <div id="mypageCardBrand" style="font-weight: 500; color: var(--text-primary);">카드 없음</div>
-                        <div id="mypageCardNumber" style="font-size: 12px; color: var(--text-secondary);">저장된 카드가 없습니다</div>
+                        <div id="mypageCardBrand" style="font-weight: 500; color: var(--text-primary);" data-i18n="ui.noCard">카드 없음</div>
+                        <div id="mypageCardNumber" style="font-size: 12px; color: var(--text-secondary);" data-i18n="ui.noSavedCard">저장된 카드가 없습니다</div>
                     </div>
                 </div>
-                <button id="mypageDeleteCardBtn" onclick="deleteSavedCard()" style="display: none; margin-top: 12px; width: 100%; padding: 10px; border: 1px solid #ef4444; background: transparent; color: #ef4444; border-radius: 8px; font-size: 13px; cursor: pointer;">
+                <button id="mypageDeleteCardBtn" onclick="deleteSavedCard()" style="display: none; margin-top: 12px; width: 100%; padding: 10px; border: 1px solid #ef4444; background: transparent; color: #ef4444; border-radius: 8px; font-size: 13px; cursor: pointer;" data-i18n="ui.deleteCard">
                     카드 삭제
                 </button>
             </div>
