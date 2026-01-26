@@ -182,16 +182,28 @@
                 // 만료 임박 알림
                 let warning = null;
                 const pendingPlan = userData.pendingPlan;
-                const planNames = { free: '무료', basic: '베이직', pro: '프로', business: '비즈니스' };
+                // 번역 헬퍼 (window.t가 있으면 사용, 없으면 기본값)
+                const _t = (key, fallback) => {
+                    if (typeof window.t === 'function') {
+                        return window.t(key) || fallback;
+                    }
+                    return fallback;
+                };
+                const planNames = {
+                    free: _t('payment.freePlan', '무료'),
+                    basic: _t('payment.basicPlan', '베이직'),
+                    pro: _t('payment.proPlan', '프로'),
+                    business: _t('payment.businessPlan', '비즈니스')
+                };
 
                 if (daysRemaining <= 3) {
                     let message = '';
                     if (pendingPlan === 'free') {
-                        message = `플랜이 ${daysRemaining}일 후 무료 플랜으로 전환됩니다. 만료 시 토큰이 소멸됩니다.`;
+                        message = _t('ui.planWillSwitchToFree', '플랜이 {days}일 후 무료 플랜으로 전환됩니다. 만료 시 크레딧이 소멸됩니다.').replace('{days}', daysRemaining);
                     } else if (pendingPlan) {
-                        message = `플랜이 ${daysRemaining}일 후 ${planNames[pendingPlan] || pendingPlan} 플랜으로 전환됩니다.`;
+                        message = _t('ui.planWillSwitchTo', '플랜이 {days}일 후 {plan} 플랜으로 전환됩니다.').replace('{days}', daysRemaining).replace('{plan}', planNames[pendingPlan] || pendingPlan);
                     } else {
-                        message = `플랜이 ${daysRemaining}일 후 만료됩니다. 만료 시 토큰이 소멸됩니다.`;
+                        message = _t('ui.planWillExpire', '플랜이 {days}일 후 만료됩니다. 만료 시 크레딧이 소멸됩니다.').replace('{days}', daysRemaining);
                     }
                     warning = {
                         type: 'urgent',
@@ -200,8 +212,8 @@
                     };
                 } else if (daysRemaining <= 7) {
                     let message = pendingPlan === 'free'
-                        ? `플랜이 ${daysRemaining}일 후 무료 플랜으로 전환됩니다.`
-                        : `플랜이 ${daysRemaining}일 후 만료됩니다.`;
+                        ? _t('ui.planWillSwitchToFreeShort', '플랜이 {days}일 후 무료 플랜으로 전환됩니다.').replace('{days}', daysRemaining)
+                        : _t('ui.planWillExpireShort', '플랜이 {days}일 후 만료됩니다.').replace('{days}', daysRemaining);
                     warning = {
                         type: 'warning',
                         daysRemaining: daysRemaining,

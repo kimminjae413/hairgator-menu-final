@@ -779,6 +779,35 @@ class AIStudio {
     const text = directText || this.chatInput.value.trim();
     if (!text) return;
 
+    // ⭐ 사전 토큰 체크 - API 비용 낭비 방지 (최소 3토큰 필요)
+    const MIN_CHATBOT_TOKENS = 3;
+    if (window.FirebaseBridge && typeof window.FirebaseBridge.getTokenBalance === 'function') {
+      try {
+        const tokenData = await window.FirebaseBridge.getTokenBalance();
+        const currentBalance = tokenData?.tokenBalance || 0;
+
+        if (currentBalance < MIN_CHATBOT_TOKENS) {
+          console.warn('⚠️ 챗봇 토큰 부족 (사전 체크):', currentBalance, '<', MIN_CHATBOT_TOKENS);
+
+          // 사용자에게 알림
+          if (typeof showToast === 'function') {
+            showToast('토큰이 부족합니다. 플랜을 업그레이드해주세요.', 'warning');
+          } else {
+            alert('토큰이 부족합니다. 플랜을 업그레이드해주세요.');
+          }
+
+          // 플랜 페이지로 이동
+          window.location.href = '/#products';
+          return;
+        }
+
+        console.log('✅ 챗봇 토큰 사전 체크 통과:', currentBalance, '>=', MIN_CHATBOT_TOKENS);
+      } catch (tokenCheckError) {
+        console.warn('⚠️ 토큰 체크 실패, 계속 진행:', tokenCheckError);
+        // 체크 실패 시에도 API 호출 진행 (서버에서 최종 검증)
+      }
+    }
+
     // Clear input
     this.chatInput.value = '';
 
@@ -1612,6 +1641,33 @@ class AIStudio {
     if (file.size > 5 * 1024 * 1024) {
       alert(t('aiStudio.imageSizeLimit5MB') || '이미지 크기는 5MB 이하여야 합니다.');
       return;
+    }
+
+    // ⭐ 사전 토큰 체크 - API 비용 낭비 방지 (최소 3토큰 필요)
+    const MIN_CHATBOT_TOKENS = 3;
+    if (window.FirebaseBridge && typeof window.FirebaseBridge.getTokenBalance === 'function') {
+      try {
+        const tokenData = await window.FirebaseBridge.getTokenBalance();
+        const currentBalance = tokenData?.tokenBalance || 0;
+
+        if (currentBalance < MIN_CHATBOT_TOKENS) {
+          console.warn('⚠️ 이미지 분석 토큰 부족 (사전 체크):', currentBalance, '<', MIN_CHATBOT_TOKENS);
+
+          if (typeof showToast === 'function') {
+            showToast('토큰이 부족합니다. 플랜을 업그레이드해주세요.', 'warning');
+          } else {
+            alert('토큰이 부족합니다. 플랜을 업그레이드해주세요.');
+          }
+
+          window.location.href = '/#products';
+          event.target.value = ''; // input 초기화
+          return;
+        }
+
+        console.log('✅ 이미지 분석 토큰 사전 체크 통과:', currentBalance, '>=', MIN_CHATBOT_TOKENS);
+      } catch (tokenCheckError) {
+        console.warn('⚠️ 토큰 체크 실패, 계속 진행:', tokenCheckError);
+      }
     }
 
     // Show user message with image preview

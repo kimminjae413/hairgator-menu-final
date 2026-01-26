@@ -16,6 +16,7 @@
 
 // Node 18+ 에서는 fetch가 기본 내장되어 있음 (node-fetch 불필요)
 const sharp = require('sharp');
+const { validateUserAndTokens, deductTokens, refundTokens } = require('./lib/auth-utils');
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -46,7 +47,8 @@ exports.handler = async (event) => {
             gender = '',
             category = '',
             subcategory = '',
-            styleName = ''
+            styleName = '',
+            userId = ''
         } = JSON.parse(event.body);
 
         if (!imageUrl) {
@@ -55,6 +57,25 @@ exports.handler = async (event) => {
                 headers,
                 body: JSON.stringify({ error: 'imageUrl is required' })
             };
+        }
+
+        // ⭐ 서버 측 토큰 검증 (API 비용 낭비 방지)
+        if (userId) {
+            const validation = await validateUserAndTokens(userId, 'lookbook');
+            if (!validation.success || !validation.canUse) {
+                console.log('❌ 룩북 토큰 부족:', userId, validation);
+                return {
+                    statusCode: 403,
+                    headers,
+                    body: JSON.stringify({
+                        error: 'INSUFFICIENT_TOKENS',
+                        message: validation.error || '토큰이 부족합니다',
+                        currentBalance: validation.currentBalance || 0,
+                        requiredTokens: validation.requiredTokens || 200
+                    })
+                };
+            }
+            console.log('✅ 룩북 토큰 검증 통과:', userId, '잔액:', validation.currentBalance);
         }
 
         const GEMINI_KEY = process.env.GEMINI_API_KEY;
@@ -88,13 +109,26 @@ exports.handler = async (event) => {
             }
         }
 
+        // ⭐ 서버 측 토큰 차감 (API 성공 후)
+        let tokenDeducted = false;
+        if (userId) {
+            const deductResult = await deductTokens(userId, 'lookbook', { styleName });
+            if (deductResult.success) {
+                console.log('💳 룩북 토큰 차감 완료:', userId, deductResult.newBalance, '남음');
+                tokenDeducted = true;
+            } else {
+                console.warn('⚠️ 룩북 토큰 차감 실패:', deductResult.error);
+            }
+        }
+
         return {
             statusCode: 200,
             headers,
             body: JSON.stringify({
                 success: true,
                 analysis: analysisResult,
-                generatedImages: generatedImages
+                generatedImages: generatedImages,
+                tokenDeducted: tokenDeducted
             })
         };
 

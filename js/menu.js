@@ -1921,6 +1921,12 @@ async function openStyleModal(style) {
                 // 원본 이미지 URL 가져오기 (폴백 포함)
                 const styleOriginalImage = getOriginalImageUrl(style);
 
+                // ⭐ 서버 측 토큰 검증을 위해 userId 전달
+                let userId = '';
+                if (window.FirebaseBridge && typeof window.FirebaseBridge.getUserDocId === 'function') {
+                    userId = await window.FirebaseBridge.getUserDocId() || '';
+                }
+
                 const response = await fetch('/.netlify/functions/lookbook-analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1931,9 +1937,22 @@ async function openStyleModal(style) {
                         gender: genderValue,
                         category: style.mainCategory || '',
                         subcategory: style.subCategory || '',
-                        styleName: style.name || ''
+                        styleName: style.name || '',
+                        userId: userId
                     })
                 });
+
+                // ⭐ 서버 측 토큰 부족 응답 처리 (403)
+                if (response.status === 403) {
+                    const errorData = await response.json();
+                    console.warn('❌ 룩북 토큰 부족:', errorData);
+                    loadingOverlay.remove();
+                    if (typeof showToast === 'function') {
+                        showToast(errorData.message || '토큰이 부족합니다', 'warning');
+                    }
+                    window.location.href = '/#products';
+                    return;
+                }
 
                 if (!response.ok) {
                     throw new Error(`API 오류: ${response.status}`);
@@ -1949,15 +1968,9 @@ async function openStyleModal(style) {
                 sessionStorage.setItem('lookbookGender', genderValue);
                 sessionStorage.setItem('lookbookLanguage', window.currentLanguage || 'ko');
 
-                // 토큰 차감 (API 성공 후)
-                const deductResult = await deductLookbookTokens({ styleId: style.styleId, styleName: style.name });
-
-                // 토큰 부족 시 업그레이드 유도 (차감 실패 시에만)
-                if (!deductResult.success && deductResult.error === '토큰이 부족합니다') {
-                    loadingOverlay.remove();
-                    // 업그레이드 페이지로 이동
-                    window.location.href = '/#products';
-                    return;
+                // ⭐ 서버에서 토큰 차감 완료 (tokenDeducted 확인)
+                if (result.tokenDeducted) {
+                    console.log('💳 룩북 토큰 서버에서 차감 완료');
                 }
 
                 // 로딩 오버레이 제거
@@ -2793,6 +2806,12 @@ async function processAIFaceSwap() {
 
     let tempStoragePath = null; // 임시 파일 경로 저장
 
+    // ⭐ 서버 측 토큰 검증을 위해 userId 획득
+    let userId = '';
+    if (window.FirebaseBridge && typeof window.FirebaseBridge.getUserDocId === 'function') {
+        userId = await window.FirebaseBridge.getUserDocId() || '';
+    }
+
     try {
         // 1. 고객 사진을 Firebase Storage에 임시 업로드하여 URL 획득
         console.log('📤 고객 사진 임시 업로드 중...');
@@ -2803,7 +2822,7 @@ async function processAIFaceSwap() {
 
         const gender = window.currentGender || 'male';
 
-        // 2. Task 생성 (action: 'start')
+        // 2. Task 생성 (action: 'start') - userId 전달
         console.log('🚀 헤어체험 Task 생성 중...');
         const startResponse = await fetch('/.netlify/functions/hair-change', {
             method: 'POST',
@@ -2812,9 +2831,26 @@ async function processAIFaceSwap() {
                 action: 'start',
                 customerPhotoUrl: customerPhotoUrl,
                 styleImageUrl: styleImageUrl,
-                gender: gender
+                gender: gender,
+                userId: userId
             })
         });
+
+        // ⭐ 서버 측 토큰 부족 응답 처리 (403)
+        if (startResponse.status === 403) {
+            const errorData = await startResponse.json();
+            loadingOverlay.remove();
+            // 버튼 복구
+            if (processBtn) {
+                processBtn.disabled = false;
+                processBtn.innerHTML = `<span class="ai-icon">✨</span><span>${t('hairTry.button') || '헤어체험 시작'}</span>`;
+            }
+            if (typeof showToast === 'function') {
+                showToast(errorData.message || '토큰이 부족합니다', 'warning');
+            }
+            window.location.href = '/#products';
+            return;
+        }
 
         if (!startResponse.ok) {
             const errorData = await startResponse.json().catch(() => ({}));
@@ -2828,8 +2864,8 @@ async function processAIFaceSwap() {
             throw new Error('Task 생성 실패');
         }
 
-        // 3. 폴링으로 결과 대기 (action: 'status')
-        const result = await pollHairChangeStatus(startResult.taskId, gender, loadingOverlay);
+        // 3. 폴링으로 결과 대기 (action: 'status') - userId 전달
+        const result = await pollHairChangeStatus(startResult.taskId, gender, loadingOverlay, userId);
 
         // 4. 임시 파일 삭제 (결과 받은 후 즉시)
         if (tempStoragePath) {
@@ -2845,10 +2881,8 @@ async function processAIFaceSwap() {
         // 결과 모달 표시 (window.uploadedCustomerPhoto 사용)
         showHairTryResult(result.resultImageUrl, styleName);
 
-        // 토큰 차감 (성공 시에만)
-        console.log('💳 헤어체험 토큰 차감 시도...', { styleName });
-        const deductResult = await deductHairTryTokens({ styleName: styleName });
-        console.log('💳 헤어체험 토큰 차감 결과:', deductResult);
+        // ⭐ 토큰 차감은 서버에서 처리됨 (hair-change.js 'status' action에서 성공 시 차감)
+        console.log('✅ 헤어체험 완료 - 토큰 차감은 서버에서 처리됨');
 
     } catch (error) {
         // 에러 발생 시에도 임시 파일 삭제 시도
@@ -2873,9 +2907,10 @@ async function processAIFaceSwap() {
  * @param {string} taskId - vModel Task ID
  * @param {string} gender - 성별
  * @param {HTMLElement} loadingOverlay - 로딩 오버레이 요소
+ * @param {string} userId - 사용자 ID (서버 측 토큰 차감용)
  * @returns {Object} - 완료된 결과
  */
-async function pollHairChangeStatus(taskId, gender, loadingOverlay) {
+async function pollHairChangeStatus(taskId, gender, loadingOverlay, userId = '') {
     const maxAttempts = 30;  // 최대 30회 (60초)
     const pollInterval = 2000;  // 2초마다
 
@@ -2895,7 +2930,8 @@ async function pollHairChangeStatus(taskId, gender, loadingOverlay) {
             body: JSON.stringify({
                 action: 'status',
                 taskId: taskId,
-                gender: gender
+                gender: gender,
+                userId: userId
             })
         });
 

@@ -6,6 +6,7 @@
 // 2. action: 'status' - taskId로 상태 확인, 성공 시 Gemini 후처리
 
 const admin = require('firebase-admin');
+const { validateUserAndTokens, deductTokens } = require('./lib/auth-utils');
 
 // Firebase Admin 초기화 함수
 function initializeFirebaseAdmin() {
@@ -128,7 +129,26 @@ exports.handler = async (event) => {
 
         // ========== action: 'start' - Task 생성만 ==========
         if (action === 'start') {
-            const { customerPhotoUrl, styleImageUrl, gender = 'male' } = body;
+            const { customerPhotoUrl, styleImageUrl, gender = 'male', userId = '' } = body;
+
+            // ⭐ 서버 측 토큰 검증 (API 비용 낭비 방지)
+            if (userId) {
+                const validation = await validateUserAndTokens(userId, 'hairTry');
+                if (!validation.success || !validation.canUse) {
+                    console.log('❌ 헤어체험 토큰 부족:', userId, validation);
+                    return {
+                        statusCode: 403,
+                        headers,
+                        body: JSON.stringify({
+                            error: 'INSUFFICIENT_TOKENS',
+                            message: validation.error || '토큰이 부족합니다',
+                            currentBalance: validation.currentBalance || 0,
+                            requiredTokens: validation.requiredTokens || 350
+                        })
+                    };
+                }
+                console.log('✅ 헤어체험 토큰 검증 통과:', userId, '잔액:', validation.currentBalance);
+            }
 
             if (!customerPhotoUrl) {
                 return {
@@ -177,7 +197,7 @@ exports.handler = async (event) => {
 
         // ========== action: 'status' - 상태 확인 + 후처리 ==========
         if (action === 'status') {
-            const { taskId, gender = 'male' } = body;
+            const { taskId, gender = 'male', userId = '' } = body;
 
             if (!taskId) {
                 return {
@@ -234,6 +254,18 @@ exports.handler = async (event) => {
                 console.log('🔄 Gemini 후처리 시작...');
                 const enhancedImageBase64 = await enhanceWithGemini(vmodelImageUrl, gender, GEMINI_KEY);
 
+                // ⭐ 서버 측 토큰 차감 (성공 시에만)
+                let tokenDeducted = false;
+                if (userId) {
+                    const deductResult = await deductTokens(userId, 'hairTry', { taskId });
+                    if (deductResult.success) {
+                        console.log('💳 헤어체험 토큰 차감 완료:', userId, deductResult.newBalance, '남음');
+                        tokenDeducted = true;
+                    } else {
+                        console.warn('⚠️ 헤어체험 토큰 차감 실패:', deductResult.error);
+                    }
+                }
+
                 if (!enhancedImageBase64) {
                     // Gemini 후처리 실패 시 vModel 결과 반환
                     console.log('⚠️ Gemini 후처리 실패, vModel 결과 반환');
@@ -246,6 +278,7 @@ exports.handler = async (event) => {
                             resultImageUrl: vmodelImageUrl,
                             taskId: taskId,
                             enhanced: false,
+                            tokenDeducted: tokenDeducted,
                             message: 'Hair change completed (without enhancement)'
                         })
                     };
@@ -263,6 +296,7 @@ exports.handler = async (event) => {
                         resultImageUrl: resultDataUrl,
                         taskId: taskId,
                         enhanced: true,
+                        tokenDeducted: tokenDeducted,
                         message: 'Hair change completed with Gemini enhancement'
                     })
                 };

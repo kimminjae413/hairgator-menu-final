@@ -3877,7 +3877,8 @@ async function updateProductsPagePlan() {
  * 무료 플랜으로 다운그레이드 요청
  */
 async function requestDowngrade() {
-    const confirmed = confirm('무료 플랜으로 전환하시겠습니까?\n\n현재 플랜 만료일까지는 계속 사용 가능하며,\n만료일 이후 무료 플랜으로 자동 전환됩니다.\n\n⚠️ 전환 시 보유 토큰이 초기화됩니다.');
+    const confirmMsg = t('ui.downgradeConfirmMessage') || '무료 플랜으로 전환하시겠습니까?\n\n현재 플랜 만료일까지는 계속 사용 가능하며,\n만료일 이후 무료 플랜으로 자동 전환됩니다.\n\n⚠️ 전환 시 보유 크레딧이 초기화됩니다.';
+    const confirmed = confirm(confirmMsg);
 
     if (!confirmed) return;
 
@@ -3886,16 +3887,16 @@ async function requestDowngrade() {
         if (typeof window.FirebaseBridge !== 'undefined' && window.FirebaseBridge.setPendingPlan) {
             await window.FirebaseBridge.setPendingPlan('free');
             console.log('✅ 다운그레이드 예약 완료');
-            alert('무료 플랜 전환이 예약되었습니다.\n만료일 이후 자동으로 전환됩니다.');
+            alert(t('ui.downgradeScheduled') || '무료 플랜 전환이 예약되었습니다.\n만료일 이후 자동으로 전환됩니다.');
             // UI 새로고침
             updateProductsPagePlan();
         } else {
             console.error('FirebaseBridge.setPendingPlan 함수가 없습니다');
-            alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            alert(t('ui.errorOccurred') || '오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
         }
     } catch (e) {
         console.error('다운그레이드 요청 실패:', e);
-        alert('오류가 발생했습니다: ' + e.message);
+        alert((t('ui.errorOccurred') || '오류가 발생했습니다') + ': ' + e.message);
     }
 }
 
@@ -3903,7 +3904,8 @@ async function requestDowngrade() {
  * 다운그레이드 예약 취소
  */
 async function cancelPendingDowngrade() {
-    const confirmed = confirm('무료 플랜 전환 예약을 취소하시겠습니까?\n\n취소하시면 현재 플랜이 유지됩니다.');
+    const confirmMsg = t('ui.cancelDowngradeConfirm') || '무료 플랜 전환 예약을 취소하시겠습니까?\n\n취소하시면 현재 플랜이 유지됩니다.';
+    const confirmed = confirm(confirmMsg);
 
     if (!confirmed) return;
 
@@ -3912,16 +3914,16 @@ async function cancelPendingDowngrade() {
         if (typeof window.FirebaseBridge !== 'undefined' && window.FirebaseBridge.setPendingPlan) {
             await window.FirebaseBridge.setPendingPlan(null);
             console.log('✅ 다운그레이드 예약 취소 완료');
-            alert('전환 예약이 취소되었습니다.');
+            alert(t('ui.downgradeCancelled') || '전환 예약이 취소되었습니다.');
             // UI 새로고침
             updateProductsPagePlan();
         } else {
             console.error('FirebaseBridge.setPendingPlan 함수가 없습니다');
-            alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            alert(t('ui.errorOccurred') || '오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
         }
     } catch (e) {
         console.error('다운그레이드 취소 실패:', e);
-        alert('오류가 발생했습니다: ' + e.message);
+        alert((t('ui.errorOccurred') || '오류가 발생했습니다') + ': ' + e.message);
     }
 }
 
