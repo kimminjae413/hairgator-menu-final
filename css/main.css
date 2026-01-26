@@ -260,13 +260,20 @@ body.light-theme .notice-btn:hover {
 
 .notice-badge {
     position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 10px;
-    height: 10px;
+    top: 0;
+    right: 0;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
     background: #EF4444;
-    border-radius: 50%;
+    border-radius: 8px;
     border: 2px solid var(--bg-primary);
+    font-size: 10px;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 body.light-theme .notice-badge {
