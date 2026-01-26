@@ -363,19 +363,46 @@ class AIStudio {
       }
     });
 
-    // 세션 배열로 변환하고 최신순 정렬
-    const history = Object.values(sessions).map(session => ({
-      sessionId: session.sessionId,
-      title: session.firstUserMessage || '새 대화',
-      imageUrl: session.imageUrl,
-      timestamp: session.timestamp,
-      messageCount: session.messages.length,
-      hasCanvasData: session.hasCanvasData,
-      canvasData: session.canvasData,
-      messages: session.messages
-    }));
+    // Firebase conversations 서브컬렉션에서 메타데이터(제목, 고정 여부) 가져오기
+    let conversationMeta = {};
+    try {
+      if (this.currentUserId && window.db) {
+        const convSnapshot = await window.db
+          .collection('chatHistory')
+          .doc(this.currentUserId)
+          .collection('conversations')
+          .get();
 
-    return history.sort((a, b) => b.timestamp - a.timestamp); // 최신순
+        convSnapshot.forEach(doc => {
+          conversationMeta[doc.id] = doc.data();
+        });
+      }
+    } catch (e) {
+      console.warn('대화 메타데이터 로드 실패:', e);
+    }
+
+    // 세션 배열로 변환하고 메타데이터 병합
+    const history = Object.values(sessions).map(session => {
+      const meta = conversationMeta[session.sessionId] || {};
+      return {
+        sessionId: session.sessionId,
+        // 사용자 지정 제목이 있으면 우선 사용, 없으면 첫 메시지 사용
+        title: meta.title || session.firstUserMessage || '새 대화',
+        imageUrl: session.imageUrl,
+        timestamp: session.timestamp,
+        messageCount: session.messages.length,
+        hasCanvasData: session.hasCanvasData,
+        canvasData: session.canvasData,
+        messages: session.messages,
+        isPinned: meta.isPinned || false  // 고정 여부
+      };
+    });
+
+    // 고정된 항목은 상단, 그 외는 최신순 정렬
+    const pinned = history.filter(h => h.isPinned).sort((a, b) => b.timestamp - a.timestamp);
+    const unpinned = history.filter(h => !h.isPinned).sort((a, b) => b.timestamp - a.timestamp);
+
+    return [...pinned, ...unpinned];
   }
 
   // 히스토리 상세 보기 - 해당 세션의 대화를 채팅창에 로드
@@ -507,6 +534,11 @@ class AIStudio {
       await this.loadUserHistoryFromFirebase();
       await this.cleanExpiredMessages();
 
+      // 사이드바 히스토리 로드 (Claude/GPT 스타일)
+      if (typeof loadSidebarHistory === 'function') {
+        await loadSidebarHistory();
+      }
+
     } catch (e) {
       console.error('❌ History init failed:', e);
       this.currentUserId = 'anon_' + Date.now();
@@ -552,6 +584,7 @@ class AIStudio {
           sender: data.sender,
           content: data.content,
           timestamp: data.timestamp,
+          sessionId: data.sessionId || 'default',  // 세션 ID 로드
           canvasData: data.canvasData || null
         });
       });
@@ -586,9 +619,100 @@ class AIStudio {
         .collection('messages')
         .add(message);
 
+      // 사이드바 히스토리 업데이트 (디바운스로 호출 빈도 제한)
+      this.debouncedSidebarUpdate();
+
+      // AI 응답 후 자동 제목 생성 (세션당 한 번)
+      if (sender === 'bot') {
+        this.debouncedAutoTitle(this.currentSessionId);
+      }
+
     } catch (e) {
       console.error('❌ Firebase save failed:', e);
     }
+  }
+
+  // 사이드바 업데이트 디바운스 (메시지 연속 저장 시 빈도 제한)
+  debouncedSidebarUpdate() {
+    if (this._sidebarUpdateTimer) {
+      clearTimeout(this._sidebarUpdateTimer);
+    }
+    this._sidebarUpdateTimer = setTimeout(() => {
+      if (typeof loadSidebarHistory === 'function') {
+        loadSidebarHistory();
+      }
+    }, 500); // 500ms 디바운스
+  }
+
+  // AI 대화 제목 자동 생성 (세션당 한 번만)
+  async generateAutoTitle(sessionId) {
+    try {
+      if (!this.currentUserId || !window.db) return;
+
+      // 이미 제목이 있는지 확인
+      const convRef = window.db.collection('chatHistory').doc(this.currentUserId).collection('conversations').doc(sessionId);
+      const convDoc = await convRef.get();
+
+      if (convDoc.exists && convDoc.data().title) {
+        return; // 이미 사용자 지정 제목이 있으면 스킵
+      }
+
+      // 해당 세션의 메시지들 가져오기
+      const sessionMessages = this.conversationHistory.filter(m => m.sessionId === sessionId);
+      if (sessionMessages.length < 2) return; // 최소 2개 메시지 필요 (사용자+AI)
+
+      // AI 제목 생성 API 호출
+      const response = await fetch('/.netlify/functions/chatbot-api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'generate_conversation_title',
+          payload: {
+            messages: sessionMessages.slice(0, 5).map(m => ({
+              sender: m.sender,
+              content: m.content
+            }))
+          }
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.title) {
+        // Firebase에 저장
+        await convRef.set({
+          title: data.title,
+          autoGenerated: true,  // AI가 생성한 제목임을 표시
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        console.log(`🏷️ 자동 제목 생성: ${sessionId} → ${data.title}`);
+
+        // 사이드바 업데이트
+        if (typeof loadSidebarHistory === 'function') {
+          loadSidebarHistory();
+        }
+      }
+
+    } catch (e) {
+      console.warn('⚠️ 자동 제목 생성 실패:', e);
+    }
+  }
+
+  // 디바운스된 자동 제목 생성 (세션당 한 번만 호출)
+  debouncedAutoTitle(sessionId) {
+    // 이미 생성 시도한 세션은 스킵
+    if (!this._titleGeneratedSessions) {
+      this._titleGeneratedSessions = new Set();
+    }
+    if (this._titleGeneratedSessions.has(sessionId)) return;
+
+    this._titleGeneratedSessions.add(sessionId);
+
+    // 3초 후 제목 생성 (대화가 어느 정도 진행된 후)
+    setTimeout(() => {
+      this.generateAutoTitle(sessionId);
+    }, 3000);
   }
 
   async cleanExpiredMessages() {
@@ -3613,7 +3737,320 @@ function goBack() {
   window.location.href = newUrl;
 }
 
-// 모바일에서 히스토리 패널 표시
+// ==================== 사이드바 히스토리 (Claude/GPT 스타일) ====================
+
+// 사이드바 토글
+function toggleHistorySidebar() {
+  const sidebar = document.getElementById('history-sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const isMobile = window.innerWidth <= 1024;
+
+  if (isMobile) {
+    // 모바일: open 클래스 토글
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('visible');
+  } else {
+    // 데스크톱: collapsed 클래스 토글
+    sidebar.classList.toggle('collapsed');
+  }
+
+  // 열릴 때 히스토리 로드
+  if (!sidebar.classList.contains('collapsed') && !sidebar.classList.contains('open') === false) {
+    loadSidebarHistory();
+  }
+  if (sidebar.classList.contains('open')) {
+    loadSidebarHistory();
+  }
+}
+
+// 사이드바 히스토리 로드
+async function loadSidebarHistory() {
+  if (!window.aiStudio) return;
+
+  const historyList = document.getElementById('sidebar-history-list');
+  const pinnedList = document.getElementById('pinned-list');
+  const pinnedSection = document.getElementById('pinned-section');
+  const emptyState = document.getElementById('sidebar-empty');
+
+  if (!historyList) return;
+
+  try {
+    const history = await window.aiStudio.getAnalysisHistory();
+
+    if (history.length === 0) {
+      historyList.innerHTML = '';
+      if (emptyState) emptyState.style.display = 'block';
+      if (pinnedSection) pinnedSection.style.display = 'none';
+      return;
+    }
+
+    if (emptyState) emptyState.style.display = 'none';
+
+    // 고정된 항목과 일반 항목 분리
+    const pinned = history.filter(item => item.isPinned);
+    const unpinned = history.filter(item => !item.isPinned);
+
+    // 고정 섹션
+    if (pinned.length > 0) {
+      pinnedSection.style.display = 'block';
+      pinnedList.innerHTML = pinned.map((item, idx) => renderSidebarItem(item, idx, true)).join('');
+    } else {
+      pinnedSection.style.display = 'none';
+    }
+
+    // 최근 대화 섹션
+    historyList.innerHTML = unpinned.map((item, idx) => renderSidebarItem(item, idx + pinned.length, false)).join('');
+
+    // 히스토리 데이터 저장 (클릭 핸들러용)
+    window.aiStudio.sidebarHistoryData = history;
+
+  } catch (e) {
+    console.error('❌ 사이드바 히스토리 로드 실패:', e);
+    historyList.innerHTML = '<p class="sidebar-empty">로드 실패</p>';
+  }
+}
+
+// 사이드바 항목 렌더링
+function renderSidebarItem(item, idx, isPinned) {
+  const isActive = window.aiStudio && window.aiStudio.currentSessionId === item.sessionId;
+  const icon = item.imageUrl
+    ? `<img src="${item.imageUrl}" alt="">`
+    : (item.hasCanvasData ? '📷' : '💬');
+  const badge = item.hasCanvasData ? '<span class="badge">레시피</span>' : '';
+  const timeStr = window.aiStudio ? window.aiStudio.formatDate(item.timestamp) : '';
+
+  return `
+    <div class="sidebar-item ${isActive ? 'active' : ''}" data-session-id="${item.sessionId}" onclick="selectSidebarConversation('${item.sessionId}')">
+      <div class="sidebar-item-icon">${icon}</div>
+      <div class="sidebar-item-content">
+        <div class="sidebar-item-title" id="title-${item.sessionId}">${escapeHtml(item.title || '새 대화')}</div>
+        <div class="sidebar-item-meta">
+          <span>${timeStr}</span>
+          ${badge}
+        </div>
+      </div>
+      <div class="sidebar-item-actions">
+        <button class="sidebar-item-action pin-btn ${isPinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePinConversation('${item.sessionId}')" title="${isPinned ? '고정 해제' : '고정'}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="${isPinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+            <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z"/>
+          </svg>
+        </button>
+        <button class="sidebar-item-action edit-btn" onclick="event.stopPropagation(); editConversationTitle('${item.sessionId}')" title="이름 변경">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>
+        <button class="sidebar-item-action delete-btn" onclick="event.stopPropagation(); deleteSidebarConversation('${item.sessionId}')" title="삭제">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// HTML 이스케이프
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// 대화 선택
+function selectSidebarConversation(sessionId) {
+  if (!window.aiStudio || !window.aiStudio.sidebarHistoryData) return;
+
+  const session = window.aiStudio.sidebarHistoryData.find(item => item.sessionId === sessionId);
+  if (!session) return;
+
+  // 채팅창 초기화 후 메시지 로드
+  const messagesContainer = document.getElementById('chat-messages');
+  messagesContainer.innerHTML = '';
+
+  session.messages.forEach(msg => {
+    window.aiStudio.addMessageToUI(msg.sender, msg.content, false, msg.canvasData || null);
+  });
+
+  // 현재 세션 ID 변경
+  window.aiStudio.currentSessionId = sessionId;
+
+  // 캔버스 데이터 있으면 표시
+  if (session.hasCanvasData && session.canvasData) {
+    window.aiStudio.showCanvas(session.canvasData);
+  }
+
+  // 스크롤 맨 아래로
+  window.aiStudio.scrollToBottom();
+
+  // 모바일에서 사이드바 닫기
+  if (window.innerWidth <= 1024) {
+    toggleHistorySidebar();
+  }
+
+  // 활성 상태 업데이트
+  document.querySelectorAll('.sidebar-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.sessionId === sessionId);
+  });
+}
+
+// 대화 고정/해제
+async function togglePinConversation(sessionId) {
+  if (!window.aiStudio || !window.db) return;
+
+  try {
+    const userId = window.aiStudio.currentUserId;
+    if (!userId) return;
+
+    // conversations 컬렉션에서 해당 대화 문서 가져오기/생성
+    const convRef = window.db.collection('chatHistory').doc(userId).collection('conversations').doc(sessionId);
+    const convDoc = await convRef.get();
+
+    const currentPinned = convDoc.exists ? (convDoc.data().isPinned || false) : false;
+
+    await convRef.set({
+      isPinned: !currentPinned,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    console.log(`📌 대화 ${!currentPinned ? '고정' : '고정 해제'}: ${sessionId}`);
+
+    // 사이드바 새로고침
+    loadSidebarHistory();
+
+  } catch (e) {
+    console.error('❌ 고정 토글 실패:', e);
+  }
+}
+
+// 대화 제목 수정
+function editConversationTitle(sessionId) {
+  const titleEl = document.getElementById(`title-${sessionId}`);
+  if (!titleEl) return;
+
+  const currentTitle = titleEl.textContent;
+  titleEl.contentEditable = true;
+  titleEl.classList.add('editing');
+  titleEl.focus();
+
+  // 텍스트 전체 선택
+  const range = document.createRange();
+  range.selectNodeContents(titleEl);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  // Enter 또는 blur 시 저장
+  const saveTitle = async () => {
+    titleEl.contentEditable = false;
+    titleEl.classList.remove('editing');
+
+    const newTitle = titleEl.textContent.trim() || currentTitle;
+    titleEl.textContent = newTitle;
+
+    if (newTitle !== currentTitle) {
+      await saveConversationTitle(sessionId, newTitle);
+    }
+  };
+
+  titleEl.onblur = saveTitle;
+  titleEl.onkeydown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      titleEl.blur();
+    } else if (e.key === 'Escape') {
+      titleEl.textContent = currentTitle;
+      titleEl.blur();
+    }
+  };
+}
+
+// 대화 제목 저장
+async function saveConversationTitle(sessionId, title) {
+  if (!window.aiStudio || !window.db) return;
+
+  try {
+    const userId = window.aiStudio.currentUserId;
+    if (!userId) return;
+
+    const convRef = window.db.collection('chatHistory').doc(userId).collection('conversations').doc(sessionId);
+
+    await convRef.set({
+      title: title,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    console.log(`✏️ 제목 저장: ${sessionId} → ${title}`);
+
+  } catch (e) {
+    console.error('❌ 제목 저장 실패:', e);
+  }
+}
+
+// 대화 삭제 (사이드바용)
+async function deleteSidebarConversation(sessionId) {
+  const confirmMsg = typeof t === 'function' ? t('aiStudio.deleteConfirm') : '이 대화를 삭제하시겠습니까?';
+  if (!confirm(confirmMsg)) return;
+
+  if (!window.aiStudio || !window.db) return;
+
+  try {
+    const userId = window.aiStudio.currentUserId;
+    if (!userId) return;
+
+    // 해당 세션의 모든 메시지 삭제
+    const messagesSnapshot = await window.db
+      .collection('chatHistory')
+      .doc(userId)
+      .collection('messages')
+      .where('sessionId', '==', sessionId)
+      .get();
+
+    const batch = window.db.batch();
+    messagesSnapshot.forEach(doc => batch.delete(doc.ref));
+
+    // conversations 문서도 삭제
+    const convRef = window.db.collection('chatHistory').doc(userId).collection('conversations').doc(sessionId);
+    batch.delete(convRef);
+
+    await batch.commit();
+
+    // 로컬 히스토리에서도 삭제
+    window.aiStudio.conversationHistory = window.aiStudio.conversationHistory.filter(
+      m => m.sessionId !== sessionId
+    );
+
+    console.log(`🗑️ 대화 삭제: ${sessionId}`);
+
+    // 현재 대화가 삭제된 경우 새 대화 시작
+    if (window.aiStudio.currentSessionId === sessionId) {
+      startNewChat();
+    }
+
+    // 사이드바 새로고침
+    loadSidebarHistory();
+
+  } catch (e) {
+    console.error('❌ 대화 삭제 실패:', e);
+    alert('삭제에 실패했습니다.');
+  }
+}
+
+// 검색 필터
+function filterHistoryList(query) {
+  if (!window.aiStudio || !window.aiStudio.sidebarHistoryData) return;
+
+  const items = document.querySelectorAll('.sidebar-item');
+  const lowerQuery = query.toLowerCase();
+
+  items.forEach(item => {
+    const title = item.querySelector('.sidebar-item-title')?.textContent.toLowerCase() || '';
+    item.style.display = title.includes(lowerQuery) ? 'flex' : 'none';
+  });
+}
+
+// 모바일에서 히스토리 패널 표시 (기존 함수 유지 - 캔버스 탭용)
 function showHistoryPanel() {
   const canvasPanel = document.getElementById('canvas-panel');
   canvasPanel.classList.add('active');
@@ -3664,6 +4101,15 @@ function startNewChat() {
 
   // 히스토리는 유지하되, 현재 세션 메모리만 초기화
   // Firebase 히스토리는 삭제하지 않음 (히스토리 탭에서 볼 수 있도록)
+
+  // 사이드바 선택 상태 해제 (새 대화이므로)
+  document.querySelectorAll('.sidebar-item.active').forEach(el => el.classList.remove('active'));
+
+  // 모바일에서 사이드바 닫기
+  const sidebar = document.getElementById('history-sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (sidebar) sidebar.classList.remove('open');
+  if (overlay) overlay.classList.remove('visible');
 
   // 캔버스 초기화
   const canvasResult = document.getElementById('canvas-result');

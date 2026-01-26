@@ -30,7 +30,79 @@
     <link rel="stylesheet" href="css/ai-studio.css?v=20251219-clean">
 </head>
 <body class="ai-studio-page">
+    <!-- 모바일 사이드바 오버레이 -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleHistorySidebar()"></div>
+
     <div class="ai-studio-container">
+        <!-- ==================== History Sidebar (Claude/GPT 스타일) ==================== -->
+        <aside class="history-sidebar" id="history-sidebar">
+            <div class="sidebar-header">
+                <button class="sidebar-new-chat-btn" onclick="startNewChat()" title="새 대화">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    <span data-i18n="aiStudio.newConversation">새 대화</span>
+                </button>
+                <button class="sidebar-close-btn" onclick="toggleHistorySidebar()" title="사이드바 닫기">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- 검색창 -->
+            <div class="sidebar-search">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input type="text" id="history-search-input" placeholder="대화 검색..." data-i18n-placeholder="aiStudio.searchConversations" oninput="filterHistoryList(this.value)">
+            </div>
+
+            <!-- 고정된 대화 섹션 -->
+            <div class="sidebar-section pinned-section" id="pinned-section" style="display: none;">
+                <div class="sidebar-section-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z"/>
+                    </svg>
+                    <span data-i18n="aiStudio.pinnedChats">고정됨</span>
+                </div>
+                <div class="sidebar-list" id="pinned-list">
+                    <!-- 고정된 대화 목록 -->
+                </div>
+            </div>
+
+            <!-- 최근 대화 섹션 -->
+            <div class="sidebar-section recent-section">
+                <div class="sidebar-section-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span data-i18n="aiStudio.recentChats">최근 대화</span>
+                </div>
+                <div class="sidebar-list" id="sidebar-history-list">
+                    <!-- 최근 대화 목록 -->
+                </div>
+                <div class="sidebar-empty" id="sidebar-empty">
+                    <p data-i18n="aiStudio.noConversations">대화 기록이 없습니다</p>
+                </div>
+            </div>
+
+            <!-- 7일 보관 안내 -->
+            <div class="sidebar-footer">
+                <span data-i18n="aiStudio.retentionNotice">💡 대화는 7일간 보관됩니다</span>
+            </div>
+        </aside>
+
+        <!-- 사이드바 토글 버튼 (접혔을 때 표시) -->
+        <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleHistorySidebar()" title="히스토리">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <path d="M9 3v18"/>
+            </svg>
+        </button>
+
         <!-- ==================== Left Panel: Chat ==================== -->
         <section class="chat-panel">
             <!-- Header -->
@@ -55,10 +127,10 @@
                             <path d="M12 5v14M5 12h14"/>
                         </svg>
                     </button>
-                    <button class="header-btn mobile-history-btn" onclick="showHistoryPanel()" title="히스토리" data-i18n-title="aiStudio.history">
+                    <button class="header-btn mobile-history-btn" onclick="toggleHistorySidebar()" title="히스토리" data-i18n-title="aiStudio.history">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="12 6 12 12 16 14"/>
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <path d="M9 3v18"/>
                         </svg>
                     </button>
                     <button class="header-btn" onclick="clearChat()" title="대화 삭제" data-i18n-title="aiStudio.deleteChat">

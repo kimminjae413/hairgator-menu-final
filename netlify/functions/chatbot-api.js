@@ -524,6 +524,10 @@ exports.handler = async (event, _context) => {
       case 'image_question':
         return await handleImageQuestion(payload, GEMINI_KEY);
 
+      // ⭐ 대화 제목 자동 생성 (Claude/GPT 스타일 히스토리용)
+      case 'generate_conversation_title':
+        return await generateConversationTitle(payload, GEMINI_KEY);
+
       default:
         return {
           statusCode: 400,
@@ -13235,6 +13239,81 @@ PENTING: Pengguna yang bertanya adalah "desainer rambut", BUKAN pelanggan.
 
   } catch (error) {
     console.error('💥 이미지 질문 처리 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 대화 제목 자동 생성 (Claude/GPT 스타일) ====================
+async function generateConversationTitle(payload, GEMINI_KEY) {
+  try {
+    const { messages } = payload;
+
+    if (!messages || messages.length === 0) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ success: false, error: '메시지가 없습니다' })
+      };
+    }
+
+    // 최대 5개 메시지만 사용 (토큰 절약)
+    const recentMessages = messages.slice(0, 5);
+    const conversationSummary = recentMessages
+      .map(m => `${m.sender === 'user' ? '사용자' : 'AI'}: ${m.content.replace(/<[^>]*>/g, '').substring(0, 100)}`)
+      .join('\n');
+
+    const prompt = `다음 대화 내용을 보고 20자 이내의 짧은 제목을 생성해주세요.
+- 핵심 주제를 간결하게 표현
+- 이모지 사용하지 마세요
+- 따옴표 없이 제목만 출력
+
+대화 내용:
+${conversationSummary}
+
+제목:`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: 50,
+          temperature: 0.5
+        }
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+      let title = data.candidates[0].content.parts[0].text.trim();
+      // 따옴표 제거
+      title = title.replace(/^["']|["']$/g, '').trim();
+      // 20자 초과 시 자르기
+      if (title.length > 20) {
+        title = title.substring(0, 20) + '...';
+      }
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ success: true, title })
+      };
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ success: false, error: 'AI 응답 없음' })
+    };
+
+  } catch (error) {
+    console.error('💥 제목 생성 오류:', error);
     return {
       statusCode: 500,
       headers,
