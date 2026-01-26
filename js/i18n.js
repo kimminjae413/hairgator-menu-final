@@ -1285,6 +1285,8 @@ const HAIRGATOR_I18N = {
         allBasic: '베이직 플랜 모든 기능',
         moreCredits: '80% 더 많은 토큰',
         maxCredits: '150% 더 많은 토큰',
+        betterValue: '같은 금액 대비 효율 UP',
+        bestValue: '최고 효율 플랜',
         faceSwap: 'AI 얼굴 변환',
         clothingChange: '의상/배경 변경'
       },
@@ -2533,6 +2535,8 @@ const HAIRGATOR_I18N = {
         allBasic: 'All Basic features',
         moreCredits: '80% more credits',
         maxCredits: '150% more credits',
+        betterValue: 'Better value per dollar',
+        bestValue: 'Best value plan',
         faceSwap: 'AI Face Swap',
         clothingChange: 'Clothing/Background Change'
       },
@@ -3777,6 +3781,8 @@ const HAIRGATOR_I18N = {
         allBasic: 'ベーシックプランの全機能',
         moreCredits: '80%多いクレジット',
         maxCredits: '150%多いクレジット',
+        betterValue: 'コスパ向上',
+        bestValue: '最高効率プラン',
         faceSwap: 'AI顔変換',
         clothingChange: '服装/背景変更'
       },
@@ -5024,6 +5030,8 @@ const HAIRGATOR_I18N = {
         allBasic: '基础版所有功能',
         moreCredits: '积分增加80%',
         maxCredits: '积分增加150%',
+        betterValue: '性价比更高',
+        bestValue: '最佳性价比',
         faceSwap: 'AI换脸',
         clothingChange: '服装/背景更换'
       },
@@ -6258,6 +6266,8 @@ const HAIRGATOR_I18N = {
         allBasic: 'Tất cả tính năng cơ bản',
         moreCredits: 'Nhiều hơn 80% điểm',
         maxCredits: 'Nhiều hơn 150% điểm',
+        betterValue: 'Giá trị tốt hơn',
+        bestValue: 'Gói tốt nhất',
         faceSwap: 'AI đổi mặt',
         clothingChange: 'Thay đổi trang phục/nền'
       },
@@ -7438,6 +7448,8 @@ const HAIRGATOR_I18N = {
         allBasic: 'Semua fitur Dasar',
         moreCredits: '80% lebih banyak kredit',
         maxCredits: '150% lebih banyak kredit',
+        betterValue: 'Nilai lebih baik',
+        bestValue: 'Paket terbaik',
         faceSwap: 'AI Tukar Wajah',
         clothingChange: 'Ubah Pakaian/Latar Belakang'
       },
@@ -8391,6 +8403,8 @@ const HAIRGATOR_I18N = {
         allBasic: 'Todas las funciones básicas',
         moreCredits: '80% más créditos',
         maxCredits: '150% más créditos',
+        betterValue: 'Mejor relación calidad-precio',
+        bestValue: 'Plan más eficiente',
         faceSwap: 'Cambio de rostro IA',
         clothingChange: 'Cambio de ropa/fondo'
       },
