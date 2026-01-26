@@ -373,7 +373,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (nameEl) nameEl.textContent = displayName || userEmail?.split('@')[0] || '사용자';
                 if (emailEl) emailEl.textContent = userEmail || '';
                 if (avatarEl && photoURL) {
-                    avatarEl.innerHTML = `<img src="${photoURL}" alt="프로필" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                    // Mixed Content 경고 방지: http:// → https://
+                    const securePhotoURL = photoURL.replace(/^http:\/\//i, 'https://');
+                    avatarEl.innerHTML = `<img src="${securePhotoURL}" alt="프로필" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
                 }
             } else if (window.currentDesigner) {
                 // Firebase Auth는 없지만 window.currentDesigner가 있는 경우
@@ -381,7 +383,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (nameEl) nameEl.textContent = designer.verifiedName || designer.name || designer.displayName || designer.email?.split('@')[0] || '사용자';
                 if (emailEl) emailEl.textContent = designer.email || '';
                 if (avatarEl && designer.photoURL) {
-                    avatarEl.innerHTML = `<img src="${designer.photoURL}" alt="프로필">`;
+                    // Mixed Content 경고 방지: http:// → https://
+                    const securePhotoURL = designer.photoURL.replace(/^http:\/\//i, 'https://');
+                    avatarEl.innerHTML = `<img src="${securePhotoURL}" alt="프로필">`;
                 }
             } else {
                 if (nameEl) nameEl.textContent = '로그인 필요';

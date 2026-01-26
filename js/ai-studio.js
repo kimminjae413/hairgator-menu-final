@@ -98,7 +98,8 @@ class AIStudio {
           if (doc.exists) {
             const data = doc.data();
             if (data.profileImage) {
-              this.userPhotoUrl = data.profileImage;
+              // Mixed Content 경고 방지: http:// → https://
+              this.userPhotoUrl = data.profileImage.replace(/^http:\/\//i, 'https://');
               console.log('👤 Firebase brandSettings 프로필 사진 로드됨:', docId);
               return;
             }
@@ -110,7 +111,9 @@ class AIStudio {
 
       // currentDesigner에서 프로필 사진 가져오기 (fallback)
       if (currentUser) {
-        this.userPhotoUrl = currentUser.photoURL || currentUser.photoUrl || currentUser.profileImage || null;
+        const photoUrl = currentUser.photoURL || currentUser.photoUrl || currentUser.profileImage || null;
+        // Mixed Content 경고 방지: http:// → https://
+        this.userPhotoUrl = photoUrl ? photoUrl.replace(/^http:\/\//i, 'https://') : null;
         if (this.userPhotoUrl) {
           console.log('👤 currentDesigner 프로필 사진 로드됨');
           return;
@@ -128,7 +131,8 @@ class AIStudio {
     if (firebase && firebase.auth) {
       firebase.auth().onAuthStateChanged((user) => {
         if (user && user.photoURL) {
-          this.userPhotoUrl = user.photoURL;
+          // Mixed Content 경고 방지: http:// → https://
+          this.userPhotoUrl = user.photoURL.replace(/^http:\/\//i, 'https://');
           console.log('👤 Firebase Auth 프로필 사진 업데이트됨');
         }
       });

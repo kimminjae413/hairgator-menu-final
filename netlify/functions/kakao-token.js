@@ -174,8 +174,10 @@ exports.handler = async (event, _context) => {
         }
         // photoURL: 카카오에서 받으면 항상 업데이트 (최신 프로필 반영)
         if (finalProfileImage) {
-            userDataToSave.photoURL = finalProfileImage;
-            console.log('[DEBUG] photoURL 저장:', finalProfileImage.substring(0, 50) + '...');
+            // Mixed Content 경고 방지: http:// → https:// 변환
+            const secureProfileImage = finalProfileImage.replace(/^http:\/\//i, 'https://');
+            userDataToSave.photoURL = secureProfileImage;
+            console.log('[DEBUG] photoURL 저장:', secureProfileImage.substring(0, 50) + '...');
         } else {
             console.log('[DEBUG] photoURL 없음 - 카카오에서 프로필 이미지 안 줌');
         }
