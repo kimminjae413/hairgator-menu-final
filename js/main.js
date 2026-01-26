@@ -3273,11 +3273,14 @@ async function loadPaymentHistory() {
             let dateStr = '-';
             if (data.createdAt) {
                 const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-                dateStr = date.toLocaleDateString('ko-KR', {
+                const currentLang = window.currentLanguage || 'ko';
+                const localeMap = { ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN', vi: 'vi-VN', id: 'id-ID', es: 'es-ES' };
+                const locale = localeMap[currentLang] || 'ko-KR';
+                dateStr = date.toLocaleDateString(locale, {
                     year: 'numeric',
                     month: '2-digit',
                     day: '2-digit'
-                }) + ' ' + date.toLocaleTimeString('ko-KR', {
+                }) + ' ' + date.toLocaleTimeString(locale, {
                     hour: '2-digit',
                     minute: '2-digit'
                 });
@@ -3965,16 +3968,16 @@ async function loadProductsPaymentHistory() {
         }
 
         const planNames = {
-            basic: '베이직',
-            pro: '프로',
-            business: '비즈니스',
-            tokens_5000: '추가 토큰'
+            basic: t('ui.planBasic') || '베이직',
+            pro: t('ui.planPro') || '프로',
+            business: t('ui.planBusiness') || '비즈니스',
+            tokens_5000: t('ui.tokensAdditional') || '추가 토큰'
         };
 
         const statusNames = {
-            completed: '결제 완료',
-            cancelled: '결제 취소',
-            refunded: '환불 완료'
+            completed: t('ui.paymentCompleted') || '결제 완료',
+            cancelled: t('ui.paymentCancelled') || '결제 취소',
+            refunded: t('ui.paymentRefunded') || '환불 완료'
         };
 
         let html = '';
@@ -3998,7 +4001,9 @@ async function loadProductsPaymentHistory() {
             let dateStr = '-';
             if (data.createdAt) {
                 const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-                dateStr = date.toLocaleDateString('ko-KR', {
+                const currentLang = window.currentLanguage || 'ko';
+                const localeMap = { ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN', vi: 'vi-VN', id: 'id-ID', es: 'es-ES' };
+                dateStr = date.toLocaleDateString(localeMap[currentLang] || 'ko-KR', {
                     year: 'numeric',
                     month: '2-digit',
                     day: '2-digit'
@@ -4008,6 +4013,9 @@ async function loadProductsPaymentHistory() {
             const isCancelled = status === 'cancelled' || status === 'refunded';
             const onClickAttr = isCancelled ? '' : `onclick="openPaymentReceipt('${paymentId}')"`;
 
+            const currencySymbol = t('ui.currencyWon') || '원';
+            const tokenLabel = t('ui.tokens') || '토큰';
+
             html += `
                 <div class="payment-history-item" ${onClickAttr}>
                     <div class="payment-item-left">
@@ -4016,8 +4024,8 @@ async function loadProductsPaymentHistory() {
                         <span class="payment-status-badge ${statusClass}">${statusName}</span>
                     </div>
                     <div class="payment-item-right">
-                        <div class="payment-item-amount">${amount.toLocaleString()}원</div>
-                        <div class="payment-item-tokens">+${tokens.toLocaleString()} 토큰</div>
+                        <div class="payment-item-amount">${amount.toLocaleString()}${currencySymbol}</div>
+                        <div class="payment-item-tokens">+${tokens.toLocaleString()} ${tokenLabel}</div>
                     </div>
                 </div>
             `;
@@ -4027,7 +4035,7 @@ async function loadProductsPaymentHistory() {
 
     } catch (error) {
         console.error('결제 내역 로드 실패:', error);
-        listEl.innerHTML = `<div class="no-payment-message">로딩 중 오류가 발생했습니다.</div>`;
+        listEl.innerHTML = `<div class="no-payment-message">${t('ui.loadError') || '로딩 중 오류가 발생했습니다.'}</div>`;
     }
 }
 

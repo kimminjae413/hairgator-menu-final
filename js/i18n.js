@@ -135,6 +135,7 @@ const HAIRGATOR_I18N = {
       daysUntilDowngrade: '일 후 무료 플랜으로 전환됩니다',
       downgradeToFree: '무료 플랜으로 전환',
       planExpiry: '플랜 만료일',
+      loadError: '로딩 중 오류가 발생했습니다.',
 
       // 공지사항
       noticeMenu: '공지사항',
@@ -1436,6 +1437,7 @@ const HAIRGATOR_I18N = {
       daysUntilDowngrade: ' days until switching to Free plan',
       downgradeToFree: 'Switch to Free Plan',
       planExpiry: 'Plan Expiry',
+      loadError: 'An error occurred while loading.',
 
       // Notices
       noticeMenu: 'Notices',
@@ -2693,6 +2695,7 @@ const HAIRGATOR_I18N = {
       daysUntilDowngrade: '日後に無料プランに変更されます',
       downgradeToFree: '無料プランに変更',
       planExpiry: 'プラン有効期限',
+      loadError: '読み込み中にエラーが発生しました。',
 
       // お知らせ
       noticeMenu: 'お知らせ',
@@ -3946,6 +3949,7 @@ const HAIRGATOR_I18N = {
       daysUntilDowngrade: '天后将切换到免费套餐',
       downgradeToFree: '切换到免费套餐',
       planExpiry: '套餐到期日',
+      loadError: '加载时发生错误。',
 
       // 公告
       noticeMenu: '公告',
@@ -5202,6 +5206,7 @@ const HAIRGATOR_I18N = {
       daysUntilDowngrade: ' ngày nữa sẽ chuyển sang gói Miễn phí',
       downgradeToFree: 'Chuyển sang gói Miễn phí',
       planExpiry: 'Ngày hết hạn gói',
+      loadError: 'Đã xảy ra lỗi khi tải.',
 
       // Thông báo
       noticeMenu: 'Thông báo',
@@ -6451,6 +6456,7 @@ const HAIRGATOR_I18N = {
       daysUntilDowngrade: ' hari lagi akan beralih ke paket Gratis',
       downgradeToFree: 'Beralih ke Paket Gratis',
       planExpiry: 'Tanggal Kedaluwarsa Paket',
+      loadError: 'Terjadi kesalahan saat memuat.',
       myPlan: 'Paket Saya',
       myTokens: 'Token Saya',
       currentPlanLabel: 'Paket Saat Ini',
@@ -7638,6 +7644,7 @@ const HAIRGATOR_I18N = {
       daysUntilDowngrade: ' días hasta cambiar al plan Gratis',
       downgradeToFree: 'Cambiar a Plan Gratis',
       planExpiry: 'Fecha de Vencimiento del Plan',
+      loadError: 'Se produjo un error al cargar.',
       myPlan: 'Mi Plan',
       myTokens: 'Mis Tokens',
       currentPlanLabel: 'Plan Actual',
