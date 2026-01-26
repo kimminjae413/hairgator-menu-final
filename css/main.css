@@ -3579,7 +3579,7 @@ body.light-theme .pricing-modal {
 /* 요금제 카드 그리드 */
 .pricing-cards {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     margin-bottom: 30px;
 }
