@@ -1211,3 +1211,42 @@ if (data.paymentStatus === 'pending') {
 - 심사 회신 작성 (개인정보처리방침 업데이트 내용 설명)
 - 앱 심사 재제출 완료
 - 현재 상태: **심사 대기 중** (2026년 1월 24일 오후 7:03)
+
+---
+
+## 2026-01-26 작업 내용
+
+### #productsPage 및 #mypage 다국어 번역 누락 수정 ✅
+
+**문제:** 베트남어 등 다른 언어로 설정해도 "현재 플랜" 등 한국어가 그대로 표시됨
+
+**원인:**
+1. `index.html`에서 `data-i18n="ui.currentPlan"` 사용 → `i18n.js`에 해당 키 없음
+2. `main.js`에 하드코딩된 한국어 문자열 다수 존재
+3. 일부 번역 키가 7개 언어 중 일부만 정의됨
+
+**해결:**
+
+1. **index.html 수정:**
+   - `data-i18n="ui.currentPlan"` → `data-i18n="ui.currentPlanLabel"`
+
+2. **i18n.js에 누락된 번역 키 추가 (7개 언어 모두):**
+
+| 카테고리 | 키 |
+|----------|-----|
+| 기능명 | `featureAIStyleMatch`, `featurePersonalColor`, `featureAITransform` |
+| 토큰 | `tokenShortage`, `tokensRequiredFor` |
+| UI | `fullscreenToggle`, `deleteThisCard`, `remainingTokens` |
+| 법적 문서 | `termsOfService`, `privacyPolicy`, `locationTerms` |
+| 카드사 | `cardBrandBC`, `cardBrandSamsung` 등 9종 |
+| 색상 | `colorWhite`, `colorBlack` 등 8종 |
+| 문의 | `inquiryNotFound`, `inquiryLoadFailed` |
+
+3. **main.js 하드코딩된 한국어 → t() 함수로 대체:**
+   - AI 스타일 매칭/퍼스널 이미지 분석/AI 얼굴변환 접근 제한 메시지
+   - 카드 등록/삭제 메시지
+   - 문의 관련 alert 메시지
+   - 전체화면 버튼 title
+   - 카드사 이름
+
+**커밋:** `a9e1aa8` - fix: #productsPage 및 #mypage 다국어 번역 누락 수정
