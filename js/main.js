@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     photoURL = window.currentDesigner.photoURL;
                 }
 
-                if (nameEl) nameEl.textContent = displayName || userEmail?.split('@')[0] || '사용자';
+                if (nameEl) nameEl.textContent = displayName || userEmail?.split('@')[0] || t('ui.defaultUser') || '사용자';
                 if (emailEl) emailEl.textContent = userEmail || '';
                 if (avatarEl && photoURL) {
                     // Mixed Content 경고 방지: http:// → https://
@@ -380,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (window.currentDesigner) {
                 // Firebase Auth는 없지만 window.currentDesigner가 있는 경우
                 const designer = window.currentDesigner;
-                if (nameEl) nameEl.textContent = designer.verifiedName || designer.name || designer.displayName || designer.email?.split('@')[0] || '사용자';
+                if (nameEl) nameEl.textContent = designer.verifiedName || designer.name || designer.displayName || designer.email?.split('@')[0] || t('ui.defaultUser') || '사용자';
                 if (emailEl) emailEl.textContent = designer.email || '';
                 if (avatarEl && designer.photoURL) {
                     // Mixed Content 경고 방지: http:// → https://
@@ -388,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     avatarEl.innerHTML = `<img src="${securePhotoURL}" alt="프로필">`;
                 }
             } else {
-                if (nameEl) nameEl.textContent = '로그인 필요';
+                if (nameEl) nameEl.textContent = t('ui.loginNeeded') || '로그인 필요';
                 if (emailEl) emailEl.textContent = '-';
             }
         }
@@ -422,25 +422,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     if (expirySection) expirySection.style.display = 'block';
                     if (expiryDateEl) {
-                        expiryDateEl.textContent = expiresAt.toLocaleDateString('ko-KR', {
+                        const currentLang = window.currentLanguage || 'ko';
+                        const localeMap = { ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN', vi: 'vi-VN', id: 'id-ID', es: 'es-ES' };
+                        expiryDateEl.textContent = expiresAt.toLocaleDateString(localeMap[currentLang] || 'ko-KR', {
                             year: 'numeric', month: 'long', day: 'numeric'
                         });
                     }
                     if (expiryBadgeEl) {
+                        const daysLeftText = (t('ui.daysLeft') || '{days}일 남음').replace('{days}', daysRemaining);
                         if (daysRemaining <= 0) {
-                            expiryBadgeEl.textContent = '만료됨';
+                            expiryBadgeEl.textContent = t('ui.planExpired') || '만료됨';
                             expiryBadgeEl.style.background = '#ef4444';
                             expiryBadgeEl.style.color = '#fff';
                         } else if (daysRemaining <= 3) {
-                            expiryBadgeEl.textContent = `${daysRemaining}일 남음`;
+                            expiryBadgeEl.textContent = daysLeftText;
                             expiryBadgeEl.style.background = '#ef4444';
                             expiryBadgeEl.style.color = '#fff';
                         } else if (daysRemaining <= 7) {
-                            expiryBadgeEl.textContent = `${daysRemaining}일 남음`;
+                            expiryBadgeEl.textContent = daysLeftText;
                             expiryBadgeEl.style.background = '#f59e0b';
                             expiryBadgeEl.style.color = '#fff';
                         } else {
-                            expiryBadgeEl.textContent = `${daysRemaining}일 남음`;
+                            expiryBadgeEl.textContent = daysLeftText;
                             expiryBadgeEl.style.background = '#10b981';
                             expiryBadgeEl.style.color = '#fff';
                         }
@@ -484,12 +487,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 'nh': 'NH농협카드'
             };
 
-            if (cardBrandEl) cardBrandEl.textContent = brandNames[savedCard.brand?.toLowerCase()] || savedCard.brand || '카드';
+            if (cardBrandEl) cardBrandEl.textContent = brandNames[savedCard.brand?.toLowerCase()] || savedCard.brand || t('ui.card') || '카드';
             if (cardNumberEl) cardNumberEl.textContent = `**** **** **** ${savedCard.last4}`;
             if (deleteBtn) deleteBtn.style.display = 'block';
         } else {
-            if (cardBrandEl) cardBrandEl.textContent = '카드 없음';
-            if (cardNumberEl) cardNumberEl.textContent = '저장된 카드가 없습니다';
+            if (cardBrandEl) cardBrandEl.textContent = t('ui.noCard') || '카드 없음';
+            if (cardNumberEl) cardNumberEl.textContent = t('ui.noSavedCard') || '저장된 카드가 없습니다';
             if (deleteBtn) deleteBtn.style.display = 'none';
         }
     }
@@ -499,12 +502,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 저장된 카드 삭제
     window.deleteSavedCard = async function() {
-        if (!confirm('저장된 카드를 삭제하시겠습니까?')) return;
+        if (!confirm(t('ui.deleteCardConfirm') || '저장된 카드를 삭제하시겠습니까?')) return;
 
         try {
             const docId = await window.FirebaseBridge?.getUserDocId();
             if (!docId) {
-                alert('로그인이 필요합니다.');
+                alert(t('ui.loginRequired') || '로그인이 필요합니다.');
                 return;
             }
 
@@ -520,11 +523,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             updateSavedCardDisplay();
             if (typeof showToast === 'function') {
-                showToast('카드가 삭제되었습니다.', 'success');
+                showToast(t('ui.cardDeleted') || '카드가 삭제되었습니다.', 'success');
             }
         } catch (e) {
             console.error('카드 삭제 실패:', e);
-            alert('카드 삭제에 실패했습니다.');
+            alert(t('ui.cardDeleteFailed') || '카드 삭제에 실패했습니다.');
         }
     };
 
@@ -558,12 +561,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // 결제 처리 (payment.js 사용)
+        const paymentErrorMsg = t('ui.paymentError') || '결제 처리 중 오류가 발생했습니다.';
         if (typeof window.verifyAndPay === 'function') {
             try {
                 await window.verifyAndPay(planType);
             } catch (e) {
                 console.error('결제 오류:', e);
-                alert('결제 처리 중 오류가 발생했습니다.');
+                alert(paymentErrorMsg);
             }
         } else if (typeof window.showPaymentOptions === 'function') {
             // fallback: 본인인증 함수 없으면 기존 방식
@@ -571,7 +575,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 await window.showPaymentOptions(planType);
             } catch (e) {
                 console.error('결제 오류:', e);
-                alert('결제 처리 중 오류가 발생했습니다.');
+                alert(paymentErrorMsg);
             }
         } else if (typeof window.HAIRGATOR_PAYMENT !== 'undefined') {
             // fallback: 빌링키 기능 없으면 기존 방식
@@ -579,10 +583,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 await window.HAIRGATOR_PAYMENT.purchasePlan(planType);
             } catch (e) {
                 console.error('결제 오류:', e);
-                alert('결제 처리 중 오류가 발생했습니다.');
+                alert(paymentErrorMsg);
             }
         } else {
-            alert('결제 시스템을 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+            alert(t('ui.loadError') || '결제 시스템을 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
         }
     };
 
@@ -592,7 +596,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (typeof window.showLanguageModal === 'function') {
             window.showLanguageModal();
         } else {
-            alert('언어 설정 기능 준비 중입니다.');
+            alert(t('ui.featureComingSoon') || '언어 설정 기능 준비 중입니다.');
         }
     };
 
