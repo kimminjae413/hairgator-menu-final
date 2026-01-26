@@ -7481,6 +7481,24 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     }
   }
 
+  // ⭐⭐⭐ 이미지 유효성 검사 (비정상적인 사진 필터링) ⭐⭐⭐
+  const validation = await validateHairstyleImage(image_base64, mime_type, geminiKey);
+  if (!validation.isValid) {
+    console.log(`⛔ 이미지 검증 실패: ${validation.reason}`);
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: 'invalid_image',
+        message: validation.reason || '이 이미지는 헤어스타일 레퍼런스로 적합하지 않습니다.',
+        suggestion: '사람의 헤어스타일이 명확히 보이는 사진을 업로드해주세요. (정면, 측면, 후면 등)',
+        validation: validation
+      })
+    };
+  }
+  console.log(`✅ 이미지 검증 통과: ${validation.reason}`);
+
   // 남자 스타일인 경우 별도 처리 (펌은 아직 미지원)
   if (gender === 'male') {
     // ⭐ URL에서 변환된 base64 전달
@@ -13319,5 +13337,72 @@ ${conversationSummary}
       headers,
       body: JSON.stringify({ success: false, error: error.message })
     };
+  }
+}
+
+// ==================== 헤어스타일 이미지 유효성 검사 ====================
+// 업로드된 이미지가 보편적인 헤어스타일 사진인지 확인
+async function validateHairstyleImage(imageBase64, mimeType, geminiKey) {
+  try {
+    console.log('🔍 헤어스타일 이미지 유효성 검사 시작...');
+
+    const prompt = `당신은 헤어 살롱의 전문 스타일리스트입니다.
+이 이미지가 "헤어스타일 레퍼런스 사진으로 적합한지" 판단해주세요.
+
+✅ 적합한 사진:
+- 사람의 머리/헤어스타일이 명확히 보이는 사진
+- 정면, 측면, 후면 등 헤어스타일을 참고할 수 있는 각도
+- 실제 사람 또는 마네킹의 헤어스타일
+- 일반적인 커트/펌 스타일 (숏컷, 보브, 레이어드, 웨이브 등)
+
+❌ 부적합한 사진:
+- 사람이나 머리카락이 없는 이미지 (음식, 풍경, 동물, 물건 등)
+- 얼굴만 있고 헤어스타일이 거의 안 보이는 사진
+- 모자/두건으로 머리가 가려진 사진
+- 만화/일러스트 캐릭터
+- 너무 흐릿하거나 머리 일부만 보이는 사진
+- 극단적으로 특이한 예술적 헤어 (모히칸, 레인보우 염색 등 일반 살롱에서 재현 어려운 스타일)
+
+JSON만 응답: {"is_valid": true/false, "reason": "<1문장 설명>", "confidence": "high/medium/low"}`;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { inline_data: { mime_type: mimeType, data: imageBase64 } },
+              { text: prompt }
+            ]
+          }],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 150 }
+        })
+      }
+    );
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    const jsonMatch = text.match(/\{[\s\S]*?\}/);
+    if (jsonMatch) {
+      const result = JSON.parse(jsonMatch[0]);
+      console.log(`🔍 이미지 검증 결과: valid=${result.is_valid}, confidence=${result.confidence}, reason=${result.reason}`);
+      return {
+        isValid: result.is_valid === true,
+        reason: result.reason || '',
+        confidence: result.confidence || 'medium'
+      };
+    }
+
+    // 파싱 실패 시 기본값 (통과)
+    console.log('⚠️ 이미지 검증 파싱 실패, 기본 통과 처리');
+    return { isValid: true, reason: '검증 파싱 실패', confidence: 'low' };
+
+  } catch (error) {
+    console.error('❌ 이미지 검증 오류:', error);
+    // 오류 시 기본 통과 (서비스 중단 방지)
+    return { isValid: true, reason: '검증 오류', confidence: 'low' };
   }
 }

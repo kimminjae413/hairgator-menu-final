@@ -4698,7 +4698,23 @@ ${data.customRecipe ? `\n생성된 레시피:\n${data.customRecipe}` : ''}`;
       }
 
     } else {
-      window.aiStudio.addMessageToUI('bot', result.error || '레시피 생성에 실패했습니다. 다시 시도해주세요.');
+      // ⭐ 이미지 유효성 검사 실패 시 친절한 안내
+      if (result.error === 'invalid_image') {
+        const invalidMsg = `**⚠️ 이미지를 분석할 수 없습니다**
+
+${result.message || '이 이미지는 헤어스타일 레퍼런스로 적합하지 않습니다.'}
+
+**💡 권장 사항:**
+${result.suggestion || '사람의 헤어스타일이 명확히 보이는 사진을 업로드해주세요.'}
+
+✅ **적합한 사진 예시:**
+- 정면/측면/후면에서 촬영한 헤어스타일 사진
+- 커트/펌 스타일이 잘 보이는 레퍼런스 이미지
+- 실제 사람 또는 마네킹의 헤어 사진`;
+        window.aiStudio.addMessageToUI('bot', invalidMsg);
+      } else {
+        window.aiStudio.addMessageToUI('bot', result.error || '레시피 생성에 실패했습니다. 다시 시도해주세요.');
+      }
     }
 
   } catch (error) {
@@ -5015,7 +5031,17 @@ async function handleAutoRecipeMode() {
       }
 
     } else {
-      window.aiStudio.addMessageToUI('bot', result.error || '레시피 생성에 실패했습니다. 다시 시도해주세요.');
+      // ⭐ 이미지 유효성 검사 실패 시 친절한 안내
+      if (result.error === 'invalid_image') {
+        const invalidMsg = `**⚠️ 이미지를 분석할 수 없습니다**
+
+${result.message || '이 이미지는 헤어스타일 레퍼런스로 적합하지 않습니다.'}
+
+다른 스타일 이미지를 선택해주세요.`;
+        window.aiStudio.addMessageToUI('bot', invalidMsg);
+      } else {
+        window.aiStudio.addMessageToUI('bot', result.error || '레시피 생성에 실패했습니다. 다시 시도해주세요.');
+      }
     }
 
   } catch (error) {
