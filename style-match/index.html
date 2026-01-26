@@ -398,10 +398,14 @@
         };
         firebase.initializeApp(firebaseConfig);
         const storage = firebase.storage();
+        const db = firebase.firestore();
+        window.db = db;
     </script>
 
     <!-- i18n -->
     <script src="../js/i18n.js"></script>
-    <script src="app.js?v=20260102-hairtry"></script>
+    <!-- Style Feedback Logger -->
+    <script src="../js/style-feedback-logger.js"></script>
+    <script src="app.js?v=20260126-feedback"></script>
 </body>
 </html>

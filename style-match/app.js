@@ -3867,6 +3867,12 @@ function createCategoryCard(category, reason, styles, _ratios) {
         ? Math.round(styles.reduce((sum, s) => sum + s.score, 0) / styles.length)
         : 0;
 
+    // [FeedbackLogger] Impression 로깅 - 카드 생성 시 노출 기록
+    if (window.StyleFeedbackLogger) {
+        const faceShape = analysisResults?.analysis?.faceShape || 'unknown';
+        window.StyleFeedbackLogger.logImpression(styles, category, faceShape, selectedGender);
+    }
+
     card.innerHTML = `
         <div class="category-header">
             <span class="category-name">🎯 ${category}</span>
@@ -3878,7 +3884,7 @@ function createCategoryCard(category, reason, styles, _ratios) {
                 const styleReason = generateStyleReason(style, analysisResults?.analysis, analysisResults?.ratios, style.score);
                 const escapedReason = styleReason.replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/<[^>]*>/g, '');
                 return `
-                <div class="style-card" onclick="openStyleDetail('${style.styleId}', '${escapedReason}')">
+                <div class="style-card" onclick="openStyleDetail('${style.styleId}', '${escapedReason}', ${idx + 1}, ${style.score}, '${category}')">
                     <div class="style-card-rank">${idx + 1}</div>
                     <div class="style-card-name">${style.name || 'ChrisKiLAB'}</div>
                     <img src="${style.resultImage}" alt="${style.name}" loading="lazy"
@@ -3899,7 +3905,7 @@ function createCategoryCard(category, reason, styles, _ratios) {
 let currentModalStyle = null;
 
 // 스타일 상세 보기 (모달로 표시)
-window.openStyleDetail = function(styleId, reason = '') {
+window.openStyleDetail = function(styleId, reason = '', rankPosition = 0, score = 0, categoryName = '') {
     const style = allStyles.find(s => s.styleId === styleId);
     if (!style) {
         console.warn('⚠️ 스타일을 찾을 수 없음:', styleId);
@@ -3908,6 +3914,11 @@ window.openStyleDetail = function(styleId, reason = '') {
 
     console.log('📂 스타일 상세 모달:', style.name, styleId);
     currentModalStyle = style;
+
+    // [FeedbackLogger] Click 로깅 - 스타일 카드 클릭 시
+    if (window.StyleFeedbackLogger) {
+        window.StyleFeedbackLogger.logClick(styleId, rankPosition, score || style.score, categoryName);
+    }
 
     // 모달 내용 설정
     const modal = document.getElementById('styleDetailModal');
@@ -3934,6 +3945,11 @@ window.openStyleDetail = function(styleId, reason = '') {
 
 // 모달 닫기
 window.closeStyleModal = function() {
+    // [FeedbackLogger] Dwell Time 로깅 - 모달 닫힐 때 체류 시간 기록
+    if (window.StyleFeedbackLogger && currentModalStyle) {
+        window.StyleFeedbackLogger.logDwellTime(currentModalStyle.styleId, 'close');
+    }
+
     const modal = document.getElementById('styleDetailModal');
     modal.style.display = 'none';
     document.body.style.overflow = '';
@@ -3946,6 +3962,11 @@ window.goToLookbook = function() {
 
     const styleId = currentModalStyle.styleId;
     const gender = currentModalStyle.gender || selectedGender;
+
+    // [FeedbackLogger] Positive Action 로깅 - 룩북 버튼 클릭 (강한 긍정 신호)
+    if (window.StyleFeedbackLogger) {
+        window.StyleFeedbackLogger.logPositiveAction(styleId, 'lookbook');
+    }
 
     closeStyleModal();
     stopCamera();
@@ -3964,6 +3985,7 @@ window.goToHairTry = async function() {
 
     const styleImageUrl = currentModalStyle.resultImage || currentModalStyle.imageUrl || currentModalStyle.thumbnailUrl;
     const styleName = currentModalStyle.name;
+    const styleId = currentModalStyle.styleId;
     const gender = currentModalStyle.gender || selectedGender;
 
     // 스타일 이미지 URL 확인
@@ -3979,6 +4001,11 @@ window.goToHairTry = async function() {
     if (!customerPhoto) {
         alert(t('hairTry.noPhotoSaved') || '저장된 사진이 없습니다. 먼저 얼굴 분석을 완료해주세요.');
         return;
+    }
+
+    // [FeedbackLogger] Positive Action 로깅 - 헤어체험 버튼 클릭 (강한 긍정 신호)
+    if (window.StyleFeedbackLogger) {
+        window.StyleFeedbackLogger.logPositiveAction(styleId, 'hairTry');
     }
 
     closeStyleModal();

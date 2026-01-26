@@ -1250,3 +1250,31 @@ if (data.paymentStatus === 'pending') {
    - 카드사 이름
 
 **커밋:** `a9e1aa8` - fix: #productsPage 및 #mypage 다국어 번역 누락 수정
+
+### 스타일 추천 피드백 로깅 시스템 구현 ✅
+
+**목적:** AI 스타일 매칭 알고리즘 개선을 위한 사용자 행동 데이터 수집
+
+**수집 이벤트:**
+
+| 이벤트 | 설명 | 수집 데이터 |
+|--------|------|------------|
+| `impression` | 스타일 카드 노출 | styleId, rankPosition, score, faceShape, gender |
+| `click` | 스타일 카드 클릭 | styleId, rankPosition, score, categoryName |
+| `dwell_time` | 모달 체류 시간 | styleId, dwellTimeSec, exitAction |
+| `positive_action` | 룩북/헤어체험 클릭 | styleId, actionType (lookbook/hairTry) |
+
+**Firestore 컬렉션:** `style_feedback_logs`
+
+**수정 파일:**
+
+| 파일 | 변경 내용 |
+|------|----------|
+| `js/style-feedback-logger.js` | 신규 생성 - 피드백 로깅 모듈 |
+| `style-match/index.html` | 스크립트 로드 추가, db 전역 설정 |
+| `style-match/app.js` | 로깅 함수 호출 (impression, click, dwell, positive) |
+| `index.html` | 스크립트 로드 추가 |
+
+**향후 계획:**
+1. **다음 스프린트:** 저장/숨기기 UI 추가 (하트/북마크, "이런 스타일 빼기")
+2. **그 다음:** 로그 기반 A/B 테스트 + 임계값/가중치 튜닝
