@@ -5656,32 +5656,65 @@
                     const normNeckG = Math.min(255, neckG * brightnessNormFactor);
                     const normNeckB = Math.min(255, neckB * brightnessNormFactor);
 
+                    // ✅ Task 3 v2: 색온도(CCT) 추정 및 정규화
+                    // McCamy's CCT approximation from RGB
+                    function estimateCCT(r, g, b) {
+                        // RGB → XYZ → xy chromaticity → CCT
+                        const X = 0.4124 * r + 0.3576 * g + 0.1805 * b;
+                        const Y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                        const Z = 0.0193 * r + 0.1192 * g + 0.9505 * b;
+                        const sum = X + Y + Z;
+                        if (sum === 0) return 6500; // 기본값 D65
+                        const x = X / sum;
+                        const y = Y / sum;
+                        // McCamy's formula
+                        const n = (x - 0.3320) / (0.1858 - y);
+                        const CCT = 449 * Math.pow(n, 3) + 3525 * Math.pow(n, 2) + 6823.3 * n + 5520.33;
+                        return Math.max(2000, Math.min(12000, CCT)); // 범위 제한
+                    }
+
+                    const faceCCT = estimateCCT(finalR, finalG, finalB);
+                    const neckCCT = estimateCCT(neckR, neckG, neckB);
+                    const cctDiff = faceCCT - neckCCT;
+
+                    // 색온도 차이 보정 (CCT 차이가 500K 이상이면 보정)
+                    let cctNormR = normNeckR, cctNormG = normNeckG, cctNormB = normNeckB;
+                    if (Math.abs(cctDiff) > 500) {
+                        // CCT 높으면 블루, 낮으면 옐로우 조정
+                        const cctFactor = cctDiff / 5000; // ±0.1 ~ ±0.2 범위
+                        cctNormR = Math.min(255, Math.max(0, normNeckR * (1 - cctFactor * 0.1)));
+                        cctNormB = Math.min(255, Math.max(0, normNeckB * (1 + cctFactor * 0.1)));
+                    }
+
                     neckData = {
                         r: neckR, g: neckG, b: neckB, count: neckSamples.count,
-                        normalized: { r: normNeckR, g: normNeckG, b: normNeckB },
-                        brightnessNormFactor: brightnessNormFactor
+                        normalized: { r: cctNormR, g: cctNormG, b: cctNormB },
+                        brightnessNormFactor: brightnessNormFactor,
+                        cct: { face: faceCCT, neck: neckCCT, diff: cctDiff }
                     };
 
                     const faceLab = rgbToLab(finalR, finalG, finalB);
-                    const neckLab = rgbToLab(normNeckR, normNeckG, normNeckB); // 정규화된 목 사용
+                    const neckLab = rgbToLab(cctNormR, cctNormG, cctNormB); // CCT 정규화된 목 사용
 
-                    // ✅ Task 3: 언더톤 중심 비교 (L* 제외, a*/b*만 비교)
+                    // ✅ Task 3 v2: CIEDE2000 기반 regionConsistency
+                    // 언더톤 중심 비교 + CIEDE2000 정밀도
                     let faceNeckDeltaE;
                     let comparisonMethod;
 
                     if (multiCfg.undertoneOnlyComparison) {
-                        // a*/b* 기반 비교 (밝기 L* 무시 → 언더톤만 비교)
-                        const deltaA = faceLab.a - neckLab.a;
-                        const deltaB = faceLab.b - neckLab.b;
-                        faceNeckDeltaE = Math.sqrt(deltaA * deltaA + deltaB * deltaB);
-                        comparisonMethod = 'undertone-only';
+                        // CIEDE2000 사용하되, L* 영향 줄이기 위해 동일 L*로 조정
+                        const faceLab_sameL = { L: 60, a: faceLab.a, b: faceLab.b };
+                        const neckLab_sameL = { L: 60, a: neckLab.a, b: neckLab.b };
+                        faceNeckDeltaE = ciede2000(faceLab_sameL, neckLab_sameL);
+                        comparisonMethod = 'CIEDE2000-undertone';
                     } else {
-                        // 전체 LAB 비교 (기존 방식)
-                        faceNeckDeltaE = de76(faceLab, neckLab);
-                        comparisonMethod = 'full-LAB';
+                        // 전체 LAB CIEDE2000 비교
+                        faceNeckDeltaE = ciede2000(faceLab, neckLab);
+                        comparisonMethod = 'CIEDE2000-full';
                     }
 
-                    // ✅ Task 3: 적응형 임계값 (조명 품질 반영)
+                    // ✅ Task 3 v2: CIEDE2000 기반 적응형 임계값
+                    // CIEDE2000은 ΔE76보다 더 정밀하므로 임계값 조정 필요
                     let effectiveThreshold = multiCfg.undertoneOnlyComparison ?
                         multiCfg.undertoneThreshold : multiCfg.consistencyThreshold;
 
@@ -5691,23 +5724,44 @@
                         effectiveThreshold = effectiveThreshold * (1 + (1 - lq) * 0.5);
                     }
 
-                    console.log(`🔬 얼굴-목 비교: ${comparisonMethod}, ΔE=${faceNeckDeltaE.toFixed(1)}, 임계값=${effectiveThreshold.toFixed(1)}`);
+                    // CCT 차이가 크면 임계값 추가 완화
+                    if (Math.abs(cctDiff) > 1000) {
+                        effectiveThreshold *= 1.2; // 색온도 차이 클 때 20% 완화
+                    }
+
+                    console.log(`🔬 얼굴-목 비교: ${comparisonMethod}, ΔE00=${faceNeckDeltaE.toFixed(2)}, 임계값=${effectiveThreshold.toFixed(1)}, CCT차이=${cctDiff.toFixed(0)}K`);
+
+                    // ✅ Task 3 v2: CIEDE2000 기반 regionConsistency 점수화
+                    // CIEDE2000 ΔE < 5: 매우 우수 (95%)
+                    // CIEDE2000 ΔE 5-8: 우수 (85-95%)
+                    // CIEDE2000 ΔE 8-10: 좋음 (80-85%)
+                    // CIEDE2000 ΔE 10-15: 보통 (70-80%)
+                    // CIEDE2000 ΔE > 15: 부족 (50-70%)
+                    function calculateRegionConsistency(deltaE00) {
+                        if (deltaE00 < 5) return 0.95;
+                        else if (deltaE00 < 8) return 0.85 + (8 - deltaE00) / 30; // 85-95%
+                        else if (deltaE00 < 10) return 0.80 + (10 - deltaE00) / 40; // 80-85%
+                        else if (deltaE00 < 15) return 0.70 + (15 - deltaE00) / 50; // 70-80%
+                        else return Math.max(0.50, 0.70 - (deltaE00 - 15) / 50); // 50-70%
+                    }
 
                     if (faceNeckDeltaE <= effectiveThreshold) {
-                        // 일관성 좋음 → 정규화된 목 데이터 합산
-                        finalR = finalR * multiCfg.faceWeight + normNeckR * multiCfg.neckWeight;
-                        finalG = finalG * multiCfg.faceWeight + normNeckG * multiCfg.neckWeight;
-                        finalB = finalB * multiCfg.faceWeight + normNeckB * multiCfg.neckWeight;
+                        // 일관성 좋음 → CCT 정규화된 목 데이터 합산
+                        finalR = finalR * multiCfg.faceWeight + cctNormR * multiCfg.neckWeight;
+                        finalG = finalG * multiCfg.faceWeight + cctNormG * multiCfg.neckWeight;
+                        finalB = finalB * multiCfg.faceWeight + cctNormB * multiCfg.neckWeight;
 
-                        // 일관성 점수 계산 (0.7 ~ 1.0)
-                        regionConsistency = 1 - (faceNeckDeltaE / effectiveThreshold) * 0.3;
-                        regionConsistency = Math.max(0.7, Math.min(1.0, regionConsistency));
-                        console.log(`✅ 목 영역 합산 (consistency=${(regionConsistency*100).toFixed(0)}%)`);
+                        // CIEDE2000 기반 일관성 점수
+                        regionConsistency = calculateRegionConsistency(faceNeckDeltaE);
+                        console.log(`✅ 목 영역 합산 (consistency=${(regionConsistency*100).toFixed(0)}%, ΔE00=${faceNeckDeltaE.toFixed(2)})`);
                     } else {
-                        // 일관성 낮음 → 얼굴만 사용, 하지만 정규화 덕분에 더 높은 신뢰도
-                        // 기존 0.7 → 언더톤 비교 시 0.8 (밝기 차이는 정상이므로)
-                        regionConsistency = multiCfg.undertoneOnlyComparison ? 0.8 : 0.7;
-                        console.log(`⚠️ 얼굴-목 언더톤 차이 (ΔE=${faceNeckDeltaE.toFixed(1)}) → 얼굴만 사용 (consistency=${(regionConsistency*100).toFixed(0)}%)`);
+                        // 일관성 낮음 → 얼굴만 사용
+                        regionConsistency = calculateRegionConsistency(faceNeckDeltaE);
+                        // 최소 70% 보장 (언더톤 비교 모드에서)
+                        if (multiCfg.undertoneOnlyComparison) {
+                            regionConsistency = Math.max(0.70, regionConsistency);
+                        }
+                        console.log(`⚠️ 얼굴-목 차이 큼 (ΔE00=${faceNeckDeltaE.toFixed(2)}) → 얼굴만 사용 (consistency=${(regionConsistency*100).toFixed(0)}%)`);
                     }
                 }
             }
