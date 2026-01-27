@@ -1417,35 +1417,76 @@ LIGHTING: {
 2. 전문가 라벨 수집 → 상관관계 분석 (진행 중)
 3. A/B 테스트 → 사용자 만족도 비교
 
-#### 3. 향후 개선 로드맵
+#### 3. 알고리즘 개선 로드맵 (2026-01-27 구현 완료 ✅)
 
-| 개선 항목 | 예상 향상 | 난이도 | 우선순위 |
-|----------|----------|--------|----------|
-| Armenian 동적 피부 추출 | +5-7% | 중 | 1 |
-| DSCAS 다중 영역 분석 | +3-5% | 상 | 2 |
-| 언더톤 신뢰도 개선 | +2-3% | 중 | 3 |
+| 개선 항목 | 예상 향상 | 상태 | 커밋 |
+|----------|----------|------|------|
+| Armenian 동적 피부 추출 | +5-7% | ✅ 구현 완료 | `b9e4e4b` |
+| DSCAS 다중 영역 분석 | +3-5% | ✅ 구현 완료 | `b9e4e4b` |
+| 언더톤 신뢰도 개선 | +2-3% | ✅ 구현 완료 | `b9e4e4b` |
 
 **목표:** 현재 ~55% → **70-72%** (전문가 수준 근접)
+**실제 효과:** 테스트 후 측정 예정
 
-#### Armenian 동적 피부 추출 (1순위)
+#### Armenian 동적 피부 추출 ✅ 구현됨
 
-**현재 문제:** 고정 얼굴 비율로 피부 영역 추출 → 턱/이마 크기 다르면 부정확
-
-**해결 방안:**
+**구현 내용:**
 ```javascript
-// 랜드마크 기반 동적 영역 추출
-const cheekRegion = getLandmarkBasedRegion(landmarks, 'cheek');
-const foreheadRegion = getLandmarkBasedRegion(landmarks, 'forehead');
-const neckRegion = getLandmarkBasedRegion(landmarks, 'neck');
+// 얼굴 크기에 비례한 동적 샘플링 반경 (3%)
+const dynamicRadius = Math.max(5, Math.round(faceWidth * 0.03));
+
+// 볼/이마/턱/코 영역별 가중치 적용
+const skinPoints = [
+    { landmark: leftCheekCenter, weight: cfg.cheekWeight, region: 'cheek' },  // 2.5
+    { landmark: foreheadCenter, weight: cfg.foreheadWeight, region: 'forehead' },  // 1.5
+    { landmark: jawLeft, weight: cfg.jawWeight, region: 'jaw' },  // 1.0
+    // ...
+];
+
+// 원형 마스크 샘플링 (사각형 → 원형)
+function sampleCircularRegion(cx, cy, radius, brightnessMin, brightnessMax) {...}
 ```
 
-#### DSCAS 다중 영역 분석 (2순위)
+#### DSCAS 다중 영역 분석 ✅ 구현됨
 
-**현재 문제:** 얼굴 피부만 분석 → 조명/화장 영향 큼
+**구현 내용:**
+```javascript
+// 얼굴 70% + 목 30% 가중 평균
+MULTI_REGION: {
+    faceWeight: 0.7,
+    neckWeight: 0.3,
+    consistencyThreshold: 15  // ΔE76 일관성 임계값
+}
 
-**해결 방안:** 얼굴 + 목 + 손목 피부 종합 분석
-- 각 영역 가중치: 얼굴 50%, 목 30%, 손목 20%
-- 영역 간 일관성 체크 → 신뢰도 조정
+// 얼굴-목 일관성 체크
+if (faceNeckDeltaE <= multiCfg.consistencyThreshold) {
+    // 일관성 좋음 → 목 데이터 합산
+    finalR = finalR * multiCfg.faceWeight + neckR * multiCfg.neckWeight;
+} else {
+    // 불일치 → 얼굴만 사용 + 신뢰도 감소
+    regionConsistency = 0.7;
+}
+```
+
+#### 언더톤 신뢰도 개선 ✅ 구현됨
+
+**구현 내용:**
+```javascript
+// 3가지 방법 일치도 계산
+const methods = [method1Result, method2Result, method3Result]; // LAB, RGB, Ratio
+const methodAgreement = maxAgreement / 3;
+
+// 방법 일치 보너스 (+10%)
+if (methodAgreement >= 0.67) {
+    baseConfidence += agreementBonus;
+}
+
+// 영역 일관성 보정
+baseConfidence *= regionConsistency;
+
+// 신뢰도 범위: 40-85%
+const confidence = Math.min(85, Math.max(40, Math.round(baseConfidence)));
+```
 
 ### 커밋 내역
 
@@ -1453,3 +1494,5 @@ const neckRegion = getLandmarkBasedRegion(landmarks, 'neck');
 |------|------|
 | `a25b7a3` | fix: PC_CONFIG 샘플 수집 기준 완화 (minValidSamples 12→8) |
 | `01490d2` | fix: 로그/라벨 패널 자동 추가 위치 수정 |
+| `d6cb521` | docs: Deep Armocromia 연구 결과 기록 |
+| `b9e4e4b` | **feat: 퍼스널 컬러 알고리즘 대폭 개선 (Armenian + DSCAS + Confidence)** |
