@@ -6030,7 +6030,18 @@
                 chroma,
                 confidence,  // ✅ 신뢰도 추가
                 methodAgreement: Math.round(methodAgreement * 100),
-                methods: { lab: method1Result, rgb: method2Result, ratio: method3Result }
+                methods: {
+                    lab: method1Result,
+                    rgb: method2Result,
+                    ratio: method3Result,
+                    ciede2000: method4Result  // ✅ CIEDE2000 방법 추가
+                },
+                // ✅ CIEDE2000 상세 데이터 (디버깅용)
+                ciede2000Data: {
+                    dE00Warm: Math.round(dE00Warm * 10) / 10,
+                    dE00Cool: Math.round(dE00Cool * 10) / 10,
+                    dE00Diff: Math.round(dE00Diff * 10) / 10
+                }
             };
         }
 
