@@ -4830,6 +4830,20 @@
                     </div>
                 `;
             }
+
+            // ✅ 로그 패널 + 라벨 패널 추가 (비동기로 안전하게)
+            setTimeout(() => {
+                try {
+                    const container = document.getElementById('realtime-results-container');
+                    if (container) {
+                        container.insertAdjacentHTML('beforeend', generateLogPanelHTML());
+                        container.insertAdjacentHTML('beforeend', generateLabelPanelHTML(pipelineResult));
+                        console.log('✅ 로그/라벨 패널 추가 완료');
+                    }
+                } catch (e) {
+                    console.error('❌ 패널 추가 실패:', e);
+                }
+            }, 100);
         }
 
         // 얼굴 측정 결과 HTML 생성 (눈썹간 거리 등)
@@ -4901,20 +4915,6 @@
                     </div>
                 </div>
             `;
-
-            // ✅ 로그 패널 + 라벨 패널 추가 (비동기로 안전하게)
-            setTimeout(() => {
-                try {
-                    const container = document.getElementById('realtime-results-container');
-                    if (container) {
-                        container.insertAdjacentHTML('beforeend', generateLogPanelHTML());
-                        container.insertAdjacentHTML('beforeend', generateLabelPanelHTML(pipelineResult));
-                        console.log('✅ 로그/라벨 패널 추가 완료');
-                    }
-                } catch (e) {
-                    console.error('❌ 패널 추가 실패:', e);
-                }
-            }, 100);
         }
 
         // 헤어컬러 추천 HTML 생성
