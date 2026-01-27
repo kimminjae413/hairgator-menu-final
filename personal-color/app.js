@@ -4208,7 +4208,7 @@
                 // ✅ CIEDE2000 연구 참조값 추가 (arxiv 2505.14931)
                 warmRefLab: { L: 70, a: 20, b: 40 },   // Warm 언더톤 참조점
                 coolRefLab: { L: 60, a: -20, b: -30 }, // Cool 언더톤 참조점
-                ciede2000Threshold: 25    // ΔE00 차이 임계값 (이하면 Neutral)
+                ciede2000Threshold: 10    // ΔE00 차이 임계값 (이하면 Neutral) - 25→15→10 (12.72도 Warm 판정되도록)
             },
             SEASON: {
                 // ✅ ITA 연구 기반 임계값 (Chardon et al. 1991, b*=16 가정)
