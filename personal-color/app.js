@@ -417,11 +417,16 @@
         }
 
         // ========== 2단계: 퍼스널컬러 시즌/서브타입 결정 ==========
-        function classifyPersonalColor(correctedRgb, lightingMeta) {
+        function classifyPersonalColor(correctedRgb, lightingMeta, samplingMeta = null) {
             console.log('🎨 2단계: 퍼스널컬러 분류 시작...');
 
             const lab = rgbToLab(correctedRgb.r, correctedRgb.g, correctedRgb.b);
             const lq = lightingMeta?.lightingQuality || 0.5;
+
+            // ✅ 샘플링 단계 메타데이터 추출
+            const samplingConfidence = samplingMeta?.undertoneConfidence || null;
+            const methodAgreement = samplingMeta?.methodAgreement || null;
+            const regionConsistency = samplingMeta?.regionConsistency || 1.0;
 
             // 조명에 따른 b값 보정 (조명 나쁘면 노란기 과대평가 방지)
             const effectiveB = lab.b * (0.6 + 0.4 * lq);
@@ -583,16 +588,36 @@
                 }
             }
 
-            // confidence 계산 (조명 품질 반영)
+            // ✅ confidence 계산 (조명 품질 + 샘플링 메타 반영)
             let baseConfidence = 65;
             baseConfidence += Math.abs(labScore) * 4; // LAB 확신도에 따라 증가
             baseConfidence = baseConfidence * (0.6 + 0.4 * lq); // 조명 품질 반영
+
+            // ✅ 샘플링 단계 신뢰도 반영 (Armenian + DSCAS 개선)
+            if (samplingConfidence !== null) {
+                // 샘플링 신뢰도와 현재 신뢰도 가중 평균 (50:50)
+                baseConfidence = baseConfidence * 0.5 + samplingConfidence * 0.5;
+                console.log(`📊 샘플링 신뢰도 반영: ${samplingConfidence}% → 최종 기반: ${baseConfidence.toFixed(1)}%`);
+            }
+
+            // ✅ 방법 일치도 보너스 (3가지 방법 일치 시 +10%)
+            if (methodAgreement !== null && methodAgreement >= 67) {
+                const agreementBonus = Math.round((methodAgreement - 33) / 67 * 10);
+                baseConfidence += agreementBonus;
+                console.log(`📊 방법 일치도 보너스: +${agreementBonus}% (일치도: ${methodAgreement}%)`);
+            }
+
+            // ✅ 영역 일관성 보정 (얼굴-목 불일치 시 감소)
+            if (regionConsistency < 1.0) {
+                baseConfidence *= regionConsistency;
+                console.log(`📊 영역 일관성 보정: ×${regionConsistency.toFixed(2)}`);
+            }
 
             // 조명 나쁘면 참고용 플래그
             const isReference = lq < 0.4;
             if (isReference) baseConfidence = Math.min(baseConfidence, 65);
 
-            const confidence = Math.min(98, Math.max(55, Math.round(baseConfidence)));
+            const confidence = Math.min(85, Math.max(40, Math.round(baseConfidence))); // ✅ 범위 조정: 40-85%
 
             // 다국어 fullSeason 생성
             const fullSeason = getTranslatedFullSeason(seasonKr, subtype, season, undertone);
@@ -3496,9 +3521,10 @@
         }
 
         // ========== 통합 파이프라인 실행 ==========
-        function runPersonalColorPipeline(skinRgb, imageData = null) {
+        function runPersonalColorPipeline(skinRgb, imageData = null, samplingMeta = null) {
             console.log('🚀 퍼스널컬러 분석 파이프라인 시작...');
             console.log('입력 RGB:', skinRgb);
+            if (samplingMeta) console.log('📊 샘플링 메타:', samplingMeta);
 
             // 1단계: 피부·조명 분석
             const step1 = analyzeSkinAndLighting(skinRgb, imageData);
@@ -3518,8 +3544,8 @@
                 };
             }
 
-            // 2단계: 퍼스널컬러 분류
-            const step2 = classifyPersonalColor(step1.correctedRgb, step1.lightingMeta);
+            // 2단계: 퍼스널컬러 분류 (샘플링 메타 전달)
+            const step2 = classifyPersonalColor(step1.correctedRgb, step1.lightingMeta, samplingMeta);
 
             // 3단계: 헤어컬러 후보 필터링
             const step3 = filterHairColorCandidates(step2, hairColorData || []);
@@ -4100,7 +4126,12 @@
                 if (captureSampling && currentLandmarks) {
                     const st = extractSkinTone(currentLandmarks);
                     if (st && st.lab && st.rgb) {
-                        captureSamples.push({ rgb: st.rgb, lab: st.lab, ts: performance.now() });
+                        captureSamples.push({
+                            rgb: st.rgb,
+                            lab: st.lab,
+                            ts: performance.now(),
+                            regionConsistency: st.regionConsistency || 1.0  // ✅ 영역 일관성 포함
+                        });
                     }
                 }
 
@@ -4147,9 +4178,33 @@
             LIGHTING: {
                 minQualityToClassify: 0.45 // 이하면 분류 자체 금지(정확도 목적)
             },
+            // ✅ Armenian Dynamic Skin Extraction 설정
+            SKIN_EXTRACTION: {
+                dynamicRegion: true,      // 랜드마크 기반 동적 영역 추출
+                sampleRadius: 7,          // 샘플링 반경 (픽셀)
+                brightnessMin: 35,        // 최소 밝기 (그림자 제외)
+                brightnessMax: 245,       // 최대 밝기 (하이라이트 제외)
+                cheekWeight: 2.5,         // 볼 가중치 (가장 중요)
+                foreheadWeight: 1.5,      // 이마 가중치
+                jawWeight: 1.0,           // 턱 가중치
+                noseWeight: 0.8           // 코 옆 가중치
+            },
+            // ✅ DSCAS Multi-region Analysis 설정
+            MULTI_REGION: {
+                enabled: true,            // 다중 영역 분석 활성화
+                faceWeight: 0.7,          // 얼굴 가중치 (70%)
+                neckWeight: 0.3,          // 목 가중치 (30%)
+                neckLandmarks: [152, 377, 148, 176, 400],  // 턱 아래 영역 랜드마크
+                minNeckSamples: 3,        // 최소 목 샘플 수
+                consistencyThreshold: 15  // 영역 간 ΔE76 일관성 임계값
+            },
             UNDERTONE: {
                 warmScoreWarm: 3,
-                warmScoreCool: -3
+                warmScoreCool: -3,
+                // ✅ Confidence 설정 추가
+                methodAgreementBonus: 15, // 3가지 방법 일치 시 보너스 (%)
+                minConfidence: 40,        // 최소 신뢰도 (%)
+                maxConfidence: 85         // 최대 신뢰도 (%)
             },
             SEASON: {
                 warm_L_spring: 68,
@@ -4537,7 +4592,12 @@
 
             // ✅ 5) skinToneData 형태 유지 (기존 displayCapturedAnalysis가 쓰는 필드)
             const labColor = rgbToLab(avgRgb.r, avgRgb.g, avgRgb.b);
-            const undertoneAnalysis = analyzeUndertoneAdvanced(avgRgb.r, avgRgb.g, avgRgb.b, labColor);
+
+            // ✅ 다중 영역 일관성 계산 (마지막 샘플에서 가져옴)
+            const lastSample = captureSamples[captureSamples.length - 1];
+            const regionConsistency = lastSample?.regionConsistency || 1.0;
+
+            const undertoneAnalysis = analyzeUndertoneAdvanced(avgRgb.r, avgRgb.g, avgRgb.b, labColor, regionConsistency);
 
             // 캡처 메타 (로그용)
             const captureDurationMs = Math.round(performance.now() - captureStartTs);
@@ -4549,6 +4609,7 @@
                 lab: labColor,
                 undertone: undertoneAnalysis.undertone,
                 undertoneScore: undertoneAnalysis.score,
+                undertoneConfidence: undertoneAnalysis.confidence, // ✅ 신뢰도 추가
                 brightness: labColor.L,
                 chroma: undertoneAnalysis.chroma,
                 samples: filtered.length,
@@ -4557,8 +4618,12 @@
                     samplesTotal: captureSamples.length,
                     samplesFiltered: filtered.length,
                     outlierRemoved,
-                    captureDurationMs
-                }
+                    captureDurationMs,
+                    regionConsistency: regionConsistency // ✅ 영역 일관성 추가
+                },
+                // ✅ 방법 일치도 정보
+                methodAgreement: undertoneAnalysis.methodAgreement,
+                methods: undertoneAnalysis.methods
             };
 
             console.log('🧪 안정화된 피부톤 데이터:', skinToneData);
@@ -4646,8 +4711,13 @@
                 return;
             }
 
-            // 🚀 새 파이프라인 실행
-            const pipelineResult = runPersonalColorPipeline(skinToneData.rgb, window.lastFullImageData);
+            // 🚀 새 파이프라인 실행 (샘플링 메타데이터 전달)
+            const samplingMeta = {
+                undertoneConfidence: skinToneData.undertoneConfidence,
+                methodAgreement: skinToneData.methodAgreement,
+                regionConsistency: skinToneData.captureMeta?.regionConsistency
+            };
+            const pipelineResult = runPersonalColorPipeline(skinToneData.rgb, window.lastFullImageData, samplingMeta);
 
             // ✅ 로그 기록 (차단/성공 모두 기록)
             const lmLog = pipelineResult?.lightingMeta || {};
@@ -5367,87 +5437,223 @@
 
             sharedExtractCtx.drawImage(videoElement, 0, 0);
 
-            // ✅ 개선된 피부색 추출 포인트 (그림자/하이라이트 영향 적은 부위)
-            // 이마 중앙(10), 양쪽 볼 중앙(116, 345), 코 옆(203, 423), 턱 양쪽(136, 365)
+            const cfg = PC_CONFIG.SKIN_EXTRACTION;
+            const multiCfg = PC_CONFIG.MULTI_REGION;
+
+            // ========================================
+            // ✅ Armenian Dynamic Skin Extraction
+            // 랜드마크 기반 동적 영역 추출 (얼굴 크기/비율 적응)
+            // ========================================
+
+            // 얼굴 크기 계산 (정규화 기준)
+            const faceLeft = landmarks[234];   // 왼쪽 광대
+            const faceRight = landmarks[454];  // 오른쪽 광대
+            const faceTop = landmarks[10];     // 이마 상단
+            const faceBottom = landmarks[152]; // 턱 끝
+
+            if (!faceLeft || !faceRight || !faceTop || !faceBottom) return null;
+
+            const faceWidth = Math.abs(faceRight.x - faceLeft.x) * sharedExtractCanvas.width;
+            const faceHeight = Math.abs(faceBottom.y - faceTop.y) * sharedExtractCanvas.height;
+
+            // 동적 샘플링 반경 (얼굴 크기에 비례)
+            const dynamicRadius = cfg.dynamicRegion
+                ? Math.max(5, Math.round(faceWidth * 0.03))  // 얼굴 너비의 3%
+                : cfg.sampleRadius;
+
+            // ✅ 동적 피부 포인트 (Armenian 방식: 얼굴 비율 기반)
+            // 볼 중앙: 눈과 입 사이, 코 옆 (가장 안정적인 피부 영역)
+            const leftCheekCenter = landmarks[116];   // 왼쪽 볼 중앙
+            const rightCheekCenter = landmarks[345];  // 오른쪽 볼 중앙
+            const leftCheekOuter = landmarks[123];    // 왼쪽 볼 바깥
+            const rightCheekOuter = landmarks[352];   // 오른쪽 볼 바깥
+
+            // 이마: 눈썹 위 중앙 영역
+            const foreheadCenter = landmarks[10];     // 이마 중앙
+            const foreheadLeft = landmarks[67];       // 이마 왼쪽
+            const foreheadRight = landmarks[297];     // 이마 오른쪽
+
+            // 턱: 입 아래 양쪽
+            const jawLeft = landmarks[136];           // 왼쪽 턱
+            const jawRight = landmarks[365];          // 오른쪽 턱
+
+            // 코 옆: 그림자 영향 적은 부위
+            const noseLeft = landmarks[203];          // 왼쪽 코 옆
+            const noseRight = landmarks[423];         // 오른쪽 코 옆
+
             const skinPoints = [
-                { index: 10, weight: 1.5 },   // 이마 중앙 (중요)
-                { index: 116, weight: 2.0 },  // 왼쪽 볼 중앙 (가장 중요 - 피부색 대표)
-                { index: 345, weight: 2.0 },  // 오른쪽 볼 중앙 (가장 중요)
-                { index: 203, weight: 1.0 },  // 왼쪽 코 옆
-                { index: 423, weight: 1.0 },  // 오른쪽 코 옆
-                { index: 136, weight: 1.0 },  // 왼쪽 턱
-                { index: 365, weight: 1.0 },  // 오른쪽 턱
-                { index: 168, weight: 1.5 }   // 코 중간 (밝은 부분)
+                // 볼 (가장 중요 - 2.5 가중치)
+                { landmark: leftCheekCenter, weight: cfg.cheekWeight, region: 'cheek' },
+                { landmark: rightCheekCenter, weight: cfg.cheekWeight, region: 'cheek' },
+                { landmark: leftCheekOuter, weight: cfg.cheekWeight * 0.8, region: 'cheek' },
+                { landmark: rightCheekOuter, weight: cfg.cheekWeight * 0.8, region: 'cheek' },
+                // 이마
+                { landmark: foreheadCenter, weight: cfg.foreheadWeight, region: 'forehead' },
+                { landmark: foreheadLeft, weight: cfg.foreheadWeight * 0.7, region: 'forehead' },
+                { landmark: foreheadRight, weight: cfg.foreheadWeight * 0.7, region: 'forehead' },
+                // 턱
+                { landmark: jawLeft, weight: cfg.jawWeight, region: 'jaw' },
+                { landmark: jawRight, weight: cfg.jawWeight, region: 'jaw' },
+                // 코 옆
+                { landmark: noseLeft, weight: cfg.noseWeight, region: 'nose' },
+                { landmark: noseRight, weight: cfg.noseWeight, region: 'nose' }
             ];
 
-            let totalR = 0, totalG = 0, totalB = 0;
-            let totalWeight = 0;
-            const samples = [];
+            // ========================================
+            // ✅ 얼굴 영역 샘플링
+            // ========================================
+            let faceR = 0, faceG = 0, faceB = 0, faceWeight = 0;
+            const faceSamples = [];
+            const regionStats = { cheek: [], forehead: [], jaw: [], nose: [] };
 
             skinPoints.forEach(point => {
-                const landmark = landmarks[point.index];
-                if (!landmark) return;
+                if (!point.landmark) return;
 
-                const x = Math.floor(landmark.x * sharedExtractCanvas.width);
-                const y = Math.floor(landmark.y * sharedExtractCanvas.height);
+                const x = Math.floor(point.landmark.x * sharedExtractCanvas.width);
+                const y = Math.floor(point.landmark.y * sharedExtractCanvas.height);
 
-                // 5x5 영역 샘플링
-                let pointR = 0, pointG = 0, pointB = 0;
-                let pointSamples = 0;
+                // 동적 반경으로 원형 영역 샘플링
+                const samples = sampleCircularRegion(x, y, dynamicRadius, cfg.brightnessMin, cfg.brightnessMax);
+                if (samples.count === 0) return;
 
-                for (let dx = -2; dx <= 2; dx++) {
-                    for (let dy = -2; dy <= 2; dy++) {
-                        const pixelX = Math.max(0, Math.min(sharedExtractCanvas.width - 1, x + dx));
-                        const pixelY = Math.max(0, Math.min(sharedExtractCanvas.height - 1, y + dy));
+                const avgR = samples.r / samples.count;
+                const avgG = samples.g / samples.count;
+                const avgB = samples.b / samples.count;
 
-                        const imageData = sharedExtractCtx.getImageData(pixelX, pixelY, 1, 1);
-                        const [r, g, b] = imageData.data;
+                faceR += avgR * point.weight;
+                faceG += avgG * point.weight;
+                faceB += avgB * point.weight;
+                faceWeight += point.weight;
 
-                        // 너무 어둡거나 밝은 픽셀 제외 (그림자/하이라이트)
-                        const brightness = (r + g + b) / 3;
-                        if (brightness > 40 && brightness < 240) {
-                            pointR += r;
-                            pointG += g;
-                            pointB += b;
-                            pointSamples++;
-                        }
-                    }
-                }
-
-                if (pointSamples > 0) {
-                    const avgR = pointR / pointSamples;
-                    const avgG = pointG / pointSamples;
-                    const avgB = pointB / pointSamples;
-
-                    totalR += avgR * point.weight;
-                    totalG += avgG * point.weight;
-                    totalB += avgB * point.weight;
-                    totalWeight += point.weight;
-
-                    samples.push({ r: avgR, g: avgG, b: avgB });
-                }
+                faceSamples.push({ r: avgR, g: avgG, b: avgB, region: point.region });
+                regionStats[point.region].push({ r: avgR, g: avgG, b: avgB });
             });
 
-            if (totalWeight === 0) return null;
+            if (faceWeight === 0) return null;
 
-            const avgR = Math.round(totalR / totalWeight);
-            const avgG = Math.round(totalG / totalWeight);
-            const avgB = Math.round(totalB / totalWeight);
+            // 얼굴 평균 RGB
+            let finalR = faceR / faceWeight;
+            let finalG = faceG / faceWeight;
+            let finalB = faceB / faceWeight;
 
-            // ✅ 개선된 분석
+            // ========================================
+            // ✅ DSCAS Multi-region Analysis (목 영역 추가)
+            // ========================================
+            let neckData = null;
+            let regionConsistency = 1.0; // 영역 간 일관성 (1.0 = 완벽)
+
+            if (multiCfg.enabled) {
+                // 턱 아래 목 영역 샘플링
+                const neckSamples = sampleNeckRegion(landmarks, dynamicRadius, cfg.brightnessMin, cfg.brightnessMax);
+
+                if (neckSamples.count >= multiCfg.minNeckSamples) {
+                    const neckR = neckSamples.r / neckSamples.count;
+                    const neckG = neckSamples.g / neckSamples.count;
+                    const neckB = neckSamples.b / neckSamples.count;
+
+                    neckData = { r: neckR, g: neckG, b: neckB, count: neckSamples.count };
+
+                    // 얼굴-목 일관성 체크 (ΔE76)
+                    const faceLab = rgbToLab(finalR, finalG, finalB);
+                    const neckLab = rgbToLab(neckR, neckG, neckB);
+                    const faceNeckDeltaE = de76(faceLab, neckLab);
+
+                    if (faceNeckDeltaE <= multiCfg.consistencyThreshold) {
+                        // 일관성 좋음 → 목 데이터 합산
+                        finalR = finalR * multiCfg.faceWeight + neckR * multiCfg.neckWeight;
+                        finalG = finalG * multiCfg.faceWeight + neckG * multiCfg.neckWeight;
+                        finalB = finalB * multiCfg.faceWeight + neckB * multiCfg.neckWeight;
+
+                        regionConsistency = 1 - (faceNeckDeltaE / multiCfg.consistencyThreshold) * 0.3;
+                        console.log(`🔬 목 영역 합산 (ΔE=${faceNeckDeltaE.toFixed(1)}, consistency=${(regionConsistency*100).toFixed(0)}%)`);
+                    } else {
+                        // 일관성 낮음 → 얼굴만 사용, 신뢰도 낮춤
+                        regionConsistency = 0.7;
+                        console.log(`⚠️ 얼굴-목 불일치 (ΔE=${faceNeckDeltaE.toFixed(1)}) → 얼굴만 사용`);
+                    }
+                }
+            }
+
+            const avgR = Math.round(finalR);
+            const avgG = Math.round(finalG);
+            const avgB = Math.round(finalB);
+
+            // ✅ 개선된 분석 (신뢰도 포함)
             const labColor = rgbToLab(avgR, avgG, avgB);
-            const undertoneAnalysis = analyzeUndertoneAdvanced(avgR, avgG, avgB, labColor);
+            const undertoneAnalysis = analyzeUndertoneAdvanced(avgR, avgG, avgB, labColor, regionConsistency);
 
             return {
                 rgb: { r: avgR, g: avgG, b: avgB },
                 hex: `#${avgR.toString(16).padStart(2, '0')}${avgG.toString(16).padStart(2, '0')}${avgB.toString(16).padStart(2, '0')}`,
                 undertone: undertoneAnalysis.undertone,
                 undertoneScore: undertoneAnalysis.score,
+                undertoneConfidence: undertoneAnalysis.confidence, // ✅ 신뢰도 추가
                 lab: labColor,
                 brightness: labColor.L,
                 chroma: undertoneAnalysis.chroma,
-                samples: samples.length
+                samples: faceSamples.length,
+                // ✅ 추가 메타데이터
+                regionStats: regionStats,
+                neckData: neckData,
+                regionConsistency: regionConsistency,
+                dynamicRadius: dynamicRadius
             };
+        }
+
+        // ✅ 원형 영역 샘플링 헬퍼 (Armenian 방식)
+        function sampleCircularRegion(cx, cy, radius, brightnessMin, brightnessMax) {
+            let r = 0, g = 0, b = 0, count = 0;
+
+            for (let dx = -radius; dx <= radius; dx++) {
+                for (let dy = -radius; dy <= radius; dy++) {
+                    // 원형 마스크
+                    if (dx * dx + dy * dy > radius * radius) continue;
+
+                    const px = Math.max(0, Math.min(sharedExtractCanvas.width - 1, cx + dx));
+                    const py = Math.max(0, Math.min(sharedExtractCanvas.height - 1, cy + dy));
+
+                    const imageData = sharedExtractCtx.getImageData(px, py, 1, 1);
+                    const [pr, pg, pb] = imageData.data;
+
+                    const brightness = (pr + pg + pb) / 3;
+                    if (brightness >= brightnessMin && brightness <= brightnessMax) {
+                        r += pr;
+                        g += pg;
+                        b += pb;
+                        count++;
+                    }
+                }
+            }
+
+            return { r, g, b, count };
+        }
+
+        // ✅ 목 영역 샘플링 헬퍼 (DSCAS 방식)
+        function sampleNeckRegion(landmarks, radius, brightnessMin, brightnessMax) {
+            let r = 0, g = 0, b = 0, count = 0;
+
+            // 턱 아래 영역 랜드마크들
+            const neckIndices = PC_CONFIG.MULTI_REGION.neckLandmarks;
+
+            neckIndices.forEach(idx => {
+                const lm = landmarks[idx];
+                if (!lm) return;
+
+                // 턱 아래로 약간 내려간 위치 (목 영역)
+                const x = Math.floor(lm.x * sharedExtractCanvas.width);
+                const y = Math.floor((lm.y + 0.03) * sharedExtractCanvas.height); // 3% 아래
+
+                // 화면 범위 체크
+                if (y >= sharedExtractCanvas.height) return;
+
+                const samples = sampleCircularRegion(x, y, radius, brightnessMin, brightnessMax);
+                r += samples.r;
+                g += samples.g;
+                b += samples.b;
+                count += samples.count;
+            });
+
+            return { r, g, b, count };
         }
 
         // ========== 얼굴 기하학적 측정 함수 ==========
@@ -5594,31 +5800,54 @@
             return { L, a, b: b_lab };
         }
 
-        // ✅ 개선된 언더톤 분석 (LAB 색공간 활용)
-        function analyzeUndertoneAdvanced(r, g, b, lab) {
-            // 방법 1: LAB 색공간에서 a*, b* 값 분석
+        // ✅ 개선된 언더톤 분석 (LAB 색공간 + 신뢰도 계산)
+        function analyzeUndertoneAdvanced(r, g, b, lab, regionConsistency = 1.0) {
+            const cfg = PC_CONFIG.UNDERTONE;
+
+            // ========================================
+            // ✅ 방법 1: LAB 색공간 분석
             // a* > 0: 빨간기 (쿨톤 경향)
             // b* > 0: 노란기 (웜톤 경향)
-            const labWarmScore = lab.b - (lab.a * 0.5);  // 노란기가 강하고 빨간기가 약하면 웜
+            // ========================================
+            const labWarmScore = lab.b - (lab.a * 0.5);
+            let method1Result = 'Neutral';
+            if (labWarmScore > 5) method1Result = 'Warm';
+            else if (labWarmScore < -3) method1Result = 'Cool';
 
-            // 방법 2: RGB 비율 분석
+            // ========================================
+            // ✅ 방법 2: RGB 비율 분석 (Yellow vs Pink Index)
+            // ========================================
             const total = r + g + b;
-            const rRatio = r / total;
-            const gRatio = g / total;
-            const bRatio = b / total;
+            const yellowIndex = (r * 0.5 + g) - b * 1.2;
+            const pinkIndex = (r + b * 0.8) - g * 1.1;
+            let method2Result = 'Neutral';
+            if (yellowIndex > pinkIndex + 15) method2Result = 'Warm';
+            else if (pinkIndex > yellowIndex + 15) method2Result = 'Cool';
 
-            // 웜톤: R과 G가 높고, 특히 G-B 차이가 큼 (노란기)
-            // 쿨톤: R과 B가 높고, G가 상대적으로 낮음 (핑크/블루 기운)
-            const yellowIndex = (r * 0.5 + g) - b * 1.2;  // 노란기 지수
-            const pinkIndex = (r + b * 0.8) - g * 1.1;    // 핑크기 지수
+            // ========================================
+            // ✅ 방법 3: Golden/Rosy Ratio 분석
+            // ========================================
+            const goldenRatio = (r - b) / (r + b + 1);
+            const rosyRatio = (r - g) / (r + g + 1);
+            let method3Result = 'Neutral';
+            if (goldenRatio > 0.12 && rosyRatio < 0.06) method3Result = 'Warm';
+            else if (rosyRatio > 0.06 && goldenRatio < 0.1) method3Result = 'Cool';
 
-            // 방법 3: 피부색 특성 분석
-            // 웜톤 피부: 황금빛, 복숭아빛, 올리브빛
-            // 쿨톤 피부: 핑크빛, 붉은빛, 파란빛
-            const goldenRatio = (r - b) / (r + b + 1);    // 골든 비율 (웜톤 지표)
-            const rosyRatio = (r - g) / (r + g + 1);       // 로지 비율 (쿨톤 지표)
+            // ========================================
+            // ✅ 방법 일치도 계산 (신뢰도의 핵심)
+            // ========================================
+            const methods = [method1Result, method2Result, method3Result];
+            const warmCount = methods.filter(m => m === 'Warm').length;
+            const coolCount = methods.filter(m => m === 'Cool').length;
+            const neutralCount = methods.filter(m => m === 'Neutral').length;
 
-            // 종합 점수 계산
+            // 일치도: 3개 일치 = 100%, 2개 일치 = 67%, 모두 다름 = 33%
+            const maxAgreement = Math.max(warmCount, coolCount, neutralCount);
+            const methodAgreement = maxAgreement / 3;
+
+            // ========================================
+            // ✅ 종합 점수 계산 (기존 로직 유지)
+            // ========================================
             let warmScore = 0;
             let coolScore = 0;
 
@@ -5648,12 +5877,10 @@
             const min = Math.min(r, g, b);
             const chroma = max - min;
 
-            // 최종 판정 (더 엄격한 기준 - 뉴트럴 범위 축소)
+            // 최종 판정
             const scoreDiff = warmScore - coolScore;
             let undertone, score;
 
-            // 기존: >=3 웜, <=-3 쿨, 나머지 뉴트럴 (너무 넓음)
-            // 개선: >=2 웜, <=-2 쿨, -1~1만 뉴트럴 (좁은 범위)
             if (scoreDiff >= 2) {
                 undertone = 'Warm';
                 score = scoreDiff;
@@ -5661,10 +5888,27 @@
                 undertone = 'Cool';
                 score = Math.abs(scoreDiff);
             } else {
-                // 정말 애매한 경우만 뉴트럴
                 undertone = 'Neutral';
                 score = Math.abs(scoreDiff);
             }
+
+            // ========================================
+            // ✅ 신뢰도 계산 (Deep Armocromia 기준 개선)
+            // ========================================
+            // 기본 신뢰도: 점수 차이 기반 (0-8점 → 40-70%)
+            const maxPossibleScore = 8; // 3가지 방법 최대 점수 합
+            const baseConfidence = cfg.minConfidence +
+                (Math.abs(scoreDiff) / maxPossibleScore) * (cfg.maxConfidence - cfg.minConfidence - 15);
+
+            // 방법 일치 보너스 (3개 일치 시 +15%)
+            const agreementBonus = methodAgreement >= 1 ? cfg.methodAgreementBonus * methodAgreement : 0;
+
+            // 영역 일관성 보정 (얼굴-목 일치 시 유지, 불일치 시 감소)
+            const consistencyFactor = regionConsistency;
+
+            // 최종 신뢰도 (40-85% 범위)
+            let confidence = Math.round((baseConfidence + agreementBonus) * consistencyFactor);
+            confidence = Math.max(cfg.minConfidence, Math.min(cfg.maxConfidence, confidence));
 
             console.log('🔬 언더톤 분석:', {
                 labWarmScore: labWarmScore.toFixed(2),
@@ -5673,10 +5917,22 @@
                 goldenRatio: goldenRatio.toFixed(3),
                 rosyRatio: rosyRatio.toFixed(3),
                 warmScore, coolScore,
-                result: undertone
+                result: undertone,
+                // ✅ 신뢰도 관련 로그 추가
+                methods: `${method1Result}/${method2Result}/${method3Result}`,
+                methodAgreement: `${(methodAgreement * 100).toFixed(0)}%`,
+                regionConsistency: `${(regionConsistency * 100).toFixed(0)}%`,
+                confidence: `${confidence}%`
             });
 
-            return { undertone, score, chroma };
+            return {
+                undertone,
+                score,
+                chroma,
+                confidence,  // ✅ 신뢰도 추가
+                methodAgreement: Math.round(methodAgreement * 100),
+                methods: { lab: method1Result, rgb: method2Result, ratio: method3Result }
+            };
         }
 
         // ✅ 개선된 퍼스널컬러 시즌 결정 (엄격한 기준)
