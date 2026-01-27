@@ -1053,7 +1053,7 @@ window.HAIRGATOR_PERSONAL_COLOR = (function() {
 
         ctx.clearRect(0, 0, overlay.width, overlay.height);
         ctx.fillStyle = color;
-        ctx.globalAlpha = 0.6;
+        ctx.globalAlpha = 0.9;
         ctx.fillRect(0, 0, overlay.width, overlay.height / 4);
         ctx.globalAlpha = 1.0;
     }
