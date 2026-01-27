@@ -4211,12 +4211,17 @@
                 ciede2000Threshold: 25    // ΔE00 차이 임계값 (이하면 Neutral)
             },
             SEASON: {
-                warm_L_spring: 68,
-                warm_L_autumn: 58,
-                cool_L_summer: 63,
-                cool_L_winter: 50,
-                chroma_spring_bright: 50,
-                chroma_summer_bright: 45,
+                // ✅ ITA 연구 기반 임계값 (Chardon et al. 1991, b*=16 가정)
+                // ITA > 55° (Very Light) → L* > 73
+                // ITA 41-55° (Light) → L* ≈ 64-73
+                // ITA 28-41° (Intermediate) → L* ≈ 59-64
+                // ITA 10-28° (Tan) → L* ≈ 53-59
+                warm_L_spring: 68,     // 봄: L* >= 68 (Light~Very Light, ITA ~52°)
+                warm_L_autumn: 58,     // 가을 소프트: L* >= 58 (Intermediate~Tan, ITA ~27°)
+                cool_L_summer: 63,     // 여름: L* >= 63 (Light~Intermediate, ITA ~40°)
+                cool_L_winter: 55,     // 겨울: L* < 55 (Tan~Brown, ITA ~17°) - 기존 50에서 상향
+                chroma_spring_bright: 50,  // 봄 브라이트 채도 기준
+                chroma_summer_bright: 45,  // 여름 브라이트 채도 기준
                 neutral_effectiveB_split: 2
             }
         };
@@ -6045,8 +6050,10 @@
             };
         }
 
-        // ✅ 개선된 퍼스널컬러 시즌 결정 (엄격한 기준)
+        // ✅ 개선된 퍼스널컬러 시즌 결정 (PC_CONFIG 기반)
         function getPersonalColorSeason(undertone, brightness, chroma) {
+            const cfg = PC_CONFIG.SEASON;
+
             // brightness: LAB의 L값 (0-100) 또는 RGB 평균 (0-255)
             // chroma: 채도 (0-255)
 
@@ -6054,59 +6061,59 @@
             const L = brightness > 100 ? (brightness / 255) * 100 : brightness;
             const C = chroma || 50; // 기본값
 
-            // 시즌 결정 기준 (엄격하게 조정):
-            // 봄 웜: 정말 밝고(L>=70) + 웜톤
-            // 가을 웜: 중간~어두운(L<70) + 웜톤
-            // 여름 쿨: 밝고(L>=65) + 쿨톤
-            // 겨울 쿨: 중간~어두운(L<65) + 쿨톤
+            // 시즌 결정 기준 (PC_CONFIG 사용):
+            // 봄 웜: 밝고(L >= warm_L_spring) + 웜톤
+            // 가을 웜: 중간~어두운(L < warm_L_spring) + 웜톤
+            // 여름 쿨: 밝고(L >= cool_L_summer) + 쿨톤
+            // 겨울 쿨: 어두운(L < cool_L_winter) + 쿨톤
 
-            console.log(`🎨 시즌 결정: L=${L.toFixed(1)}, C=${C}, undertone=${undertone}`);
+            console.log(`🎨 시즌 결정: L=${L.toFixed(1)}, C=${C}, undertone=${undertone}, cfg: spring≥${cfg.warm_L_spring}, autumn≥${cfg.warm_L_autumn}, summer≥${cfg.cool_L_summer}, winter<${cfg.cool_L_winter}`);
 
             if (undertone === 'Warm') {
-                if (L >= 70) {
-                    // 정말 밝은 웜톤 = 봄
-                    if (C > 50) {
+                if (L >= cfg.warm_L_spring) {
+                    // 밝은 웜톤 = 봄
+                    if (C > cfg.chroma_spring_bright) {
                         return { season: '봄 웜 브라이트', emoji: '🌸', color: '#FF6B6B', subtype: 'bright' };
                     } else {
                         return { season: '봄 웜 라이트', emoji: '🌷', color: '#FFB7C5', subtype: 'light' };
                     }
-                } else if (L >= 60) {
+                } else if (L >= cfg.warm_L_autumn) {
                     // 중간 밝기 웜톤 = 가을 소프트/뮤트
-                    if (C > 50) {
+                    if (C > cfg.chroma_spring_bright) {
                         return { season: '가을 웜 소프트', emoji: '🍂', color: '#CD853F', subtype: 'soft' };
                     } else {
                         return { season: '가을 웜 뮤트', emoji: '🍁', color: '#D2691E', subtype: 'muted' };
                     }
                 } else {
                     // 어두운 웜톤 = 가을 딥
-                    if (C > 50) {
+                    if (C > cfg.chroma_spring_bright) {
                         return { season: '가을 웜 딥', emoji: '🍂', color: '#8B4513', subtype: 'deep' };
                     } else {
                         return { season: '가을 웜 뮤트', emoji: '🍁', color: '#A0522D', subtype: 'muted' };
                     }
                 }
             } else if (undertone === 'Cool') {
-                if (L >= 65) {
+                if (L >= cfg.cool_L_summer) {
                     // 밝은 쿨톤 = 여름
-                    if (C > 45) {
+                    if (C > cfg.chroma_summer_bright) {
                         return { season: '여름 쿨 브라이트', emoji: '🌊', color: '#4169E1', subtype: 'bright' };
                     } else {
                         return { season: '여름 쿨 라이트', emoji: '💜', color: '#87CEEB', subtype: 'light' };
                     }
-                } else if (L >= 50) {
+                } else if (L >= cfg.cool_L_winter) {
                     // 중간 밝기 쿨톤 = 여름 뮤트
                     return { season: '여름 쿨 뮤트', emoji: '🌙', color: '#9370DB', subtype: 'muted' };
                 } else {
                     // 어두운 쿨톤 = 겨울
-                    if (C > 45) {
+                    if (C > cfg.chroma_summer_bright) {
                         return { season: '겨울 쿨 딥', emoji: '❄️', color: '#191970', subtype: 'deep' };
                     } else {
                         return { season: '겨울 쿨 뮤트', emoji: '🌙', color: '#4169E1', subtype: 'muted' };
                     }
                 }
             } else {
-                // Neutral - 밝기로 구분
-                if (L >= 65) {
+                // Neutral - 밝기로 구분 (summer 임계값 사용)
+                if (L >= cfg.cool_L_summer) {
                     return { season: '뉴트럴 라이트', emoji: '🌷', color: '#DDA0DD', subtype: 'light' };
                 } else {
                     return { season: '뉴트럴 소프트', emoji: '🍁', color: '#BC8F8F', subtype: 'soft' };
