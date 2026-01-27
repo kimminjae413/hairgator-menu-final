@@ -4223,6 +4223,13 @@
                 chroma_spring_bright: 50,  // 봄 브라이트 채도 기준
                 chroma_summer_bright: 45,  // 여름 브라이트 채도 기준
                 neutral_effectiveB_split: 2
+            },
+            // ✅ Task 2: 가중치 투표 설정
+            WEIGHTS: {
+                lab: 0.35,        // LAB 색공간 (지각학적 표준)
+                ciede2000: 0.35,  // CIEDE2000 (참조값 기반, 연구 벤치마크)
+                rgb: 0.20,        // RGB 비율 (보조)
+                ratio: 0.10      // Golden/Rosy 비율 (참고용)
             }
         };
 
@@ -5938,58 +5945,56 @@
             const methodAgreement = maxAgreement / 4;
 
             // ========================================
-            // ✅ 종합 점수 계산 (기존 로직 유지)
+            // ✅ Task 2: 가중치 투표 시스템
+            // LAB 0.35, CIEDE2000 0.35, RGB 0.20, Ratio 0.10
             // ========================================
-            let warmScore = 0;
-            let coolScore = 0;
+            const weights = PC_CONFIG.WEIGHTS;
+            let warmWeight = 0;
+            let coolWeight = 0;
+            let neutralWeight = 0;
 
-            // LAB 기반 점수
-            if (labWarmScore > 10) warmScore += 3;
-            else if (labWarmScore > 5) warmScore += 2;
-            else if (labWarmScore > 0) warmScore += 1;
-            else if (labWarmScore < -5) coolScore += 2;
-            else if (labWarmScore < 0) coolScore += 1;
+            // LAB (0.35) - 지각학적 표준
+            if (method1Result === 'Warm') warmWeight += weights.lab;
+            else if (method1Result === 'Cool') coolWeight += weights.lab;
+            else neutralWeight += weights.lab;
 
-            // RGB 비율 기반 점수
-            if (yellowIndex > pinkIndex + 30) warmScore += 3;
-            else if (yellowIndex > pinkIndex + 15) warmScore += 2;
-            else if (yellowIndex > pinkIndex) warmScore += 1;
-            else if (pinkIndex > yellowIndex + 30) coolScore += 3;
-            else if (pinkIndex > yellowIndex + 15) coolScore += 2;
-            else if (pinkIndex > yellowIndex) coolScore += 1;
+            // RGB (0.20) - 보조
+            if (method2Result === 'Warm') warmWeight += weights.rgb;
+            else if (method2Result === 'Cool') coolWeight += weights.rgb;
+            else neutralWeight += weights.rgb;
 
-            // 골든/로지 비율 점수
-            if (goldenRatio > 0.15) warmScore += 2;
-            else if (goldenRatio > 0.08) warmScore += 1;
-            if (rosyRatio > 0.08 && goldenRatio < 0.1) coolScore += 2;
-            else if (rosyRatio > 0.04) coolScore += 1;
+            // Ratio (0.10) - 참고용
+            if (method3Result === 'Warm') warmWeight += weights.ratio;
+            else if (method3Result === 'Cool') coolWeight += weights.ratio;
+            else neutralWeight += weights.ratio;
 
-            // ✅ CIEDE2000 기반 점수 (연구 벤치마크)
-            if (dE00Diff > 40) warmScore += 3;
-            else if (dE00Diff > 25) warmScore += 2;
-            else if (dE00Diff > 10) warmScore += 1;
-            else if (dE00Diff < -40) coolScore += 3;
-            else if (dE00Diff < -25) coolScore += 2;
-            else if (dE00Diff < -10) coolScore += 1;
+            // CIEDE2000 (0.35) - 연구 벤치마크
+            if (method4Result === 'Warm') warmWeight += weights.ciede2000;
+            else if (method4Result === 'Cool') coolWeight += weights.ciede2000;
+            else neutralWeight += weights.ciede2000;
 
             // 채도 계산
             const max = Math.max(r, g, b);
             const min = Math.min(r, g, b);
             const chroma = max - min;
 
-            // 최종 판정
-            const scoreDiff = warmScore - coolScore;
+            // ========================================
+            // ✅ 가중치 기반 최종 판정
+            // ========================================
+            const maxWeight = Math.max(warmWeight, coolWeight, neutralWeight);
+            const weightDiff = warmWeight - coolWeight;
             let undertone, score;
 
-            if (scoreDiff >= 2) {
+            // 가중치 차이 0.15 이상이면 명확한 판정
+            if (weightDiff >= 0.15) {
                 undertone = 'Warm';
-                score = scoreDiff;
-            } else if (scoreDiff <= -2) {
+                score = Math.round(weightDiff * 10);
+            } else if (weightDiff <= -0.15) {
                 undertone = 'Cool';
-                score = Math.abs(scoreDiff);
+                score = Math.round(Math.abs(weightDiff) * 10);
             } else {
                 undertone = 'Neutral';
-                score = Math.abs(scoreDiff);
+                score = Math.round(Math.abs(weightDiff) * 10);
             }
 
             // ========================================
@@ -6016,10 +6021,11 @@
                     agreementBonus = 0;
                 }
             } else {
-                // ✅ Warm/Cool: scoreDiff 기반 (기존 로직 유지)
+                // ✅ Warm/Cool: weightDiff 기반 (Task 2 가중치 투표)
                 // 명확한 Warm/Cool은 높은 신뢰도 (60-80%)
-                const normalizedScore = Math.abs(scoreDiff) / maxPossibleScore;
-                baseConfidence = cfg.minConfidence + normalizedScore * 35; // 40-75%
+                // weightDiff 최대값 = 0.70 (lab+ciede2000 = 0.35+0.35)
+                const normalizedWeight = Math.min(Math.abs(weightDiff) / 0.70, 1.0);
+                baseConfidence = cfg.minConfidence + normalizedWeight * 35; // 40-75%
                 agreementBonus = methodAgreement >= 0.75 ? cfg.methodAgreementBonus * methodAgreement : 5;
             }
 
@@ -6040,7 +6046,11 @@
                 dE00Warm: dE00Warm.toFixed(2),
                 dE00Cool: dE00Cool.toFixed(2),
                 dE00Diff: dE00Diff.toFixed(2),
-                warmScore, coolScore,
+                // ✅ Task 2: 가중치 투표 결과
+                warmWeight: warmWeight.toFixed(2),
+                coolWeight: coolWeight.toFixed(2),
+                neutralWeight: neutralWeight.toFixed(2),
+                weightDiff: weightDiff.toFixed(2),
                 result: undertone,
                 // ✅ 4가지 방법 결과
                 methods: `${method1Result}/${method2Result}/${method3Result}/${method4Result}`,
