@@ -503,11 +503,15 @@ async function startCamera() {
         });
 
         cameraFaceMesh.onResults((results) => {
+            const cameraArea = document.getElementById('cameraArea');
+
             if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
                 if (!isFaceDetected) {
                     isFaceDetected = true;
                     indicator.style.display = 'flex';
                     captureBtn.disabled = !selectedGender;
+                    // ✨ 얼굴 감지 시 실루엣 가이드 페이드 아웃
+                    if (cameraArea) cameraArea.classList.add('face-detected');
                     console.log('👤 얼굴 감지됨');
                 }
                 lastFaceResults = results;
@@ -519,6 +523,8 @@ async function startCamera() {
                     isFaceDetected = false;
                     indicator.style.display = 'none';
                     captureBtn.disabled = true;
+                    // ✨ 얼굴 사라지면 실루엣 가이드 다시 표시
+                    if (cameraArea) cameraArea.classList.remove('face-detected');
                     clearLandmarkCanvas();
                 }
                 lastFaceResults = null;

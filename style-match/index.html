@@ -163,6 +163,52 @@
                         <video id="cameraVideo" autoplay playsinline muted></video>
                         <canvas id="cameraCanvas" style="display: none;"></canvas>
                         <canvas id="landmarkCanvas" class="landmark-canvas"></canvas>
+
+                        <!-- ✨ 얼굴 실루엣 가이드 오버레이 -->
+                        <div class="silhouette-guide" id="silhouetteGuide">
+                            <svg viewBox="0 0 200 280" class="silhouette-svg">
+                                <!-- 머리 + 목 실루엣 -->
+                                <defs>
+                                    <linearGradient id="silhouetteGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" style="stop-color:rgba(255,107,107,0.3)"/>
+                                        <stop offset="100%" style="stop-color:rgba(255,20,147,0.2)"/>
+                                    </linearGradient>
+                                </defs>
+                                <!-- 얼굴 윤곽 (타원형) -->
+                                <ellipse cx="100" cy="110" rx="70" ry="90"
+                                    fill="none"
+                                    stroke="url(#silhouetteGradient)"
+                                    stroke-width="3"
+                                    stroke-dasharray="8,4"/>
+                                <!-- 목 -->
+                                <path d="M65 195 Q65 210, 75 220 L125 220 Q135 210, 135 195"
+                                    fill="none"
+                                    stroke="url(#silhouetteGradient)"
+                                    stroke-width="3"
+                                    stroke-dasharray="8,4"/>
+                                <!-- 눈 위치 가이드 (점선) -->
+                                <line x1="45" y1="100" x2="85" y2="100"
+                                    stroke="rgba(255,255,255,0.3)"
+                                    stroke-width="1"
+                                    stroke-dasharray="3,3"/>
+                                <line x1="115" y1="100" x2="155" y2="100"
+                                    stroke="rgba(255,255,255,0.3)"
+                                    stroke-width="1"
+                                    stroke-dasharray="3,3"/>
+                                <!-- 코 위치 -->
+                                <line x1="100" y1="115" x2="100" y2="140"
+                                    stroke="rgba(255,255,255,0.2)"
+                                    stroke-width="1"
+                                    stroke-dasharray="3,3"/>
+                                <!-- 입 위치 -->
+                                <line x1="75" y1="160" x2="125" y2="160"
+                                    stroke="rgba(255,255,255,0.2)"
+                                    stroke-width="1"
+                                    stroke-dasharray="3,3"/>
+                            </svg>
+                            <p class="silhouette-hint">얼굴을 가이드에 맞춰주세요</p>
+                        </div>
+
                         <div class="camera-overlay" id="cameraOverlay">
                             <p class="camera-hint" data-i18n="styleMatch.cameraHint">정면을 바라봐 주세요</p>
                         </div>

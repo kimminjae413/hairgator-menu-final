@@ -368,6 +368,66 @@ body::after {
     opacity: 0.7; /* ???�명?�게 */
 }
 
+/* ✨ 얼굴 실루엣 가이드 오버레이 */
+.silhouette-guide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 5;
+    transition: opacity 0.5s ease;
+}
+
+.silhouette-guide.hidden {
+    opacity: 0;
+}
+
+.silhouette-svg {
+    width: 60%;
+    max-width: 220px;
+    height: auto;
+    animation: silhouette-pulse 2s ease-in-out infinite;
+}
+
+@keyframes silhouette-pulse {
+    0%, 100% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(0.98);
+    }
+}
+
+.silhouette-hint {
+    position: absolute;
+    bottom: 15%;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 6px 16px;
+    border-radius: 20px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    animation: hint-fade 3s ease-in-out infinite;
+}
+
+@keyframes hint-fade {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* 얼굴 감지되면 실루엣 숨김 */
+.camera-area.face-detected .silhouette-guide {
+    opacity: 0.2;
+}
+
 /* 분석 �??�버?�이 */
 .analyzing-overlay {
     position: absolute;
