@@ -572,7 +572,7 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
   }
 
   // 1. 간단한 인사말 감지
-  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워', '여보세요'];
+  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워', '여보세요', 'สวัสดี', 'sawatdee'];
   const isSimpleGreeting = simpleGreetings.some(g => {
     const query = user_query.toLowerCase().trim();
     return query === g ||
@@ -2403,6 +2403,10 @@ function detectLanguage(text) {
   const chineseRegex = /[\u4E00-\u9FFF]/;
   if (chineseRegex.test(text)) return 'chinese';
 
+  // 태국어 감지 (Thai script: U+0E00-U+0E7F)
+  const thaiRegex = /[\u0E00-\u0E7F]/;
+  if (thaiRegex.test(text)) return 'thai';
+
   // 스페인어 감지 (¿¡ñü 및 특수 악센트)
   const spanishRegex = /[¿¡ñüáéíóú]/i;
   const spanishKeywords = /\b(hola|gracias|por favor|qué|cómo|cuál|dónde|cabello|corte|peinado|flequillo|capas)\b/i;
@@ -2447,7 +2451,7 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
     .replace(/그래쥬에이션|그라데이션|graduation/gi, 'Graduation');
 
   // 간단한 인사말 처리 (7개국어)
-  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워', '여보세요', 'hola', 'buenos días'];
+  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워', '여보세요', 'hola', 'buenos días', 'สวัสดี', 'sawatdee'];
   const isGreeting = simpleGreetings.some(g => {
     const query = user_query.toLowerCase().trim();
     return query === g || query === g + '하세요' || query === g + '!' || query === g + '?';
@@ -2461,7 +2465,8 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
       chinese: '你好！请随便问关于发型的问题。😊',
       vietnamese: 'Xin chào! Hỏi gì về kiểu tóc cũng được. 😊',
       indonesian: 'Halo! Silakan tanyakan apa saja tentang gaya rambut. 😊',
-      spanish: '¡Hola! Pregunta lo que quieras sobre peinados. 😊\n\nEjemplos:\n• "Explica las categorías de longitud"\n• "¿Qué es el corte en capas?"\n• "Recomienda estilos para mi forma de rostro"'
+      spanish: '¡Hola! Pregunta lo que quieras sobre peinados. 😊\n\nEjemplos:\n• "Explica las categorías de longitud"\n• "¿Qué es el corte en capas?"\n• "Recomienda estilos para mi forma de rostro"',
+      thai: 'สวัสดี! ถามอะไรก็ได้เกี่ยวกับทรงผม 😊\n\nตัวอย่าง:\n• "อธิบายหมวดหมู่ความยาว"\n• "Layer Cut คืออะไร?"\n• "แนะนำสไตล์ตามรูปหน้า"'
     };
     const msg = greetingResponses[userLanguage] || greetingResponses['korean'];
     return {
@@ -2478,7 +2483,12 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
     const securityResponse = {
       korean: '죄송합니다. 해당 정보는 핵심 보안 사항입니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"\n• "헤어 길이 분류 시스템"',
       english: 'I apologize, but that information is confidential.\n\nHow about these questions instead?\n• "Basic principles of layer cut"\n• "Recommended styles by face shape"',
-      spanish: 'Lo siento, esa información es confidencial.\n\n¿Qué tal estas preguntas?\n• "Principios básicos del corte en capas"\n• "Estilos recomendados según forma de rostro"'
+      japanese: '申し訳ございませんが、その情報は機密事項です。\n\n代わりにこのような質問はいかがですか？\n• 「レイヤーカットの基本原理は？」\n• 「顔型別おすすめスタイル」',
+      chinese: '抱歉，该信息属于核心保密事项。\n\n您可以问这些问题：\n• "层次剪发的基本原理？"\n• "各脸型推荐发型"',
+      vietnamese: 'Xin lỗi, thông tin đó là thông tin bảo mật.\n\nBạn có thể hỏi những câu này:\n• "Nguyên tắc cơ bản của layer cut?"\n• "Kiểu tóc phù hợp theo hình khuôn mặt"',
+      indonesian: 'Maaf, informasi tersebut adalah informasi keamanan inti.\n\nBagaimana dengan pertanyaan ini?\n• "Prinsip dasar layer cut?"\n• "Gaya yang direkomendasikan berdasarkan bentuk wajah"',
+      spanish: 'Lo siento, esa información es confidencial.\n\n¿Qué tal estas preguntas?\n• "Principios básicos del corte en capas"\n• "Estilos recomendados según forma de rostro"',
+      thai: 'ขออภัย ข้อมูลนี้เป็นความลับ\n\nลองถามคำถามเหล่านี้แทนดีไหม?\n• "หลักการพื้นฐานของ Layer Cut?"\n• "สไตล์แนะนำตามรูปหน้า"'
     };
     const msg = securityResponse[userLanguage] || securityResponse['korean'];
     return {
@@ -3552,14 +3562,15 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
 
   console.log(`🔍 Gemini File Search 응답: "${user_query}"`);
 
-  // 간단한 인사말 처리 (7개국어)
+  // 간단한 인사말 처리 (8개국어)
   const simpleGreetings = [
     '안녕', 'hi', 'hello', '헬로', '하이', '반가워',
     'こんにちは', 'おはよう', 'konnichiwa',  // 일본어
     '你好', '您好', 'nihao',  // 중국어
     'xin chào', 'chào',  // 베트남어
     'halo', 'selamat',  // 인도네시아어
-    'hola', 'buenos días', 'buenas tardes'  // 스페인어
+    'hola', 'buenos días', 'buenas tardes',  // 스페인어
+    'สวัสดี', 'sawatdee'  // 태국어
   ];
   const isGreeting = simpleGreetings.some(g => {
     const query = user_query.toLowerCase().trim();
@@ -3574,7 +3585,8 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
       chinese: '你好！请随便问关于发型的问题。\n\n例子：\n1. "A Length是什么？"\n2. "解释一下Zone分区"\n3. "Layer和Graduation有什么区别？"',
       vietnamese: 'Xin chào! Hãy hỏi bất cứ điều gì về kiểu tóc.\n\nVí dụ:\n1. "A Length là gì?"\n2. "Giải thích phân vùng Zone"\n3. "Sự khác biệt giữa Layer và Graduation?"',
       indonesian: 'Halo! Silakan tanyakan apa saja tentang gaya rambut.\n\nContoh:\n1. "Apa itu A Length?"\n2. "Jelaskan pembagian Zone"\n3. "Perbedaan antara Layer dan Graduation?"',
-      spanish: '¡Hola! Pregunta lo que quieras sobre peinados.\n\nEjemplos:\n1. "¿Qué es A Length?"\n2. "Explica la división de Zonas"\n3. "¿Diferencia entre Layer y Graduation?"'
+      spanish: '¡Hola! Pregunta lo que quieras sobre peinados.\n\nEjemplos:\n1. "¿Qué es A Length?"\n2. "Explica la división de Zonas"\n3. "¿Diferencia entre Layer y Graduation?"',
+      thai: 'สวัสดี! ถามอะไรก็ได้เกี่ยวกับทรงผม\n\nตัวอย่าง:\n1. "A Length คืออะไร?"\n2. "อธิบายการแบ่ง Zone"\n3. "ความแตกต่างระหว่าง Layer และ Graduation?"'
     };
     const msg = greetingMessages[userLanguage] || greetingMessages['korean'];
 
@@ -3607,7 +3619,8 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
       chinese: '抱歉，该信息属于核心保密事项。\n\n您可以问这些问题：\n1. "层次剪发的基本原理？"\n2. "各脸型推荐发型"\n3. "头发长度分类系统"',
       vietnamese: 'Xin lỗi, thông tin đó là thông tin bảo mật.\n\nBạn có thể hỏi những câu này:\n1. "Nguyên tắc cơ bản của layer cut?"\n2. "Kiểu tóc phù hợp theo hình khuôn mặt"\n3. "Hệ thống phân loại độ dài tóc"',
       indonesian: 'Maaf, informasi tersebut adalah informasi keamanan inti.\n\nBagaimana dengan pertanyaan ini?\n1. "Prinsip dasar layer cut?"\n2. "Gaya yang direkomendasikan berdasarkan bentuk wajah"\n3. "Sistem klasifikasi panjang rambut"',
-      spanish: 'Lo siento, esa información es confidencial.\n\n¿Qué tal estas preguntas?\n1. "¿Principios básicos del corte en capas?"\n2. "Estilos recomendados según forma de rostro"\n3. "Sistema de clasificación de longitud de cabello"'
+      spanish: 'Lo siento, esa información es confidencial.\n\n¿Qué tal estas preguntas?\n1. "¿Principios básicos del corte en capas?"\n2. "Estilos recomendados según forma de rostro"\n3. "Sistema de clasificación de longitud de cabello"',
+      thai: 'ขออภัย ข้อมูลนี้เป็นความลับ\n\nลองถามคำถามเหล่านี้แทนดีไหม?\n1. "หลักการพื้นฐานของ Layer Cut?"\n2. "สไตล์แนะนำตามรูปหน้า"\n3. "ระบบการจำแนกความยาวผม"'
     };
     const msg = securityMessages[userLanguage] || securityMessages['korean'];
 
@@ -3760,7 +3773,8 @@ RAG 검색으로 관련 문서를 찾지 못했습니다.
       chinese: '⚠️ 官方理论书中没有此内容。根据一般美发知识回答。\n\n',
       vietnamese: '⚠️ Nội dung này không có trong lý thuyết chính thức. Trả lời dựa trên kiến thức làm tóc chung.\n\n',
       indonesian: '⚠️ Ini bukan dari teori resmi. Menjawab berdasarkan pengetahuan tata rambut umum.\n\n',
-      spanish: '⚠️ Esto no está en la teoría oficial. Respondiendo con conocimientos generales de peluquería.\n\n'
+      spanish: '⚠️ Esto no está en la teoría oficial. Respondiendo con conocimientos generales de peluquería.\n\n',
+      thai: '⚠️ เนื้อหานี้ไม่ได้อยู่ในทฤษฎีทางการ ตอบตามความรู้ทั่วไปเกี่ยวกับการทำผม\n\n'
     };
     const warningPrefix = fallbackWarnings[userLanguage] || fallbackWarnings.korean;
 
@@ -4031,7 +4045,7 @@ function getIntroMessage(type, language) {
 async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
   const { user_query, chat_history, recipe_context, language } = payload;
   // 클라이언트에서 보낸 언어 코드 → 서버 언어명 매핑
-  const langCodeMap = { ko: 'korean', en: 'english', ja: 'japanese', zh: 'chinese', vi: 'vietnamese', id: 'indonesian', es: 'spanish' };
+  const langCodeMap = { ko: 'korean', en: 'english', ja: 'japanese', zh: 'chinese', vi: 'vietnamese', id: 'indonesian', es: 'spanish', th: 'thai' };
   // 클라이언트에서 보낸 언어 우선, 없으면 쿼리에서 감지
   const userLanguage = (language && langCodeMap[language]) || detectLanguage(user_query);
 
@@ -4043,14 +4057,15 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
     console.log(`📋 레시피 컨텍스트 있음:`, recipe_context.analysis?.styleCode || recipe_context.analysis?.lengthName);
   }
 
-  // 간단한 인사말 처리 (7개국어)
+  // 간단한 인사말 처리 (8개국어)
   const simpleGreetings = [
     '안녕', 'hi', 'hello', '헬로', '하이', '반가워',
     'こんにちは', 'おはよう', 'konnichiwa',  // 일본어
     '你好', '您好', 'nihao',  // 중국어
     'xin chào', 'chào',  // 베트남어
     'halo', 'selamat',  // 인도네시아어
-    'hola', 'buenos días', 'buenas tardes'  // 스페인어
+    'hola', 'buenos días', 'buenas tardes',  // 스페인어
+    'สวัสดี', 'sawatdee'  // 태국어
   ];
   const isGreeting = simpleGreetings.some(g => {
     const query = user_query.toLowerCase().trim();
@@ -4065,7 +4080,8 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
       chinese: '你好！请随便问关于发型的问题。\n\n例子：\n1. "A Length是什么？"\n2. "解释一下Zone分区"\n3. "Layer和Graduation有什么区别？"',
       vietnamese: 'Xin chào! Hãy hỏi bất cứ điều gì về kiểu tóc.\n\nVí dụ:\n1. "A Length là gì?"\n2. "Giải thích phân vùng Zone"\n3. "Sự khác biệt giữa Layer và Graduation?"',
       indonesian: 'Halo! Silakan tanyakan apa saja tentang gaya rambut.\n\nContoh:\n1. "Apa itu A Length?"\n2. "Jelaskan pembagian Zone"\n3. "Perbedaan antara Layer dan Graduation?"',
-      spanish: '¡Hola! Pregunta lo que quieras sobre peinados.\n\nEjemplos:\n1. "¿Qué es A Length?"\n2. "Explica la división de Zonas"\n3. "¿Diferencia entre Layer y Graduation?"'
+      spanish: '¡Hola! Pregunta lo que quieras sobre peinados.\n\nEjemplos:\n1. "¿Qué es A Length?"\n2. "Explica la división de Zonas"\n3. "¿Diferencia entre Layer y Graduation?"',
+      thai: 'สวัสดี! ถามอะไรก็ได้เกี่ยวกับทรงผม\n\nตัวอย่าง:\n1. "A Length คืออะไร?"\n2. "อธิบายการแบ่ง Zone"\n3. "ความแตกต่างระหว่าง Layer และ Graduation?"'
     };
     const msg = greetingMessages[userLanguage] || greetingMessages['korean'];
 
@@ -4098,7 +4114,8 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
       chinese: '抱歉，该信息属于核心保密事项。\n\n您可以问这些问题：\n1. "层次剪发的基本原理？"\n2. "各脸型推荐发型"',
       vietnamese: 'Xin lỗi, thông tin đó là thông tin bảo mật.\n\nBạn có thể hỏi những câu này:\n1. "Nguyên tắc cơ bản của layer cut?"\n2. "Kiểu tóc phù hợp theo hình khuôn mặt"',
       indonesian: 'Maaf, informasi tersebut adalah informasi keamanan inti.\n\nBagaimana dengan pertanyaan ini?\n1. "Prinsip dasar layer cut?"\n2. "Gaya yang direkomendasikan berdasarkan bentuk wajah"',
-      spanish: 'Lo siento, esa información es confidencial.\n\n¿Qué tal estas preguntas?\n1. "¿Principios básicos del corte en capas?"\n2. "Estilos recomendados según forma de rostro"'
+      spanish: 'Lo siento, esa información es confidencial.\n\n¿Qué tal estas preguntas?\n1. "¿Principios básicos del corte en capas?"\n2. "Estilos recomendados según forma de rostro"',
+      thai: 'ขออภัย ข้อมูลนี้เป็นความลับ\n\nลองถามคำถามเหล่านี้แทนดีไหม?\n1. "หลักการพื้นฐานของ Layer Cut?"\n2. "สไตล์แนะนำตามรูปหน้า"'
     };
     const msg = securityMessages[userLanguage] || securityMessages['korean'];
 
@@ -4250,7 +4267,7 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
 
     // ⭐ 이론 이미지 감지 (89개 이론 인덱스)
     // 언어별 이론 인덱스 매핑: korean→ko, english→en, japanese→ja, chinese→zh, vietnamese→vi, indonesian→id, spanish→es
-    const langCodeMap = { korean: 'ko', english: 'en', japanese: 'ja', chinese: 'zh', vietnamese: 'vi', indonesian: 'id', spanish: 'es' };
+    const langCodeMap = { korean: 'ko', english: 'en', japanese: 'ja', chinese: 'zh', vietnamese: 'vi', indonesian: 'id', spanish: 'es', thai: 'th' };
     const theoryLang = langCodeMap[userLanguage] || 'ko';
     const theoryImageResult = await detectTheoryImageForQuery(user_query, theoryLang);
 
