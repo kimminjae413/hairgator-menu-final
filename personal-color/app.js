@@ -5633,12 +5633,9 @@
             let neckData = null;
             let regionConsistency = 1.0; // 영역 간 일관성 (1.0 = 완벽)
 
-            console.log(`🔍 [MULTI_REGION] enabled=${multiCfg.enabled}`);
             if (multiCfg.enabled) {
                 // 턱 아래 목 영역 샘플링
-                console.log(`🔍 [MULTI_REGION] 목 샘플링 시작...`);
                 const neckSamples = sampleNeckRegion(landmarks, dynamicRadius, cfg.brightnessMin, cfg.brightnessMax);
-                console.log(`🔍 [MULTI_REGION] neckSamples.count=${neckSamples.count}, minNeckSamples=${multiCfg.minNeckSamples}`);
 
                 if (neckSamples.count >= multiCfg.minNeckSamples) {
                     let neckR = neckSamples.r / neckSamples.count;
@@ -5830,36 +5827,24 @@
             // 턱 아래 영역 랜드마크들
             const neckIndices = PC_CONFIG.MULTI_REGION.neckLandmarks;
 
-            console.log(`🔍 [sampleNeckRegion] 시작: neckIndices=${JSON.stringify(neckIndices)}, radius=${radius}`);
-
             neckIndices.forEach(idx => {
                 const lm = landmarks[idx];
-                if (!lm) {
-                    console.log(`⚠️ [sampleNeckRegion] 랜드마크 ${idx} 없음`);
-                    return;
-                }
+                if (!lm) return;
 
                 // 턱 아래로 약간 내려간 위치 (목 영역)
                 const x = Math.floor(lm.x * sharedExtractCanvas.width);
                 const y = Math.floor((lm.y + 0.03) * sharedExtractCanvas.height); // 3% 아래
 
-                console.log(`🔍 [sampleNeckRegion] 랜드마크 ${idx}: lm.y=${lm.y.toFixed(3)}, 목 y=${y}, canvasH=${sharedExtractCanvas.height}`);
-
                 // 화면 범위 체크
-                if (y >= sharedExtractCanvas.height) {
-                    console.log(`⚠️ [sampleNeckRegion] 랜드마크 ${idx}: y=${y} 화면 범위 초과`);
-                    return;
-                }
+                if (y >= sharedExtractCanvas.height) return;
 
                 const samples = sampleCircularRegion(x, y, radius, brightnessMin, brightnessMax);
-                console.log(`✅ [sampleNeckRegion] 랜드마크 ${idx}: samples.count=${samples.count}`);
                 r += samples.r;
                 g += samples.g;
                 b += samples.b;
                 count += samples.count;
             });
 
-            console.log(`🔍 [sampleNeckRegion] 완료: 총 count=${count}, minRequired=${PC_CONFIG.MULTI_REGION.minNeckSamples}`);
             return { r, g, b, count };
         }
 
