@@ -1642,3 +1642,37 @@ const dE00Diff = dE00Cool - dE00Warm;
 |------|------|
 | `b194562` | feat: CIEDE2000 언더톤 분석 추가 (arxiv 벤치마크) |
 | `8c0cb21` | fix: analyzeUndertoneAdvanced return에 CIEDE2000 데이터 추가 |
+| `5b0a491` | refactor: getPersonalColorSeason PC_CONFIG 기반 + ITA 연구 임계값 |
+
+---
+
+### 🎯 시즌 파라미터 최적화 (ITA 연구 기반)
+
+**문제**: `getPersonalColorSeason` 함수가 PC_CONFIG.SEASON 값을 안 쓰고 하드코딩됨
+
+**해결**: 함수 리팩토링 + ITA 연구 기반 임계값 적용
+
+**ITA → L* 변환 (Chardon et al. 1991, b*=16 기준):**
+
+| ITA 범위 | 분류 | L* 값 |
+|----------|------|-------|
+| > 55° | Very Light | L > 73 |
+| 41-55° | Light | L ≈ 64-73 |
+| 28-41° | Intermediate | L ≈ 59-64 |
+| 10-28° | Tan | L ≈ 53-59 |
+| -30 to 10° | Brown | L ≈ 41-53 |
+
+**PC_CONFIG.SEASON 최종값:**
+
+```javascript
+SEASON: {
+    warm_L_spring: 68,     // 봄: ITA ~52° (Light~Very Light)
+    warm_L_autumn: 58,     // 가을 소프트: ITA ~27° (Intermediate~Tan)
+    cool_L_summer: 63,     // 여름: ITA ~40° (Light~Intermediate)
+    cool_L_winter: 55,     // 겨울: ITA ~17° (기존 50에서 상향)
+    chroma_spring_bright: 50,
+    chroma_summer_bright: 45
+}
+```
+
+**변경**: `cool_L_winter` 50 → 55 (겨울 범위 확장)
