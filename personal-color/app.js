@@ -5993,15 +5993,35 @@
             }
 
             // ========================================
-            // ✅ 신뢰도 계산 (Deep Armocromia 기준 개선)
+            // ✅ 신뢰도 계산 (Task 1: Neutral-Specific 신뢰도)
+            // Neutral: 방법 합의도 기반 (모두 Neutral이면 높은 신뢰도)
+            // Warm/Cool: scoreDiff 기반 (명확할수록 높은 신뢰도)
             // ========================================
-            // 기본 신뢰도: 점수 차이 기반 (0-11점 → 40-70%)
             const maxPossibleScore = 11; // 4가지 방법 최대 점수 합 (3+3+2+3)
-            const baseConfidence = cfg.minConfidence +
-                (Math.abs(scoreDiff) / maxPossibleScore) * (cfg.maxConfidence - cfg.minConfidence - 15);
 
-            // 방법 일치 보너스 (3개 일치 시 +15%)
-            const agreementBonus = methodAgreement >= 1 ? cfg.methodAgreementBonus * methodAgreement : 0;
+            let baseConfidence;
+            let agreementBonus;
+
+            if (undertone === 'Neutral') {
+                // ✅ Neutral-Specific: 방법 합의도가 핵심
+                // - 3-4개 Neutral 합의 = 진짜 Neutral (55-70%)
+                // - 방법들이 분산됨 = 경계선 케이스 (40-50%)
+                if (neutralCount >= 3) {
+                    // 진짜 Neutral: 높은 신뢰도
+                    baseConfidence = cfg.minConfidence + 15 + (neutralCount / 4) * 15; // 55-70%
+                    agreementBonus = cfg.methodAgreementBonus * methodAgreement; // 추가 보너스
+                } else {
+                    // 경계선 Neutral: 낮은 신뢰도 (정직한 모호함 표현)
+                    baseConfidence = cfg.minConfidence + (methodAgreement * 10); // 40-50%
+                    agreementBonus = 0;
+                }
+            } else {
+                // ✅ Warm/Cool: scoreDiff 기반 (기존 로직 유지)
+                // 명확한 Warm/Cool은 높은 신뢰도 (60-80%)
+                const normalizedScore = Math.abs(scoreDiff) / maxPossibleScore;
+                baseConfidence = cfg.minConfidence + normalizedScore * 35; // 40-75%
+                agreementBonus = methodAgreement >= 0.75 ? cfg.methodAgreementBonus * methodAgreement : 5;
+            }
 
             // 영역 일관성 보정 (얼굴-목 일치 시 유지, 불일치 시 감소)
             const consistencyFactor = regionConsistency;
