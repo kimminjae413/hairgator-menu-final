@@ -4140,8 +4140,8 @@
         const PC_CONFIG = {
             CAPTURE: {
                 sampleCount: 25,          // 15~40 권장
-                maxDurationMs: 1200,      // 캡처 누르고 최대 1.2초까지만 샘플링
-                minValidSamples: 12,      // 이보다 적으면 실패 처리
+                maxDurationMs: 1500,      // 캡처 누르고 최대 1.5초까지 샘플링 (여유 확보)
+                minValidSamples: 8,       // 이보다 적으면 실패 처리 (10개도 OK)
                 outlierDeltaE76: 6.0      // median Lab 기준 outlier 컷(ΔE76)
             },
             LIGHTING: {
