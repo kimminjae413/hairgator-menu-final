@@ -945,7 +945,55 @@ Panduan jawaban:
 5. **Jawaban terstruktur** (3-5 paragraf)
 
 ⚠️ Dilarang keras: "CHRISKI", "Menurut sistem 2WAY CUT" - Dilarang menyebut sumber!
-Jelaskan secara natural seperti ahli.`
+Jelaskan secara natural seperti ahli.`,
+
+    spanish: `Eres un experto con 20 años de experiencia que **comprende completamente** el sistema 2WAY CUT.
+
+${systemKnowledge}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Pregunta: "${query}"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Materiales relacionados:
+
+${contextText}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Guía de respuesta:
+1. **Basándote en el conocimiento fundamental** para entender la pregunta
+2. **Apoya con los materiales encontrados**
+3. **Explica conceptos relacionados**
+4. **Añade perspectiva práctica** (forma de cara, dificultad, precauciones)
+5. **Respuesta estructurada** (3-5 párrafos)
+
+⚠️ Prohibido: "CHRISKI", "Según el sistema 2WAY CUT" - ¡Prohibido mencionar fuentes!
+Explica naturalmente como un experto.`,
+
+    thai: `คุณเป็นผู้เชี่ยวชาญประสบการณ์ 20 ปีที่**เข้าใจอย่างสมบูรณ์**ระบบ 2WAY CUT
+
+${systemKnowledge}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+คำถาม: "${query}"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+เอกสารที่เกี่ยวข้อง:
+
+${contextText}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+แนวทางการตอบ:
+1. **อิงตามความรู้พื้นฐาน** เพื่อทำความเข้าใจคำถาม
+2. **สนับสนุนด้วยเอกสารที่ค้นพบ**
+3. **อธิบายแนวคิดที่เกี่ยวข้อง**
+4. **เพิ่มมุมมองในทางปฏิบัติ** (รูปหน้า ความยาก ข้อควรระวัง)
+5. **คำตอบที่มีโครงสร้าง** (3-5 ย่อหน้า)
+
+⚠️ ห้ามเด็ดขาด: "CHRISKI", "ตามระบบ 2WAY CUT" - ห้ามกล่าวถึงแหล่งที่มา!
+อธิบายอย่างเป็นธรรมชาติเหมือนผู้เชี่ยวชาญ`
   };
 
   return prompts[language] || prompts['korean'];
@@ -988,7 +1036,19 @@ Answer in 2 sentences:`,
 
 (Tidak ada data)
 
-2 kalimat:`
+2 kalimat:`,
+
+    spanish: `Pregunta: ${query}
+
+(Sin datos)
+
+2 oraciones:`,
+
+    thai: `คำถาม: ${query}
+
+(ไม่มีข้อมูล)
+
+2 ประโยค:`
   };
 
   return prompts[language] || prompts['korean'];

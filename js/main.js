@@ -1429,7 +1429,8 @@ document.addEventListener('DOMContentLoaded', function() {
             { code: 'zh', name: '中文', flag: '🇨🇳' },
             { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
             { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
-            { code: 'es', name: 'Español', flag: '🇪🇸' }
+            { code: 'es', name: 'Español', flag: '🇪🇸' },
+            { code: 'th', name: 'ไทย', flag: '🇹🇭' }
         ];
 
         const currentLang = loadLanguage();
@@ -2900,7 +2901,8 @@ const LANGUAGE_OPTIONS = [
     { id: 'zh', name: '中文', flag: '🇨🇳' },
     { id: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
     { id: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
-    { id: 'es', name: 'Español', flag: '🇪🇸' }
+    { id: 'es', name: 'Español', flag: '🇪🇸' },
+    { id: 'th', name: 'ไทย', flag: '🇹🇭' }
 ];
 
 // 언어 코드로 국기 이모지 반환
