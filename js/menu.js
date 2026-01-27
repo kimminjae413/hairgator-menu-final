@@ -2273,8 +2273,35 @@ function openMirrorCamera() {
                 <video id="cameraPreview" autoplay playsinline webkit-playsinline muted style="display:none;"></video>
                 <canvas id="cameraCanvas"></canvas>
                 <div class="camera-guide">
-                    <div class="face-guide-circle"></div>
-                    <p>얼굴을 원 안에 맞춰주세요</p>
+                    <!-- ✨ 얼굴 실루엣 가이드 -->
+                    <svg class="face-silhouette-guide" viewBox="0 0 200 280">
+                        <defs>
+                            <linearGradient id="silhouetteGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:rgba(255,107,107,0.5)"/>
+                                <stop offset="100%" style="stop-color:rgba(255,20,147,0.3)"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- 얼굴 윤곽 (타원형) -->
+                        <ellipse cx="100" cy="105" rx="65" ry="85"
+                            fill="none"
+                            stroke="url(#silhouetteGrad)"
+                            stroke-width="3"
+                            stroke-dasharray="8,4"/>
+                        <!-- 목 -->
+                        <path d="M60 185 Q60 205, 75 215 L125 215 Q140 205, 140 185"
+                            fill="none"
+                            stroke="url(#silhouetteGrad)"
+                            stroke-width="3"
+                            stroke-dasharray="8,4"/>
+                        <!-- 눈 위치 가이드 -->
+                        <line x1="50" y1="95" x2="80" y2="95" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3"/>
+                        <line x1="120" y1="95" x2="150" y2="95" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3"/>
+                        <!-- 코 위치 -->
+                        <line x1="100" y1="105" x2="100" y2="130" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="3,3"/>
+                        <!-- 입 위치 -->
+                        <line x1="80" y1="150" x2="120" y2="150" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="3,3"/>
+                    </svg>
+                    <p class="guide-text">얼굴을 가이드에 맞춰주세요</p>
                 </div>
             </div>
             <div class="camera-controls">
@@ -2522,15 +2549,25 @@ function addCameraModalStyles() {
             pointer-events: none;
             background: transparent;
         }
-        .face-guide-circle {
-            width: 250px;
-            height: 320px;
-            border: 4px dashed #fff;
-            border-radius: 50%;
-            margin-bottom: 15px;
-            background: transparent;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
-            -webkit-box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+        /* ✨ 얼굴 실루엣 가이드 */
+        .face-silhouette-guide {
+            width: 220px;
+            height: auto;
+            margin-bottom: 10px;
+            animation: silhouette-pulse 2s ease-in-out infinite;
+        }
+        @keyframes silhouette-pulse {
+            0%, 100% { opacity: 0.9; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.98); }
+        }
+        .camera-guide .guide-text {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 16px;
+            border-radius: 20px;
         }
         .camera-guide p {
             color: #fff;
@@ -2599,9 +2636,8 @@ function addCameraModalStyles() {
                 border-radius: 20px;
                 overflow: hidden;
             }
-            .face-guide-circle {
-                width: 200px;
-                height: 260px;
+            .face-silhouette-guide {
+                width: 180px;
             }
         }
 
@@ -2631,9 +2667,8 @@ function addCameraModalStyles() {
                 padding: 80px 20px 30px;
                 justify-content: center;
             }
-            .face-guide-circle {
-                width: 180px;
-                height: 230px;
+            .face-silhouette-guide {
+                width: 160px;
             }
         }
 
@@ -2665,9 +2700,8 @@ function addCameraModalStyles() {
                 padding: 60px 15px 20px;
                 justify-content: center;
             }
-            .face-guide-circle {
+            .face-silhouette-guide {
                 width: 120px;
-                height: 160px;
             }
             .camera-capture-btn {
                 width: 60px;
