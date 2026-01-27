@@ -74,6 +74,20 @@ exports.handler = async (event, _context) => {
         }
 
         console.log('Flutter 카카오 로그인 처리:', { kakaoId: finalKakaoId, email: finalEmail, nickname: finalNickname, profileImage: finalProfileImage || '없음' });
+
+        // 이메일 필수 체크 - 이메일 없으면 회원가입 불가
+        if (!finalEmail) {
+            console.error('❌ 카카오 로그인 실패 - 이메일 동의 필요:', finalKakaoId);
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({
+                    error: '이메일 제공 동의가 필요합니다. 카카오 계정 설정에서 이메일 제공을 허용해주세요.',
+                    errorCode: 'EMAIL_REQUIRED'
+                })
+            };
+        }
+
         initializeFirebaseAdmin();
         const firebaseUid = 'kakao_' + finalKakaoId;
         const additionalClaims = { provider: 'kakao', kakaoId: parseInt(finalKakaoId), email: finalEmail, displayName: finalNickname, photoURL: finalProfileImage };
