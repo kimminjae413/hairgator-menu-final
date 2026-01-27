@@ -892,7 +892,8 @@ const HAIRGATOR_I18N = {
         suitableTone: '당신에게 어울리는 톤:',
         whichSuits: '어느 쪽이 더 어울리나요?',
         currentScore: '📊 현재 점수',
-        points: '점'
+        points: '점',
+        naturalLightTip: '💡 되도록 조명 환경이 아닌 자연광 상태에서 사용하세요'
       },
 
       // 토스트 메시지
@@ -2228,7 +2229,8 @@ const HAIRGATOR_I18N = {
         suitableTone: 'Your suitable tone:',
         whichSuits: 'Which one suits you better?',
         currentScore: '📊 Current Score',
-        points: 'pts'
+        points: 'pts',
+        naturalLightTip: '💡 For best results, use in natural light rather than artificial lighting'
       },
 
       toast: {
@@ -3541,7 +3543,8 @@ const HAIRGATOR_I18N = {
         suitableTone: 'あなたに似合うトーン:',
         whichSuits: 'どちらがお似合いですか?',
         currentScore: '📊 現在のスコア',
-        points: '点'
+        points: '点',
+        naturalLightTip: '💡 最良の結果を得るには、照明ではなく自然光の下でご使用ください'
       },
 
       toast: {
@@ -4855,7 +4858,8 @@ const HAIRGATOR_I18N = {
         suitableTone: '适合您的色调:',
         whichSuits: '哪边更适合您?',
         currentScore: '📊 当前分数',
-        points: '分'
+        points: '分',
+        naturalLightTip: '💡 为获得最佳效果，请在自然光下使用，而非人工照明'
       },
 
       toast: {
@@ -6156,7 +6160,8 @@ const HAIRGATOR_I18N = {
         suitableTone: 'Tông màu phù hợp với bạn:',
         whichSuits: 'Bên nào phù hợp với bạn hơn?',
         currentScore: '📊 Điểm hiện tại',
-        points: 'đ'
+        points: 'đ',
+        naturalLightTip: '💡 Để có kết quả tốt nhất, hãy sử dụng trong ánh sáng tự nhiên thay vì ánh sáng nhân tạo'
       },
 
       toast: {
@@ -7373,7 +7378,8 @@ const HAIRGATOR_I18N = {
         suitableTone: 'Warna yang cocok untuk Anda:',
         whichSuits: 'Mana yang lebih cocok untuk Anda?',
         currentScore: '📊 Skor Saat Ini',
-        points: 'poin'
+        points: 'poin',
+        naturalLightTip: '💡 Untuk hasil terbaik, gunakan di bawah cahaya alami, bukan lampu buatan'
       },
 
       toast: {
@@ -8490,7 +8496,8 @@ const HAIRGATOR_I18N = {
         suitableTone: 'Tu tono adecuado:',
         whichSuits: '¿Cuál te queda mejor?',
         currentScore: '📊 Puntuación Actual',
-        points: 'pts'
+        points: 'pts',
+        naturalLightTip: '💡 Para mejores resultados, use con luz natural en lugar de iluminación artificial'
       },
 
       toast: {
@@ -9738,7 +9745,8 @@ const HAIRGATOR_I18N = {
         suitableTone: 'โทนสีที่เหมาะกับคุณ:',
         whichSuits: 'สีไหนที่เหมาะกับคุณมากกว่ากัน?',
         currentScore: '📊 คะแนนปัจจุบัน',
-        points: 'pts'
+        points: 'pts',
+        naturalLightTip: '💡 เพื่อผลลัพธ์ที่ดีที่สุด ควรใช้ในแสงธรรมชาติแทนแสงจากหลอดไฟ'
       },
 
       toast: {
