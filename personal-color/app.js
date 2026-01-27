@@ -494,49 +494,49 @@
             const C = chroma;
             let season, subtype, seasonKr, emoji, color, undertone;
 
-            // ✅ 최종 개선: 언더톤 결정 + 뉴트럴 정밀화 (기준 완화)
-            // 확실한 웜/쿨 (warmScore ±3 이상으로 상향)
-            if (warmScore >= 3) {
+            // ✅ 최종 개선: 언더톤 결정 (PC_CONFIG 사용)
+            if (warmScore >= PC_CONFIG.UNDERTONE.warmScoreWarm) {
                 undertone = 'Warm';
-            } else if (warmScore <= -3) {
+            } else if (warmScore <= PC_CONFIG.UNDERTONE.warmScoreCool) {
                 undertone = 'Cool';
             } else {
-                // ✅ 뉴트럴 영역 확대 (-2 ~ 2): effectiveB와 L로 미세 구분
                 undertone = 'Neutral';
             }
 
-            // 시즌 결정 (Soft/Muted 분류 개선 - 명도 기준 강화)
+            // 시즌 결정 (PC_CONFIG 임계값 사용 - 튜닝 가능)
+            const { warm_L_spring, warm_L_autumn, cool_L_summer, cool_L_winter,
+                    chroma_spring_bright, chroma_summer_bright, neutral_effectiveB_split } = PC_CONFIG.SEASON;
+
             if (undertone === 'Warm') {
-                if (L >= 68) {
+                if (L >= warm_L_spring) {
                     // 밝은 웜톤 → 봄
                     season = 'spring'; seasonKr = '봄 웜';
-                    if (C > 50) { subtype = 'bright'; emoji = '🌸'; color = '#FF6B6B'; }
+                    if (C > chroma_spring_bright) { subtype = 'bright'; emoji = '🌸'; color = '#FF6B6B'; }
                     else { subtype = 'light'; emoji = '🌷'; color = '#FFB7C5'; }
-                } else if (L >= 58) {
+                } else if (L >= warm_L_autumn) {
                     // 중간 밝기 웜톤 → 가을
                     season = 'autumn'; seasonKr = '가을 웜';
-                    // 🔴 Soft vs Muted: 명도(L) 위주로 판단
                     if (L > 62) {
-                        subtype = 'soft'; emoji = '🍂'; color = '#CD853F'; // 명도 높으면 Soft
+                        subtype = 'soft'; emoji = '🍂'; color = '#CD853F';
                     } else {
-                        subtype = 'muted'; emoji = '🍁'; color = '#D2691E'; // 명도 낮으면 Muted
+                        subtype = 'muted'; emoji = '🍁'; color = '#D2691E';
                     }
                 } else {
                     // 어두운 웜톤 → 가을 Deep/Muted
                     season = 'autumn'; seasonKr = '가을 웜';
-                    if (L < 50) {
-                        subtype = 'deep'; emoji = '🍂'; color = '#8B4513'; // 매우 어두우면 Deep
+                    if (L < cool_L_winter) {
+                        subtype = 'deep'; emoji = '🍂'; color = '#8B4513';
                     } else {
                         subtype = 'muted'; emoji = '🍁'; color = '#A0522D';
                     }
                 }
             } else if (undertone === 'Cool') {
-                if (L >= 63) {
+                if (L >= cool_L_summer) {
                     // 밝은 쿨톤 → 여름
                     season = 'summer'; seasonKr = '여름 쿨';
-                    if (C > 45) { subtype = 'bright'; emoji = '🌊'; color = '#4169E1'; }
+                    if (C > chroma_summer_bright) { subtype = 'bright'; emoji = '🌊'; color = '#4169E1'; }
                     else { subtype = 'light'; emoji = '💜'; color = '#87CEEB'; }
-                } else if (L >= 50) {
+                } else if (L >= cool_L_winter) {
                     season = 'summer'; seasonKr = '여름 쿨';
                     subtype = 'muted'; emoji = '🌙'; color = '#9370DB';
                 } else {
@@ -546,23 +546,22 @@
                     else { subtype = 'muted'; emoji = '🌙'; color = '#4169E1'; }
                 }
             } else {
-                // ✅ 뉴트럴: effectiveB와 L로 정밀 분류
-                if (L >= 63) {
+                // ✅ 뉴트럴: effectiveB와 L로 정밀 분류 (PC_CONFIG 사용)
+                if (L >= cool_L_summer) {
                     // 밝은 뉴트럴
-                    if (effectiveB > 2) {
+                    if (effectiveB > neutral_effectiveB_split) {
                         season = 'autumn'; seasonKr = '뉴트럴 웜';
                         subtype = 'soft'; emoji = '🍂'; color = '#C4A484';
-                    } else if (effectiveB < -2) {
+                    } else if (effectiveB < -neutral_effectiveB_split) {
                         season = 'summer'; seasonKr = '뉴트럴 쿨';
                         subtype = 'light'; emoji = '💜'; color = '#B0C4DE';
                     } else {
-                        // 완전 뉴트럴 → 여름 라이트 기본값
                         season = 'summer'; seasonKr = '뉴트럴';
                         subtype = 'light'; emoji = '💜'; color = '#B0C4DE';
                     }
-                } else if (L >= 50) {
+                } else if (L >= cool_L_winter) {
                     // 중간 밝기 뉴트럴
-                    if (effectiveB > 2) {
+                    if (effectiveB > neutral_effectiveB_split) {
                         season = 'autumn'; seasonKr = '뉴트럴 웜';
                         subtype = 'muted'; emoji = '🍁'; color = '#BC8F8F';
                     } else {
@@ -571,7 +570,7 @@
                     }
                 } else {
                     // 어두운 뉴트럴 (L < 50)
-                    if (effectiveB > 2) {
+                    if (effectiveB > neutral_effectiveB_split) {
                         season = 'autumn'; seasonKr = '뉴트럴 웜';
                         subtype = 'deep'; emoji = '🍂'; color = '#8B4513';
                     } else {
@@ -3504,6 +3503,21 @@
             // 1단계: 피부·조명 분석
             const step1 = analyzeSkinAndLighting(skinRgb, imageData);
 
+            // ✅ 정확도 목적: 조명 품질 낮으면 분류 자체 금지
+            const lq = step1.lightingMeta?.lightingQuality ?? 0;
+            if (lq < PC_CONFIG.LIGHTING.minQualityToClassify) {
+                console.warn('⛔ 조명 품질 낮음 - 분류 차단:', lq.toFixed(2));
+                return {
+                    blocked: true,
+                    reason: 'LOW_LIGHTING_QUALITY',
+                    originalRgb: step1.originalRgb,
+                    correctedRgb: step1.correctedRgb,
+                    lightingMeta: step1.lightingMeta,
+                    pipelineVersion: '2.1-blocked',
+                    timestamp: new Date().toISOString()
+                };
+            }
+
             // 2단계: 퍼스널컬러 분류
             const step2 = classifyPersonalColor(step1.correctedRgb, step1.lightingMeta);
 
@@ -3519,6 +3533,7 @@
             );
 
             const result = {
+                blocked: false,
                 // 피부 분석
                 originalRgb: step1.originalRgb,
                 correctedRgb: step1.correctedRgb,
@@ -3531,7 +3546,7 @@
                 hairRecommendations: step4,
 
                 // 메타
-                pipelineVersion: '2.0',
+                pipelineVersion: '2.1',
                 timestamp: new Date().toISOString()
             };
 
@@ -4081,6 +4096,14 @@
                 // 현재 랜드마크 저장 (촬영 시 사용)
                 currentLandmarks = landmarks;
 
+                // ✅ 멀티프레임 샘플링 중이면 피부 샘플 계속 축적
+                if (captureSampling && currentLandmarks) {
+                    const st = extractSkinTone(currentLandmarks);
+                    if (st && st.lab && st.rgb) {
+                        captureSamples.push({ rgb: st.rgb, lab: st.lab, ts: performance.now() });
+                    }
+                }
+
                 drawFullFaceMesh(canvasCtx, landmarks);
                 drawSkinTonePoints(canvasCtx, landmarks);
 
@@ -4111,19 +4134,68 @@
             }
         }
 
+        // ================================
+        // ✅ Personal Color Accuracy Config (정확도 개선용)
+        // ================================
+        const PC_CONFIG = {
+            CAPTURE: {
+                sampleCount: 25,          // 15~40 권장
+                maxDurationMs: 1200,      // 캡처 누르고 최대 1.2초까지만 샘플링
+                minValidSamples: 12,      // 이보다 적으면 실패 처리
+                outlierDeltaE76: 6.0      // median Lab 기준 outlier 컷(ΔE76)
+            },
+            LIGHTING: {
+                minQualityToClassify: 0.45 // 이하면 분류 자체 금지(정확도 목적)
+            },
+            UNDERTONE: {
+                warmScoreWarm: 3,
+                warmScoreCool: -3
+            },
+            SEASON: {
+                warm_L_spring: 68,
+                warm_L_autumn: 58,
+                cool_L_summer: 63,
+                cool_L_winter: 50,
+                chroma_spring_bright: 50,
+                chroma_summer_bright: 45,
+                neutral_effectiveB_split: 2
+            }
+        };
+
+        // ================================
+        // ✅ Capture sampling state (멀티프레임 안정화)
+        // ================================
+        let captureSampling = false;
+        let captureSamples = [];
+        let captureStartTs = 0;
+
+        // ================================
+        // ✅ Small helpers for multi-frame capture
+        // ================================
+        function rgbToHexSimple({ r, g, b }) {
+            return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+        }
+        function de76(p, q) {
+            return Math.hypot(p.L - q.L, p.a - q.a, p.b - q.b);
+        }
+        function medianValue(arr) {
+            const s = [...arr].sort((a,b) => a - b);
+            return s[Math.floor(s.length / 2)];
+        }
+
         // 현재 랜드마크 저장용 변수
         let currentLandmarks = null;
         let isCaptured = false;
 
-        // 촬영하기 함수
-        function captureAndAnalyze() {
+        // 촬영하기 함수 (멀티프레임 안정화 적용)
+        async function captureAndAnalyze() {
             if (!currentLandmarks) {
-                const pc = HAIRGATOR_I18N[currentLang]?.personalColor?.aiMode;
-                showToast(pc?.faceGuide || '얼굴을 먼저 인식해주세요', 'warning');
+                const pc = HAIRGATOR_I18N?.[getCurrentLanguage()]?.personalColor?.aiMode;
+                showToast(pc?.faceGuide || '얼굴을 먼저 인식해 주세요.', 'warning');
                 return;
             }
 
-            console.log('📸 촬영 시작!');
+            console.log('📸 captureAndAnalyze: 안정 샘플링 시작');
             isCaptured = true;
 
             // 버튼 상태 변경
@@ -4146,11 +4218,72 @@
             document.body.appendChild(flash);
             setTimeout(() => flash.remove(), 300);
 
-            // 피부톤 분석
-            const skinToneData = extractSkinTone(currentLandmarks);
-            console.log('🧪 촬영된 피부톤 데이터:', skinToneData);
+            // ✅ 1) 멀티샘플 수집 시작 (정확도 개선 핵심)
+            captureSampling = true;
+            captureSamples = [];
+            captureStartTs = performance.now();
 
-            // 얼굴 기하학적 측정 (눈썹간 거리 등)
+            // 샘플 수집 대기 (sampleCount 또는 maxDurationMs까지)
+            while (
+                captureSamples.length < PC_CONFIG.CAPTURE.sampleCount &&
+                performance.now() - captureStartTs < PC_CONFIG.CAPTURE.maxDurationMs
+            ) {
+                await new Promise(r => setTimeout(r, 40)); // ~25fps
+            }
+
+            captureSampling = false;
+            console.log(`📊 샘플 수집 완료: ${captureSamples.length}개`);
+
+            // ✅ 2) 샘플 부족이면 실패
+            if (captureSamples.length < PC_CONFIG.CAPTURE.minValidSamples) {
+                showToast('조명이 불안정해요. 밝은 곳에서 다시 촬영해 주세요.', 'warning');
+                retryCapture();
+                return;
+            }
+
+            // ✅ 3) median Lab 기준 outlier 제거 (ΔE76)
+            const labs = captureSamples.map(s => s.lab);
+            const medLab = {
+                L: medianValue(labs.map(v => v.L)),
+                a: medianValue(labs.map(v => v.a)),
+                b: medianValue(labs.map(v => v.b))
+            };
+
+            const filtered = captureSamples.filter(s => de76(s.lab, medLab) <= PC_CONFIG.CAPTURE.outlierDeltaE76);
+            console.log(`🔍 이상치 제거 후: ${filtered.length}개 (${captureSamples.length - filtered.length}개 제거)`);
+
+            if (filtered.length < PC_CONFIG.CAPTURE.minValidSamples) {
+                showToast('피부색 측정이 흔들려요. 얼굴을 고정하고 다시 촬영해 주세요.', 'warning');
+                retryCapture();
+                return;
+            }
+
+            // ✅ 4) 평균 RGB 산출
+            const avg = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+            const avgRgb = {
+                r: Math.round(avg(filtered.map(s => s.rgb.r))),
+                g: Math.round(avg(filtered.map(s => s.rgb.g))),
+                b: Math.round(avg(filtered.map(s => s.rgb.b)))
+            };
+
+            // ✅ 5) skinToneData 형태 유지 (기존 displayCapturedAnalysis가 쓰는 필드)
+            const labColor = rgbToLab(avgRgb.r, avgRgb.g, avgRgb.b);
+            const undertoneAnalysis = analyzeUndertoneAdvanced(avgRgb.r, avgRgb.g, avgRgb.b, labColor);
+
+            const skinToneData = {
+                rgb: avgRgb,
+                hex: rgbToHexSimple(avgRgb),
+                lab: labColor,
+                undertone: undertoneAnalysis.undertone,
+                undertoneScore: undertoneAnalysis.score,
+                brightness: labColor.L,
+                chroma: undertoneAnalysis.chroma,
+                samples: filtered.length
+            };
+
+            console.log('🧪 안정화된 피부톤 데이터:', skinToneData);
+
+            // 얼굴 기하학적 측정 (마지막 프레임 geometry 사용)
             const faceGeometry = analyzeFaceGeometry(currentLandmarks);
             console.log('📐 얼굴 측정 데이터:', faceGeometry);
 
@@ -4160,8 +4293,8 @@
             // 분석 진행 단계 애니메이션
             animateAnalysisSteps();
 
-            const pc = HAIRGATOR_I18N[currentLang]?.personalColor?.aiMode;
-            showToast(pc?.captureComplete || '촬영 완료! 분석 결과를 확인하세요', 'success');
+            const pc = HAIRGATOR_I18N?.[getCurrentLanguage()]?.personalColor?.aiMode;
+            showToast(pc?.captureComplete || '캡처 완료!', 'success');
         }
 
         // 다시 촬영 함수
@@ -4235,6 +4368,15 @@
 
             // 🚀 새 파이프라인 실행
             const pipelineResult = runPersonalColorPipeline(skinToneData.rgb, window.lastFullImageData);
+
+            // ✅ 조명 품질 낮으면 분류 차단 → 재촬영 유도
+            if (pipelineResult?.blocked) {
+                console.warn('⛔ 파이프라인 차단:', pipelineResult.reason);
+                showToast('조명이 너무 나빠 정확한 진단이 어렵습니다. 밝은 곳에서 다시 촬영해 주세요.', 'warning');
+                retryCapture();
+                return;
+            }
+
             const pc = pipelineResult.personalColor;
             const hairRec = pipelineResult.hairRecommendations;
             const lm = pipelineResult.lightingMeta;
