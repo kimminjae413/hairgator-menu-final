@@ -2273,35 +2273,11 @@ function openMirrorCamera() {
                 <video id="cameraPreview" autoplay playsinline webkit-playsinline muted style="display:none;"></video>
                 <canvas id="cameraCanvas"></canvas>
                 <div class="camera-guide">
-                    <!-- ✨ 얼굴 실루엣 가이드 -->
-                    <svg class="face-silhouette-guide" viewBox="0 0 200 280">
-                        <defs>
-                            <linearGradient id="silhouetteGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" style="stop-color:rgba(255,107,107,0.5)"/>
-                                <stop offset="100%" style="stop-color:rgba(255,20,147,0.3)"/>
-                            </linearGradient>
-                        </defs>
-                        <!-- 얼굴 윤곽 (타원형) -->
-                        <ellipse cx="100" cy="105" rx="65" ry="85"
-                            fill="none"
-                            stroke="url(#silhouetteGrad)"
-                            stroke-width="3"
-                            stroke-dasharray="8,4"/>
-                        <!-- 목 -->
-                        <path d="M60 185 Q60 205, 75 215 L125 215 Q140 205, 140 185"
-                            fill="none"
-                            stroke="url(#silhouetteGrad)"
-                            stroke-width="3"
-                            stroke-dasharray="8,4"/>
-                        <!-- 눈 위치 가이드 -->
-                        <line x1="50" y1="95" x2="80" y2="95" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3"/>
-                        <line x1="120" y1="95" x2="150" y2="95" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3"/>
-                        <!-- 코 위치 -->
-                        <line x1="100" y1="105" x2="100" y2="130" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="3,3"/>
-                        <!-- 입 위치 -->
-                        <line x1="80" y1="150" x2="120" y2="150" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="3,3"/>
-                    </svg>
-                    <p class="guide-text">얼굴을 가이드에 맞춰주세요</p>
+                    <!-- ✨ 최소 영역 가이드 -->
+                    <div class="min-area-guide">
+                        <div class="min-area-oval"></div>
+                        <p class="min-area-text">얼굴이 이 원보다<br><strong>크게</strong> 나와야 해요</p>
+                    </div>
                 </div>
             </div>
             <div class="camera-controls">
@@ -2549,25 +2525,58 @@ function addCameraModalStyles() {
             pointer-events: none;
             background: transparent;
         }
-        /* ✨ 얼굴 실루엣 가이드 */
-        .face-silhouette-guide {
-            width: 220px;
-            height: auto;
-            margin-bottom: 10px;
-            animation: silhouette-pulse 2s ease-in-out infinite;
+        /* ✨ 최소 영역 가이드 */
+        .min-area-guide {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
         }
-        @keyframes silhouette-pulse {
-            0%, 100% { opacity: 0.9; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(0.98); }
+        .min-area-oval {
+            width: 120px;
+            height: 160px;
+            border: 3px dashed rgba(255, 107, 107, 0.7);
+            border-radius: 50%;
+            animation: min-area-pulse 2s ease-in-out infinite;
+            position: relative;
         }
-        .camera-guide .guide-text {
+        .min-area-oval::after {
+            content: '↑';
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            color: rgba(255, 107, 107, 0.8);
+            animation: arrow-bounce 1s ease-in-out infinite;
+        }
+        @keyframes min-area-pulse {
+            0%, 100% {
+                opacity: 0.8;
+                border-color: rgba(255, 107, 107, 0.7);
+            }
+            50% {
+                opacity: 0.5;
+                border-color: rgba(255, 20, 147, 0.5);
+            }
+        }
+        @keyframes arrow-bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-5px); }
+        }
+        .min-area-text {
             color: #fff;
             font-size: 14px;
-            font-weight: 600;
+            text-align: center;
+            line-height: 1.4;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
             background: rgba(0, 0, 0, 0.6);
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 10px 16px;
+            border-radius: 12px;
+        }
+        .min-area-text strong {
+            color: #FF6B6B;
+            font-size: 16px;
         }
         .camera-guide p {
             color: #fff;
@@ -2636,8 +2645,9 @@ function addCameraModalStyles() {
                 border-radius: 20px;
                 overflow: hidden;
             }
-            .face-silhouette-guide {
-                width: 180px;
+            .min-area-oval {
+                width: 100px;
+                height: 130px;
             }
         }
 
@@ -2667,8 +2677,9 @@ function addCameraModalStyles() {
                 padding: 80px 20px 30px;
                 justify-content: center;
             }
-            .face-silhouette-guide {
-                width: 160px;
+            .min-area-oval {
+                width: 90px;
+                height: 120px;
             }
         }
 
@@ -2700,8 +2711,9 @@ function addCameraModalStyles() {
                 padding: 60px 15px 20px;
                 justify-content: center;
             }
-            .face-silhouette-guide {
-                width: 120px;
+            .min-area-oval {
+                width: 80px;
+                height: 100px;
             }
             .camera-capture-btn {
                 width: 60px;
