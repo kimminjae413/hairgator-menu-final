@@ -1000,7 +1000,7 @@ const HAIRGATOR_I18N = {
       aiSteps: {
         step1: '얼굴 영역 감지 중...',
         step2: '피부톤 색상 분석 중...',
-        step3: 'Delta E 2000 계산 중...',
+        step3: 'Delta E 계산 중...',
         step4: '최종 결과 생성 중...'
       },
 
@@ -2332,7 +2332,7 @@ const HAIRGATOR_I18N = {
       aiSteps: {
         step1: 'Detecting face region...',
         step2: 'Analyzing skin tone colors...',
-        step3: 'Calculating Delta E 2000...',
+        step3: 'Calculating Delta E...',
         step4: 'Generating final results...'
       },
 
@@ -3644,7 +3644,7 @@ const HAIRGATOR_I18N = {
       aiSteps: {
         step1: '顔領域を検出中...',
         step2: '肌の色を分析中...',
-        step3: 'Delta E 2000を計算中...',
+        step3: 'Delta Eを計算中...',
         step4: '最終結果を生成中...'
       },
 
@@ -4959,7 +4959,7 @@ const HAIRGATOR_I18N = {
       aiSteps: {
         step1: '检测面部区域...',
         step2: '分析肤色...',
-        step3: '计算Delta E 2000...',
+        step3: '计算Delta E...',
         step4: '生成最终结果...'
       },
 
@@ -6261,7 +6261,7 @@ const HAIRGATOR_I18N = {
       aiSteps: {
         step1: 'Đang phát hiện vùng mặt...',
         step2: 'Đang phân tích màu da...',
-        step3: 'Đang tính Delta E 2000...',
+        step3: 'Đang tính Delta E...',
         step4: 'Đang tạo kết quả cuối cùng...'
       },
 
@@ -7493,7 +7493,7 @@ const HAIRGATOR_I18N = {
       aiSteps: {
         step1: 'Mendeteksi area wajah...',
         step2: 'Menganalisis warna kulit...',
-        step3: 'Menghitung Delta E 2000...',
+        step3: 'Menghitung Delta E...',
         step4: 'Menghasilkan hasil akhir...'
       },
 
@@ -8740,7 +8740,7 @@ const HAIRGATOR_I18N = {
       aiSteps: {
         step1: 'Detectando área facial...',
         step2: 'Analizando tono de piel...',
-        step3: 'Calculando Delta E 2000...',
+        step3: 'Calculando Delta E...',
         step4: 'Generando resultados finales...'
       },
 
@@ -9848,7 +9848,7 @@ const HAIRGATOR_I18N = {
       aiSteps: {
         step1: 'กำลังตรวจจับบริเวณใบหน้า...',
         step2: 'กำลังวิเคราะห์สีผิว...',
-        step3: 'กำลังคำนวณ Delta E 2000...',
+        step3: 'กำลังคำนวณ Delta E...',
         step4: 'กำลังสร้างผลลัพธ์สุดท้าย...'
       },
 

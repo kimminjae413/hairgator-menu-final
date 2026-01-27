@@ -30,6 +30,7 @@
         }
 
         // 번역 함수 - HAIRGATOR_I18N에서 직접 번역 가져오기
+        // t(): 문자열 전용 (기존 호환성 유지)
         function t(key) {
             try {
                 const lang = getCurrentLanguage();
@@ -54,6 +55,33 @@
                 return typeof result === 'string' ? result : null;
             } catch (e) {
                 console.error('t() error:', e);
+                return null;
+            }
+        }
+
+        // tAny(): 배열/객체 허용 (seasonCharacteristics 등에 사용)
+        function tAny(key) {
+            try {
+                const lang = getCurrentLanguage();
+
+                if (typeof HAIRGATOR_I18N === 'undefined' || !HAIRGATOR_I18N[lang]) {
+                    return null;
+                }
+
+                const keys = key.split('.');
+                let result = HAIRGATOR_I18N[lang];
+
+                for (const k of keys) {
+                    if (result && typeof result === 'object' && k in result) {
+                        result = result[k];
+                    } else {
+                        return null;
+                    }
+                }
+
+                return result; // 타입 체크 없이 반환 (배열/객체 허용)
+            } catch (e) {
+                console.error('tAny() error:', e);
                 return null;
             }
         }
@@ -110,11 +138,12 @@
         };
 
         // 계절 특성 가져오기 (i18n 기반)
+        // ✅ 수정: t() → tAny() 사용 (배열 반환 지원)
         function getSeasonCharacteristics(season) {
             const key = season.toLowerCase().replace(/\s+/g, '');
             const seasonKey = key.replace('웜톤', '').replace('쿨톤', '').replace('warm', '').replace('cool', '');
             const i18nKey = `personalColor.seasonCharacteristics.${seasonKey}`;
-            const chars = t(i18nKey);
+            const chars = tAny(i18nKey);  // tAny() 사용 - 배열 허용
             if (Array.isArray(chars)) return chars;
             // fallback
             const fallback = {
@@ -730,17 +759,30 @@
             return 'neutral';
         }
 
+        /**
+         * 폴백 함수: color.season 값이 없을 때 RGB 기반으로 시즌 추측
+         *
+         * ⚠️ 휴리스틱 한계:
+         * - warmth(R-B), brightness 임계값은 경험적 수치로 학술 검증 없음
+         * - 조명 조건에 따라 결과가 달라질 수 있음
+         * - 정확한 시즌 분류를 위해서는 color.season 필드 사용 권장
+         *
+         * TODO: 향후 피드백 데이터 기반으로 임계값 캘리브레이션 필요
+         */
         function guessSeasonFromHex(hex) {
             const rgb = hexToRgb(hex);
             if (!rgb) return 'autumn';
 
+            // 휴리스틱: R-B가 크면 웜톤, 작으면 쿨톤
             const warmth = rgb.r - rgb.b;
+            // 휴리스틱: RGB 평균이 높으면 밝은톤, 낮으면 어두운톤
             const brightness = (rgb.r + rgb.g + rgb.b) / 3;
 
-            if (warmth > 30 && brightness > 150) return 'spring';
-            if (warmth > 30 && brightness <= 150) return 'autumn';
-            if (warmth <= 30 && brightness > 120) return 'summer';
-            return 'winter';
+            // 임계값 (30, 150, 120)은 경험적 수치 - 캘리브레이션 필요
+            if (warmth > 30 && brightness > 150) return 'spring';   // 웜+밝음
+            if (warmth > 30 && brightness <= 150) return 'autumn';  // 웜+어두움
+            if (warmth <= 30 && brightness > 120) return 'summer';  // 쿨+밝음
+            return 'winter';  // 쿨+어두움
         }
 
         function hexToRgb(hex) {
@@ -781,7 +823,8 @@
 
                 const colorLab = rgbToLab(colorRgb.r, colorRgb.g, colorRgb.b);
 
-                // Delta E 2000 계산 (간략 버전)
+                // Delta E CIE76 계산 (Lab 유클리드 거리)
+                // 참고: CIEDE2000보다 단순하지만 시즌 분류에는 충분함
                 const deltaE = Math.sqrt(
                     Math.pow(skinLab.L - colorLab.L, 2) +
                     Math.pow(skinLab.a - colorLab.a, 2) +
@@ -5342,7 +5385,7 @@
             const steps = [
                 { id: 'ai-step-1', message: t('personalColor.aiSteps.step1') || '얼굴 영역 감지 중...' },
                 { id: 'ai-step-2', message: t('personalColor.aiSteps.step2') || '피부톤 색상 분석 중...' },
-                { id: 'ai-step-3', message: t('personalColor.aiSteps.step3') || 'Delta E 2000 계산 중...' },
+                { id: 'ai-step-3', message: t('personalColor.aiSteps.step3') || 'Delta E 계산 중...' },
                 { id: 'ai-step-4', message: t('personalColor.aiSteps.step4') || '최종 결과 생성 중...' }
             ];
 
