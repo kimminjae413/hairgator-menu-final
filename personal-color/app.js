@@ -4202,9 +4202,13 @@
                 warmScoreWarm: 3,
                 warmScoreCool: -3,
                 // ✅ Confidence 설정 추가
-                methodAgreementBonus: 15, // 3가지 방법 일치 시 보너스 (%)
+                methodAgreementBonus: 15, // 4가지 방법 일치 시 보너스 (%)
                 minConfidence: 40,        // 최소 신뢰도 (%)
-                maxConfidence: 85         // 최대 신뢰도 (%)
+                maxConfidence: 85,        // 최대 신뢰도 (%)
+                // ✅ CIEDE2000 연구 참조값 추가 (arxiv 2505.14931)
+                warmRefLab: { L: 70, a: 20, b: 40 },   // Warm 언더톤 참조점
+                coolRefLab: { L: 60, a: -20, b: -30 }, // Cool 언더톤 참조점
+                ciede2000Threshold: 25    // ΔE00 차이 임계값 (이하면 Neutral)
             },
             SEASON: {
                 warm_L_spring: 68,
@@ -4232,6 +4236,76 @@
         }
         function de76(p, q) {
             return Math.hypot(p.L - q.L, p.a - q.a, p.b - q.b);
+        }
+
+        // ✅ CIEDE2000 색차 계산 (arxiv 2505.14931 벤치마크용)
+        function ciede2000(lab1, lab2) {
+            const L1 = lab1.L, a1 = lab1.a, b1 = lab1.b;
+            const L2 = lab2.L, a2 = lab2.a, b2 = lab2.b;
+
+            const kL = 1, kC = 1, kH = 1;
+            const deg2rad = Math.PI / 180;
+            const rad2deg = 180 / Math.PI;
+
+            const C1 = Math.sqrt(a1 * a1 + b1 * b1);
+            const C2 = Math.sqrt(a2 * a2 + b2 * b2);
+            const Cb = (C1 + C2) / 2;
+            const Cb7 = Math.pow(Cb, 7);
+            const G = 0.5 * (1 - Math.sqrt(Cb7 / (Cb7 + Math.pow(25, 7))));
+
+            const a1p = a1 * (1 + G);
+            const a2p = a2 * (1 + G);
+            const C1p = Math.sqrt(a1p * a1p + b1 * b1);
+            const C2p = Math.sqrt(a2p * a2p + b2 * b2);
+
+            let h1p = Math.atan2(b1, a1p) * rad2deg;
+            if (h1p < 0) h1p += 360;
+            let h2p = Math.atan2(b2, a2p) * rad2deg;
+            if (h2p < 0) h2p += 360;
+
+            const dLp = L2 - L1;
+            const dCp = C2p - C1p;
+
+            let dhp = 0;
+            if (C1p * C2p !== 0) {
+                dhp = h2p - h1p;
+                if (dhp > 180) dhp -= 360;
+                else if (dhp < -180) dhp += 360;
+            }
+            const dHp = 2 * Math.sqrt(C1p * C2p) * Math.sin(dhp * deg2rad / 2);
+
+            const Lbp = (L1 + L2) / 2;
+            const Cbp = (C1p + C2p) / 2;
+
+            let hbp = (h1p + h2p) / 2;
+            if (Math.abs(h1p - h2p) > 180) {
+                if (h1p + h2p < 360) hbp += 180;
+                else hbp -= 180;
+            }
+            if (C1p * C2p === 0) hbp = h1p + h2p;
+
+            const T = 1
+                - 0.17 * Math.cos((hbp - 30) * deg2rad)
+                + 0.24 * Math.cos(2 * hbp * deg2rad)
+                + 0.32 * Math.cos((3 * hbp + 6) * deg2rad)
+                - 0.20 * Math.cos((4 * hbp - 63) * deg2rad);
+
+            const dTheta = 30 * Math.exp(-Math.pow((hbp - 275) / 25, 2));
+            const Cbp7 = Math.pow(Cbp, 7);
+            const RC = 2 * Math.sqrt(Cbp7 / (Cbp7 + Math.pow(25, 7)));
+            const SL = 1 + (0.015 * Math.pow(Lbp - 50, 2)) / Math.sqrt(20 + Math.pow(Lbp - 50, 2));
+            const SC = 1 + 0.045 * Cbp;
+            const SH = 1 + 0.015 * Cbp * T;
+            const RT = -Math.sin(2 * dTheta * deg2rad) * RC;
+
+            const dE = Math.sqrt(
+                Math.pow(dLp / (kL * SL), 2) +
+                Math.pow(dCp / (kC * SC), 2) +
+                Math.pow(dHp / (kH * SH), 2) +
+                RT * (dCp / (kC * SC)) * (dHp / (kH * SH))
+            );
+
+            return dE;
         }
         function medianValue(arr) {
             const s = [...arr].sort((a,b) => a - b);
@@ -5834,16 +5908,29 @@
             else if (rosyRatio > 0.06 && goldenRatio < 0.1) method3Result = 'Cool';
 
             // ========================================
-            // ✅ 방법 일치도 계산 (신뢰도의 핵심)
+            // ✅ 방법 4: CIEDE2000 참조값 기반 (arxiv 2505.14931)
             // ========================================
-            const methods = [method1Result, method2Result, method3Result];
+            const warmRef = cfg.warmRefLab;
+            const coolRef = cfg.coolRefLab;
+            const dE00Warm = ciede2000(lab, warmRef);
+            const dE00Cool = ciede2000(lab, coolRef);
+            const dE00Diff = dE00Cool - dE00Warm; // 양수면 Warm에 가까움
+
+            let method4Result = 'Neutral';
+            if (dE00Diff > cfg.ciede2000Threshold) method4Result = 'Warm';
+            else if (dE00Diff < -cfg.ciede2000Threshold) method4Result = 'Cool';
+
+            // ========================================
+            // ✅ 방법 일치도 계산 (4가지 방법으로 확장)
+            // ========================================
+            const methods = [method1Result, method2Result, method3Result, method4Result];
             const warmCount = methods.filter(m => m === 'Warm').length;
             const coolCount = methods.filter(m => m === 'Cool').length;
             const neutralCount = methods.filter(m => m === 'Neutral').length;
 
-            // 일치도: 3개 일치 = 100%, 2개 일치 = 67%, 모두 다름 = 33%
+            // 일치도: 4개 일치 = 100%, 3개 = 75%, 2개 = 50%, 모두 다름 = 25%
             const maxAgreement = Math.max(warmCount, coolCount, neutralCount);
-            const methodAgreement = maxAgreement / 3;
+            const methodAgreement = maxAgreement / 4;
 
             // ========================================
             // ✅ 종합 점수 계산 (기존 로직 유지)
@@ -5872,6 +5959,14 @@
             if (rosyRatio > 0.08 && goldenRatio < 0.1) coolScore += 2;
             else if (rosyRatio > 0.04) coolScore += 1;
 
+            // ✅ CIEDE2000 기반 점수 (연구 벤치마크)
+            if (dE00Diff > 40) warmScore += 3;
+            else if (dE00Diff > 25) warmScore += 2;
+            else if (dE00Diff > 10) warmScore += 1;
+            else if (dE00Diff < -40) coolScore += 3;
+            else if (dE00Diff < -25) coolScore += 2;
+            else if (dE00Diff < -10) coolScore += 1;
+
             // 채도 계산
             const max = Math.max(r, g, b);
             const min = Math.min(r, g, b);
@@ -5895,8 +5990,8 @@
             // ========================================
             // ✅ 신뢰도 계산 (Deep Armocromia 기준 개선)
             // ========================================
-            // 기본 신뢰도: 점수 차이 기반 (0-8점 → 40-70%)
-            const maxPossibleScore = 8; // 3가지 방법 최대 점수 합
+            // 기본 신뢰도: 점수 차이 기반 (0-11점 → 40-70%)
+            const maxPossibleScore = 11; // 4가지 방법 최대 점수 합 (3+3+2+3)
             const baseConfidence = cfg.minConfidence +
                 (Math.abs(scoreDiff) / maxPossibleScore) * (cfg.maxConfidence - cfg.minConfidence - 15);
 
@@ -5916,10 +6011,14 @@
                 pinkIndex: pinkIndex.toFixed(2),
                 goldenRatio: goldenRatio.toFixed(3),
                 rosyRatio: rosyRatio.toFixed(3),
+                // ✅ CIEDE2000 (Method 4)
+                dE00Warm: dE00Warm.toFixed(2),
+                dE00Cool: dE00Cool.toFixed(2),
+                dE00Diff: dE00Diff.toFixed(2),
                 warmScore, coolScore,
                 result: undertone,
-                // ✅ 신뢰도 관련 로그 추가
-                methods: `${method1Result}/${method2Result}/${method3Result}`,
+                // ✅ 4가지 방법 결과
+                methods: `${method1Result}/${method2Result}/${method3Result}/${method4Result}`,
                 methodAgreement: `${(methodAgreement * 100).toFixed(0)}%`,
                 regionConsistency: `${(regionConsistency * 100).toFixed(0)}%`,
                 confidence: `${confidence}%`
