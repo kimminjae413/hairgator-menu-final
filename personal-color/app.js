@@ -4183,6 +4183,275 @@
             return s[Math.floor(s.length / 2)];
         }
 
+        // ================================
+        // ✅ Personal Color Logging (정확도 분석용)
+        // ================================
+        const PC_LOG = {
+            STORAGE_KEY: 'hairgator_pc_logs_v1',
+            MAX_ITEMS: 500
+        };
+
+        function pcLoadLogs() {
+            try {
+                const raw = localStorage.getItem(PC_LOG.STORAGE_KEY);
+                const parsed = raw ? JSON.parse(raw) : [];
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                console.warn('pcLoadLogs error', e);
+                return [];
+            }
+        }
+
+        function pcSaveLogs(logs) {
+            try {
+                localStorage.setItem(PC_LOG.STORAGE_KEY, JSON.stringify(logs));
+            } catch (e) {
+                console.warn('pcSaveLogs error', e);
+            }
+        }
+
+        function pcMakeId() {
+            if (window.crypto?.randomUUID) return crypto.randomUUID();
+            return `pc_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+        }
+
+        function pcAppendLog(entry) {
+            const logs = pcLoadLogs();
+            const id = pcMakeId();
+            logs.push({ id, ...entry });
+            const trimmed = logs.length > PC_LOG.MAX_ITEMS ? logs.slice(logs.length - PC_LOG.MAX_ITEMS) : logs;
+            pcSaveLogs(trimmed);
+            return id; // ✅ 라벨링용 ID 반환
+        }
+
+        function pcUpdateLog(id, patch) {
+            const logs = pcLoadLogs();
+            const idx = logs.findIndex(l => l.id === id);
+            if (idx < 0) return false;
+            logs[idx] = { ...logs[idx], ...patch, updatedAt: new Date().toISOString() };
+            pcSaveLogs(logs);
+            return true;
+        }
+
+        function pcClearLogs() {
+            localStorage.removeItem(PC_LOG.STORAGE_KEY);
+        }
+
+        function pcComputeSummary(logs) {
+            const total = logs.length;
+            const blocked = logs.filter(l => l.blocked).length;
+            const ok = total - blocked;
+
+            const avg = (arr, key) => {
+                const xs = arr.map(o => Number(o?.[key])).filter(v => Number.isFinite(v));
+                return xs.length ? xs.reduce((a,b) => a + b, 0) / xs.length : null;
+            };
+
+            const seasonDist = {};
+            logs.forEach(l => {
+                const s = l?.personalColor?.season || 'unknown';
+                seasonDist[s] = (seasonDist[s] || 0) + 1;
+            });
+
+            return {
+                total,
+                ok,
+                blocked,
+                blockedRate: total ? blocked / total : 0,
+                avgLightingQuality: avg(logs, 'lightingQuality'),
+                avgSamplesFiltered: avg(logs, 'samplesFiltered'),
+                avgOutlierRemoved: avg(logs, 'outlierRemoved'),
+                seasonDist
+            };
+        }
+
+        function pcDownloadText(filename, text, mime = 'text/plain') {
+            const blob = new Blob([text], { type: mime });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function pcExportJSON() {
+            const logs = pcLoadLogs();
+            pcDownloadText(`pc-logs-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(logs, null, 2), 'application/json');
+        }
+
+        function pcExportCSV() {
+            const logs = pcLoadLogs();
+            const header = [
+                'id','ts','blocked','reason','lightingQuality','colorTemp',
+                'samplesTotal','samplesFiltered','outlierRemoved','captureDurationMs',
+                'skinHex','correctedHex',
+                'undertone','season','subtype','confidence','warmScore',
+                'labelUndertone','labelSeason','labelSubtype','labelMemo','isLabeled'
+            ];
+
+            const esc = (v) => {
+                const s = v === null || v === undefined ? '' : String(v);
+                return `"${s.replace(/"/g, '""')}"`;
+            };
+
+            const rows = logs.map(l => ([
+                l.id,
+                l.ts,
+                l.blocked,
+                l.reason,
+                l.lightingQuality,
+                l.colorTemp,
+                l.samplesTotal,
+                l.samplesFiltered,
+                l.outlierRemoved,
+                l.captureDurationMs,
+                l.skinHex,
+                l.correctedHex,
+                l.personalColor?.undertone,
+                l.personalColor?.season,
+                l.personalColor?.subtype,
+                l.personalColor?.confidence,
+                l.personalColor?.warmScore,
+                l.expertLabel?.undertone,
+                l.expertLabel?.season,
+                l.expertLabel?.subtype,
+                l.expertLabel?.memo,
+                l.isLabeled
+            ]).map(esc).join(','));
+
+            pcDownloadText(`pc-logs-${new Date().toISOString().slice(0,10)}.csv`, [header.join(','), ...rows].join('\n'), 'text/csv');
+        }
+
+        function generateLogPanelHTML() {
+            const s = pcComputeSummary(pcLoadLogs());
+            return `
+                <div style="margin-top:12px;padding:12px;border-radius:12px;border:1px solid #e0e0e0;background:#fafafa;">
+                    <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#333;">📊 진단 로그 (로컬)</div>
+                    <div style="font-size:11px;color:#555;line-height:1.6;margin-bottom:10px;">
+                        총 ${s.total}건 · 차단 ${s.blocked}건 (${Math.round(s.blockedRate*100)}%) · 평균 조명 ${s.avgLightingQuality?.toFixed?.(2) ?? '-'}
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button onclick="pcExportCSV()" style="padding:8px 10px;border-radius:8px;border:none;background:#2196F3;color:#fff;font-weight:700;font-size:12px;cursor:pointer;">CSV</button>
+                        <button onclick="pcExportJSON()" style="padding:8px 10px;border-radius:8px;border:none;background:#673AB7;color:#fff;font-weight:700;font-size:12px;cursor:pointer;">JSON</button>
+                        <button onclick="pcClearLogs(); location.reload();" style="padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#333;font-weight:700;font-size:12px;cursor:pointer;">지우기</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ✅ 전문가 라벨 저장 함수
+        function pcSaveExpertLabel() {
+            const id = window.__pcLastLogId;
+            if (!id) { showToast('저장할 로그가 없어요. 먼저 캡처하세요.', 'warning'); return; }
+
+            const labelUndertone = document.getElementById('pc-label-undertone')?.value || '';
+            const labelSeason = document.getElementById('pc-label-season')?.value || '';
+            const labelSubtype = document.getElementById('pc-label-subtype')?.value || '';
+            const labelMemo = document.getElementById('pc-label-memo')?.value || '';
+
+            if (!labelSeason) { showToast('시즌 라벨을 선택해주세요.', 'warning'); return; }
+
+            const ok = pcUpdateLog(id, {
+                expertLabel: {
+                    undertone: labelUndertone || null,
+                    season: labelSeason,
+                    subtype: labelSubtype || null,
+                    memo: labelMemo || null
+                },
+                isLabeled: true
+            });
+
+            if (ok) showToast('전문가 라벨 저장 완료', 'success');
+            else showToast('라벨 저장 실패 (로그 id 없음)', 'error');
+        }
+        window.pcSaveExpertLabel = pcSaveExpertLabel;
+
+        // ✅ 라벨 패널 HTML 생성
+        function generateLabelPanelHTML(pipelineResult) {
+            const pc = pipelineResult?.personalColor || {};
+            const predictedUndertone = pc.undertone || '';
+            const predictedSeason = pc.season || '';
+            const predictedSubtype = pc.subtype || '';
+
+            const opt = (v, text, selected) => `<option value="${v}" ${selected ? 'selected' : ''}>${text}</option>`;
+
+            return `
+            <div style="margin-top:12px;padding:12px;border-radius:12px;border:1px solid #E91E63;background:#fff;">
+                <div style="font-weight:800;font-size:13px;margin-bottom:10px;color:#E91E63;">
+                    🏷️ 전문가 라벨링
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
+                    <div>
+                        <div style="font-size:11px;color:#666;margin-bottom:4px;">Undertone</div>
+                        <select id="pc-label-undertone" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;">
+                            ${opt('', '(선택)', predictedUndertone === '')}
+                            ${opt('Warm', 'Warm', predictedUndertone === 'Warm')}
+                            ${opt('Neutral', 'Neutral', predictedUndertone === 'Neutral')}
+                            ${opt('Cool', 'Cool', predictedUndertone === 'Cool')}
+                        </select>
+                    </div>
+
+                    <div>
+                        <div style="font-size:11px;color:#666;margin-bottom:4px;">Season *</div>
+                        <select id="pc-label-season" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;">
+                            ${opt('', '(필수)', predictedSeason === '')}
+                            ${opt('spring', 'spring', predictedSeason === 'spring')}
+                            ${opt('summer', 'summer', predictedSeason === 'summer')}
+                            ${opt('autumn', 'autumn', predictedSeason === 'autumn')}
+                            ${opt('winter', 'winter', predictedSeason === 'winter')}
+                        </select>
+                    </div>
+
+                    <div>
+                        <div style="font-size:11px;color:#666;margin-bottom:4px;">Subtype</div>
+                        <select id="pc-label-subtype" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;">
+                            ${opt('', '(선택)', predictedSubtype === '')}
+                            ${opt('bright', 'bright', predictedSubtype === 'bright')}
+                            ${opt('light', 'light', predictedSubtype === 'light')}
+                            ${opt('soft', 'soft', predictedSubtype === 'soft')}
+                            ${opt('muted', 'muted', predictedSubtype === 'muted')}
+                            ${opt('deep', 'deep', predictedSubtype === 'deep')}
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:10px;">
+                    <div style="font-size:11px;color:#666;margin-bottom:4px;">Memo (조명/상황)</div>
+                    <input id="pc-label-memo" placeholder="예: 실내 형광등, 그림자 있음"
+                        style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;box-sizing:border-box;" />
+                </div>
+
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button onclick="pcSaveExpertLabel()"
+                        style="padding:9px 12px;border-radius:8px;border:none;background:#E91E63;color:#fff;font-weight:800;font-size:12px;cursor:pointer;">
+                        라벨 저장
+                    </button>
+                    <button onclick="pcExportCSV()"
+                        style="padding:9px 12px;border-radius:8px;border:none;background:#2196F3;color:#fff;font-weight:800;font-size:12px;cursor:pointer;">
+                        CSV 내보내기
+                    </button>
+                </div>
+            </div>`;
+        }
+
+        // 콘솔에서 쓰기 쉽게 전역 노출
+        window.PCLog = {
+            load: pcLoadLogs,
+            clear: pcClearLogs,
+            summary: () => pcComputeSummary(pcLoadLogs()),
+            exportJSON: pcExportJSON,
+            exportCSV: pcExportCSV,
+            update: pcUpdateLog
+        };
+
+        // ================================
+        // ✅ End of Personal Color Logging
+        // ================================
+
         // 현재 랜드마크 저장용 변수
         let currentLandmarks = null;
         let isCaptured = false;
@@ -4270,6 +4539,10 @@
             const labColor = rgbToLab(avgRgb.r, avgRgb.g, avgRgb.b);
             const undertoneAnalysis = analyzeUndertoneAdvanced(avgRgb.r, avgRgb.g, avgRgb.b, labColor);
 
+            // 캡처 메타 (로그용)
+            const captureDurationMs = Math.round(performance.now() - captureStartTs);
+            const outlierRemoved = captureSamples.length - filtered.length;
+
             const skinToneData = {
                 rgb: avgRgb,
                 hex: rgbToHexSimple(avgRgb),
@@ -4278,7 +4551,14 @@
                 undertoneScore: undertoneAnalysis.score,
                 brightness: labColor.L,
                 chroma: undertoneAnalysis.chroma,
-                samples: filtered.length
+                samples: filtered.length,
+                // ✅ 캡처 메타 (정확도 분석용 로그)
+                captureMeta: {
+                    samplesTotal: captureSamples.length,
+                    samplesFiltered: filtered.length,
+                    outlierRemoved,
+                    captureDurationMs
+                }
             };
 
             console.log('🧪 안정화된 피부톤 데이터:', skinToneData);
@@ -4368,6 +4648,39 @@
 
             // 🚀 새 파이프라인 실행
             const pipelineResult = runPersonalColorPipeline(skinToneData.rgb, window.lastFullImageData);
+
+            // ✅ 로그 기록 (차단/성공 모두 기록)
+            const lmLog = pipelineResult?.lightingMeta || {};
+            const pcLog = pipelineResult?.personalColor || null;
+            const capMeta = skinToneData?.captureMeta || {};
+
+            const logId = pcAppendLog({
+                ts: new Date().toISOString(),
+                blocked: !!pipelineResult?.blocked,
+                reason: pipelineResult?.reason || null,
+                lightingQuality: lmLog.lightingQuality ?? null,
+                colorTemp: lmLog.colorTemp ?? null,
+                samplesTotal: capMeta.samplesTotal ?? null,
+                samplesFiltered: capMeta.samplesFiltered ?? skinToneData?.samples ?? null,
+                outlierRemoved: capMeta.outlierRemoved ?? null,
+                captureDurationMs: capMeta.captureDurationMs ?? null,
+                skinHex: skinToneData?.hex ?? null,
+                correctedHex: pipelineResult?.correctedRgb ? rgbToHexSimple(pipelineResult.correctedRgb) : null,
+                personalColor: pcLog ? {
+                    undertone: pcLog.undertone,
+                    season: pcLog.season,
+                    subtype: pcLog.subtype,
+                    confidence: pcLog.confidence,
+                    warmScore: pcLog.warmScore
+                } : null,
+                config: {
+                    minQualityToClassify: PC_CONFIG?.LIGHTING?.minQualityToClassify,
+                    outlierDeltaE76: PC_CONFIG?.CAPTURE?.outlierDeltaE76,
+                    sampleCount: PC_CONFIG?.CAPTURE?.sampleCount
+                }
+            });
+            window.__pcLastLogId = logId;
+            console.log('📝 로그 저장:', logId);
 
             // ✅ 조명 품질 낮으면 분류 차단 → 재촬영 유도
             if (pipelineResult?.blocked) {
@@ -4588,6 +4901,10 @@
                     </div>
                 </div>
             `;
+
+            // ✅ 로그 패널 + 라벨 패널 추가
+            resultsContainer.insertAdjacentHTML('beforeend', generateLogPanelHTML());
+            resultsContainer.insertAdjacentHTML('beforeend', generateLabelPanelHTML(pipelineResult));
         }
 
         // 헤어컬러 추천 HTML 생성
