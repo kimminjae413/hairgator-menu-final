@@ -4189,14 +4189,19 @@
                 jawWeight: 1.0,           // 턱 가중치
                 noseWeight: 0.8           // 코 옆 가중치
             },
-            // ✅ DSCAS Multi-region Analysis 설정
+            // ✅ DSCAS Multi-region Analysis 설정 (Task 3 개선)
             MULTI_REGION: {
                 enabled: true,            // 다중 영역 분석 활성화
                 faceWeight: 0.7,          // 얼굴 가중치 (70%)
                 neckWeight: 0.3,          // 목 가중치 (30%)
                 neckLandmarks: [152, 377, 148, 176, 400],  // 턱 아래 영역 랜드마크
                 minNeckSamples: 3,        // 최소 목 샘플 수
-                consistencyThreshold: 15  // 영역 간 ΔE76 일관성 임계값
+                consistencyThreshold: 15, // 영역 간 ΔE76 일관성 임계값 (정규화 후)
+                // ✅ Task 3: 목 밝기 정규화 설정
+                neckBrightnessRatio: 0.92,  // 목은 얼굴보다 평균 8% 어두움 (해부학적 기준)
+                undertoneOnlyComparison: true,  // L* 제외하고 a*/b*만 비교
+                undertoneThreshold: 8,    // a*/b* 기반 언더톤 차이 임계값 (ΔE_ab)
+                adaptiveThreshold: true   // 조명 품질에 따른 적응형 임계값
             },
             UNDERTONE: {
                 warmScoreWarm: 3,
@@ -5633,29 +5638,76 @@
                 const neckSamples = sampleNeckRegion(landmarks, dynamicRadius, cfg.brightnessMin, cfg.brightnessMax);
 
                 if (neckSamples.count >= multiCfg.minNeckSamples) {
-                    const neckR = neckSamples.r / neckSamples.count;
-                    const neckG = neckSamples.g / neckSamples.count;
-                    const neckB = neckSamples.b / neckSamples.count;
+                    let neckR = neckSamples.r / neckSamples.count;
+                    let neckG = neckSamples.g / neckSamples.count;
+                    let neckB = neckSamples.b / neckSamples.count;
 
-                    neckData = { r: neckR, g: neckG, b: neckB, count: neckSamples.count };
+                    // ✅ Task 3: 목 밝기 정규화 (목은 해부학적으로 얼굴보다 ~8% 어두움)
+                    const faceBrightness = (finalR + finalG + finalB) / 3;
+                    const neckBrightness = (neckR + neckG + neckB) / 3;
+                    const expectedNeckBrightness = faceBrightness * multiCfg.neckBrightnessRatio;
 
-                    // 얼굴-목 일관성 체크 (ΔE76)
+                    // 밝기 정규화 계수 계산 (목을 얼굴 기준으로 보정)
+                    const brightnessNormFactor = expectedNeckBrightness > 0 ?
+                        faceBrightness / (neckBrightness / multiCfg.neckBrightnessRatio) : 1.0;
+
+                    // 정규화된 목 RGB (밝기만 보정, 색상비율 유지)
+                    const normNeckR = Math.min(255, neckR * brightnessNormFactor);
+                    const normNeckG = Math.min(255, neckG * brightnessNormFactor);
+                    const normNeckB = Math.min(255, neckB * brightnessNormFactor);
+
+                    neckData = {
+                        r: neckR, g: neckG, b: neckB, count: neckSamples.count,
+                        normalized: { r: normNeckR, g: normNeckG, b: normNeckB },
+                        brightnessNormFactor: brightnessNormFactor
+                    };
+
                     const faceLab = rgbToLab(finalR, finalG, finalB);
-                    const neckLab = rgbToLab(neckR, neckG, neckB);
-                    const faceNeckDeltaE = de76(faceLab, neckLab);
+                    const neckLab = rgbToLab(normNeckR, normNeckG, normNeckB); // 정규화된 목 사용
 
-                    if (faceNeckDeltaE <= multiCfg.consistencyThreshold) {
-                        // 일관성 좋음 → 목 데이터 합산
-                        finalR = finalR * multiCfg.faceWeight + neckR * multiCfg.neckWeight;
-                        finalG = finalG * multiCfg.faceWeight + neckG * multiCfg.neckWeight;
-                        finalB = finalB * multiCfg.faceWeight + neckB * multiCfg.neckWeight;
+                    // ✅ Task 3: 언더톤 중심 비교 (L* 제외, a*/b*만 비교)
+                    let faceNeckDeltaE;
+                    let comparisonMethod;
 
-                        regionConsistency = 1 - (faceNeckDeltaE / multiCfg.consistencyThreshold) * 0.3;
-                        console.log(`🔬 목 영역 합산 (ΔE=${faceNeckDeltaE.toFixed(1)}, consistency=${(regionConsistency*100).toFixed(0)}%)`);
+                    if (multiCfg.undertoneOnlyComparison) {
+                        // a*/b* 기반 비교 (밝기 L* 무시 → 언더톤만 비교)
+                        const deltaA = faceLab.a - neckLab.a;
+                        const deltaB = faceLab.b - neckLab.b;
+                        faceNeckDeltaE = Math.sqrt(deltaA * deltaA + deltaB * deltaB);
+                        comparisonMethod = 'undertone-only';
                     } else {
-                        // 일관성 낮음 → 얼굴만 사용, 신뢰도 낮춤
-                        regionConsistency = 0.7;
-                        console.log(`⚠️ 얼굴-목 불일치 (ΔE=${faceNeckDeltaE.toFixed(1)}) → 얼굴만 사용`);
+                        // 전체 LAB 비교 (기존 방식)
+                        faceNeckDeltaE = de76(faceLab, neckLab);
+                        comparisonMethod = 'full-LAB';
+                    }
+
+                    // ✅ Task 3: 적응형 임계값 (조명 품질 반영)
+                    let effectiveThreshold = multiCfg.undertoneOnlyComparison ?
+                        multiCfg.undertoneThreshold : multiCfg.consistencyThreshold;
+
+                    if (multiCfg.adaptiveThreshold && window.lastLightingMeta) {
+                        const lq = window.lastLightingMeta.lightingQuality || 0.5;
+                        // 조명 좋으면 임계값 유지, 나쁘면 완화 (최대 1.5배)
+                        effectiveThreshold = effectiveThreshold * (1 + (1 - lq) * 0.5);
+                    }
+
+                    console.log(`🔬 얼굴-목 비교: ${comparisonMethod}, ΔE=${faceNeckDeltaE.toFixed(1)}, 임계값=${effectiveThreshold.toFixed(1)}`);
+
+                    if (faceNeckDeltaE <= effectiveThreshold) {
+                        // 일관성 좋음 → 정규화된 목 데이터 합산
+                        finalR = finalR * multiCfg.faceWeight + normNeckR * multiCfg.neckWeight;
+                        finalG = finalG * multiCfg.faceWeight + normNeckG * multiCfg.neckWeight;
+                        finalB = finalB * multiCfg.faceWeight + normNeckB * multiCfg.neckWeight;
+
+                        // 일관성 점수 계산 (0.7 ~ 1.0)
+                        regionConsistency = 1 - (faceNeckDeltaE / effectiveThreshold) * 0.3;
+                        regionConsistency = Math.max(0.7, Math.min(1.0, regionConsistency));
+                        console.log(`✅ 목 영역 합산 (consistency=${(regionConsistency*100).toFixed(0)}%)`);
+                    } else {
+                        // 일관성 낮음 → 얼굴만 사용, 하지만 정규화 덕분에 더 높은 신뢰도
+                        // 기존 0.7 → 언더톤 비교 시 0.8 (밝기 차이는 정상이므로)
+                        regionConsistency = multiCfg.undertoneOnlyComparison ? 0.8 : 0.7;
+                        console.log(`⚠️ 얼굴-목 언더톤 차이 (ΔE=${faceNeckDeltaE.toFixed(1)}) → 얼굴만 사용 (consistency=${(regionConsistency*100).toFixed(0)}%)`);
                     }
                 }
             }
