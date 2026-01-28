@@ -1676,3 +1676,131 @@ SEASON: {
 ```
 
 **변경**: `cool_L_winter` 50 → 55 (겨울 범위 확장)
+
+---
+
+### Task 3 조명 보정 강화 검증 완료 ✅
+
+**목적:** 얼굴-목 영역 색상 일관성 측정으로 조명 상태 보정
+
+**테스트 결과:**
+
+| 지표 | 목표 | 실제 |
+|------|------|------|
+| ΔE00 (얼굴-목) | < 6 | 2.4-3.0 |
+| regionConsistency | 85%+ | 95% |
+
+**구현:**
+```javascript
+// 목 영역 샘플링 (턱 아래 영역)
+function sampleNeckRegion(landmarks, canvas, skinL) {
+    // 랜드마크 152(턱) + 10(이마)로 목 영역 계산
+    const neckY = jawBottom + (faceHeight * 0.15);
+    return sampleCircularRegion(neckX, neckY, dynamicRadius);
+}
+
+// CIEDE2000으로 얼굴-목 색차 계산
+const faceNeckDeltaE = ciede2000(faceLab, neckLab);
+if (faceNeckDeltaE > 6) {
+    regionConsistency = 0.7;  // 불일치 → 신뢰도 감소
+}
+```
+
+**커밋:** `a4457a7` - fix: Task 3 디버그 로그 정리 (정상 작동 확인)
+
+---
+
+### 헤어체험 카메라 최소 영역 가이드 추가 ✅
+
+**위치:** `js/menu.js` → `openMirrorCamera()` 함수
+
+**기존 문제:**
+- 얼굴 실루엣 가이드가 비현실적
+- 가이드가 너무 크면 사용자가 멀리 서야 함 → 버튼 터치 불가
+
+**해결:** "최소 영역" 가이드 방식
+- 작은 타원 표시 + "얼굴이 이 원보다 크게 나와야 해요" 안내
+- 화살표 애니메이션으로 가까이 오라는 의미 전달
+
+**구현:**
+```html
+<div class="camera-guide">
+    <div class="min-area-guide">
+        <div class="min-area-oval"></div>
+        <p class="min-area-text">얼굴이 이 원보다<br><strong>크게</strong> 나와야 해요</p>
+    </div>
+</div>
+```
+
+```css
+.min-area-oval {
+    width: 120px;
+    height: 160px;
+    border: 3px dashed rgba(255, 107, 107, 0.7);
+    border-radius: 50%;
+    animation: min-area-pulse 2s ease-in-out infinite;
+}
+.min-area-oval::after {
+    content: '↑';
+    position: absolute;
+    top: -25px;
+    animation: arrow-bounce 1s ease-in-out infinite;
+}
+```
+
+**커밋:** `a33c479` - fix: 헤어체험 카메라 가이드를 최소 영역 표시 방식으로 변경
+
+---
+
+## 2026-01-28 작업 내용
+
+### Apple App Store 심사 리젝 대응 (Guideline 5.1.1) ✅
+
+**문제:** 얼굴 데이터 정책 관련 3~4차 리젝
+
+**Apple 요구사항:**
+- 얼굴 데이터 보유 여부 명시
+- 제3자 공유 대상 및 이유
+- 제3자의 얼굴 데이터 저장 여부
+
+### 🔴 이전 개인정보처리방침 문제점 (리젝 원인)
+
+| 문제 | 이전 내용 | 실제 |
+|------|----------|------|
+| 얼굴 분석 기술 | Google Gemini API | **MediaPipe (온디바이스)** |
+| vModel 저장 기간 | 24시간 | **검증 안 됨 (추측)** |
+
+**핵심:** 잘못된 정보 + 검증 안 된 정보로 계속 리젝당함
+
+### ✅ 해결 방법
+
+#### 1. privacy-policy.html 전면 수정
+
+| 기능 | 처리 방식 | 서버 전송 | 저장 |
+|------|----------|----------|------|
+| 얼굴형 분석 | **MediaPipe** (온디바이스) | **NO** | **NO** |
+| 퍼스널 컬러 | **MediaPipe** (온디바이스) | **NO** | **NO** |
+| 헤어체험 | vModel API | YES (처리용) | NO (즉시 삭제) |
+| HAIRGATOR 임시저장 | Firebase Storage | YES | YES (최대 24시간, 자동 삭제) |
+
+#### 2. Firebase Storage 라이프사이클 규칙 설정
+
+```
+GCS Console → hairgatormenu-4a43e 버킷 → Lifecycle
+- 조건: prefix = "hair-try-temp/", age = 1일
+- 동작: Delete
+```
+
+→ `hair-try-temp/` 폴더 이미지 24시간 후 자동 삭제
+
+#### 3. Apple 심사 회신 및 재제출 완료
+
+**커밋:**
+- `b9f203a` - fix: 개인정보처리방침 얼굴 데이터 정책 전면 수정 (MediaPipe 온디바이스, vModel 즉시 삭제)
+- `43f4e50` - fix: HAIRGATOR 임시 저장 정책 추가 (Firebase Storage 24시간 후 자동 삭제)
+
+### 🔑 핵심 교훈
+
+1. **MediaPipe = 온디바이스**: 서버 전송 자체가 없음 → 제3자 저장 이슈 없음
+2. **검증 안 된 정보 쓰지 말 것**: "24시간" 같은 숫자는 확인 후 작성
+3. **영어로 작성**: Apple 심사관이 읽을 수 있도록 Face Data 섹션은 영어로
