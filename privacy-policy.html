@@ -137,7 +137,23 @@
                         <td style="border: 1px solid #ddd; padding: 10px;">YES (for processing only)</td>
                         <td style="border: 1px solid #ddd; padding: 10px; color: #2e7d32;"><strong>NO</strong><br>(deleted after processing)</td>
                     </tr>
+                    <tr style="background: #fff8e1;">
+                        <td style="border: 1px solid #ddd; padding: 10px;">HAIRGATOR Temporary Storage<br>(for AI processing)</td>
+                        <td style="border: 1px solid #ddd; padding: 10px;"><strong>Firebase Storage</strong><br>(HAIRGATOR server)</td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">YES (temporary)</td>
+                        <td style="border: 1px solid #ddd; padding: 10px; color: #ff6f00;"><strong>YES</strong><br>(max 24 hours, auto-deleted)</td>
+                    </tr>
                 </table>
+            </div>
+
+            <div style="background: #fff8e1; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #ffb300;">
+                <h4 style="color: #e65100; margin: 0 0 10px 0;">⏱️ HAIRGATOR Temporary Storage Policy:</h4>
+                <ul style="margin: 0; font-size: 14px; line-height: 1.8;">
+                    <li><strong>What:</strong> For Virtual Hairstyle Try-On, user photos are temporarily stored on HAIRGATOR's server (Firebase Storage) before being sent to vModel API for processing.</li>
+                    <li><strong>Retention period:</strong> <strong style="color: #e65100;">Maximum 24 hours.</strong> Images are automatically deleted by our server's lifecycle policy.</li>
+                    <li><strong>Why temporary storage:</strong> Required for reliable AI processing and error recovery. Without temporary storage, failed requests cannot be retried.</li>
+                    <li><strong>Long-term storage:</strong> <strong style="color: #2e7d32;">NO.</strong> We do NOT permanently store any user face images.</li>
+                </ul>
             </div>
 
             <div style="background: white; padding: 20px; border-radius: 8px;">
@@ -181,6 +197,7 @@
 
         <h2>9. 개정 이력 (Revision History)</h2>
         <ul>
+            <li><strong>2026년 1월 28일 (2차):</strong> HAIRGATOR 임시 저장 정책 추가 - Firebase Storage 최대 24시간 보관 후 자동 삭제 명시</li>
             <li><strong>2026년 1월 28일:</strong> 얼굴 데이터 정책 전면 수정 - MediaPipe 온디바이스 처리 명시, vModel 즉시 삭제 명확화</li>
             <li>2026년 1월 24일: 제3자 데이터 보유 이유 상세 추가</li>
             <li>2026년 1월 23일: 얼굴 데이터 정책 상세화</li>
