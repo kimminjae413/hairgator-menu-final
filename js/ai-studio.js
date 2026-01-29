@@ -4988,6 +4988,7 @@ async function handleAutoRecipeMode() {
   const series = urlParams.get('series');
   const styleName = urlParams.get('styleName') || '';
   const styleId = urlParams.get('styleId') || '';
+  const language = urlParams.get('language') || (typeof currentLanguage !== 'undefined' ? currentLanguage : 'ko');
 
   if (!imageUrl) {
     console.error('❌ 이미지 URL이 없습니다');
@@ -5015,7 +5016,7 @@ async function handleAutoRecipeMode() {
     updateAutoRecipeUI(gender, service, category);
 
     // 2. API 호출 - 서버에서 이미지 URL 직접 가져오도록 (더 빠름)
-    console.log('📤 자동 레시피 API 호출 (image_url 전달)...');
+    console.log('📤 자동 레시피 API 호출 (image_url 전달)...', { language });
     const requestPayload = {
       action: 'analyze_and_match_recipe',
       payload: {
@@ -5023,7 +5024,8 @@ async function handleAutoRecipeMode() {
         gender: gender,
         service: service,
         category: category,
-        series: series
+        series: series,
+        language: language  // ⭐ 언어 설정 전달
       }
     };
 

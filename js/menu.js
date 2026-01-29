@@ -4710,6 +4710,7 @@ function navigateToRecipe(style, service = 'cut') {
 
     // URL 파라미터 구성
     const recipeImageUrl = getOriginalImageUrl(style);
+    const currentLang = typeof currentLanguage !== 'undefined' ? currentLanguage : (localStorage.getItem('hairgator_language') || 'ko');
     const params = new URLSearchParams({
         autoRecipe: 'true',
         imageUrl: recipeImageUrl,
@@ -4718,7 +4719,8 @@ function navigateToRecipe(style, service = 'cut') {
         category: categoryCode,
         series: series,
         styleName: style.name || '',
-        styleId: style.styleId || style.id || ''
+        styleId: style.styleId || style.id || '',
+        language: currentLang
     });
 
     console.log('📋 레시피 페이지 이동:', {

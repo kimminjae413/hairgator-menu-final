@@ -6972,9 +6972,68 @@ function formatRecipeSentences(text) {
 }
 
 /**
- * Gemini로 맞춤 레시피 생성 - 스타일 분석 기반 + abcde 북 참조
+ * 레시피를 지정된 언어로 번역 (Gemini 사용)
+ * @param {string} recipe - 원본 레시피 텍스트 (한국어)
+ * @param {string} targetLang - 대상 언어 코드
+ * @param {string} geminiKey - Gemini API 키
  */
-async function generateCustomRecipe(params56, top3Styles, geminiKey) {
+async function translateRecipeToLanguage(recipe, targetLang, geminiKey) {
+  const langNames = {
+    'en': 'English',
+    'ja': '日本語 (Japanese)',
+    'zh': '中文 (Chinese)',
+    'vi': 'Tiếng Việt (Vietnamese)',
+    'th': 'ภาษาไทย (Thai)',
+    'id': 'Bahasa Indonesia',
+    'es': 'Español (Spanish)'
+  };
+
+  const targetLangName = langNames[targetLang] || 'English';
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `Translate the following hair styling recipe to ${targetLangName}.
+
+IMPORTANT RULES:
+1. Keep all technical terms (like L4, D8, HS, VS, DFS, DBS, External, Internal) as-is
+2. Translate the explanations in parentheses to the target language
+3. Maintain the numbered format and structure
+4. Keep zone names (A존, B존, C존) but translate "존" to the appropriate word
+
+Original recipe:
+${recipe}
+
+Translated recipe (in ${targetLangName}):`
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 8000
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Translation API failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const translatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || recipe;
+  return translatedText;
+}
+
+/**
+ * Gemini로 맞춤 레시피 생성 - 스타일 분석 기반 + abcde 북 참조
+ * @param {string} language - 출력 언어 ('ko' | 'en' | 'ja' | 'zh' | 'vi' | 'th' 등)
+ */
+async function generateCustomRecipe(params56, top3Styles, geminiKey, language = 'ko') {
   try {
     // Top-3 스타일의 레시피 텍스트 준비 (textRecipe 우선, 없으면 captionText 사용)
     const recipeTexts = top3Styles.map((s, i) => {
@@ -7240,7 +7299,18 @@ ${recipeTexts}
 === 절대 금지 ===
 - 한 번호에 두 문장 이상 넣기 금지
 - 마크다운 기호 사용 금지 (*, **, #)
-- 이모지 사용 금지`
+- 이모지 사용 금지
+
+=== ⭐⭐⭐ 출력 언어 (매우 중요!) ⭐⭐⭐ ===
+${language === 'ko' ? '한국어로 작성하세요.' :
+  language === 'en' ? 'Write the entire recipe in English.' :
+  language === 'ja' ? '日本語でレシピを作成してください。' :
+  language === 'zh' ? '请用中文撰写整个食谱。' :
+  language === 'vi' ? 'Viết công thức bằng tiếng Việt.' :
+  language === 'th' ? 'เขียนสูตรเป็นภาษาไทย' :
+  language === 'id' ? 'Tulis resep dalam bahasa Indonesia.' :
+  language === 'es' ? 'Escribe la receta en español.' :
+  '한국어로 작성하세요.'}`
             }]
           }],
           tools: [{
@@ -7296,8 +7366,9 @@ ${recipeTexts}
 
 /**
  * Gemini로 맞춤 펌 레시피 생성 - 스타일 분석 기반 + 서술형 출력
+ * @param {string} language - 출력 언어 ('ko' | 'en' | 'ja' | 'zh' | 'vi' | 'th' 등)
  */
-async function generateCustomPermRecipe(params56, referenceRecipe, permType, geminiKey) {
+async function generateCustomPermRecipe(params56, referenceRecipe, permType, geminiKey, language = 'ko') {
   try {
     const lengthName = params56.length_category || 'D Length';
     const permTypeName = params56.perm_type || permType || '로드 (S컬)';
@@ -7527,9 +7598,10 @@ function analyzeDifferences(userParams, matchedStyle) {
 }
 
 async function analyzeAndMatchRecipe(payload, geminiKey) {
-  let { image_base64, mime_type, gender, category, series, service, image_url } = payload;
+  let { image_base64, mime_type, gender, category, series, service, image_url, language } = payload;
   const startTime = Date.now();
   const serviceType = service || 'cut';  // ⭐ 기본값: 커트
+  const outputLanguage = language || 'ko';  // ⭐ 출력 언어 (기본값: 한국어)
 
   console.log(`🎯 이미지 분석 + 맞춤 레시피 생성 시작 (성별: ${gender || 'female'}, 시술: ${serviceType}, 카테고리: ${category || 'auto'}, 시리즈: ${series || 'auto'})...`);
 
@@ -7691,7 +7763,7 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       if (originalRecipe && geminiKey) {
         try {
           const permTypeName = params56.perm_type || '로드 (S컬)';
-          originalRecipe = await generateCustomPermRecipe(params56, originalRecipe, permTypeName, geminiKey);
+          originalRecipe = await generateCustomPermRecipe(params56, originalRecipe, permTypeName, geminiKey, outputLanguage);
         } catch (err) {
           console.error('❌ AI 펌 레시피 생성 실패, 기존 포맷 사용:', err.message);
           originalRecipe = formatPermRecipe(originalRecipe);
@@ -7704,6 +7776,17 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       originalRecipe = normalizeRecipeFormat(originalRecipe);
       // ⭐ 문장별 번호 강제 적용
       originalRecipe = formatRecipeSentences(originalRecipe);
+    }
+
+    // ⭐ 한국어 외 언어인 경우 AI 번역 수행
+    if (outputLanguage && outputLanguage !== 'ko' && originalRecipe && geminiKey) {
+      try {
+        console.log(`🌐 레시피 번역 시작: ${outputLanguage}`);
+        originalRecipe = await translateRecipeToLanguage(originalRecipe, outputLanguage, geminiKey);
+        console.log(`✅ 레시피 번역 완료: ${outputLanguage}`);
+      } catch (translateErr) {
+        console.error('❌ 레시피 번역 실패, 원본 사용:', translateErr.message);
+      }
     }
 
     // ⭐⭐⭐ Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
