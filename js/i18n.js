@@ -2057,6 +2057,7 @@ const HAIRGATOR_I18N = {
 
         steps: {
           title: 'AI Analysis Progress',
+          titleShort: 'AI Analysis Progress',
           step1: 'Face Detection',
           step1Desc: 'Detecting face area with MediaPipe',
           step2: 'Skin Tone Analysis',
@@ -2608,10 +2609,12 @@ const HAIRGATOR_I18N = {
         selectFront: 'Please select fringe direction.',
         inputComplete: 'Customer info complete! Starting AI analysis.'
       },
-      titleShort: 'AI Analysis Progress',
-      narrowGapDesc: 'Narrow gap - Eyes appear close together',
-      wideGapDesc: 'Wide gap - Eyes appear far apart',
-      balancedGapDesc: 'Balanced gap - Ideal proportion',
+      // Face Analysis
+      faceAnalysis: {
+        narrowGapDesc: 'Narrow gap - Eyes appear close together',
+        wideGapDesc: 'Wide gap - Eyes appear far apart',
+        balancedGapDesc: 'Balanced gap - Ideal proportion'
+      },
     },
 
     // ========== Mobile Notice ==========
@@ -3377,6 +3380,7 @@ const HAIRGATOR_I18N = {
 
         steps: {
           title: 'AI 分析進行状況',
+          titleShort: 'AI分析の進捗',
           step1: '顔認識',
           step1Desc: 'MediaPipeで顔領域を検出',
           step2: '肌トーン分析',
@@ -3384,7 +3388,9 @@ const HAIRGATOR_I18N = {
           step3: 'Delta E 計算',
           step3Desc: '色差測定と精度算出',
           step4: '結果生成',
-          step4Desc: '専門家ノウハウ基盤の最終診断'
+          step4Desc: '専門家ノウハウ基盤の最終診断',
+          titleCompact: 'AI分析の進捗',
+          analyzingSkinTone: '肌のトーンを分析中...'
         },
         takePhoto: '写真を撮影してください',
         takePhotoDesc: '左側でカメラを起動し、顔を撮影するとAIが分析します',
@@ -3924,12 +3930,12 @@ const HAIRGATOR_I18N = {
         selectFront: '前髪の方向を選択してください。',
         inputComplete: 'お客様情報入力完了！AI分析を開始します。'
       },
-      titleShort: 'AI分析の進捗',
-      titleCompact: 'AI分析の進捗',
-      analyzingSkinTone: '肌のトーンを分析中...',
-      narrowGapDesc: '狭い眉間 - 目が近く見えます',
-      wideGapDesc: '広い眉間 - 目が離れて見えます',
-      balancedGapDesc: 'バランスの取れた眉間 - 理想的な比率',
+      // Face Analysis
+      faceAnalysis: {
+        narrowGapDesc: '狭い眉間 - 目が近く見えます',
+        wideGapDesc: '広い眉間 - 目が離れて見えます',
+        balancedGapDesc: 'バランスの取れた眉間 - 理想的な比率'
+      },
     },
 
     // ========== モバイル通知 ==========
@@ -4695,6 +4701,7 @@ const HAIRGATOR_I18N = {
 
         steps: {
           title: 'AI分析进度',
+          titleShort: 'AI分析进度',
           step1: '人脸识别',
           step1Desc: '使用MediaPipe检测面部区域',
           step2: '肤色分析',
@@ -5245,10 +5252,12 @@ const HAIRGATOR_I18N = {
         selectFront: '请选择刘海方向。',
         inputComplete: '客户信息输入完成！开始AI分析。'
       },
-      titleShort: 'AI分析进度',
-      narrowGapDesc: '窄眉间 - 眼睛看起来很近',
-      wideGapDesc: '宽眉间 - 眼睛看起来很远',
-      balancedGapDesc: '均衡眉间 - 理想比例',
+      // Face Analysis
+      faceAnalysis: {
+        narrowGapDesc: '窄眉间 - 眼睛看起来很近',
+        wideGapDesc: '宽眉间 - 眼睛看起来很远',
+        balancedGapDesc: '均衡眉间 - 理想比例'
+      },
     },
 
     // ========== 移动端提示 ==========
@@ -6014,6 +6023,7 @@ const HAIRGATOR_I18N = {
 
         steps: {
           title: 'Tiến trình phân tích AI',
+          titleShort: 'Tiến độ phân tích AI',
           step1: 'Nhận diện khuôn mặt',
           step1Desc: 'Phát hiện vùng mặt với MediaPipe',
           step2: 'Phân tích tông da',
@@ -6021,7 +6031,9 @@ const HAIRGATOR_I18N = {
           step3: 'Tính toán Delta E',
           step3Desc: 'Đo độ chênh lệch màu',
           step4: 'Tạo kết quả',
-          step4Desc: 'Chẩn đoán cuối cùng dựa trên chuyên gia'
+          step4Desc: 'Chẩn đoán cuối cùng dựa trên chuyên gia',
+          titleCompact: 'Tiến độ phân tích AI',
+          analyzingSkinTone: 'Đang phân tích tông màu da...'
         },
         takePhoto: 'Hãy chụp ảnh',
         takePhotoDesc: 'Bắt đầu camera ở bên trái, chụp khuôn mặt và AI sẽ phân tích',
@@ -6033,6 +6045,17 @@ const HAIRGATOR_I18N = {
           skinTone: 'Tông da',
           undertone: 'Undertone',
           recommendedSeason: '✨ Màu cá nhân đề xuất',
+          avoidColors: 'Màu cần tránh',
+          lighting: 'Ánh sáng',
+          treatmentRecipe: 'Công thức điều trị',
+          hairColorRecommend: 'Đề xuất màu tóc',
+          expertGuide: 'Hướng dẫn chuyên gia',
+          treatmentDifficulty: 'Độ khó điều trị',
+          lightingHigh: 'Tốt',
+          lightingMedium: 'Trung bình',
+          lightingLow: 'Thấp (Tham khảo)',
+          treatmentPoints: 'Điểm điều trị',
+          expertAnalysis: 'Phân tích chuyên gia',
           matchingColors: '💄 Màu trang điểm & thời trang',
           confidence: 'Độ tin cậy',
           // Trang kết quả phân tích bổ sung
@@ -6551,21 +6574,12 @@ const HAIRGATOR_I18N = {
         selectFront: 'Vui lòng chọn hướng mái.',
         inputComplete: 'Hoàn tất nhập thông tin! Bắt đầu phân tích AI.'
       },
-      titleShort: 'Tiến độ phân tích AI',
-      titleCompact: 'Tiến độ phân tích AI',
-      analyzingSkinTone: 'Đang phân tích tông màu da...',
-      narrowGapDesc: 'Khoảng cách hẹp - Mắt trông gần nhau',
-      wideGapDesc: 'Khoảng cách rộng - Mắt trông xa nhau',
-      balancedGapDesc: 'Khoảng cách cân bằng - Tỷ lệ lý tưởng',
-      avoidColors: 'Màu cần tránh',
-      lighting: 'Ánh sáng',
-      treatmentRecipe: 'Công thức điều trị',
-      hairColorRecommend: 'Đề xuất màu tóc',
-      treatmentDifficulty: 'Độ khó điều trị',
-      lightingHigh: 'Tốt',
-      lightingMedium: 'Trung bình',
-      lightingLow: 'Thấp (Tham khảo)',
-      treatmentPoints: 'Điểm điều trị',
+      // Face Analysis
+      faceAnalysis: {
+        narrowGapDesc: 'Khoảng cách hẹp - Mắt trông gần nhau',
+        wideGapDesc: 'Khoảng cách rộng - Mắt trông xa nhau',
+        balancedGapDesc: 'Khoảng cách cân bằng - Tỷ lệ lý tưởng'
+      },
     },
 
     // ========== Thông báo di động ==========
@@ -7277,6 +7291,7 @@ const HAIRGATOR_I18N = {
 
         steps: {
           title: 'Proses Analisis AI',
+          titleShort: 'Kemajuan Analisis AI',
           step1: 'Deteksi Wajah',
           step1Desc: 'Deteksi area wajah dengan MediaPipe',
           step2: 'Analisis Tone Kulit',
@@ -7284,7 +7299,9 @@ const HAIRGATOR_I18N = {
           step3: 'Perhitungan Delta E',
           step3Desc: 'Ukur perbedaan warna',
           step4: 'Hasilkan Hasil',
-          step4Desc: 'Diagnosis akhir berdasarkan ahli'
+          step4Desc: 'Diagnosis akhir berdasarkan ahli',
+          titleCompact: 'Kemajuan Analisis AI',
+          analyzingSkinTone: 'Menganalisis warna kulit...'
         },
         takePhoto: 'Ambil foto',
         takePhotoDesc: 'Mulai kamera di sebelah kiri, ambil wajah dan AI akan menganalisis',
@@ -7296,6 +7313,17 @@ const HAIRGATOR_I18N = {
           skinTone: 'Tone Kulit',
           undertone: 'Undertone',
           recommendedSeason: '✨ Warna Personal yang Direkomendasikan',
+          avoidColors: 'Warna yang Harus Dihindari',
+          lighting: 'Pencahayaan',
+          treatmentRecipe: 'Resep Perawatan',
+          hairColorRecommend: 'Rekomendasi Warna Rambut',
+          expertGuide: 'Panduan Ahli',
+          treatmentDifficulty: 'Tingkat Kesulitan Perawatan',
+          lightingHigh: 'Bagus',
+          lightingMedium: 'Sedang',
+          lightingLow: 'Rendah (Referensi)',
+          treatmentPoints: 'Poin Perawatan',
+          expertAnalysis: 'Analisis Ahli',
           matchingColors: '💄 Warna Makeup & Fashion',
           confidence: 'Tingkat Keyakinan',
           customStyleRecommend: '💇 Rekomendasi Gaya Rambut',
@@ -7787,21 +7815,12 @@ const HAIRGATOR_I18N = {
         selectFront: 'Silakan pilih arah poni.',
         inputComplete: 'Input selesai! Memulai analisis AI.'
       },
-      titleShort: 'Kemajuan Analisis AI',
-      titleCompact: 'Kemajuan Analisis AI',
-      analyzingSkinTone: 'Menganalisis warna kulit...',
-      narrowGapDesc: 'Jarak sempit - Mata terlihat berdekatan',
-      wideGapDesc: 'Jarak lebar - Mata terlihat berjauhan',
-      balancedGapDesc: 'Jarak seimbang - Proporsi ideal',
-      avoidColors: 'Warna yang harus dihindari',
-      lighting: 'Pencahayaan',
-      treatmentRecipe: 'Resep perawatan',
-      hairColorRecommend: 'Rekomendasi warna rambut',
-      treatmentDifficulty: 'Tingkat kesulitan perawatan',
-      lightingHigh: 'Bagus',
-      lightingMedium: 'Sedang',
-      lightingLow: 'Rendah (Referensi)',
-      treatmentPoints: 'Poin perawatan',
+      // Face Analysis
+      faceAnalysis: {
+        narrowGapDesc: 'Jarak sempit - Mata terlihat berdekatan',
+        wideGapDesc: 'Jarak lebar - Mata terlihat berjauhan',
+        balancedGapDesc: 'Jarak seimbang - Proporsi ideal'
+      },
     },
 
     // ========== Pemberitahuan Seluler ==========
@@ -8506,6 +8525,12 @@ const HAIRGATOR_I18N = {
         squareJawSideCover: 'Cabello lateral cubre naturalmente mandíbula',
         balancedFace: 'Forma facial equilibrada',
         defaultRecommendation: 'Estilo recomendado por defecto'
+      },
+      // Face Analysis
+      faceAnalysis: {
+        narrowGapDesc: 'Espacio estrecho - Los ojos parecen cercanos',
+        wideGapDesc: 'Espacio amplio - Los ojos parecen distantes',
+        balancedGapDesc: 'Espacio equilibrado - Proporción ideal'
       }
     },
 
@@ -8549,7 +8574,119 @@ const HAIRGATOR_I18N = {
         feature2: 'Análisis de precisión basado en espacio de color LAB',
         feature3: 'Utilización de base de datos de conocimiento experto',
         feature4: 'Auto-coincidencia con 624 colores de cabello',
-        startBtn: 'Iniciar Análisis IA'
+        startBtn: 'Iniciar Análisis IA',
+
+        steps: {
+          title: 'Progreso del Análisis AI',
+          titleShort: 'Progreso del Análisis AI',
+          step1: 'Detección de Rostro',
+          step1Desc: 'Detectando área facial con MediaPipe',
+          step2: 'Análisis de Tono de Piel',
+          step2Desc: 'Conversión de RGB a espacio de color LAB',
+          step3: 'Cálculo Delta E',
+          step3Desc: 'Medición de diferencia de color',
+          step4: 'Generación de Resultado',
+          step4Desc: 'Diagnóstico final basado en expertos',
+          titleCompact: 'Progreso del Análisis AI',
+          analyzingSkinTone: 'Analizando el tono de piel...'
+        },
+        takePhoto: 'Toma una foto',
+        takePhotoDesc: 'Inicia la cámara a la izquierda y captura tu rostro para análisis AI',
+        customerSummary: 'Resumen de Análisis del Cliente',
+
+        result: {
+          title: 'Resultado del Análisis de Color Personal',
+          skinAnalysis: 'Análisis de tu Piel',
+          skinTone: 'Tono de Piel',
+          undertone: 'Subtono',
+          recommendedSeason: 'Color Personal Recomendado',
+          avoidColors: 'Colores a Evitar',
+          lighting: 'Iluminación',
+          treatmentRecipe: 'Receta de Tratamiento',
+          hairColorRecommend: 'Color de Cabello Recomendado',
+          expertGuide: 'Guía de Experto',
+          treatmentDifficulty: 'Dificultad del Tratamiento',
+          lightingHigh: 'Buena',
+          lightingMedium: 'Media',
+          lightingLow: 'Baja (Referencia)',
+          treatmentPoints: 'Puntos de Tratamiento',
+          expertAnalysis: 'Análisis de Experto',
+          matchingColors: 'Colores de Maquillaje y Moda',
+          confidence: 'Confianza',
+          customStyleRecommend: 'Recomendación de Estilo Personalizado',
+          fringeCombo: 'Combinación de Flequillo',
+          seasonColorHarmony: 'Recomendación de tinte en armonía con colores de temporada',
+          faceShapeAnalysis: 'Análisis de Forma Facial',
+          faceRatio: 'Proporción Facial',
+          eyeDistance: 'Distancia entre Ojos',
+          recommendedHairColor: 'Color de Cabello Recomendado',
+          recommendedHairColor1st: 'Color de Cabello Recomendado (1ra opción)',
+          recommendedHairColor2nd: 'Color de Cabello Recomendado (2da opción)',
+          highlyRecommended: 'Muy Recomendado',
+          safeChoice: 'Opción Segura',
+          loadingColors: 'Cargando datos de colores...',
+          aiHairConsultantReport: 'Informe del Consultor de Cabello AI',
+          sectionAPreciseDiagnosis: 'SECCIÓN A: Diagnóstico Preciso',
+          recommendedLevel: 'Nivel Recomendado',
+          sectionBColorScience: 'SECCIÓN B: Ciencia del Color',
+          melaninAnalysis: 'Análisis de Melanina',
+          undercoatPrediction: 'Predicción de Capa Base',
+          neutralizationStrategy: 'Estrategia de Neutralización',
+          sectionCTreatmentRecipe: 'SECCIÓN C: Receta de Tratamiento',
+          treatmentTips: 'Consejos de Tratamiento',
+          undercoat: 'Capa Base',
+          finishTexture: 'Textura Final',
+          totalBeauty: 'Belleza Total',
+          fashion: 'Moda',
+          makeup: 'Maquillaje',
+          consultingPoint: 'Punto de Consultoría',
+          score: 'puntos',
+          close: 'Cerrar',
+          difficulty: 'Dificultad',
+          minute: 'min',
+          faceRatioAnalysis: 'Análisis de Proporción Facial',
+          eyebrowGapDistance: 'Distancia entre Cejas',
+          eyeToEyeRatio: 'Proporción Entrecejo:Ojo (1.0 = ideal)',
+          narrow: 'Estrecho',
+          optimal: 'Óptimo',
+          wide: 'Amplio',
+          currentEyebrowKeep: 'Se recomienda mantener la forma actual de cejas',
+          eyebrowNarrowTip: 'Se recomienda arreglar el interior de cejas para apariencia fresca',
+          eyebrowWideTip: 'Se recomienda rellenar el interior de cejas para apariencia definida',
+          faceRatioLabel: 'Proporción Facial',
+          curlStraightDesc: 'Liso para imagen limpia y ordenada',
+          curlCDesc: 'Rizo C para volumen natural y ambiente femenino',
+          curlSDesc: 'Rizo S para ondas abundantes y estilo glamuroso',
+          curlCSDesc: 'Mezcla C+S para look tridimensional y sofisticado',
+          curlSSDesc: 'Rizo SS para rizos fuertes y estilo único',
+          curlNoneDesc: 'Varios estilos de rizo según preferencia',
+          neutralWarmDeep: 'Neutro Cálido Profundo',
+          springWarm: 'Primavera Cálido',
+          autumnWarm: 'Otoño Cálido',
+          summerCool: 'Verano Frío',
+          winterCool: 'Invierno Frío',
+          neutralWarm: 'Neutro Cálido',
+          neutralCool: 'Neutro Frío',
+          neutral: 'Neutro',
+          bright: 'Brillante',
+          light: 'Claro',
+          soft: 'Suave',
+          muted: 'Apagado',
+          deep: 'Profundo',
+          seasonDesc: {
+            springWarmBright: 'Imagen vibrante y radiante! Los colores cálidos brillantes y vivos te quedan muy bien.',
+            springWarmLight: 'Imagen clara y pura! Los colores cálidos suaves y ligeros te quedan muy bien.',
+            autumnWarmDeep: 'Imagen profunda y lujosa! Los colores cálidos ricos y profundos te quedan muy bien.',
+            autumnWarmMuted: 'Imagen natural y sofisticada! Los colores cálidos tranquilos y naturales te quedan muy bien.',
+            autumnWarmSoft: 'Imagen suave y cálida! Los colores cálidos suaves y naturales te quedan muy bien.',
+            summerCoolBright: 'Imagen clara y refrescante! Los colores fríos brillantes y limpios te quedan muy bien.',
+            summerCoolLight: 'Imagen elegante y suave! Los colores pastel fríos te quedan muy bien.',
+            winterCoolDeep: 'Imagen intensa y urbana! Los colores fríos brillantes y profundos te quedan muy bien.',
+            winterCoolMuted: 'Imagen tranquila y sofisticada! Los colores neutros y fríos de baja saturación te quedan muy bien.',
+            neutralLight: 'Tipo que combina con varios colores! Se recomiendan colores suaves de tono claro.',
+            neutralDeep: 'Tipo que combina con varios colores! Se recomiendan colores sofisticados de tono profundo.'
+          }
+        }
       },
 
       drapingMode: {
@@ -9714,6 +9851,12 @@ const HAIRGATOR_I18N = {
         squareJawSideCover: 'ผมด้านข้างปิดบังแนวกรามอย่างเป็นธรรมชาติ',
         balancedFace: 'รูปหน้าสมดุล',
         defaultRecommendation: 'สไตล์ที่แนะนำเริ่มต้น'
+      },
+      // Face Analysis
+      faceAnalysis: {
+        narrowGapDesc: 'ช่องว่างแคบ - ดวงตาดูใกล้กัน',
+        wideGapDesc: 'ช่องว่างกว้าง - ดวงตาดูห่างกัน',
+        balancedGapDesc: 'ช่องว่างสมดุล - สัดส่วนที่สมบูรณ์แบบ'
       }
     },
 
