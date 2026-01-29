@@ -8790,6 +8790,128 @@ const HAIRGATOR_I18N = {
         neutralDeep: 'Neutro Profundo'
       },
 
+      // Guía de experto UI
+      expertGuide: {
+        title: 'Guía de Experto Diseñador',
+        toneKeywords: 'Tono e Imagen',
+        fashionVibe: 'Estilo de Moda',
+        recommendLevel: 'Nivel Recomendado',
+        skinBrightness: 'Referencia de Brillo de Piel',
+        treatmentTips: 'Consejos de Tratamiento Capilar',
+        undercoat: 'Capa Base',
+        texture: 'Textura Final',
+        totalBeautyTip: 'Consejos de Belleza Total',
+        makeupBase: 'Base de Maquillaje',
+        consultingPoint: 'Punto de Consultoría',
+        avoidTones: 'Tonos a Evitar',
+        brightSkin: 'Tienes piel clara. Puedes subir un poco el nivel naturalmente.',
+        mediumSkin: 'Tienes piel de tono medio. El rango de nivel recomendado te queda mejor.',
+        darkSkin: 'Tienes piel oscura. Niveles muy claros pueden verse poco naturales.'
+      },
+
+      // Dificultad del tratamiento
+      difficulty: {
+        easy: 'Fácil',
+        easyTip: 'Aplicable directamente sin decoloración',
+        highLift: 'Alto Levantamiento',
+        highLiftTip: 'Posible aclarar con tinte de alto levantamiento',
+        toneUp: 'Necesita Aclarar',
+        toneUpTip: 'Se recomienda tinte fuerte (12~14Lv) o 1 decoloración',
+        hard: 'Difícil',
+        hardTip: 'Requiere 2+ decoloraciones, cuidado con el daño capilar',
+        medium: 'Medio',
+        mediumTip: 'Se requiere algo de aclarado'
+      },
+
+      // Insignias de prioridad
+      priority: {
+        bestMatch: 'Mejor Coincidencia',
+        levelOk: 'Nivel OK',
+        toneOk: 'Tono OK',
+        good: 'Bueno',
+        option: 'Opción'
+      },
+
+      // Mensajes toast
+      toast: {
+        ready: '¡Sistema HAIRGATOR Personal Color listo!',
+        systemReady: 'Sistema listo',
+        systemReadyLimited: 'Sistema listo (algunas funciones limitadas)',
+        timeoutStart: 'Inicio forzado por tiempo de espera',
+        errorMode: 'Error ocurrido, funcionando en modo básico',
+        limitedFeatures: 'Algunas funciones pueden estar limitadas.',
+        imageOnly: 'Solo se pueden subir archivos de imagen.',
+        imageUploaded: '¡Imagen subida! Inicia el análisis.',
+        analysisComplete: '¡Analizado como tipo!',
+        analysisError: 'Ocurrió un error durante el análisis.',
+        colorSaved: '¡Color guardado!',
+        colorRemoved: 'Color guardado eliminado.',
+        cameraReady: 'Preparando cámara...',
+        cameraStarted: '¡Análisis de cámara en tiempo real iniciado!',
+        cameraStopped: 'Cámara detenida.',
+        selectPhoto: '¡Selecciona una foto para iniciar el análisis AI!'
+      },
+
+      // Texto de botones
+      buttons: {
+        startAnalysis: 'Iniciar Análisis de Color Personal AI',
+        analyzing: 'Analizando con AI...'
+      },
+
+      // Pasos de análisis
+      analysisSteps: {
+        step1: 'Detectando área facial...',
+        step2: 'Extrayendo color de piel...',
+        step3: 'Convirtiendo a espacio de color LAB...',
+        step4: 'Calculando Delta E...',
+        step5: 'Analizando color personal...'
+      },
+
+      // Guía de drapeado
+      drapingGuide: {
+        title: 'Guía de Diagnóstico de Drapeado 4 Estaciones',
+        principleTitle: 'Principio del Diagnóstico de Drapeado',
+        principleText: 'El diagnóstico de drapeado se basa en el principio de que el rango de brillo/saturación/temperatura de color adecuado varía según el subtono de melanina de la piel.\n\nCuando el color de la tela neutraliza el color complementario de la piel, la piel se ve más clara, y viceversa.',
+        imageLabel: 'Imagen:',
+        attributeLabel: 'Atributo:',
+        spring: {
+          title: 'Primavera Cálida',
+          image: 'Tono amarillo brillante y cálido',
+          attribute: 'Alta luminosidad + Media~Alta saturación + Cálido (amarillo)',
+          best: 'Coral, Durazno, Marfil, Naranja brillante',
+          worst: 'Rosa grisáceo, Burdeos, Azul marino'
+        },
+        summer: {
+          title: 'Verano Frío',
+          image: 'Tono gris/rosa suave y fresco',
+          attribute: 'Media luminosidad + Baja~Media saturación + Frío (gris-azul)',
+          best: 'Lavanda, Rosa pastel, Azul cielo, Blanco suave',
+          worst: 'Naranja, Caqui, Mostaza'
+        },
+        autumn: {
+          title: 'Otoño Cálido',
+          image: 'Tono marrón dorado profundo y rico',
+          attribute: 'Baja~Media luminosidad + Baja~Media saturación + Cálido (dorado)',
+          best: 'Caqui, Terracota, Mostaza, Oliva',
+          worst: 'Rosa claro, Azul pastel, Rojo vivo'
+        },
+        winter: {
+          title: 'Invierno Frío',
+          image: 'Tono azul-púrpura claro y frío',
+          attribute: 'Muy baja/alta luminosidad + Alta saturación + Frío (azul-púrpura)',
+          best: 'Blanco puro, Negro, Azul real, Burdeos, Rosa intenso',
+          worst: 'Beige, Naranja, Caqui claro'
+        },
+        closeBtn: 'Cerrar'
+      },
+
+      // Face Analysis (personalColor level)
+      faceAnalysis: {
+        narrowGapDesc: 'Espacio estrecho - Los ojos parecen cercanos',
+        wideGapDesc: 'Espacio amplio - Los ojos parecen distantes',
+        balancedGapDesc: 'Espacio equilibrado - Proporción ideal'
+      },
+
       personalAnalysis: {
         title: 'Información del Cliente',
         subtitle: 'Por favor ingresa información básica antes del análisis IA',
@@ -8890,7 +9012,46 @@ const HAIRGATOR_I18N = {
         pushedBackTitle: 'Hacia Atrás',
         pushedBackDesc: 'Peinar todo hacia atrás',
         mohicanTitle: 'Mohicano',
-        mohicanDesc: 'Volumen en la corona'
+        mohicanDesc: 'Volumen en la corona',
+        // Estilos masculinos por tono
+        maleWarmLabel: 'Forma Redonda - Recomendado para rostros angulares o cuadrados',
+        maleWarmReason: 'La línea de cabello redonda y curvas suaves neutralizan la mandíbula fuerte, haciendo la impresión más suave y amigable.',
+        maleNeutralLabel: 'Forma Cuadrada - Recomendado para rostros redondos u ovalados',
+        maleNeutralReason: 'La silueta cuadrada añade ángulos al rostro redondo, haciendo los rasgos más definidos y masculinos.',
+        maleCoolLabel: 'Forma Triangular - Recomendado para rostros cortos o anchos',
+        maleCoolReason: 'El volumen elevado y ángulos afilados dirigen la mirada hacia arriba, haciendo el rostro más largo y estilizado.',
+        // Análisis facial
+        faceAnalysis: 'Análisis de Forma de Rostro',
+        narrowGap: 'Entrecejo Estrecho',
+        balancedGap: 'Entrecejo Equilibrado',
+        wideGap: 'Entrecejo Amplio',
+        faceRatio: 'Proporción Facial',
+        eyeDistance: 'Distancia entre Ojos',
+        // Descripciones de pasos
+        step1Desc: 'Selecciona género y altura para recibir recomendaciones de estilo según tu tipo de cuerpo.',
+        step2Desc: 'Selecciona largo deseado y flequillo para analizar compatibilidad con tu tipo de cuerpo.',
+        step3Desc: 'El tipo de piel y preferencia de rizo se comparan con análisis de color personal AI para mejorar precisión de tono y reflejarse en recomendaciones de color.',
+        maleStep2Desc: 'Selecciona el estilo de cabello deseado para recibir recomendaciones de color según tu tipo de cuerpo y tono.',
+        skinTypeDesc: 'Verifica el color de las venas en la parte interior de la muñeca y características de la piel',
+        skinTPTitle: 'Piel Transparente (Tono Frío)',
+        skinTPDesc: '<div style="margin-bottom: 4px;">✓ <b>Color de venas:</b> Tonos azules/púrpuras</div><div style="margin-bottom: 4px;">✓ <b>Características:</b> Piel fina y transparente, venas visibles</div><div>✓ <b>Colores favorecedores:</b> Accesorios plateados, tonos rosa/azul</div>',
+        skinNPTitle: 'Piel Neutra',
+        skinNPDesc: '<div style="margin-bottom: 4px;">✓ <b>Color de venas:</b> Verde/Mezcla de azul y verde</div><div style="margin-bottom: 4px;">✓ <b>Características:</b> Tono oliva o beige, frío/cálido ambiguo</div><div>✓ <b>Colores favorecedores:</b> Tanto oro como plata, varios colores</div>',
+        skinBPTitle: 'Piel Base (Tono Cálido)',
+        skinBPDesc: '<div style="margin-bottom: 4px;">✓ <b>Color de venas:</b> Tonos verdes/amarillo-verdes</div><div style="margin-bottom: 4px;">✓ <b>Características:</b> Piel amarillenta, textura gruesa</div><div>✓ <b>Colores favorecedores:</b> Accesorios dorados, tonos naranja/marrón</div>',
+        // Opciones de largo (H~A)
+        lengthH: 'Corto',
+        lengthG: 'Sobre la barbilla',
+        lengthF: 'Bajo la barbilla',
+        lengthE: 'Sobre los hombros',
+        lengthD: 'Línea del hombro',
+        lengthC: 'Bajo la clavícula',
+        lengthB: 'Pecho',
+        lengthA: 'Cintura',
+        // Etiquetas de panel de resultados
+        manualInput: 'Entrada Manual',
+        aiAnalysis: 'Análisis AI',
+        integratedAnalysis: 'Análisis Integrado'
       },
 
       avoidRules: {
@@ -8914,21 +9075,6 @@ const HAIRGATOR_I18N = {
         summer: ['Colores suaves y fríos', 'Saturación media', 'Subtono azul'],
         autumn: ['Colores profundos y cálidos', 'Baja saturación', 'Subtono amarillo'],
         winter: ['Colores profundos y fríos', 'Alto contraste', 'Subtono azul']
-      },
-
-      expertGuide: {
-        brightSkin: 'Tu piel es clara, los colores de cabello más claros realzarán tu brillo.',
-        darkSkin: 'Los colores de luminosidad media o inferior se mezclarán naturalmente con tu tono de piel.',
-        mediumSkin: 'Tienes un tono de piel versátil que puede llevar cualquier nivel de brillo.'
-      },
-
-      difficulty: {
-        easy: 'Fácil',
-        easyTip: 'Aplicable sin decoloración',
-        medium: 'Medio',
-        mediumTip: 'Puede requerir decoloración ligera',
-        hard: 'Difícil',
-        hardTip: 'Requiere decoloración profesional'
       },
 
       // Descripciones de temporada
@@ -8983,157 +9129,6 @@ const HAIRGATOR_I18N = {
         plum: 'Ciruela', cherryBlossom: 'Flor de cerezo', navajoWhite: 'Blanco navajo',
         royalBlue: 'Azul real', oliveDrab: 'Verde oliva', darkSlateBlue: 'Azul pizarra oscuro'
       },
-      steps: '["Información Física", "Preferencia de Estilo", "Tipo de Piel", "Preferencia de Rizo", "Análisis AI"]',
-      step1Desc: 'Seleccione género y altura para recibir recomendaciones de estilo según su tipo de cuerpo.',
-      step2Desc: 'Seleccione el largo y flequillo deseados para analizar la compatibilidad con su tipo de cuerpo.',
-      step3Desc: 'El tipo de piel y la preferencia de rizos se comparan con el análisis de color personal AI para mejorar la precisión del tono y reflejarse en las recomendaciones de color.',
-      step4Desc: 'Diagnóstico final basado en conocimientos de expertos',
-      takePhoto: 'Por favor tome una foto',
-      takePhotoDesc: 'Inicie la cámara a la izquierda y tome una foto de su rostro para que la IA la analice',
-      customerSummary: 'Resumen del Análisis del Cliente',
-      skinAnalysis: '📍 Análisis de su Piel',
-      skinTone: 'Tono de Piel',
-      undertone: 'Subtono',
-      recommendedSeason: '✨ Color Personal Recomendado',
-      matchingColors: '💄 Colores de Maquillaje y Moda',
-      confidence: 'Confianza',
-      customStyleRecommend: '💇 Recomendación de Estilo Personalizado',
-      fringeCombo: 'Combinación de Flequillo',
-      seasonColorHarmony: 'Recomendación de tinte en armonía con los colores de la temporada',
-      faceShapeAnalysis: '📐 Análisis de Forma de Rostro',
-      faceRatio: 'Proporción Facial',
-      eyeDistance: 'Distancia entre Ojos',
-      recommendedHairColor: '💇 Color de Cabello Recomendado',
-      recommendedHairColor1st: '💇 Color de Cabello Recomendado (1ra opción)',
-      recommendedHairColor2nd: '💇 Color de Cabello Recomendado (2da opción)',
-      highlyRecommended: 'Muy Recomendado',
-      safeChoice: 'Opción Segura',
-      loadingColors: 'Cargando datos de colores de cabello...',
-      aiHairConsultantReport: '📋 Informe del Consultor de Cabello AI',
-      sectionAPreciseDiagnosis: '🔬 SECCIÓN A: Diagnóstico Preciso',
-      recommendedLevel: '📊 Nivel Recomendado',
-      sectionBColorScience: '🧬 SECCIÓN B: Ciencia del Color',
-      melaninAnalysis: 'Análisis de Melanina',
-      undercoatPrediction: 'Predicción de Capa Base',
-      neutralizationStrategy: 'Estrategia de Neutralización',
-      sectionCTreatmentRecipe: '💊 SECCIÓN C: Receta de Tratamiento',
-      treatmentTips: '✂️ Consejos de Tratamiento Capilar',
-      undercoat: 'Capa Base',
-      finishTexture: 'Textura Final',
-      totalBeauty: '💄 Belleza Total',
-      fashion: 'Moda',
-      makeup: 'Maquillaje',
-      consultingPoint: '💬 Punto de Consultoría',
-      score: 'puntos',
-      minute: 'min',
-      faceRatioAnalysis: 'Análisis de Proporción Facial',
-      eyebrowGapDistance: 'Distancia entre Cejas',
-      eyeToEyeRatio: 'Proporción Entrecejo:Ojo (1.0 = ideal)',
-      narrow: 'Estrecho',
-      optimal: 'Óptimo',
-      wide: 'Amplio',
-      currentEyebrowKeep: 'Se recomienda mantener la forma actual de las cejas',
-      eyebrowNarrowTip: 'Se recomienda arreglar el interior de las cejas para una apariencia más fresca',
-      eyebrowWideTip: 'Se recomienda rellenar el interior de las cejas para una apariencia más definida',
-      faceRatioLabel: 'Proporción Facial',
-      curlStraightDesc: 'Liso para una imagen limpia y ordenada',
-      curlCDesc: 'Rizo C para volumen natural y ambiente femenino',
-      curlSDesc: 'Rizo S para ondas abundantes y estilo glamuroso',
-      curlCSDesc: 'Mezcla de rizos C+S para un look tridimensional y sofisticado',
-      curlSSDesc: 'Rizo SS para rizos fuertes y estilo único',
-      curlNoneDesc: 'Varios estilos de rizo posibles según preferencia del cliente',
-      neutralWarmDeep: 'Neutro Cálido Profundo',
-      neutralWarm: 'Neutro Cálido',
-      neutralCool: 'Neutro Frío',
-      bright: 'Brillante',
-      light: 'Claro',
-      soft: 'Suave',
-      muted: 'Apagado',
-      deep: 'Profundo',
-      toneKeywords: '🎨 Tono e Imagen',
-      fashionVibe: '👗 Estilo de Moda',
-      recommendLevel: '📊 Nivel Recomendado',
-      skinBrightness: '💡 Referencia de Brillo de Piel',
-      texture: 'Textura Final',
-      totalBeautyTip: '💄 Consejos de Belleza Total',
-      makeupBase: 'Base de Maquillaje',
-      avoidTones: '⛔ Tonos a Evitar',
-      highLift: 'Alto Levantamiento',
-      highLiftTip: 'Posible aclarar el tono con tinte de alto levantamiento',
-      toneUp: 'Necesita Aclarar',
-      toneUpTip: 'Se recomienda tinte de alta potencia (12~14Lv) o 1 decoloración',
-      bestMatch: 'Mejor Coincidencia',
-      levelOk: 'Nivel OK',
-      toneOk: 'Tono OK',
-      good: 'Bueno',
-      option: 'Opción',
-      systemReady: 'Sistema Listo',
-      systemReadyLimited: 'Sistema listo (algunas funciones limitadas)',
-      timeoutStart: 'Inicio forzado por tiempo de espera',
-      errorMode: 'Error ocurrido, funcionando en modo básico',
-      limitedFeatures: 'Algunas funciones pueden estar limitadas.',
-      imageOnly: 'Solo se pueden subir archivos de imagen.',
-      imageUploaded: '¡Imagen subida! Inicie el análisis.',
-      analysisComplete: '¡Analizado como tipo!',
-      analysisError: 'Ocurrió un error durante el análisis.',
-      colorRemoved: 'Color guardado eliminado.',
-      cameraReady: 'Preparando cámara...',
-      cameraStopped: 'Cámara detenida.',
-      selectPhoto: '¡Seleccione una foto para iniciar el análisis AI!',
-      startAnalysis: '🤖 Iniciar Análisis de Color Personal AI',
-      analyzing: '🔄 Analizando con AI...',
-      step5: 'Analizando color personal...',
-      principleTitle: 'Principio del Diagnóstico de Drapeado',
-      principleText: 'El diagnóstico de drapeado se basa en el principio de que el rango de brillo/saturación/temperatura del color adecuado varía según el subtono de melanina de la piel.\\n\\nCuando el color de la tela neutraliza el color complementario de la piel, la piel se ve más clara, y viceversa.',
-      imageLabel: 'Imagen:',
-      attributeLabel: 'Atributo:',
-      image: 'Tono azul-púrpura claro y frío',
-      attribute: 'Brillo muy bajo/alto + Alta saturación + Frío (azul-púrpura)',
-      best: 'Blanco puro, Negro, Azul real, Burdeos, Rosa intenso',
-      worst: 'Beige, Naranja, Caqui claro',
-      maleWarmLabel: 'Forma Redonda - Recomendado para rostros angulares o cuadrados',
-      maleWarmReason: 'La línea del cabello redonda y las curvas suaves neutralizan la mandíbula fuerte, haciendo la impresión más suave y amigable.',
-      maleNeutralLabel: 'Forma Cuadrada - Recomendado para rostros redondos u ovalados',
-      maleNeutralReason: 'La silueta cuadrada añade ángulos al rostro redondo, haciendo los rasgos más definidos y masculinos.',
-      maleCoolLabel: 'Forma Triangular - Recomendado para rostros cortos o anchos',
-      maleCoolReason: 'El volumen elevado y los ángulos afilados dirigen la mirada hacia arriba, haciendo el rostro más largo y estilizado.',
-      faceAnalysis: 'Análisis de Forma de Rostro',
-      narrowGap: 'Entrecejo Estrecho',
-      balancedGap: 'Entrecejo Equilibrado',
-      wideGap: 'Entrecejo Amplio',
-      maleStep2Desc: 'Seleccione el estilo de cabello deseado para recibir recomendaciones de color según su tipo de cuerpo y tono.',
-      skinTypeDesc: 'Verifique el color de las venas en la parte interior de la muñeca y las características de la piel',
-      skinTPTitle: 'Piel Transparente (Tono Frío)',
-      skinTPDesc: '<div style="margin-bottom: 4px;">✓ <b>Color de venas:</b> Tonos azules/púrpuras</div><div style="margin-bottom: 4px;">✓ <b>Características:</b> Piel fina y transparente, venas visibles</div><div>✓ <b>Colores favorecedores:</b> Accesorios plateados, tonos rosa/azul</div>',
-      skinNPTitle: 'Piel Neutra',
-      skinNPDesc: '<div style="margin-bottom: 4px;">✓ <b>Color de venas:</b> Verde/Mezcla de azul y verde</div><div style="margin-bottom: 4px;">✓ <b>Características:</b> Tono oliva o beige, frío/cálido ambiguo</div><div>✓ <b>Colores favorecedores:</b> Tanto oro como plata, varios colores</div>',
-      skinBPTitle: 'Piel Base (Tono Cálido)',
-      skinBPDesc: '<div style="margin-bottom: 4px;">✓ <b>Color de venas:</b> Tonos verdes/amarillo-verdes</div><div style="margin-bottom: 4px;">✓ <b>Características:</b> Piel amarillenta, textura gruesa</div><div>✓ <b>Colores favorecedores:</b> Accesorios dorados, tonos naranja/marrón</div>',
-      lengthH: 'Corto',
-      lengthG: 'Sobre la barbilla',
-      lengthF: 'Bajo la barbilla',
-      lengthE: 'Sobre los hombros',
-      lengthD: 'Línea del hombro',
-      lengthC: 'Bajo la clavícula',
-      lengthB: 'Pecho',
-      lengthA: 'Cintura',
-      manualInput: 'Entrada Manual',
-      integratedAnalysis: 'Análisis Integrado',
-      titleShort: 'Progreso del Análisis AI',
-      titleCompact: 'Progreso del Análisis AI',
-      analyzingSkinTone: 'Analizando el tono de piel...',
-      narrowGapDesc: 'Espacio estrecho - Los ojos parecen cercanos',
-      wideGapDesc: 'Espacio amplio - Los ojos parecen distantes',
-      balancedGapDesc: 'Espacio equilibrado - Proporción ideal',
-      avoidColors: 'Colores a evitar',
-      lighting: 'Iluminación',
-      treatmentRecipe: 'Receta de tratamiento',
-      hairColorRecommend: 'Color de cabello recomendado',
-      treatmentDifficulty: 'Dificultad del tratamiento',
-      lightingHigh: 'Buena',
-      lightingMedium: 'Media',
-      lightingLow: 'Baja (Referencia)',
-      treatmentPoints: 'Puntos de tratamiento',
     },
 
     // ========== Aviso Móvil ==========
@@ -9309,11 +9304,11 @@ const HAIRGATOR_I18N = {
 
     // ========== หมวดย่อย ==========
     subcategories: {
-      'ไม่มี': 'ไม่มี',
-      'หน้าผาก': 'หน้าผาก',
-      'คิ้ว': 'คิ้ว',
-      'ตา': 'ตา',
-      'โหนกแก้ม': 'โหนกแก้ม'
+      None: 'ไม่มี',
+      'Fore Head': 'หน้าผาก',
+      'Eye Brow': 'คิ้ว',
+      Eye: 'ตา',
+      Cheekbone: 'โหนกแก้ม'
     },
 
     // ========== ข้อความ UI ==========
@@ -9955,6 +9950,7 @@ const HAIRGATOR_I18N = {
 
         steps: {
           title: 'ความคืบหน้าการวิเคราะห์ AI',
+          titleShort: 'ความคืบหน้าการวิเคราะห์ AI',
           step1: 'การตรวจจับใบหน้า',
           step1Desc: 'กำลังตรวจจับพื้นที่ใบหน้าด้วย MediaPipe',
           step2: 'การวิเคราะห์สีผิว',
@@ -10357,6 +10353,13 @@ const HAIRGATOR_I18N = {
           worst: 'สีเบจ, สีส้ม, สีกากีอ่อน'
         },
         closeBtn: 'ปิด'
+      },
+
+      // Face Analysis
+      faceAnalysis: {
+        narrowGapDesc: 'ช่องว่างแคบ - ดวงตาดูใกล้กัน',
+        wideGapDesc: 'ช่องว่างกว้าง - ดวงตาดูห่างกัน',
+        balancedGapDesc: 'ช่องว่างสมดุล - สัดส่วนที่สมบูรณ์แบบ'
       },
 
       // Personal Analysis
