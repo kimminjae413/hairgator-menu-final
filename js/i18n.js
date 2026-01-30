@@ -948,7 +948,9 @@ const HAIRGATOR_I18N = {
         compareModeStarted: '비교 모드가 시작되었습니다. 두 색상 중 더 어울리는 쪽을 선택하세요!',
         selected: '선택!',
         compareResult: '비교 결과',
-        compareRestart: '비교를 다시 시작합니다!'
+        compareRestart: '비교를 다시 시작합니다!',
+        compareAgain: '다시 비교하기',
+        savedColorsGuide: '저장된 색상 & 전문가 가이드'
       },
 
       // 카메라 권한 에러 메시지
@@ -3684,7 +3686,9 @@ const HAIRGATOR_I18N = {
         compareModeStarted: '比較モードが開始されました。似合う色を選んでください！',
         selected: '選択！',
         compareResult: '比較結果',
-        compareRestart: '比較を再開します！'
+        compareRestart: '比較を再開します！',
+        compareAgain: 'もう一度比較',
+        savedColorsGuide: '保存した色 & 専門家ガイド'
       },
 
       cameraErrors: {
@@ -5041,7 +5045,9 @@ const HAIRGATOR_I18N = {
         compareModeStarted: '比较模式已开始。请选择更适合您的颜色！',
         selected: '已选择！',
         compareResult: '比较结果',
-        compareRestart: '重新开始比较！'
+        compareRestart: '重新开始比较！',
+        compareAgain: '再次比较',
+        savedColorsGuide: '已保存颜色 & 专家指南'
       },
 
       cameraErrors: {
@@ -6398,7 +6404,9 @@ const HAIRGATOR_I18N = {
         compareModeStarted: 'Chế độ so sánh đã bắt đầu. Chọn màu phù hợp với bạn hơn!',
         selected: 'Đã chọn!',
         compareResult: 'Kết quả so sánh',
-        compareRestart: 'Bắt đầu lại so sánh!'
+        compareRestart: 'Bắt đầu lại so sánh!',
+        compareAgain: 'So sánh lại',
+        savedColorsGuide: 'Màu đã lưu & Hướng dẫn chuyên gia'
       },
 
       cameraErrors: {
@@ -7686,6 +7694,8 @@ const HAIRGATOR_I18N = {
         selected: 'Dipilih!',
         compareResult: 'Hasil Perbandingan',
         compareRestart: 'Mulai ulang perbandingan!',
+        compareAgain: 'Bandingkan Lagi',
+        savedColorsGuide: 'Warna Tersimpan & Panduan Ahli',
         ready: 'Sistem HAIRGATOR Personal Color siap!',
         systemReady: 'Sistem siap',
         systemReadyLimited: 'Sistem siap (beberapa fitur terbatas)',
@@ -8976,7 +8986,9 @@ const HAIRGATOR_I18N = {
         compareModeStarted: 'Modo comparación iniciado. ¡Elige el color que te quede mejor!',
         selected: '¡Seleccionado!',
         compareResult: 'Resultado de comparación',
-        compareRestart: '¡Reiniciando comparación!'
+        compareRestart: '¡Reiniciando comparación!',
+        compareAgain: 'Comparar de nuevo',
+        savedColorsGuide: 'Colores guardados & Guía experta'
       },
 
       cameraErrors: {

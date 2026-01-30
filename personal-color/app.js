@@ -7295,10 +7295,10 @@
 
                     ${colorScience ? `
                     <div style="background: linear-gradient(135deg, rgba(63,81,181,0.2), rgba(48,63,159,0.15)); padding: 14px; border-radius: 8px; margin-bottom: 12px; border: 1px solid rgba(63,81,181,0.4);">
-                        <div style="font-size: 15px; color: #303F9F; margin-bottom: 8px; font-weight: bold;">🧬 컬러 사이언스</div>
+                        <div style="font-size: 15px; color: #303F9F; margin-bottom: 8px; font-weight: bold;">🧬 ${t('personalColor.aiMode.result.sectionBColorScience') || 'Color Science'}</div>
                         <div style="font-size: 14px; color: #3949AB; line-height: 1.6;">
-                            <div style="margin-bottom: 4px;"><b style="color: #1A237E;">멜라닌:</b> ${colorScience.melaninType}</div>
-                            <div><b style="color: #1A237E;">중화 전략:</b> ${colorScience.neutralizationStrategy}</div>
+                            <div style="margin-bottom: 4px;"><b style="color: #1A237E;">${t('personalColor.aiMode.result.melaninAnalysis') || 'Melanin'}:</b> ${colorScience.melaninType}</div>
+                            <div><b style="color: #1A237E;">${t('personalColor.aiMode.result.neutralizationStrategy') || 'Neutralization'}:</b> ${colorScience.neutralizationStrategy}</div>
                         </div>
                     </div>
                     ` : ''}
@@ -7329,7 +7329,7 @@
             }).join('');
 
             savedSection.innerHTML = `
-                <h4 style="color: #E91E63; margin: 0 0 15px 0; font-size: 18px;">🎨 ${t('personalColor.draping.savedColorsGuide') || 'Saved Colors & Expert Guide'} (${savedColors.length}개)</h4>
+                <h4 style="color: #E91E63; margin: 0 0 15px 0; font-size: 18px;">🎨 ${t('personalColor.draping.savedColorsGuide') || 'Saved Colors & Expert Guide'} (${savedColors.length})</h4>
                 ${savedColorsHTML}
             `;
 
