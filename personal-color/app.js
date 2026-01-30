@@ -7288,38 +7288,38 @@
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
                         <div style="width: 55px; height: 55px; background: ${colorData.color}; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>
                         <div>
-                            <div style="font-size: 18px; color: #fff; font-weight: bold;">${colorData.name}</div>
-                            <div style="font-size: 15px; color: #E91E63;">${colorData.season.toUpperCase()} ${colorData.brand ? '• ' + colorData.brand : ''}</div>
+                            <div style="font-size: 18px; color: #333; font-weight: bold;">${colorData.name}</div>
+                            <div style="font-size: 15px; color: #C2185B;">${colorData.season.toUpperCase()} ${colorData.brand ? '• ' + colorData.brand : ''}</div>
                         </div>
                     </div>
 
                     ${colorScience ? `
-                    <div style="background: linear-gradient(135deg, rgba(63,81,181,0.15), rgba(48,63,159,0.1)); padding: 14px; border-radius: 8px; margin-bottom: 12px; border: 1px solid rgba(63,81,181,0.3);">
-                        <div style="font-size: 15px; color: #7986CB; margin-bottom: 8px; font-weight: bold;">🧬 컬러 사이언스</div>
-                        <div style="font-size: 14px; color: #C5CAE9; line-height: 1.6;">
-                            <div style="margin-bottom: 4px;"><b style="color: #9FA8DA;">멜라닌:</b> ${colorScience.melaninType}</div>
-                            <div><b style="color: #9FA8DA;">중화 전략:</b> ${colorScience.neutralizationStrategy}</div>
+                    <div style="background: linear-gradient(135deg, rgba(63,81,181,0.2), rgba(48,63,159,0.15)); padding: 14px; border-radius: 8px; margin-bottom: 12px; border: 1px solid rgba(63,81,181,0.4);">
+                        <div style="font-size: 15px; color: #303F9F; margin-bottom: 8px; font-weight: bold;">🧬 컬러 사이언스</div>
+                        <div style="font-size: 14px; color: #3949AB; line-height: 1.6;">
+                            <div style="margin-bottom: 4px;"><b style="color: #1A237E;">멜라닌:</b> ${colorScience.melaninType}</div>
+                            <div><b style="color: #1A237E;">중화 전략:</b> ${colorScience.neutralizationStrategy}</div>
                         </div>
                     </div>
                     ` : ''}
 
                     ${recipe ? `
-                    <div style="background: linear-gradient(135deg, rgba(0,150,136,0.15), rgba(0,188,212,0.1)); padding: 14px; border-radius: 8px; border: 1px solid rgba(0,150,136,0.3);">
+                    <div style="background: linear-gradient(135deg, rgba(0,150,136,0.2), rgba(0,188,212,0.15)); padding: 14px; border-radius: 8px; border: 1px solid rgba(0,150,136,0.4);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <div style="font-size: 16px; color: #4DB6AC; font-weight: bold;">💊 ${recipe.styleName}</div>
-                            <span style="background: rgba(0,150,136,0.3); color: #80CBC4; font-size: 13px; padding: 4px 10px; border-radius: 12px;">${recipe.brand}</span>
+                            <div style="font-size: 16px; color: #00695C; font-weight: bold;">💊 ${recipe.styleName}</div>
+                            <span style="background: rgba(0,150,136,0.3); color: #004D40; font-size: 13px; padding: 4px 10px; border-radius: 12px; font-weight: 600;">${recipe.brand}</span>
                         </div>
-                        <div style="font-size: 14px; color: #B2DFDB; margin-bottom: 10px; font-style: italic;">"${recipe.vibe}" - ${recipe.reason}</div>
+                        <div style="font-size: 14px; color: #00796B; margin-bottom: 10px; font-style: italic;">"${recipe.vibe}" - ${recipe.reason}</div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
-                                <div style="font-size: 12px; color: #80CBC4; margin-bottom: 4px; font-weight: bold;">MIX RECIPE</div>
-                                <div style="font-size: 14px; color: #E0F2F1; font-weight: 600;">${recipe.mixRatio}</div>
-                                <div style="font-size: 12px; color: #80CBC4; margin-top: 3px;">${recipe.line}</div>
+                            <div style="background: rgba(0,77,64,0.25); padding: 10px; border-radius: 8px;">
+                                <div style="font-size: 12px; color: #004D40; margin-bottom: 4px; font-weight: bold;">MIX RECIPE</div>
+                                <div style="font-size: 14px; color: #00251a; font-weight: 600;">${recipe.mixRatio}</div>
+                                <div style="font-size: 12px; color: #004D40; margin-top: 3px;">${recipe.line}</div>
                             </div>
-                            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
-                                <div style="font-size: 12px; color: #80CBC4; margin-bottom: 4px; font-weight: bold;">OXIDANT</div>
-                                <div style="font-size: 14px; color: #E0F2F1; font-weight: 600;">${recipe.oxidant}</div>
-                                <div style="font-size: 12px; color: #80CBC4; margin-top: 3px;">⏱️ ${recipe.processingTime.replace('분', t('personalColor.aiMode.result.minute') || 'min')}</div>
+                            <div style="background: rgba(0,77,64,0.25); padding: 10px; border-radius: 8px;">
+                                <div style="font-size: 12px; color: #004D40; margin-bottom: 4px; font-weight: bold;">OXIDANT</div>
+                                <div style="font-size: 14px; color: #00251a; font-weight: 600;">${recipe.oxidant}</div>
+                                <div style="font-size: 12px; color: #004D40; margin-top: 3px;">⏱️ ${recipe.processingTime.replace('분', t('personalColor.aiMode.result.minute') || 'min')}</div>
                             </div>
                         </div>
                     </div>
