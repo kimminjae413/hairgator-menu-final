@@ -7064,7 +7064,7 @@
                     const colorItem = document.createElement('div');
                     colorItem.className = 'color-item';
                     colorItem.style.background = color;
-                    colorItem.onclick = () => selectColor(color);
+                    colorItem.onclick = (e) => selectColor(color, null, e.currentTarget);
                     colorGrid.appendChild(colorItem);
                 });
                 return;
@@ -7085,12 +7085,12 @@
                 colorItem.className = 'color-item';
                 colorItem.style.background = colorData.hex;
                 colorItem.title = `${colorData.brand} ${colorData.code} - ${colorData.name}`;
-                colorItem.onclick = () => selectColor(colorData.hex, colorData);
+                colorItem.onclick = (e) => selectColor(colorData.hex, colorData, e.currentTarget);
                 colorGrid.appendChild(colorItem);
             });
         }
 
-        function selectColor(color, colorData = null) {
+        function selectColor(color, colorData = null, clickedElement = null) {
             selectedColor = color;
             currentDisplayColor = color;  // 슬라이더 초기화 시 기본값으로 설정
 
@@ -7102,10 +7102,14 @@
             document.getElementById('saturation-value').textContent = '0';
             document.getElementById('warmth-value').textContent = '0';
 
+            // 모든 색상 아이템 테두리 초기화
             document.querySelectorAll('.color-item').forEach(item => {
                 item.style.border = '3px solid transparent';
             });
-            event.target.style.border = '3px solid #E91E63';
+            // 클릭된 색상 아이템 테두리 강조
+            if (clickedElement) {
+                clickedElement.style.border = '3px solid #E91E63';
+            }
 
             applyDrapingColor(color);
 
