@@ -6626,7 +6626,14 @@
         function onDrapingFaceResults(results) {
             if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
                 lastFaceLandmarks = results.multiFaceLandmarks[0];
-                drawDrapingCape();
+
+                // 비교 모드일 때는 분할 케이프, 아니면 일반 케이프
+                if (isCompareMode && comparePresets && comparePresets[compareIndex]) {
+                    const preset = comparePresets[compareIndex];
+                    drawSplitCape(preset.left.hex, preset.right.hex);
+                } else {
+                    drawDrapingCape();
+                }
             }
         }
 
