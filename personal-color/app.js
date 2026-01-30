@@ -3211,6 +3211,8 @@
                 case 'zh': return EXPERT_GUIDE_DB_ZH;
                 case 'vi': return EXPERT_GUIDE_DB_VI;
                 case 'id': return EXPERT_GUIDE_DB_ID;
+                case 'es': return EXPERT_GUIDE_DB_EN; // ES는 EN으로 fallback
+                case 'th': return EXPERT_GUIDE_DB_EN; // TH는 EN으로 fallback
                 default: return EXPERT_GUIDE_DB_KO;
             }
         }
