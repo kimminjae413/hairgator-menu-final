@@ -623,9 +623,9 @@
                                 </div>
                             </div>
                             <div class="camera-controls">
-                                <button class="control-btn" id="start-camera" onclick="startAICamera()" data-i18n="personalColor.aiMode.startCamera">📹 카메라 시작</button>
-                                <button class="control-btn" id="capture-btn" onclick="captureAndAnalyze()" style="display: none; background: linear-gradient(135deg, #FF6B6B, #FF8E53);" data-i18n="personalColor.aiMode.capture">📸 촬영하기</button>
-                                <button class="control-btn" id="retry-btn" onclick="retryCapture()" style="display: none; background: linear-gradient(135deg, #6B7FFF, #53A8FF);" data-i18n="personalColor.aiMode.retry">🔄 다시 촬영</button>
+                                <button class="control-btn" id="start-camera" onclick="startAICamera()" ontouchend="startAICamera()" data-i18n="personalColor.aiMode.startCamera">📹 카메라 시작</button>
+                                <button class="control-btn" id="capture-btn" onclick="captureAndAnalyze()" ontouchend="captureAndAnalyze()" style="display: none; background: linear-gradient(135deg, #FF6B6B, #FF8E53);" data-i18n="personalColor.aiMode.capture">📸 촬영하기</button>
+                                <button class="control-btn" id="retry-btn" onclick="retryCapture()" ontouchend="retryCapture()" style="display: none; background: linear-gradient(135deg, #6B7FFF, #53A8FF);" data-i18n="personalColor.aiMode.retry">🔄 다시 촬영</button>
                             </div>
 
                             <!-- 촬영 안내 메시지 -->

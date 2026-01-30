@@ -4125,17 +4125,47 @@
         // 프레임 카운터 (디버깅용)
         let frameCount = 0;
 
+        // ⭐ 화면 디버그 표시 (Android 앱 진단용)
+        let debugDiv = null;
+        function showDebugInfo(info) {
+            if (!debugDiv) {
+                debugDiv = document.createElement('div');
+                debugDiv.id = 'android-debug';
+                debugDiv.style.cssText = 'position:fixed;top:100px;left:10px;background:rgba(0,0,0,0.8);color:#0f0;font-size:10px;padding:8px;z-index:9999;max-width:200px;word-wrap:break-word;border-radius:4px;';
+                document.body.appendChild(debugDiv);
+            }
+            debugDiv.innerHTML = info;
+        }
+
         function onAdvancedFaceResults(results) {
             frameCount++;
 
-            // 디버그 로그 비활성화 (필요시 주석 해제)
-            // if (frameCount % 300 === 1) {
-            //     console.log(`🎯 Face Results #${frameCount}`);
-            // }
+            // ⭐ 디버그 로그 활성화 (Android WebView 문제 진단)
+            if (frameCount % 30 === 1) {
+                const debugInfo = `Frame: ${frameCount}<br>` +
+                    `Video: ${videoElement?.videoWidth}x${videoElement?.videoHeight}<br>` +
+                    `Ready: ${videoElement?.readyState}<br>` +
+                    `Landmarks: ${results?.multiFaceLandmarks?.length || 0}<br>` +
+                    `Canvas: ${canvasElement?.width}x${canvasElement?.height}`;
+                showDebugInfo(debugInfo);
+                console.log(`🎯 Face Results #${frameCount}`, {
+                    hasCanvas: !!canvasCtx,
+                    hasVideo: !!videoElement,
+                    videoWidth: videoElement?.videoWidth,
+                    videoHeight: videoElement?.videoHeight,
+                    videoReadyState: videoElement?.readyState,
+                    hasLandmarks: !!(results?.multiFaceLandmarks?.length)
+                });
+            }
 
             if (!canvasCtx || !videoElement) {
                 console.warn('캔버스 또는 비디오 없음');
                 return;
+            }
+
+            // ⭐ videoWidth가 0이면 문제 있음
+            if (videoElement.videoWidth === 0) {
+                console.warn('⚠️ videoWidth가 0 - 비디오 스트림 문제');
             }
 
             canvasElement.width = videoElement.videoWidth || 640;

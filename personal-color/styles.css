@@ -1571,6 +1571,13 @@ body.male-theme .nav-btn.guide-btn:hover {
         gap: 1rem;
     }
 
+    /* 모바일에서 상단 여백 줄이기 */
+    #ai-analysis.active .section-nav,
+    #draping-mode.active .section-nav {
+        padding-top: calc(15px + env(safe-area-inset-top, 0px)) !important;
+        padding-bottom: 15px !important;
+    }
+
     /* 드래이핑 모드 모바일 최적화 */
     .draping-layout {
         grid-template-columns: 1fr !important;
