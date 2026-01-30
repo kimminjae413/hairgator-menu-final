@@ -3925,6 +3925,18 @@
             window.location.href = '/';
         }
 
+        // ⭐ 화면 디버그 표시 (Android 앱 진단용) - 전역 정의
+        let debugDiv = null;
+        function showDebugInfo(info) {
+            if (!debugDiv) {
+                debugDiv = document.createElement('div');
+                debugDiv.id = 'android-debug';
+                debugDiv.style.cssText = 'position:fixed;top:100px;left:10px;background:rgba(0,0,0,0.85);color:#0f0;font-size:11px;padding:10px;z-index:9999;max-width:250px;word-wrap:break-word;border-radius:6px;font-family:monospace;';
+                document.body.appendChild(debugDiv);
+            }
+            debugDiv.innerHTML = info;
+        }
+
         // AI 카메라 함수들
         async function startAICamera() {
             try {
@@ -4008,20 +4020,26 @@
                 canvasElement = document.getElementById('camera-canvas');
                 canvasCtx = canvasElement.getContext('2d', { willReadFrequently: true });
 
+                // ⭐ 디버그: 비디오 크기 확인
+                showDebugInfo(`Video OK: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+
                 // MediaPipe Face Mesh 초기화 또는 재사용
                 // ⭐ WebView 환경 감지 및 경고
                 const isWebViewEnv = typeof DeviceDetection !== 'undefined' && DeviceDetection.isWebView();
                 if (isWebViewEnv) {
                     console.warn('⚠️ Android WebView 환경 감지 - MediaPipe 기능이 제한될 수 있습니다');
+                    showDebugInfo(`Video: ${videoElement.videoWidth}x${videoElement.videoHeight}<br>WebView: YES`);
                 }
 
                 if (typeof FaceMesh !== 'undefined') {
+                    showDebugInfo(`Video: ${videoElement.videoWidth}x${videoElement.videoHeight}<br>FaceMesh: 로드됨<br>초기화 중...`);
                     try {
                         // Face Mesh 인스턴스가 없으면 새로 생성
                         if (!faceDetectionInstance) {
                             console.log('새 Face Mesh 인스턴스 생성');
                             faceDetectionInstance = new FaceMesh({
                                 locateFile: (file) => {
+                                    console.log('MediaPipe 파일 로딩:', file);
                                     return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`;
                                 }
                             });
@@ -4034,6 +4052,7 @@
                             });
 
                             faceDetectionInstance.onResults(onAdvancedFaceResults);
+                            showDebugInfo(`Video: ${videoElement.videoWidth}x${videoElement.videoHeight}<br>FaceMesh: 인스턴스 생성됨`);
                         } else {
                             console.log('기존 Face Mesh 인스턴스 재사용');
                             // 기존 인스턴스에도 onResults 다시 설정
@@ -4045,13 +4064,21 @@
 
                         // MediaPipe Camera는 항상 새로 생성
                         if (typeof Camera !== 'undefined') {
+                            let camFrameCount = 0;
                             mediaPipeCamera = new Camera(videoElement, {
                                 onFrame: async () => {
+                                    camFrameCount++;
+                                    if (camFrameCount % 30 === 1) {
+                                        showDebugInfo(`CamFrame: ${camFrameCount}<br>ReadyState: ${videoElement?.readyState}<br>FaceInst: ${!!faceDetectionInstance}`);
+                                    }
                                     if (faceDetectionInstance && videoElement && videoElement.readyState === 4) {
                                         try {
                                             await faceDetectionInstance.send({ image: videoElement });
-                                        } catch (_e) {
-                                            // send 실패 시 무시 (카메라 중지 시 발생 가능)
+                                        } catch (sendErr) {
+                                            // send 실패 시 디버그 표시
+                                            if (camFrameCount < 10) {
+                                                showDebugInfo(`Send Error: ${sendErr.message}`);
+                                            }
                                         }
                                     }
                                 },
@@ -4059,12 +4086,16 @@
                                 height: 480
                             });
                             mediaPipeCamera.start();
+                            showDebugInfo(`Video: ${videoElement.videoWidth}x${videoElement.videoHeight}<br>Camera: 시작됨`);
+                        } else {
+                            showDebugInfo(`Video OK<br>FaceMesh OK<br>⚠️ Camera 클래스 없음!`);
                         }
 
                         console.log('MediaPipe Face Mesh 활성화');
                         showToast(t('personalColor.toast.faceRecognitionEnabled') || '얼굴 인식이 활성화되었습니다', 'success');
                     } catch (error) {
                         console.warn('Face Mesh 초기화 실패:', error);
+                        showDebugInfo(`FaceMesh 에러:<br>${error.message}`);
                         // WebView에서 실패 시 더 상세한 메시지
                         if (isWebViewEnv) {
                             showToast(t('personalColor.toast.webviewFaceLimit') || 'WebView 환경에서는 얼굴 인식이 제한됩니다. Chrome 브라우저를 사용해주세요.', 'warning');
@@ -4075,6 +4106,7 @@
                 } else {
                     // MediaPipe 라이브러리 자체가 로드되지 않은 경우
                     console.warn('⚠️ MediaPipe FaceMesh 라이브러리가 로드되지 않았습니다');
+                    showDebugInfo(`Video OK<br>⚠️ FaceMesh 라이브러리 없음!`);
                     if (isWebViewEnv) {
                         showToast(t('personalColor.toast.webviewNoFace') || 'WebView 환경에서는 얼굴 인식이 지원되지 않습니다', 'warning');
                     }
@@ -4124,18 +4156,6 @@
 
         // 프레임 카운터 (디버깅용)
         let frameCount = 0;
-
-        // ⭐ 화면 디버그 표시 (Android 앱 진단용)
-        let debugDiv = null;
-        function showDebugInfo(info) {
-            if (!debugDiv) {
-                debugDiv = document.createElement('div');
-                debugDiv.id = 'android-debug';
-                debugDiv.style.cssText = 'position:fixed;top:100px;left:10px;background:rgba(0,0,0,0.8);color:#0f0;font-size:10px;padding:8px;z-index:9999;max-width:200px;word-wrap:break-word;border-radius:4px;';
-                document.body.appendChild(debugDiv);
-            }
-            debugDiv.innerHTML = info;
-        }
 
         function onAdvancedFaceResults(results) {
             frameCount++;
