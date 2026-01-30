@@ -3851,6 +3851,35 @@
             document.body.style.overflow = '';
         }
 
+        // ========== 결과보고서 탭 전환 함수 ==========
+        function switchResultTab(tabName) {
+            // 모든 탭 버튼 비활성화
+            document.querySelectorAll('.pc-tab-btn').forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.color = '#888';
+                btn.style.boxShadow = 'none';
+            });
+
+            // 모든 탭 콘텐츠 숨기기
+            document.querySelectorAll('.pc-tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+
+            // 선택된 탭 버튼 활성화
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+            if (activeBtn) {
+                activeBtn.style.background = '#fff';
+                activeBtn.style.color = 'var(--primary-color, #E91E63)';
+                activeBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+            }
+
+            // 선택된 탭 콘텐츠 표시
+            const activeContent = document.getElementById(`tab-content-${tabName}`);
+            if (activeContent) {
+                activeContent.style.display = 'block';
+            }
+        }
+
         function goHome() {
             // 모든 섹션 비활성화 및 숨기기
             document.querySelectorAll('.section').forEach(section => {
@@ -4923,43 +4952,67 @@
                 // 통합 분석 결과 HTML 생성
                 const integratedHTML = integratedResult ? generateIntegratedResultHTML(integratedResult, pc) : '';
 
-                // 1단 레이아웃 (오른쪽 패널에 맞게)
+                // 피해야 할 컬러 HTML
+                const avoidColorsHTML = `
+                    <div style="background: rgba(244,67,54,0.1); padding: 12px; border-radius: 10px; border: 1px solid rgba(244,67,54,0.3); margin-top: 12px;">
+                        <div style="font-size: 13px; color: #F44336; margin-bottom: 8px; font-weight: bold;">⚠️ ${t('personalColor.result.avoidColors') || 'Colors to Avoid'}</div>
+                        <ul style="margin: 0; padding-left: 18px; color: #c62828; font-size: 12px; line-height: 1.7;">
+                            ${hairRec.avoidRules.map(rule => `<li>${rule}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+
+                // 탭 UI 레이아웃
                 resultsContainer.innerHTML = `
                     ${integratedHTML}
 
-                    <!-- 퍼스널컬러 결과 요약 -->
-                    <div style="background: linear-gradient(135deg, ${pc.color}33, ${pc.color}11); padding: 12px; border-radius: 12px; border: 2px solid ${pc.color}; margin-bottom: 12px;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                            <div style="width: 36px; height: 36px; background: ${skinToneData.hex}; border-radius: 50%; border: 2px solid white;"></div>
-                            <div>
-                                <div style="font-size: 18px; font-weight: bold; color: ${pc.color};">${pc.emoji} ${seasonText}</div>
-                                <div style="font-size: 11px; color: #666;">${resultTexts.undertone}: ${undertoneText}</div>
+                    <!-- ========== 히어로 섹션: 퍼스널컬러 결과 (항상 표시) ========== -->
+                    <div style="background: linear-gradient(135deg, ${pc.color}22, ${pc.color}08); padding: 20px; border-radius: 16px; border: 2px solid ${pc.color}; margin-bottom: 16px; text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 8px;">${pc.emoji}</div>
+                        <div style="font-size: 24px; font-weight: 800; color: ${pc.color}; margin-bottom: 6px;">${seasonText}</div>
+                        <div style="font-size: 13px; color: #666; margin-bottom: 12px;">${resultTexts.undertone}: <b>${undertoneText}</b></div>
+                        <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 6px; background: #fff; padding: 6px 12px; border-radius: 20px; border: 1px solid #e0e0e0;">
+                                <div style="width: 20px; height: 20px; background: ${skinToneData.hex}; border-radius: 50%; border: 1px solid #ccc;"></div>
+                                <span style="font-size: 11px; color: #666;">${skinToneData.hex}</span>
                             </div>
-                            <div style="margin-left: auto; background: ${pc.color}; color: #ffffff; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold;">
-                                ${pc.confidence}%
+                            <div style="background: ${pc.color}; color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                                ${t('personalColor.aiMode.result.confidence') || '신뢰도'} ${pc.confidence}%
                             </div>
                         </div>
                     </div>
 
                     ${lightingWarningBanner}
 
-                    <!-- 📐 얼굴 측정 결과 (눈썹간 거리 등) -->
-                    ${faceGeometryHTML}
-
-                    <!-- 💇 헤어컬러 추천 -->
-                    ${hairRecommendHTML}
-
-                    <!-- 👩‍🎨 전문가 가이드 -->
-                    ${expertFeedbackHTML}
-
-                    <!-- ⚠️ 피해야 할 컬러 -->
-                    <div style="background: rgba(244,67,54,0.1); padding: 10px; border-radius: 10px; border: 1px solid rgba(244,67,54,0.3); margin-top: 12px;">
-                        <div style="font-size: 12px; color: #F44336; margin-bottom: 6px; font-weight: bold;">⚠️ ${t('personalColor.result.avoidColors') || 'Colors to Avoid'}</div>
-                        <ul style="margin: 0; padding-left: 16px; color: #c62828; font-size: 11px; line-height: 1.6;">
-                            ${hairRec.avoidRules.map(rule => `<li>${rule}</li>`).join('')}
-                        </ul>
+                    <!-- ========== 탭 네비게이션 ========== -->
+                    <div id="pc-result-tabs" style="display: flex; gap: 4px; margin-bottom: 12px; background: #f0f0f0; padding: 4px; border-radius: 12px;">
+                        <button onclick="switchResultTab('analysis')" id="tab-btn-analysis" class="pc-tab-btn active" style="flex: 1; padding: 10px 8px; border: none; background: #fff; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 600; color: ${pc.color}; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s;">
+                            📊 ${t('personalColor.tabs.analysis') || '분석'}
+                        </button>
+                        <button onclick="switchResultTab('hair')" id="tab-btn-hair" class="pc-tab-btn" style="flex: 1; padding: 10px 8px; border: none; background: transparent; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 600; color: #888; transition: all 0.2s;">
+                            💇 ${t('personalColor.tabs.hairColor') || '헤어컬러'}
+                        </button>
+                        <button onclick="switchResultTab('expert')" id="tab-btn-expert" class="pc-tab-btn" style="flex: 1; padding: 10px 8px; border: none; background: transparent; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 600; color: #888; transition: all 0.2s;">
+                            👩‍🎨 ${t('personalColor.tabs.expert') || '전문가'}
+                        </button>
                     </div>
 
+                    <!-- ========== 탭 콘텐츠 ========== -->
+                    <!-- 탭 1: 분석 결과 -->
+                    <div id="tab-content-analysis" class="pc-tab-content" style="display: block;">
+                        ${faceGeometryHTML}
+                    </div>
+
+                    <!-- 탭 2: 헤어컬러 추천 -->
+                    <div id="tab-content-hair" class="pc-tab-content" style="display: none;">
+                        ${hairRecommendHTML}
+                        ${avoidColorsHTML}
+                    </div>
+
+                    <!-- 탭 3: 전문가 가이드 -->
+                    <div id="tab-content-expert" class="pc-tab-content" style="display: none;">
+                        ${expertFeedbackHTML}
+                    </div>
                 `;
 
                             }

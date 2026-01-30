@@ -673,6 +673,13 @@ const HAIRGATOR_I18N = {
       close: '닫기',
       modeSelect: '퍼스널컬러 진단 방법을 선택하세요',
 
+      // 결과보고서 탭
+      tabs: {
+        analysis: '분석 결과',
+        hairColor: '헤어컬러',
+        expert: '전문가'
+      },
+
       // 로딩 화면
       loadingSteps: {
         hairColorData: '헤어컬러 데이터 로드 중...',
@@ -2020,6 +2027,13 @@ const HAIRGATOR_I18N = {
       close: 'Close',
       modeSelect: 'Choose your personal color analysis method',
 
+      // Result report tabs
+      tabs: {
+        analysis: 'Analysis',
+        hairColor: 'Hair Color',
+        expert: 'Expert'
+      },
+
       // Loading screen
       loadingSteps: {
         hairColorData: 'Loading hair color data...',
@@ -3343,6 +3357,13 @@ const HAIRGATOR_I18N = {
       close: '閉じる',
       modeSelect: 'パーソナルカラー診断方法を選択してください',
 
+      // 結果レポートタブ
+      tabs: {
+        analysis: '分析結果',
+        hairColor: 'ヘアカラー',
+        expert: '専門家'
+      },
+
       // ロード画面
       loadingSteps: {
         hairColorData: 'ヘアカラーデータを読み込み中...',
@@ -4663,6 +4684,13 @@ const HAIRGATOR_I18N = {
       loading: '系统初始化中...',
       close: '关闭',
       modeSelect: '请选择个人色彩诊断方法',
+
+      // 结果报告标签页
+      tabs: {
+        analysis: '分析结果',
+        hairColor: '发色',
+        expert: '专家'
+      },
 
       // 加载界面
       loadingSteps: {
@@ -5986,6 +6014,13 @@ const HAIRGATOR_I18N = {
       close: 'Đóng',
       modeSelect: 'Chọn phương pháp chẩn đoán màu cá nhân',
 
+      // Tab báo cáo kết quả
+      tabs: {
+        analysis: 'Phân tích',
+        hairColor: 'Màu tóc',
+        expert: 'Chuyên gia'
+      },
+
       // Màn hình tải
       loadingSteps: {
         hairColorData: 'Đang tải dữ liệu màu tóc...',
@@ -7253,6 +7288,13 @@ const HAIRGATOR_I18N = {
       loading: 'Menginisialisasi sistem...',
       close: 'Tutup',
       modeSelect: 'Pilih metode diagnosis warna personal',
+
+      // Tab laporan hasil
+      tabs: {
+        analysis: 'Analisis',
+        hairColor: 'Warna Rambut',
+        expert: 'Pakar'
+      },
 
       // Layar loading
       loadingSteps: {
@@ -8541,6 +8583,13 @@ const HAIRGATOR_I18N = {
       loading: 'Inicializando sistema...',
       close: 'Cerrar',
       modeSelect: 'Elige tu método de análisis de color personal',
+
+      // Pestañas de informe de resultados
+      tabs: {
+        analysis: 'Análisis',
+        hairColor: 'Color de Cabello',
+        expert: 'Experto'
+      },
 
       loadingSteps: {
         hairColorData: 'Cargando datos de color de cabello...',
@@ -9912,6 +9961,13 @@ const HAIRGATOR_I18N = {
       loading: 'กำลังเริ่มต้นระบบ...',
       close: 'ปิด',
       modeSelect: 'เลือกวิธีการวิเคราะห์ Personal Color ของคุณ',
+
+      // แท็บรายงานผล
+      tabs: {
+        analysis: 'ผลวิเคราะห์',
+        hairColor: 'สีผม',
+        expert: 'ผู้เชี่ยวชาญ'
+      },
 
       // Loading screen
       loadingSteps: {
