@@ -1123,39 +1123,50 @@ const HAIRGATOR_I18N = {
 
       // 드래이핑 가이드
       drapingGuide: {
-        title: '4계절 드래이핑 진단 가이드',
-        principleTitle: '드래이핑 진단 원리',
-        principleText: '드래이핑 진단은 피부 멜라닌의 언더톤(표피 멜라닌 vs 진피 헤모글로빈)에 따라 어울리는 색상의 명도/채도/색온도 범위가 달라진다는 원리를 기반으로 합니다.\n\n천 색이 피부 보색을 중화하면 피부가 맑아 보이고, 반대의 경우 피부가 칙칙하거나 붉어 보입니다.',
-        imageLabel: '이미지:',
-        attributeLabel: '속성:',
+        title: '전문가 드래이핑 진단 가이드',
+        principleTitle: '🎨 드래이핑의 원리',
+        principleText: '드래이핑은 색상 진단 천을 얼굴 아래에 대고, 그 색이 피부에 반사되어 안색, 다크서클, 주름, 잡티 등이 어떻게 변하는지 관찰하는 전문 진단법입니다. 올바른 색상은 피부를 환하게 밝히고, 잘못된 색상은 피부를 칙칙하게 만듭니다.',
+        // 싱글 모드
+        singleMode: {
+          title: '🎯 싱글 모드 (자유 탐색)',
+          desc: '4계절 팔레트에서 원하는 색상을 선택하여 얼굴에 대보는 모드입니다. 슬라이더로 명도, 채도, 온도감을 조절하여 미세한 색상 차이도 테스트할 수 있습니다.',
+          tip1: '💡 <strong>전문가 팁:</strong> 색상을 바꿀 때마다 30초 정도 관찰하세요',
+          tip2: '💡 마음에 드는 색상은 "현재 색상 저장" 버튼으로 기록하세요'
+        },
+        // 비교 모드
+        compareMode: {
+          title: '🔀 비교 모드 (토너먼트 진단)',
+          desc: '전문가들이 사용하는 Side-by-Side 비교법입니다. 웜톤과 쿨톤 색상을 화면 좌우에 동시에 대어 직접 비교합니다. 6라운드의 토너먼트를 통해 점수를 합산하여 최종 계절을 판정합니다.',
+          tip1: '💡 <strong>핵심 질문:</strong> "색상이 먼저 보이나요, 사람이 먼저 보이나요?"',
+          tip2: '💡 사람이 먼저 보이는 쪽이 당신에게 어울리는 색상입니다',
+          method: '* Dorr Color Key System 기반 웜/쿨 판별법 적용'
+        },
+        // 관찰 체크리스트
+        checklist: {
+          title: '✅ 관찰 체크리스트',
+          good: '✓ 어울리는 색상',
+          goodList: '피부가 맑아 보임<br>눈이 반짝임<br>안색이 균일해 보임<br>얼굴 윤곽이 또렷함',
+          bad: '✗ 안 어울리는 색상',
+          badList: '피부가 칙칙해 보임<br>다크서클이 강조됨<br>잡티/주름이 부각됨<br>피로해 보임'
+        },
+        seasonSummary: '📋 4계절 요약',
         spring: {
           title: '봄 웜톤 (Spring Warm)',
-          image: '밝고 따뜻한 노란 기운',
-          attribute: '고명도 + 중~고채도 + 웜(황색)',
-          best: '코랄, 피치, 아이보리, 밝은 오렌지',
-          worst: '회색빛 핑크, 버건디, 네이비'
+          summary: '밝고 화사한 색상<br>코랄, 피치, 아이보리'
         },
         summer: {
           title: '여름 쿨톤 (Summer Cool)',
-          image: '부드럽고 시원한 회색/핑크 기운',
-          attribute: '중명도 + 저~중채도 + 쿨(회청)',
-          best: '라벤더, 로즈핑크, 스카이블루, 소프트 화이트',
-          worst: '오렌지, 카키, 머스타드'
+          summary: '부드러운 파스텔 색상<br>라벤더, 로즈핑크'
         },
         autumn: {
           title: '가을 웜톤 (Autumn Warm)',
-          image: '깊고 풍부한 황갈색 기운',
-          attribute: '저~중명도 + 저~중채도 + 웜(황금)',
-          best: '카키, 테라코타, 머스타드, 올리브',
-          worst: '연핑크, 파스텔 블루, 비비드 레드'
+          summary: '깊고 풍부한 색상<br>카키, 테라코타, 머스타드'
         },
         winter: {
           title: '겨울 쿨톤 (Winter Cool)',
-          image: '선명하고 차가운 청자색 기운',
-          attribute: '극저/극고명도 + 고채도 + 쿨(청자)',
-          best: '순백, 블랙, 로열블루, 버건디, 핫핑크',
-          worst: '베이지, 오렌지, 연한 카키'
+          summary: '선명하고 강렬한 색상<br>블랙, 순백, 로열블루'
         },
+        finalTip: '⚡ <strong>정확한 진단을 위해:</strong> 자연광(창가) 환경에서, 메이크업 없이, 흰색 또는 무채색 상의를 입고 진단하세요. 인공 조명은 색상을 왜곡시킬 수 있습니다.',
         closeBtn: '닫기'
       },
 
@@ -2480,39 +2491,50 @@ const HAIRGATOR_I18N = {
 
       // Draping Guide
       drapingGuide: {
-        title: '4-Season Draping Diagnosis Guide',
-        principleTitle: 'Draping Diagnosis Principle',
-        principleText: 'Draping diagnosis is based on the principle that the suitable brightness/saturation/color temperature range varies according to the undertone of skin melanin (epidermal melanin vs dermal hemoglobin).\n\nWhen the cloth color neutralizes the skin\'s complementary colors, the skin appears clearer; otherwise, the skin may look dull or reddish.',
-        imageLabel: 'Image:',
-        attributeLabel: 'Attribute:',
+        title: 'Professional Draping Diagnosis Guide',
+        principleTitle: '🎨 The Principle of Draping',
+        principleText: 'Draping is a professional diagnosis method where colored fabrics are placed under the face to observe how the reflected color affects skin tone, dark circles, wrinkles, and blemishes. The right colors brighten your complexion, while wrong colors make skin look dull.',
+        // Single Mode
+        singleMode: {
+          title: '🎯 Single Mode (Free Exploration)',
+          desc: 'Select any color from the 4-season palette to test against your face. Use sliders to adjust brightness, saturation, and warmth for fine-tuning.',
+          tip1: '💡 <strong>Pro Tip:</strong> Observe each color for about 30 seconds before switching',
+          tip2: '💡 Save colors you like with the "Save Current Color" button'
+        },
+        // Compare Mode
+        compareMode: {
+          title: '🔀 Compare Mode (Tournament Diagnosis)',
+          desc: 'A professional side-by-side comparison method. Warm and cool tones are displayed simultaneously on left and right sides of the screen. After 6 rounds of tournament-style comparisons, scores are tallied to determine your final season.',
+          tip1: '💡 <strong>Key Question:</strong> "Do you notice the color first, or the person?"',
+          tip2: '💡 The side where the person stands out is your flattering color',
+          method: '* Based on Dorr Color Key System for warm/cool determination'
+        },
+        // Observation Checklist
+        checklist: {
+          title: '✅ Observation Checklist',
+          good: '✓ Flattering Colors',
+          goodList: 'Skin looks clearer<br>Eyes sparkle<br>Even complexion<br>Defined facial contours',
+          bad: '✗ Unflattering Colors',
+          badList: 'Skin looks dull<br>Dark circles emphasized<br>Blemishes/wrinkles highlighted<br>Tired appearance'
+        },
+        seasonSummary: '📋 4-Season Summary',
         spring: {
           title: 'Spring Warm',
-          image: 'Bright and warm yellow undertone',
-          attribute: 'High brightness + Medium-high saturation + Warm (yellow)',
-          best: 'Coral, Peach, Ivory, Bright Orange',
-          worst: 'Grayish Pink, Burgundy, Navy'
+          summary: 'Bright, fresh colors<br>Coral, Peach, Ivory'
         },
         summer: {
           title: 'Summer Cool',
-          image: 'Soft and cool gray/pink undertone',
-          attribute: 'Medium brightness + Low-medium saturation + Cool (gray-blue)',
-          best: 'Lavender, Rose Pink, Sky Blue, Soft White',
-          worst: 'Orange, Khaki, Mustard'
+          summary: 'Soft pastel colors<br>Lavender, Rose Pink'
         },
         autumn: {
           title: 'Autumn Warm',
-          image: 'Deep and rich golden-brown undertone',
-          attribute: 'Low-medium brightness + Low-medium saturation + Warm (golden)',
-          best: 'Khaki, Terracotta, Mustard, Olive',
-          worst: 'Light Pink, Pastel Blue, Vivid Red'
+          summary: 'Deep, rich colors<br>Khaki, Terracotta, Mustard'
         },
         winter: {
           title: 'Winter Cool',
-          image: 'Vivid and cool blue-purple undertone',
-          attribute: 'Very low/high brightness + High saturation + Cool (blue-purple)',
-          best: 'Pure White, Black, Royal Blue, Burgundy, Hot Pink',
-          worst: 'Beige, Orange, Light Khaki'
+          summary: 'Bold, vivid colors<br>Black, Pure White, Royal Blue'
         },
+        finalTip: '⚡ <strong>For accurate diagnosis:</strong> Use natural light (near a window), no makeup, and wear white or neutral-colored tops. Artificial lighting can distort colors.',
         closeBtn: 'Close'
       },
 
@@ -3828,39 +3850,47 @@ const HAIRGATOR_I18N = {
 
       // ドレーピングガイド
       drapingGuide: {
-        title: '4シーズンドレーピング診断ガイド',
-        principleTitle: 'ドレーピング診断の原理',
-        principleText: 'ドレーピング診断は、肌のメラニンのアンダートーン（表皮メラニン vs 真皮ヘモグロビン）によって似合う色の明度/彩度/色温度の範囲が異なるという原理に基づいています。\n\n布の色が肌の補色を中和すると肌が透明に見え、逆の場合は肌がくすんだり赤く見えたりします。',
-        imageLabel: 'イメージ:',
-        attributeLabel: '属性:',
+        title: 'プロフェッショナル ドレーピング診断ガイド',
+        principleTitle: '🎨 ドレーピングの原理',
+        principleText: 'ドレーピングは、顔の下に色布を当て、その色が肌に反射して肌色、クマ、シワ、シミにどのような影響を与えるかを観察する専門診断法です。正しい色は肌を明るくし、間違った色は肌をくすませます。',
+        singleMode: {
+          title: '🎯 シングルモード（自由探索）',
+          desc: '4シーズンパレットから好きな色を選んで顔に当てるモードです。スライダーで明度、彩度、温度感を調整して微細な色の違いもテストできます。',
+          tip1: '💡 <strong>プロのヒント：</strong> 色を変えるたびに約30秒間観察してください',
+          tip2: '💡 気に入った色は「現在の色を保存」ボタンで記録してください'
+        },
+        compareMode: {
+          title: '🔀 比較モード（トーナメント診断）',
+          desc: 'プロが使用するSide-by-Side比較法です。ウォームトーンとクールトーンの色を画面の左右に同時に表示して直接比較します。6ラウンドのトーナメントを通じてスコアを合算し、最終シーズンを判定します。',
+          tip1: '💡 <strong>核心の質問：</strong>「色が先に見えますか、人が先に見えますか？」',
+          tip2: '💡 人が先に見える方があなたに似合う色です',
+          method: '* Dorr Color Key Systemに基づくウォーム/クール判別法適用'
+        },
+        checklist: {
+          title: '✅ 観察チェックリスト',
+          good: '✓ 似合う色',
+          goodList: '肌が透明に見える<br>目が輝く<br>肌色が均一に見える<br>顔の輪郭がはっきり',
+          bad: '✗ 似合わない色',
+          badList: '肌がくすんで見える<br>クマが強調される<br>シミ/シワが目立つ<br>疲れて見える'
+        },
+        seasonSummary: '📋 4シーズン要約',
         spring: {
           title: 'スプリングウォーム',
-          image: '明るく暖かい黄色のアンダートーン',
-          attribute: '高明度 + 中〜高彩度 + ウォーム（イエロー）',
-          best: 'コーラル、ピーチ、アイボリー、明るいオレンジ',
-          worst: 'グレーがかったピンク、バーガンディ、ネイビー'
+          summary: '明るく華やかな色<br>コーラル、ピーチ、アイボリー'
         },
         summer: {
           title: 'サマークール',
-          image: '柔らかく涼しげなグレー/ピンクのアンダートーン',
-          attribute: '中明度 + 低〜中彩度 + クール（グレーブルー）',
-          best: 'ラベンダー、ローズピンク、スカイブルー、ソフトホワイト',
-          worst: 'オレンジ、カーキ、マスタード'
+          summary: '柔らかいパステルカラー<br>ラベンダー、ローズピンク'
         },
         autumn: {
           title: 'オータムウォーム',
-          image: '深く豊かなゴールデンブラウンのアンダートーン',
-          attribute: '低〜中明度 + 低〜中彩度 + ウォーム（ゴールド）',
-          best: 'カーキ、テラコッタ、マスタード、オリーブ',
-          worst: 'ライトピンク、パステルブルー、ビビッドレッド'
+          summary: '深く豊かな色<br>カーキ、テラコッタ、マスタード'
         },
         winter: {
           title: 'ウィンタークール',
-          image: '鮮やかでクールなブルーパープルのアンダートーン',
-          attribute: '極低/極高明度 + 高彩度 + クール（ブルーパープル）',
-          best: 'ピュアホワイト、ブラック、ロイヤルブルー、バーガンディ、ホットピンク',
-          worst: 'ベージュ、オレンジ、ライトカーキ'
+          summary: '鮮明で強烈な色<br>ブラック、ピュアホワイト、ロイヤルブルー'
         },
+        finalTip: '⚡ <strong>正確な診断のために：</strong> 自然光（窓際）環境で、メイクなしで、白またはニュートラルカラーのトップスを着て診断してください。人工照明は色を歪めることがあります。',
         closeBtn: '閉じる'
       },
 
@@ -5177,39 +5207,47 @@ const HAIRGATOR_I18N = {
 
       // 披巾测试指南
       drapingGuide: {
-        title: '四季披巾测试诊断指南',
-        principleTitle: '披巾测试诊断原理',
-        principleText: '披巾测试诊断基于以下原理：根据皮肤黑色素的底色调（表皮黑色素 vs 真皮血红蛋白），适合的颜色明度/饱和度/色温范围会有所不同。\n\n当布料颜色中和皮肤的互补色时，皮肤会显得更加透亮；反之，皮肤可能看起来暗沉或泛红。',
-        imageLabel: '形象:',
-        attributeLabel: '属性:',
+        title: '专业披巾测试诊断指南',
+        principleTitle: '🎨 披巾测试原理',
+        principleText: '披巾测试是一种专业诊断方法，将彩色布料放在脸下，观察反射的颜色如何影响肤色、黑眼圈、皱纹和瑕疵。正确的颜色会使肤色明亮，错误的颜色会使皮肤暗沉。',
+        singleMode: {
+          title: '🎯 单色模式（自由探索）',
+          desc: '从四季调色板中选择任何颜色来测试您的脸部。使用滑块调整亮度、饱和度和色温进行微调。',
+          tip1: '💡 <strong>专业提示：</strong> 每次换色后观察约30秒',
+          tip2: '💡 喜欢的颜色用"保存当前颜色"按钮记录'
+        },
+        compareMode: {
+          title: '🔀 比较模式（锦标赛诊断）',
+          desc: '专业的并排比较方法。暖色调和冷色调同时显示在屏幕左右两侧。经过6轮锦标赛式比较后，汇总得分确定您的最终季节类型。',
+          tip1: '💡 <strong>核心问题：</strong>"您是先注意到颜色还是人？"',
+          tip2: '💡 先注意到人的一侧是适合您的颜色',
+          method: '* 基于Dorr Color Key System的冷暖判别法'
+        },
+        checklist: {
+          title: '✅ 观察清单',
+          good: '✓ 适合的颜色',
+          goodList: '皮肤看起来更透亮<br>眼睛闪亮<br>肤色均匀<br>面部轮廓清晰',
+          bad: '✗ 不适合的颜色',
+          badList: '皮肤看起来暗沉<br>黑眼圈更明显<br>瑕疵/皱纹更突出<br>看起来疲惫'
+        },
+        seasonSummary: '📋 四季总结',
         spring: {
           title: '春季暖色型',
-          image: '明亮温暖的黄色底色调',
-          attribute: '高明度 + 中高饱和度 + 暖色（黄色）',
-          best: '珊瑚色、桃色、象牙白、明亮橙色',
-          worst: '灰粉色、酒红色、海军蓝'
+          summary: '明亮清新的颜色<br>珊瑚色、桃色、象牙白'
         },
         summer: {
           title: '夏季冷色型',
-          image: '柔和清凉的灰色/粉色底色调',
-          attribute: '中明度 + 低中饱和度 + 冷色（灰蓝）',
-          best: '薰衣草紫、玫瑰粉、天蓝色、柔白色',
-          worst: '橙色、卡其色、芥末黄'
+          summary: '柔和的粉彩色<br>薰衣草紫、玫瑰粉'
         },
         autumn: {
           title: '秋季暖色型',
-          image: '深沉丰富的金棕色底色调',
-          attribute: '低中明度 + 低中饱和度 + 暖色（金色）',
-          best: '卡其色、陶土色、芥末黄、橄榄绿',
-          worst: '浅粉色、粉彩蓝、鲜艳红'
+          summary: '深沉丰富的颜色<br>卡其色、陶土色、芥末黄'
         },
         winter: {
           title: '冬季冷色型',
-          image: '鲜艳清冷的蓝紫色底色调',
-          attribute: '极低/极高明度 + 高饱和度 + 冷色（蓝紫）',
-          best: '纯白、黑色、皇家蓝、酒红、亮粉红',
-          worst: '米色、橙色、浅卡其'
+          summary: '鲜明强烈的颜色<br>黑色、纯白、皇家蓝'
         },
+        finalTip: '⚡ <strong>准确诊断须知：</strong> 在自然光（窗边）环境下，不化妆，穿白色或中性色上衣进行诊断。人工照明可能会扭曲颜色。',
         closeBtn: '关闭'
       },
 

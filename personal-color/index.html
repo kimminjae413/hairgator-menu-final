@@ -719,52 +719,84 @@
 
                 <!-- 드래이핑 가이드 모달 -->
                 <div id="draping-guide-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 10000; overflow-y: auto; padding: 20px;">
-                    <div style="max-width: 600px; margin: 0 auto; background: #1a1a1a; border-radius: 16px; padding: 24px; border: 1px solid rgba(255,255,255,0.1);">
+                    <div style="max-width: 650px; margin: 0 auto; background: #1a1a1a; border-radius: 16px; padding: 24px; border: 1px solid rgba(255,255,255,0.1);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h2 style="color: #ffffff; font-size: 20px; margin: 0; font-weight: 600;" data-i18n="personalColor.drapingGuide.title">4계절 드래이핑 진단 가이드</h2>
+                            <h2 style="color: #ffffff; font-size: 20px; margin: 0; font-weight: 600;" data-i18n="personalColor.drapingGuide.title">전문가 드래이핑 진단 가이드</h2>
                             <button onclick="closeDrapingGuide()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px;">✕</button>
                         </div>
 
                         <!-- 드래이핑 원리 -->
-                        <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.08);">
-                            <h3 style="color: #e0e0e0; font-size: 15px; margin: 0 0 10px 0; font-weight: 600;" data-i18n="personalColor.drapingGuide.principleTitle">드래이핑의 원리</h3>
-                            <p style="color: #b0b0b0; font-size: 14px; line-height: 1.7; margin: 0;" data-i18n="personalColor.drapingGuide.principleText">특정 색상의 천을 얼굴 밑에 댔을 때, 그 색이 얼굴에 반사되면서 안색, 다크서클, 주름, 잡티 등이 어떻게 변하는지를 관찰하여 베스트(Best)와 워스트(Worst)를 가려내는 방법입니다.</p>
+                        <div style="background: linear-gradient(135deg, rgba(233,30,99,0.1), rgba(156,39,176,0.1)); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid rgba(233,30,99,0.2);">
+                            <h3 style="color: #F48FB1; font-size: 15px; margin: 0 0 10px 0; font-weight: 600;" data-i18n="personalColor.drapingGuide.principleTitle">🎨 드래이핑의 원리</h3>
+                            <p style="color: #d0d0d0; font-size: 14px; line-height: 1.8; margin: 0;" data-i18n="personalColor.drapingGuide.principleText">드래이핑은 색상 진단 천을 얼굴 아래에 대고, 그 색이 피부에 반사되어 안색, 다크서클, 주름, 잡티 등이 어떻게 변하는지 관찰하는 전문 진단법입니다. 올바른 색상은 피부를 환하게 밝히고, 잘못된 색상은 피부를 칙칙하게 만듭니다.</p>
                         </div>
 
-                        <!-- 봄 웜톤 -->
-                        <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08);">
-                            <h3 style="color: #ffffff; font-size: 16px; margin: 0 0 10px 0; font-weight: 600;" data-i18n="personalColor.drapingGuide.spring.title">봄 웜톤 (Spring Warm)</h3>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0 0 8px 0;"><span style="color: #d0d0d0;" data-i18n="personalColor.drapingGuide.imageLabel">이미지:</span> <span data-i18n="personalColor.drapingGuide.spring.image">밝고 따뜻한 노란 기운</span></p>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0 0 12px 0;"><span style="color: #d0d0d0;" data-i18n="personalColor.drapingGuide.attributeLabel">속성:</span> <span data-i18n="personalColor.drapingGuide.spring.attribute">고명도 + 중~고채도 + 웜(황색)</span></p>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0 0 6px 0;"><span style="color: #70c070;">✓ Best:</span> <span data-i18n="personalColor.drapingGuide.spring.best">코랄, 피치, 아이보리, 밝은 오렌지</span></p>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0;"><span style="color: #c07070;">✗ Worst:</span> <span data-i18n="personalColor.drapingGuide.spring.worst">회색빛 핑크, 버건디, 네이비</span></p>
+                        <!-- 싱글 모드 설명 -->
+                        <div style="background: rgba(255,152,0,0.08); padding: 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(255,152,0,0.2);">
+                            <h3 style="color: #FFB74D; font-size: 15px; margin: 0 0 10px 0; font-weight: 600;" data-i18n="personalColor.drapingGuide.singleMode.title">🎯 싱글 모드 (자유 탐색)</h3>
+                            <p style="color: #c0c0c0; font-size: 13px; line-height: 1.7; margin: 0 0 12px 0;" data-i18n="personalColor.drapingGuide.singleMode.desc">4계절 팔레트에서 원하는 색상을 선택하여 얼굴에 대보는 모드입니다. 슬라이더로 명도, 채도, 온도감을 조절하여 미세한 색상 차이도 테스트할 수 있습니다.</p>
+                            <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;">
+                                <p style="color: #a0a0a0; font-size: 12px; margin: 0 0 6px 0;" data-i18n="personalColor.drapingGuide.singleMode.tip1">💡 <strong style="color:#FFB74D;">전문가 팁:</strong> 색상을 바꿀 때마다 30초 정도 관찰하세요</p>
+                                <p style="color: #a0a0a0; font-size: 12px; margin: 0;" data-i18n="personalColor.drapingGuide.singleMode.tip2">💡 마음에 드는 색상은 "현재 색상 저장" 버튼으로 기록하세요</p>
+                            </div>
                         </div>
 
-                        <!-- 여름 쿨톤 -->
-                        <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08);">
-                            <h3 style="color: #ffffff; font-size: 16px; margin: 0 0 10px 0; font-weight: 600;" data-i18n="personalColor.drapingGuide.summer.title">여름 쿨톤 (Summer Cool)</h3>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0 0 8px 0;"><span style="color: #d0d0d0;" data-i18n="personalColor.drapingGuide.imageLabel">이미지:</span> <span data-i18n="personalColor.drapingGuide.summer.image">부드럽고 시원한 회색/핑크 기운</span></p>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0 0 12px 0;"><span style="color: #d0d0d0;" data-i18n="personalColor.drapingGuide.attributeLabel">속성:</span> <span data-i18n="personalColor.drapingGuide.summer.attribute">중명도 + 저~중채도 + 쿨(회청)</span></p>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0 0 6px 0;"><span style="color: #70c070;">✓ Best:</span> <span data-i18n="personalColor.drapingGuide.summer.best">라벤더, 로즈핑크, 스카이블루, 소프트 화이트</span></p>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0;"><span style="color: #c07070;">✗ Worst:</span> <span data-i18n="personalColor.drapingGuide.summer.worst">오렌지, 카키, 머스타드</span></p>
+                        <!-- 비교 모드 설명 -->
+                        <div style="background: rgba(233,30,99,0.08); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid rgba(233,30,99,0.2);">
+                            <h3 style="color: #F48FB1; font-size: 15px; margin: 0 0 10px 0; font-weight: 600;" data-i18n="personalColor.drapingGuide.compareMode.title">🔀 비교 모드 (토너먼트 진단)</h3>
+                            <p style="color: #c0c0c0; font-size: 13px; line-height: 1.7; margin: 0 0 12px 0;" data-i18n="personalColor.drapingGuide.compareMode.desc">전문가들이 사용하는 Side-by-Side 비교법입니다. 웜톤과 쿨톤 색상을 화면 좌우에 동시에 대어 직접 비교합니다. 6라운드의 토너먼트를 통해 점수를 합산하여 최종 계절을 판정합니다.</p>
+                            <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                                <p style="color: #a0a0a0; font-size: 12px; margin: 0 0 6px 0;" data-i18n="personalColor.drapingGuide.compareMode.tip1">💡 <strong style="color:#F48FB1;">핵심 질문:</strong> "색상이 먼저 보이나요, 사람이 먼저 보이나요?"</p>
+                                <p style="color: #a0a0a0; font-size: 12px; margin: 0;" data-i18n="personalColor.drapingGuide.compareMode.tip2">💡 사람이 먼저 보이는 쪽이 당신에게 어울리는 색상입니다</p>
+                            </div>
+                            <p style="color: #888; font-size: 12px; margin: 0; font-style: italic;" data-i18n="personalColor.drapingGuide.compareMode.method">* Dorr Color Key System 기반 웜/쿨 판별법 적용</p>
                         </div>
 
-                        <!-- 가을 웜톤 -->
-                        <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08);">
-                            <h3 style="color: #ffffff; font-size: 16px; margin: 0 0 10px 0; font-weight: 600;" data-i18n="personalColor.drapingGuide.autumn.title">가을 웜톤 (Autumn Warm)</h3>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0 0 8px 0;"><span style="color: #d0d0d0;" data-i18n="personalColor.drapingGuide.imageLabel">이미지:</span> <span data-i18n="personalColor.drapingGuide.autumn.image">깊고 풍부한 황갈색 기운</span></p>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0 0 12px 0;"><span style="color: #d0d0d0;" data-i18n="personalColor.drapingGuide.attributeLabel">속성:</span> <span data-i18n="personalColor.drapingGuide.autumn.attribute">저~중명도 + 저~중채도 + 웜(황금)</span></p>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0 0 6px 0;"><span style="color: #70c070;">✓ Best:</span> <span data-i18n="personalColor.drapingGuide.autumn.best">카키, 테라코타, 머스타드, 올리브</span></p>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0;"><span style="color: #c07070;">✗ Worst:</span> <span data-i18n="personalColor.drapingGuide.autumn.worst">연핑크, 파스텔 블루, 비비드 레드</span></p>
+                        <!-- 관찰 체크리스트 -->
+                        <div style="background: rgba(76,175,80,0.08); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid rgba(76,175,80,0.2);">
+                            <h3 style="color: #81C784; font-size: 15px; margin: 0 0 12px 0; font-weight: 600;" data-i18n="personalColor.drapingGuide.checklist.title">✅ 관찰 체크리스트</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <div style="background: rgba(76,175,80,0.1); padding: 10px; border-radius: 6px;">
+                                    <p style="color: #81C784; font-size: 12px; margin: 0 0 4px 0; font-weight: 600;" data-i18n="personalColor.drapingGuide.checklist.good">✓ 어울리는 색상</p>
+                                    <p style="color: #a0a0a0; font-size: 11px; margin: 0; line-height: 1.5;" data-i18n="personalColor.drapingGuide.checklist.goodList">피부가 맑아 보임<br>눈이 반짝임<br>안색이 균일해 보임<br>얼굴 윤곽이 또렷함</p>
+                                </div>
+                                <div style="background: rgba(244,67,54,0.1); padding: 10px; border-radius: 6px;">
+                                    <p style="color: #E57373; font-size: 12px; margin: 0 0 4px 0; font-weight: 600;" data-i18n="personalColor.drapingGuide.checklist.bad">✗ 안 어울리는 색상</p>
+                                    <p style="color: #a0a0a0; font-size: 11px; margin: 0; line-height: 1.5;" data-i18n="personalColor.drapingGuide.checklist.badList">피부가 칙칙해 보임<br>다크서클이 강조됨<br>잡티/주름이 부각됨<br>피로해 보임</p>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- 겨울 쿨톤 -->
-                        <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.08);">
-                            <h3 style="color: #ffffff; font-size: 16px; margin: 0 0 10px 0; font-weight: 600;" data-i18n="personalColor.drapingGuide.winter.title">겨울 쿨톤 (Winter Cool)</h3>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0 0 8px 0;"><span style="color: #d0d0d0;" data-i18n="personalColor.drapingGuide.imageLabel">이미지:</span> <span data-i18n="personalColor.drapingGuide.winter.image">선명하고 차가운 청자색 기운</span></p>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0 0 12px 0;"><span style="color: #d0d0d0;" data-i18n="personalColor.drapingGuide.attributeLabel">속성:</span> <span data-i18n="personalColor.drapingGuide.winter.attribute">극저/극고명도 + 고채도 + 쿨(청자)</span></p>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0 0 6px 0;"><span style="color: #70c070;">✓ Best:</span> <span data-i18n="personalColor.drapingGuide.winter.best">순백, 블랙, 로열블루, 버건디, 핫핑크</span></p>
-                            <p style="color: #a0a0a0; font-size: 13px; margin: 0;"><span style="color: #c07070;">✗ Worst:</span> <span data-i18n="personalColor.drapingGuide.winter.worst">베이지, 오렌지, 연한 카키</span></p>
+                        <!-- 4계절 간단 요약 -->
+                        <div style="margin-bottom: 16px;">
+                            <h3 style="color: #e0e0e0; font-size: 15px; margin: 0 0 12px 0; font-weight: 600;" data-i18n="personalColor.drapingGuide.seasonSummary">📋 4계절 요약</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <!-- 봄 -->
+                                <div style="background: rgba(255,200,150,0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #FFB74D;">
+                                    <p style="color: #FFB74D; font-size: 13px; margin: 0 0 4px 0; font-weight: 600;">🌸 봄 웜톤</p>
+                                    <p style="color: #a0a0a0; font-size: 11px; margin: 0;" data-i18n="personalColor.drapingGuide.spring.summary">밝고 화사한 색상<br>코랄, 피치, 아이보리</p>
+                                </div>
+                                <!-- 여름 -->
+                                <div style="background: rgba(150,200,255,0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #90CAF9;">
+                                    <p style="color: #90CAF9; font-size: 13px; margin: 0 0 4px 0; font-weight: 600;">🌊 여름 쿨톤</p>
+                                    <p style="color: #a0a0a0; font-size: 11px; margin: 0;" data-i18n="personalColor.drapingGuide.summer.summary">부드러운 파스텔 색상<br>라벤더, 로즈핑크</p>
+                                </div>
+                                <!-- 가을 -->
+                                <div style="background: rgba(200,150,100,0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #FFAB91;">
+                                    <p style="color: #FFAB91; font-size: 13px; margin: 0 0 4px 0; font-weight: 600;">🍂 가을 웜톤</p>
+                                    <p style="color: #a0a0a0; font-size: 11px; margin: 0;" data-i18n="personalColor.drapingGuide.autumn.summary">깊고 풍부한 색상<br>카키, 테라코타, 머스타드</p>
+                                </div>
+                                <!-- 겨울 -->
+                                <div style="background: rgba(180,150,220,0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #B39DDB;">
+                                    <p style="color: #B39DDB; font-size: 13px; margin: 0 0 4px 0; font-weight: 600;">❄️ 겨울 쿨톤</p>
+                                    <p style="color: #a0a0a0; font-size: 11px; margin: 0;" data-i18n="personalColor.drapingGuide.winter.summary">선명하고 강렬한 색상<br>블랙, 순백, 로열블루</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 진단 팁 -->
+                        <div style="background: rgba(255,193,7,0.08); padding: 14px; border-radius: 10px; margin-bottom: 16px; border: 1px solid rgba(255,193,7,0.2);">
+                            <p style="color: #FFC107; font-size: 13px; margin: 0; line-height: 1.7;" data-i18n="personalColor.drapingGuide.finalTip">⚡ <strong>정확한 진단을 위해:</strong> 자연광(창가) 환경에서, 메이크업 없이, 흰색 또는 무채색 상의를 입고 진단하세요. 인공 조명은 색상을 왜곡시킬 수 있습니다.</p>
                         </div>
 
                         <button onclick="closeDrapingGuide()" style="width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(255,255,255,0.1); color: white; font-size: 15px; font-weight: 600; cursor: pointer;" data-i18n="personalColor.drapingGuide.closeBtn">닫기</button>
@@ -901,7 +933,7 @@
 
 
     <!-- Main Application Script -->
-    <script src="app.js?v=20260130-1155"></script>
+    <script src="app.js?v=20260130-1205"></script>
 </body>
 
 </html>
