@@ -100,7 +100,7 @@
                     <li><strong>Virtual Hairstyle Try-On:</strong> Face data is <strong>temporarily retained</strong> for processing purposes only:
                         <ul style="margin-top: 5px;">
                             <li>By HAIRGATOR: Maximum <strong>24 hours</strong>, then automatically deleted.</li>
-                            <li>By vModel (third party): <strong>During API processing only</strong> (typically under 60 seconds based on response times), then deleted upon completion.</li>
+                            <li>By vModel (third party): According to vModel's documentation, "Content is processed by their AI models and returned <strong>without being saved on their servers</strong>." Processing typically takes under 60 seconds. Note: vModel's ToS grants them a license to use uploaded content for "system optimization, technical improvements."</li>
                         </ul>
                     </li>
                 </ul>
@@ -145,19 +145,19 @@
                 <table style="width: 100%; border-collapse: collapse; font-size: 14px; background: white;">
                     <tr>
                         <td style="border: 1px solid #f8bbd9; padding: 12px; width: 40%; background: #fce4ec;"><strong>Does vModel store face data?</strong></td>
-                        <td style="border: 1px solid #f8bbd9; padding: 12px;"><strong style="color: #e65100;">YES, temporarily during processing.</strong> As a real-time AI image processing API, vModel holds uploaded images in server memory while the AI model processes them.</td>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px;">According to vModel's documentation: <strong>"user data is not stored unless explicitly stated in their terms of service"</strong> and <strong>"Content is processed by their AI models and returned without being saved on their servers."</strong></td>
                     </tr>
                     <tr>
                         <td style="border: 1px solid #f8bbd9; padding: 12px; background: #fce4ec;"><strong>Length of time stored:</strong></td>
-                        <td style="border: 1px solid #f8bbd9; padding: 12px;"><strong>Duration of API request processing only.</strong> Based on our API response times, this is typically under 60 seconds. Images are not retained after the API response is returned.</td>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px;">According to vModel: Images are processed in real-time and returned without permanent storage. Processing time is typically under 60 seconds based on our API response times.</td>
                     </tr>
                     <tr>
                         <td style="border: 1px solid #f8bbd9; padding: 12px; background: #fce4ec;"><strong>Why stored for this duration:</strong></td>
-                        <td style="border: 1px solid #f8bbd9; padding: 12px;">Technical necessity: The AI model must load the image into memory to analyze facial features and apply hairstyle transformations. This processing cannot occur without temporarily holding the image data.</td>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px;">Technical necessity: The AI model must load the image into memory to analyze facial features and apply hairstyle transformations.</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #f8bbd9; padding: 12px; background: #fce4ec;"><strong>Permanent storage:</strong></td>
-                        <td style="border: 1px solid #f8bbd9; padding: 12px;">According to vModel's Terms of Service, user-uploaded content is processed as "Input" and the service generates "Output" without retaining Input data beyond the processing session.</td>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px; background: #fce4ec;"><strong>License granted to vModel:</strong></td>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px;">According to vModel's Terms of Service: <strong>"users grant Vmodel AI a worldwide, royalty-free, non-exclusive license to use such content for the purpose of delivering services, system optimization, technical improvements, or legal compliance."</strong></td>
                     </tr>
                     <tr>
                         <td style="border: 1px solid #f8bbd9; padding: 12px; background: #fce4ec;"><strong>vModel Terms of Service:</strong></td>
@@ -165,7 +165,7 @@
                     </tr>
                 </table>
                 <p style="margin: 15px 0 0 0; font-size: 13px; color: #666; font-style: italic;">
-                    Note: For complete details on vModel's data handling practices, users should refer to vModel's Terms of Service linked above. HAIRGATOR has selected vModel as our AI processing partner based on their API architecture which processes images in real-time without persistent storage.
+                    Note: The above information is quoted directly from vModel's publicly available Terms of Service and API documentation as of January 2026. For complete details on vModel's data handling practices, users should refer to vModel's Terms of Service linked above.
                 </p>
             </div>
 
