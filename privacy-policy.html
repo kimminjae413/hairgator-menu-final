@@ -87,82 +87,155 @@
         <h2>5. 얼굴 데이터(Face Data) 정책 / Face Data Policy</h2>
 
         <!-- FACE DATA POLICY - Apple App Store Guideline 5.1.1 Compliance -->
-        <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 3px solid #4CAF50; padding: 25px; border-radius: 12px; margin: 20px 0;">
-            <h3 style="color: #2e7d32; margin: 0 0 20px 0; font-size: 20px; text-align: center;">
-                🔒 FACE DATA IS NOT RETAINED
+        <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 3px solid #1976D2; padding: 25px; border-radius: 12px; margin: 20px 0;">
+            <h3 style="color: #0d47a1; margin: 0 0 20px 0; font-size: 20px; text-align: center;">
+                🔒 FACE DATA RETENTION POLICY
             </h3>
 
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
-                <h4 style="color: #1b5e20; margin: 0 0 15px 0; font-size: 16px;">EXPLICIT STATEMENT:</h4>
-                <p style="font-size: 16px; margin: 0; line-height: 1.8; color: #333;">
-                    <strong style="font-size: 18px; background: #e8f5e9; padding: 5px 10px; border-radius: 4px; display: inline-block; margin-bottom: 10px;">
-                        Face data is NOT retained by HAIRGATOR or any third party.
-                    </strong>
-                    <br><br>
-                    <strong>Face Shape Analysis & Personal Color Analysis:</strong><br>
-                    These features use <strong>MediaPipe</strong> (Google's on-device ML library) which runs <strong>entirely on the user's device (browser/app)</strong>.
-                    Face data is <strong>never transmitted</strong> to HAIRGATOR servers or any third party.
-                    All facial analysis is performed locally on the user's device and no face data leaves the device.
-                    <br><br>
-                    <strong>Virtual Hairstyle Try-On:</strong><br>
-                    This feature uses vModel API. The user's photo is sent to vModel's server <strong>only for processing</strong> and is <strong>deleted immediately after the result image is generated</strong>.
-                    vModel does not store, retain, or use the uploaded images for any other purpose including AI training.
-                </p>
+            <!-- EXPLICIT STATEMENT - Apple Required -->
+            <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #4CAF50;">
+                <h4 style="color: #1b5e20; margin: 0 0 15px 0; font-size: 18px;">📋 EXPLICIT STATEMENT ON FACE DATA RETENTION:</h4>
+                <ul style="margin: 0; font-size: 15px; line-height: 2; color: #1b5e20;">
+                    <li><strong>Face Shape Analysis & Personal Color Analysis:</strong> Face data is <strong>NOT retained</strong>. Processing occurs entirely on the user's device using MediaPipe. No face data is transmitted to any server.</li>
+                    <li><strong>Virtual Hairstyle Try-On:</strong> Face data is <strong>temporarily retained</strong> for processing purposes only:
+                        <ul style="margin-top: 5px;">
+                            <li>By HAIRGATOR: Maximum <strong>24 hours</strong>, then automatically deleted.</li>
+                            <li>By vModel (third party): <strong>During API processing only</strong> (typically under 60 seconds based on response times), then deleted upon completion.</li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
 
+            <!-- WHICH THIRD PARTIES - Apple Required -->
             <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
-                <h4 style="color: #1565c0; margin: 0 0 10px 0;">THIRD PARTIES:</h4>
+                <h4 style="color: #1565c0; margin: 0 0 15px 0; font-size: 16px;">📤 WHICH THIRD PARTIES WE SHARE FACE DATA WITH:</h4>
                 <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                    <tr style="background: #f5f5f5;">
-                        <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Feature</th>
-                        <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Processing</th>
-                        <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Data Sent to Server?</th>
-                        <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Stored?</th>
+                    <tr style="background: #e3f2fd;">
+                        <th style="border: 1px solid #90caf9; padding: 12px; text-align: left;">Third Party</th>
+                        <th style="border: 1px solid #90caf9; padding: 12px; text-align: left;">Feature</th>
+                        <th style="border: 1px solid #90caf9; padding: 12px; text-align: left;">Face Data Shared?</th>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ddd; padding: 10px;">Face Shape Analysis<br>(Style Matching)</td>
-                        <td style="border: 1px solid #ddd; padding: 10px;"><strong>MediaPipe</strong><br>(On-device)</td>
-                        <td style="border: 1px solid #ddd; padding: 10px; color: #2e7d32;"><strong>NO</strong></td>
-                        <td style="border: 1px solid #ddd; padding: 10px; color: #2e7d32;"><strong>NO</strong></td>
-                    </tr>
-                    <tr>
-                        <td style="border: 1px solid #ddd; padding: 10px;">Personal Color Analysis</td>
-                        <td style="border: 1px solid #ddd; padding: 10px;"><strong>MediaPipe</strong><br>(On-device)</td>
-                        <td style="border: 1px solid #ddd; padding: 10px; color: #2e7d32;"><strong>NO</strong></td>
-                        <td style="border: 1px solid #ddd; padding: 10px; color: #2e7d32;"><strong>NO</strong></td>
-                    </tr>
-                    <tr>
-                        <td style="border: 1px solid #ddd; padding: 10px;">Virtual Hairstyle Try-On</td>
-                        <td style="border: 1px solid #ddd; padding: 10px;"><strong>vModel API</strong></td>
-                        <td style="border: 1px solid #ddd; padding: 10px;">YES (for processing only)</td>
-                        <td style="border: 1px solid #ddd; padding: 10px; color: #2e7d32;"><strong>NO</strong><br>(deleted after processing)</td>
+                        <td style="border: 1px solid #ddd; padding: 12px;"><strong>Google MediaPipe</strong><br><span style="font-size:12px;color:#666;">(On-device library)</span></td>
+                        <td style="border: 1px solid #ddd; padding: 12px;">Face Shape Analysis<br>Personal Color Analysis</td>
+                        <td style="border: 1px solid #ddd; padding: 12px; color: #2e7d32;"><strong>NO</strong> - Runs entirely on user's device. No data transmitted.</td>
                     </tr>
                     <tr style="background: #fff8e1;">
-                        <td style="border: 1px solid #ddd; padding: 10px;">HAIRGATOR Temporary Storage<br>(for AI processing)</td>
-                        <td style="border: 1px solid #ddd; padding: 10px;"><strong>Firebase Storage</strong><br>(HAIRGATOR server)</td>
-                        <td style="border: 1px solid #ddd; padding: 10px;">YES (temporary)</td>
-                        <td style="border: 1px solid #ddd; padding: 10px; color: #ff6f00;"><strong>YES</strong><br>(max 24 hours, auto-deleted)</td>
+                        <td style="border: 1px solid #ddd; padding: 12px;"><strong>vModel Inc.</strong><br><span style="font-size:12px;color:#666;">(AI Image Processing API)</span></td>
+                        <td style="border: 1px solid #ddd; padding: 12px;">Virtual Hairstyle Try-On</td>
+                        <td style="border: 1px solid #ddd; padding: 12px; color: #e65100;"><strong>YES</strong> - User photo sent for hairstyle transformation.</td>
                     </tr>
                 </table>
             </div>
 
-            <div style="background: #fff8e1; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #ffb300;">
-                <h4 style="color: #e65100; margin: 0 0 10px 0;">⏱️ HAIRGATOR Temporary Storage Policy:</h4>
-                <ul style="margin: 0; font-size: 14px; line-height: 1.8;">
-                    <li><strong>What:</strong> For Virtual Hairstyle Try-On, user photos are temporarily stored on HAIRGATOR's server (Firebase Storage) before being sent to vModel API for processing.</li>
-                    <li><strong>Retention period:</strong> <strong style="color: #e65100;">Maximum 24 hours.</strong> Images are automatically deleted by our server's lifecycle policy.</li>
-                    <li><strong>Why temporary storage:</strong> Required for reliable AI processing and error recovery. Without temporary storage, failed requests cannot be retried.</li>
-                    <li><strong>Long-term storage:</strong> <strong style="color: #2e7d32;">NO.</strong> We do NOT permanently store any user face images.</li>
-                </ul>
+            <!-- WHY WE SHARE - Apple Required -->
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+                <h4 style="color: #7b1fa2; margin: 0 0 15px 0; font-size: 16px;">❓ WHY WE SHARE FACE DATA WITH vModel:</h4>
+                <p style="margin: 0; font-size: 14px; line-height: 1.8; color: #333;">
+                    We share the user's photo with vModel <strong>solely to provide the Virtual Hairstyle Try-On feature</strong>.
+                    vModel's AI processes the user's face photo and applies the selected hairstyle to generate a preview image showing how the user would look with that hairstyle.
+                    <strong>This is the only purpose for sharing face data with vModel.</strong>
+                    Without this data sharing, the Virtual Hairstyle Try-On feature cannot function.
+                </p>
             </div>
 
+            <!-- vModel PRIVACY PRACTICES - Apple Required (DETAILED) -->
+            <div style="background: #fce4ec; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #e91e63;">
+                <h4 style="color: #880e4f; margin: 0 0 15px 0; font-size: 16px;">🔐 vModel Inc. - THIRD PARTY PRIVACY PRACTICES:</h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px; background: white;">
+                    <tr>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px; width: 40%; background: #fce4ec;"><strong>Does vModel store face data?</strong></td>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px;"><strong style="color: #e65100;">YES, temporarily during processing.</strong> As a real-time AI image processing API, vModel holds uploaded images in server memory while the AI model processes them.</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px; background: #fce4ec;"><strong>Length of time stored:</strong></td>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px;"><strong>Duration of API request processing only.</strong> Based on our API response times, this is typically under 60 seconds. Images are not retained after the API response is returned.</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px; background: #fce4ec;"><strong>Why stored for this duration:</strong></td>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px;">Technical necessity: The AI model must load the image into memory to analyze facial features and apply hairstyle transformations. This processing cannot occur without temporarily holding the image data.</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px; background: #fce4ec;"><strong>Permanent storage:</strong></td>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px;">According to vModel's Terms of Service, user-uploaded content is processed as "Input" and the service generates "Output" without retaining Input data beyond the processing session.</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px; background: #fce4ec;"><strong>vModel Terms of Service:</strong></td>
+                        <td style="border: 1px solid #f8bbd9; padding: 12px;"><a href="https://vmodel.ai/terms/" target="_blank" style="color: #1976d2;">https://vmodel.ai/terms/</a></td>
+                    </tr>
+                </table>
+                <p style="margin: 15px 0 0 0; font-size: 13px; color: #666; font-style: italic;">
+                    Note: For complete details on vModel's data handling practices, users should refer to vModel's Terms of Service linked above. HAIRGATOR has selected vModel as our AI processing partner based on their API architecture which processes images in real-time without persistent storage.
+                </p>
+            </div>
+
+            <!-- HAIRGATOR Storage Policy -->
+            <div style="background: #fff8e1; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #ffb300;">
+                <h4 style="color: #e65100; margin: 0 0 15px 0; font-size: 16px;">⏱️ HAIRGATOR - OUR TEMPORARY STORAGE PRACTICES:</h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px; background: white;">
+                    <tr>
+                        <td style="border: 1px solid #ffe0b2; padding: 12px; width: 40%; background: #fff8e1;"><strong>Do we store face data?</strong></td>
+                        <td style="border: 1px solid #ffe0b2; padding: 12px;"><strong style="color: #e65100;">YES, temporarily.</strong> For Virtual Hairstyle Try-On feature only.</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ffe0b2; padding: 12px; background: #fff8e1;"><strong>Length of time stored:</strong></td>
+                        <td style="border: 1px solid #ffe0b2; padding: 12px;"><strong>Maximum 24 hours.</strong> Images are automatically deleted by Firebase Storage lifecycle policy.</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ffe0b2; padding: 12px; background: #fff8e1;"><strong>Why stored for this duration:</strong></td>
+                        <td style="border: 1px solid #ffe0b2; padding: 12px;">Temporary storage is required to: (1) provide a reliable URL for the vModel API to access the image, (2) allow retry of failed AI processing requests, (3) handle network interruptions gracefully. 24 hours is the maximum duration; most images are processed within minutes.</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ffe0b2; padding: 12px; background: #fff8e1;"><strong>Permanent storage:</strong></td>
+                        <td style="border: 1px solid #ffe0b2; padding: 12px;"><strong style="color: #2e7d32;">NO.</strong> We do not permanently store, archive, or backup user face images.</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ffe0b2; padding: 12px; background: #fff8e1;"><strong>Used for AI training:</strong></td>
+                        <td style="border: 1px solid #ffe0b2; padding: 12px;"><strong style="color: #2e7d32;">NO.</strong> User images are never used for any AI training purposes.</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Summary Table -->
             <div style="background: white; padding: 20px; border-radius: 8px;">
-                <h4 style="color: #7b1fa2; margin: 0 0 10px 0;">vModel API - Why we share and their practices:</h4>
-                <ul style="margin: 0; font-size: 14px; line-height: 1.8;">
-                    <li><strong>Why we share:</strong> To generate virtual hairstyle simulation images by applying selected hairstyles to the user's photo.</li>
-                    <li><strong>Does vModel store face data?</strong> <strong style="color: #2e7d32;">NO.</strong> Images are processed and deleted immediately. vModel does not retain uploaded images.</li>
-                    <li><strong>Used for AI training?</strong> <strong style="color: #2e7d32;">NO.</strong> User images are not used for model training.</li>
-                </ul>
+                <h4 style="color: #333; margin: 0 0 15px 0; font-size: 16px;">📊 SUMMARY - FACE DATA RETENTION BY FEATURE:</h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <tr style="background: #f5f5f5;">
+                        <th style="border: 1px solid #ddd; padding: 10px;">Feature</th>
+                        <th style="border: 1px solid #ddd; padding: 10px;">Data Transmitted?</th>
+                        <th style="border: 1px solid #ddd; padding: 10px;">Retained?</th>
+                        <th style="border: 1px solid #ddd; padding: 10px;">Duration</th>
+                        <th style="border: 1px solid #ddd; padding: 10px;">Reason</th>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 10px;">Face Shape Analysis</td>
+                        <td style="border: 1px solid #ddd; padding: 10px; color: #2e7d32;"><strong>NO</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 10px; color: #2e7d32;"><strong>NO</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">N/A</td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">On-device processing</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 10px;">Personal Color</td>
+                        <td style="border: 1px solid #ddd; padding: 10px; color: #2e7d32;"><strong>NO</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 10px; color: #2e7d32;"><strong>NO</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">N/A</td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">On-device processing</td>
+                    </tr>
+                    <tr style="background: #fff8e1;">
+                        <td style="border: 1px solid #ddd; padding: 10px;">Hairstyle Try-On<br><small>(HAIRGATOR)</small></td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">YES</td>
+                        <td style="border: 1px solid #ddd; padding: 10px; color: #e65100;"><strong>YES</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">Max 24 hours</td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">API reliability & retry</td>
+                    </tr>
+                    <tr style="background: #fce4ec;">
+                        <td style="border: 1px solid #ddd; padding: 10px;">Hairstyle Try-On<br><small>(vModel)</small></td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">YES</td>
+                        <td style="border: 1px solid #ddd; padding: 10px; color: #e65100;"><strong>YES</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">Processing duration only</td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">AI processing necessity</td>
+                    </tr>
+                </table>
             </div>
         </div>
 
@@ -197,6 +270,7 @@
 
         <h2>9. 개정 이력 (Revision History)</h2>
         <ul>
+            <li><strong>2026년 1월 30일:</strong> Apple App Store Guideline 5.1.1 완전 준수 - 제3자(vModel) 데이터 처리 상세 명시, 저장 기간/이유 구체화, vModel Terms of Service 링크 추가</li>
             <li><strong>2026년 1월 28일 (2차):</strong> HAIRGATOR 임시 저장 정책 추가 - Firebase Storage 최대 24시간 보관 후 자동 삭제 명시</li>
             <li><strong>2026년 1월 28일:</strong> 얼굴 데이터 정책 전면 수정 - MediaPipe 온디바이스 처리 명시, vModel 즉시 삭제 명확화</li>
             <li>2026년 1월 24일: 제3자 데이터 보유 이유 상세 추가</li>
