@@ -6845,13 +6845,16 @@
 
             ctx.save();
 
-            // 왼쪽 케이프 (웜톤) - 전체 불투명
-            const leftGradient = ctx.createLinearGradient(chinX, capeStartY, chinX, capeEndY);
-            leftGradient.addColorStop(0, leftColor + 'FF');
-            leftGradient.addColorStop(0.3, leftColor + 'FF');
-            leftGradient.addColorStop(1, leftColor + 'FF');
+            // 거울 반전(scaleX -1) 보정: 캔버스 왼쪽에 rightColor, 오른쪽에 leftColor 그려야
+            // 화면에서 왼쪽=leftColor, 오른쪽=rightColor로 보임
 
-            ctx.fillStyle = leftGradient;
+            // 캔버스 왼쪽 (화면에서는 오른쪽으로 보임) → rightColor
+            const canvasLeftGradient = ctx.createLinearGradient(chinX, capeStartY, chinX, capeEndY);
+            canvasLeftGradient.addColorStop(0, rightColor + 'FF');
+            canvasLeftGradient.addColorStop(0.3, rightColor + 'FF');
+            canvasLeftGradient.addColorStop(1, rightColor + 'FF');
+
+            ctx.fillStyle = canvasLeftGradient;
             ctx.beginPath();
             ctx.moveTo(chinX, capeStartY);
             ctx.lineTo(chinX - neckWidth / 2, capeStartY);
@@ -6861,13 +6864,13 @@
             ctx.closePath();
             ctx.fill();
 
-            // 오른쪽 케이프 (쿨톤) - 전체 불투명
-            const rightGradient = ctx.createLinearGradient(chinX, capeStartY, chinX, capeEndY);
-            rightGradient.addColorStop(0, rightColor + 'FF');
-            rightGradient.addColorStop(0.3, rightColor + 'FF');
-            rightGradient.addColorStop(1, rightColor + 'FF');
+            // 캔버스 오른쪽 (화면에서는 왼쪽으로 보임) → leftColor
+            const canvasRightGradient = ctx.createLinearGradient(chinX, capeStartY, chinX, capeEndY);
+            canvasRightGradient.addColorStop(0, leftColor + 'FF');
+            canvasRightGradient.addColorStop(0.3, leftColor + 'FF');
+            canvasRightGradient.addColorStop(1, leftColor + 'FF');
 
-            ctx.fillStyle = rightGradient;
+            ctx.fillStyle = canvasRightGradient;
             ctx.beginPath();
             ctx.moveTo(chinX, capeStartY);
             ctx.lineTo(chinX + neckWidth / 2, capeStartY);
