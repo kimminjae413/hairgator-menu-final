@@ -4915,7 +4915,7 @@
             }
 
             // 조명 품질 표시 텍스트
-            const lightingQualityText = lm.lightingQuality >= 0.7 ? '좋음' :
+            const lightingQualityText = lm.lightingQuality >= 0.7 ? (t('personalColor.result.lightingHigh') || 'Good') :
                                         lm.lightingQuality >= 0.5 ? (t('personalColor.result.lightingMedium') || 'Medium') : (t('personalColor.result.lightingLow') || 'Low (Reference)');
             const lightingColor = lm.lightingQuality >= 0.7 ? '#4CAF50' :
                                   lm.lightingQuality >= 0.5 ? '#FF9800' : '#F44336';
@@ -6667,11 +6667,11 @@
             // 부채꼴 각도 (좌우로 퍼지는 정도)
             const spreadAngle = 0.7; // 라디안 (약 40도씩 좌우로)
 
-            // 그라데이션 생성 (위에서 아래로)
+            // 그라데이션 생성 (위에서 아래로) - 전체 불투명
             const gradient = ctx.createLinearGradient(chinX, capeStartY, chinX, capeEndY);
             gradient.addColorStop(0, displayColor + 'FF');  // 위쪽: 불투명
-            gradient.addColorStop(0.3, displayColor + 'EE');
-            gradient.addColorStop(1, displayColor + 'CC');  // 아래쪽: 약간 투명
+            gradient.addColorStop(0.3, displayColor + 'FF');  // 중간: 불투명
+            gradient.addColorStop(1, displayColor + 'FF');  // 아래쪽: 불투명
 
             ctx.fillStyle = gradient;
             ctx.beginPath();
@@ -6838,11 +6838,11 @@
 
             ctx.save();
 
-            // 왼쪽 케이프 (웜톤)
+            // 왼쪽 케이프 (웜톤) - 전체 불투명
             const leftGradient = ctx.createLinearGradient(chinX, capeStartY, chinX, capeEndY);
             leftGradient.addColorStop(0, leftColor + 'FF');
-            leftGradient.addColorStop(0.3, leftColor + 'EE');
-            leftGradient.addColorStop(1, leftColor + 'CC');
+            leftGradient.addColorStop(0.3, leftColor + 'FF');
+            leftGradient.addColorStop(1, leftColor + 'FF');
 
             ctx.fillStyle = leftGradient;
             ctx.beginPath();
@@ -6854,11 +6854,11 @@
             ctx.closePath();
             ctx.fill();
 
-            // 오른쪽 케이프 (쿨톤)
+            // 오른쪽 케이프 (쿨톤) - 전체 불투명
             const rightGradient = ctx.createLinearGradient(chinX, capeStartY, chinX, capeEndY);
             rightGradient.addColorStop(0, rightColor + 'FF');
-            rightGradient.addColorStop(0.3, rightColor + 'EE');
-            rightGradient.addColorStop(1, rightColor + 'CC');
+            rightGradient.addColorStop(0.3, rightColor + 'FF');
+            rightGradient.addColorStop(1, rightColor + 'FF');
 
             ctx.fillStyle = rightGradient;
             ctx.beginPath();
@@ -7124,10 +7124,10 @@
 
                 ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-                // 하단에 케이프 미리보기
+                // 하단에 케이프 미리보기 - 전체 불투명
                 const gradient = ctx.createLinearGradient(0, overlay.height * 0.6, 0, overlay.height);
-                gradient.addColorStop(0, color + 'DD');
-                gradient.addColorStop(1, color + 'AA');
+                gradient.addColorStop(0, color + 'FF');
+                gradient.addColorStop(1, color + 'FF');
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, overlay.height * 0.6, overlay.width, overlay.height * 0.4);
             }

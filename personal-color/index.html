@@ -786,7 +786,7 @@
                         <div class="camera-controls">
                             <button class="control-btn" onclick="startDrapingCamera()" data-i18n="personalColor.drapingMode.startCamera">Start Camera</button>
                             <button class="control-btn" onclick="saveCurrentColor()" data-i18n="personalColor.drapingMode.saveColor">Save Current Color</button>
-                            <button class="control-btn" onclick="toggleCompareMode()" id="compare-mode-btn" style="background: linear-gradient(135deg, #E91E63, #9C27B0);">🔀 비교 모드</button>
+                            <button class="control-btn" onclick="toggleCompareMode()" id="compare-mode-btn" style="background: linear-gradient(135deg, #E91E63, #9C27B0);" data-i18n="personalColor.drapingMode.compareBtn">🔀 Compare Mode</button>
                         </div>
 
                         <!-- 자연광 안내 문구 -->
@@ -797,7 +797,7 @@
                         <!-- 비교 모드 UI -->
                         <div id="compare-mode-panel" style="display: none; margin-top: 15px; padding: 15px; background: linear-gradient(135deg, rgba(233,30,99,0.15), rgba(156,39,176,0.15)); border-radius: 12px; border: 1px solid rgba(233,30,99,0.3);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <span style="font-size: 16px; color: #E91E63; font-weight: bold;">🔥 웜 vs 쿨 비교</span>
+                                <span style="font-size: 16px; color: #E91E63; font-weight: bold;" data-i18n="personalColor.drapingMode.warmVsCool">🔥 Warm vs Cool</span>
                                 <span id="compare-progress" style="font-size: 14px; color: #CE93D8;">1/4</span>
                             </div>
 
@@ -815,20 +815,20 @@
                                 </div>
                             </div>
 
-                            <div style="text-align: center; margin-bottom: 12px; font-size: 15px; color: #E1BEE7;">어느 쪽이 더 어울리나요?</div>
+                            <div style="text-align: center; margin-bottom: 12px; font-size: 15px; color: #E1BEE7;" data-i18n="personalColor.drapingMode.whichSuits">Which one suits you better?</div>
 
                             <div style="display: flex; gap: 10px;">
-                                <button onclick="selectCompareColor('left')" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #FF9800, #FF5722); color: white; font-size: 15px; font-weight: bold; cursor: pointer;">👈 왼쪽</button>
-                                <button onclick="selectCompareColor('right')" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #2196F3, #673AB7); color: white; font-size: 15px; font-weight: bold; cursor: pointer;">오른쪽 👉</button>
+                                <button onclick="selectCompareColor('left')" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #FF9800, #FF5722); color: white; font-size: 15px; font-weight: bold; cursor: pointer;" data-i18n="personalColor.drapingMode.leftBtn">👈 Left</button>
+                                <button onclick="selectCompareColor('right')" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #2196F3, #673AB7); color: white; font-size: 15px; font-weight: bold; cursor: pointer;" data-i18n="personalColor.drapingMode.rightBtn">Right 👉</button>
                             </div>
 
                             <div id="compare-score-display" style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; display: none;">
-                                <div style="font-size: 14px; color: #CE93D8; margin-bottom: 8px; font-weight: bold;">📊 현재 점수</div>
+                                <div style="font-size: 14px; color: #CE93D8; margin-bottom: 8px; font-weight: bold;" data-i18n="personalColor.drapingMode.currentScore">📊 Current Score</div>
                                 <div style="display: flex; justify-content: space-around;">
-                                    <span style="color: #FFCC80;">🌸 봄: <b id="score-spring">0</b></span>
-                                    <span style="color: #90CAF9;">🌊 여름: <b id="score-summer">0</b></span>
-                                    <span style="color: #FFAB91;">🍂 가을: <b id="score-autumn">0</b></span>
-                                    <span style="color: #B39DDB;">❄️ 겨울: <b id="score-winter">0</b></span>
+                                    <span style="color: #FFCC80;">🌸 <span data-i18n="personalColor.drapingMode.spring">Spring</span>: <b id="score-spring">0</b></span>
+                                    <span style="color: #90CAF9;">🌊 <span data-i18n="personalColor.drapingMode.summer">Summer</span>: <b id="score-summer">0</b></span>
+                                    <span style="color: #FFAB91;">🍂 <span data-i18n="personalColor.drapingMode.autumn">Autumn</span>: <b id="score-autumn">0</b></span>
+                                    <span style="color: #B39DDB;">❄️ <span data-i18n="personalColor.drapingMode.winter">Winter</span>: <b id="score-winter">0</b></span>
                                 </div>
                             </div>
                         </div>
@@ -901,7 +901,7 @@
 
 
     <!-- Main Application Script -->
-    <script src="app.js?v=20260130-1115"></script>
+    <script src="app.js?v=20260130-1200"></script>
 </body>
 
 </html>
