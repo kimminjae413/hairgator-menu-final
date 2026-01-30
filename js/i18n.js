@@ -680,6 +680,26 @@ const HAIRGATOR_I18N = {
         expert: '전문가'
       },
 
+      // 디버그/전문가 패널
+      debugPanel: {
+        diagnosticLog: '진단 로그 (로컬)',
+        total: '총',
+        blocked: '차단',
+        avgLighting: '평균 조명',
+        clear: '지우기',
+        expertLabeling: '전문가 라벨링',
+        select: '(선택)',
+        required: '(필수)',
+        memoLabel: '메모 (조명/상황)',
+        memoPlaceholder: '예: 실내 형광등, 그림자 있음',
+        saveLabel: '라벨 저장',
+        exportCSV: 'CSV 내보내기',
+        noLogToSave: '저장할 로그가 없어요. 먼저 캡처하세요.',
+        selectSeason: '시즌 라벨을 선택해주세요.',
+        labelSaved: '전문가 라벨 저장 완료',
+        labelSaveFailed: '라벨 저장 실패 (로그 id 없음)'
+      },
+
       // 로딩 화면
       loadingSteps: {
         hairColorData: '헤어컬러 데이터 로드 중...',
@@ -2034,6 +2054,26 @@ const HAIRGATOR_I18N = {
         expert: 'Expert'
       },
 
+      // Debug/Expert panel
+      debugPanel: {
+        diagnosticLog: 'Diagnostic Log (Local)',
+        total: 'Total',
+        blocked: 'Blocked',
+        avgLighting: 'Avg Lighting',
+        clear: 'Clear',
+        expertLabeling: 'Expert Labeling',
+        select: '(Select)',
+        required: '(Required)',
+        memoLabel: 'Memo (Lighting/Situation)',
+        memoPlaceholder: 'e.g., Indoor fluorescent, shadows present',
+        saveLabel: 'Save Label',
+        exportCSV: 'Export CSV',
+        noLogToSave: 'No log to save. Please capture first.',
+        selectSeason: 'Please select a season.',
+        labelSaved: 'Expert label saved',
+        labelSaveFailed: 'Label save failed (no log id)'
+      },
+
       // Loading screen
       loadingSteps: {
         hairColorData: 'Loading hair color data...',
@@ -3364,6 +3404,26 @@ const HAIRGATOR_I18N = {
         expert: '専門家'
       },
 
+      // デバッグ/専門家パネル
+      debugPanel: {
+        diagnosticLog: '診断ログ（ローカル）',
+        total: '合計',
+        blocked: 'ブロック',
+        avgLighting: '平均照明',
+        clear: 'クリア',
+        expertLabeling: '専門家ラベリング',
+        select: '（選択）',
+        required: '（必須）',
+        memoLabel: 'メモ（照明/状況）',
+        memoPlaceholder: '例：室内蛍光灯、影あり',
+        saveLabel: 'ラベル保存',
+        exportCSV: 'CSVエクスポート',
+        noLogToSave: '保存するログがありません。先にキャプチャしてください。',
+        selectSeason: 'シーズンを選択してください。',
+        labelSaved: '専門家ラベル保存完了',
+        labelSaveFailed: 'ラベル保存失敗（ログIDなし）'
+      },
+
       // ロード画面
       loadingSteps: {
         hairColorData: 'ヘアカラーデータを読み込み中...',
@@ -4690,6 +4750,26 @@ const HAIRGATOR_I18N = {
         analysis: '分析结果',
         hairColor: '发色',
         expert: '专家'
+      },
+
+      // 调试/专家面板
+      debugPanel: {
+        diagnosticLog: '诊断日志（本地）',
+        total: '总计',
+        blocked: '已阻止',
+        avgLighting: '平均照明',
+        clear: '清除',
+        expertLabeling: '专家标注',
+        select: '（选择）',
+        required: '（必填）',
+        memoLabel: '备注（照明/情况）',
+        memoPlaceholder: '例：室内荧光灯，有阴影',
+        saveLabel: '保存标签',
+        exportCSV: '导出CSV',
+        noLogToSave: '没有可保存的日志，请先拍摄。',
+        selectSeason: '请选择季节。',
+        labelSaved: '专家标签已保存',
+        labelSaveFailed: '标签保存失败（无日志ID）'
       },
 
       // 加载界面
@@ -6021,6 +6101,26 @@ const HAIRGATOR_I18N = {
         expert: 'Chuyên gia'
       },
 
+      // Bảng điều khiển gỡ lỗi/chuyên gia
+      debugPanel: {
+        diagnosticLog: 'Nhật ký chẩn đoán (Cục bộ)',
+        total: 'Tổng',
+        blocked: 'Đã chặn',
+        avgLighting: 'Ánh sáng TB',
+        clear: 'Xóa',
+        expertLabeling: 'Gán nhãn chuyên gia',
+        select: '(Chọn)',
+        required: '(Bắt buộc)',
+        memoLabel: 'Ghi chú (Ánh sáng/Tình huống)',
+        memoPlaceholder: 'VD: Đèn huỳnh quang trong nhà, có bóng',
+        saveLabel: 'Lưu nhãn',
+        exportCSV: 'Xuất CSV',
+        noLogToSave: 'Không có nhật ký để lưu. Vui lòng chụp trước.',
+        selectSeason: 'Vui lòng chọn mùa.',
+        labelSaved: 'Đã lưu nhãn chuyên gia',
+        labelSaveFailed: 'Lưu nhãn thất bại (không có ID nhật ký)'
+      },
+
       // Màn hình tải
       loadingSteps: {
         hairColorData: 'Đang tải dữ liệu màu tóc...',
@@ -7294,6 +7394,26 @@ const HAIRGATOR_I18N = {
         analysis: 'Analisis',
         hairColor: 'Warna Rambut',
         expert: 'Pakar'
+      },
+
+      // Panel debug/pakar
+      debugPanel: {
+        diagnosticLog: 'Log Diagnostik (Lokal)',
+        total: 'Total',
+        blocked: 'Diblokir',
+        avgLighting: 'Rata-rata Pencahayaan',
+        clear: 'Hapus',
+        expertLabeling: 'Pelabelan Pakar',
+        select: '(Pilih)',
+        required: '(Wajib)',
+        memoLabel: 'Memo (Pencahayaan/Situasi)',
+        memoPlaceholder: 'Contoh: Lampu neon dalam ruangan, ada bayangan',
+        saveLabel: 'Simpan Label',
+        exportCSV: 'Ekspor CSV',
+        noLogToSave: 'Tidak ada log untuk disimpan. Silakan ambil gambar terlebih dahulu.',
+        selectSeason: 'Silakan pilih musim.',
+        labelSaved: 'Label pakar tersimpan',
+        labelSaveFailed: 'Gagal menyimpan label (tidak ada ID log)'
       },
 
       // Layar loading
@@ -8589,6 +8709,26 @@ const HAIRGATOR_I18N = {
         analysis: 'Análisis',
         hairColor: 'Color de Cabello',
         expert: 'Experto'
+      },
+
+      // Panel de depuración/experto
+      debugPanel: {
+        diagnosticLog: 'Registro de Diagnóstico (Local)',
+        total: 'Total',
+        blocked: 'Bloqueado',
+        avgLighting: 'Iluminación Promedio',
+        clear: 'Borrar',
+        expertLabeling: 'Etiquetado de Experto',
+        select: '(Seleccionar)',
+        required: '(Requerido)',
+        memoLabel: 'Nota (Iluminación/Situación)',
+        memoPlaceholder: 'Ej: Fluorescente interior, hay sombras',
+        saveLabel: 'Guardar Etiqueta',
+        exportCSV: 'Exportar CSV',
+        noLogToSave: 'No hay registro para guardar. Por favor, capture primero.',
+        selectSeason: 'Por favor, seleccione una estación.',
+        labelSaved: 'Etiqueta de experto guardada',
+        labelSaveFailed: 'Error al guardar etiqueta (sin ID de registro)'
       },
 
       loadingSteps: {
@@ -9967,6 +10107,26 @@ const HAIRGATOR_I18N = {
         analysis: 'ผลวิเคราะห์',
         hairColor: 'สีผม',
         expert: 'ผู้เชี่ยวชาญ'
+      },
+
+      // แผงดีบัก/ผู้เชี่ยวชาญ
+      debugPanel: {
+        diagnosticLog: 'บันทึกการวินิจฉัย (ในเครื่อง)',
+        total: 'รวม',
+        blocked: 'ถูกบล็อก',
+        avgLighting: 'แสงเฉลี่ย',
+        clear: 'ล้าง',
+        expertLabeling: 'การติดป้ายกำกับโดยผู้เชี่ยวชาญ',
+        select: '(เลือก)',
+        required: '(จำเป็น)',
+        memoLabel: 'บันทึก (แสง/สถานการณ์)',
+        memoPlaceholder: 'เช่น: หลอดฟลูออเรสเซนต์ในร่ม, มีเงา',
+        saveLabel: 'บันทึกป้ายกำกับ',
+        exportCSV: 'ส่งออก CSV',
+        noLogToSave: 'ไม่มีบันทึกที่จะบันทึก โปรดถ่ายภาพก่อน',
+        selectSeason: 'โปรดเลือกฤดูกาล',
+        labelSaved: 'บันทึกป้ายกำกับผู้เชี่ยวชาญแล้ว',
+        labelSaveFailed: 'บันทึกป้ายกำกับล้มเหลว (ไม่มี ID บันทึก)'
       },
 
       // Loading screen

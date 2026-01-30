@@ -4506,14 +4506,14 @@
             const s = pcComputeSummary(pcLoadLogs());
             return `
                 <div style="margin-top:12px;padding:12px;border-radius:12px;border:1px solid #e0e0e0;background:#fafafa;">
-                    <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#333;">📊 진단 로그 (로컬)</div>
+                    <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#333;">📊 ${t('personalColor.debugPanel.diagnosticLog') || 'Diagnostic Log (Local)'}</div>
                     <div style="font-size:11px;color:#555;line-height:1.6;margin-bottom:10px;">
-                        총 ${s.total}건 · 차단 ${s.blocked}건 (${Math.round(s.blockedRate*100)}%) · 평균 조명 ${s.avgLightingQuality?.toFixed?.(2) ?? '-'}
+                        ${t('personalColor.debugPanel.total') || 'Total'} ${s.total} · ${t('personalColor.debugPanel.blocked') || 'Blocked'} ${s.blocked} (${Math.round(s.blockedRate*100)}%) · ${t('personalColor.debugPanel.avgLighting') || 'Avg Lighting'} ${s.avgLightingQuality?.toFixed?.(2) ?? '-'}
                     </div>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;">
                         <button onclick="pcExportCSV()" style="padding:8px 10px;border-radius:8px;border:none;background:#2196F3;color:#fff;font-weight:700;font-size:12px;cursor:pointer;">CSV</button>
                         <button onclick="pcExportJSON()" style="padding:8px 10px;border-radius:8px;border:none;background:#673AB7;color:#fff;font-weight:700;font-size:12px;cursor:pointer;">JSON</button>
-                        <button onclick="pcClearLogs(); location.reload();" style="padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#333;font-weight:700;font-size:12px;cursor:pointer;">지우기</button>
+                        <button onclick="pcClearLogs(); location.reload();" style="padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#333;font-weight:700;font-size:12px;cursor:pointer;">${t('personalColor.debugPanel.clear') || 'Clear'}</button>
                     </div>
                 </div>
             `;
@@ -4522,14 +4522,14 @@
         // ✅ 전문가 라벨 저장 함수
         function pcSaveExpertLabel() {
             const id = window.__pcLastLogId;
-            if (!id) { showToast('저장할 로그가 없어요. 먼저 캡처하세요.', 'warning'); return; }
+            if (!id) { showToast(t('personalColor.debugPanel.noLogToSave') || 'No log to save. Please capture first.', 'warning'); return; }
 
             const labelUndertone = document.getElementById('pc-label-undertone')?.value || '';
             const labelSeason = document.getElementById('pc-label-season')?.value || '';
             const labelSubtype = document.getElementById('pc-label-subtype')?.value || '';
             const labelMemo = document.getElementById('pc-label-memo')?.value || '';
 
-            if (!labelSeason) { showToast('시즌 라벨을 선택해주세요.', 'warning'); return; }
+            if (!labelSeason) { showToast(t('personalColor.debugPanel.selectSeason') || 'Please select a season.', 'warning'); return; }
 
             const ok = pcUpdateLog(id, {
                 expertLabel: {
@@ -4541,8 +4541,8 @@
                 isLabeled: true
             });
 
-            if (ok) showToast('전문가 라벨 저장 완료', 'success');
-            else showToast('라벨 저장 실패 (로그 id 없음)', 'error');
+            if (ok) showToast(t('personalColor.debugPanel.labelSaved') || 'Expert label saved', 'success');
+            else showToast(t('personalColor.debugPanel.labelSaveFailed') || 'Label save failed (no log id)', 'error');
         }
         window.pcSaveExpertLabel = pcSaveExpertLabel;
 
@@ -4553,19 +4553,21 @@
             const predictedSeason = pc.season || '';
             const predictedSubtype = pc.subtype || '';
 
+            const selectText = t('personalColor.debugPanel.select') || '(Select)';
+            const requiredText = t('personalColor.debugPanel.required') || '(Required)';
             const opt = (v, text, selected) => `<option value="${v}" ${selected ? 'selected' : ''}>${text}</option>`;
 
             return `
             <div style="margin-top:12px;padding:12px;border-radius:12px;border:1px solid #E91E63;background:#fff;">
                 <div style="font-weight:800;font-size:13px;margin-bottom:10px;color:#E91E63;">
-                    🏷️ 전문가 라벨링
+                    🏷️ ${t('personalColor.debugPanel.expertLabeling') || 'Expert Labeling'}
                 </div>
 
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
                     <div>
                         <div style="font-size:11px;color:#666;margin-bottom:4px;">Undertone</div>
                         <select id="pc-label-undertone" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;">
-                            ${opt('', '(선택)', predictedUndertone === '')}
+                            ${opt('', selectText, predictedUndertone === '')}
                             ${opt('Warm', 'Warm', predictedUndertone === 'Warm')}
                             ${opt('Neutral', 'Neutral', predictedUndertone === 'Neutral')}
                             ${opt('Cool', 'Cool', predictedUndertone === 'Cool')}
@@ -4575,7 +4577,7 @@
                     <div>
                         <div style="font-size:11px;color:#666;margin-bottom:4px;">Season *</div>
                         <select id="pc-label-season" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;">
-                            ${opt('', '(필수)', predictedSeason === '')}
+                            ${opt('', requiredText, predictedSeason === '')}
                             ${opt('spring', 'spring', predictedSeason === 'spring')}
                             ${opt('summer', 'summer', predictedSeason === 'summer')}
                             ${opt('autumn', 'autumn', predictedSeason === 'autumn')}
@@ -4586,7 +4588,7 @@
                     <div>
                         <div style="font-size:11px;color:#666;margin-bottom:4px;">Subtype</div>
                         <select id="pc-label-subtype" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;">
-                            ${opt('', '(선택)', predictedSubtype === '')}
+                            ${opt('', selectText, predictedSubtype === '')}
                             ${opt('bright', 'bright', predictedSubtype === 'bright')}
                             ${opt('light', 'light', predictedSubtype === 'light')}
                             ${opt('soft', 'soft', predictedSubtype === 'soft')}
@@ -4597,19 +4599,19 @@
                 </div>
 
                 <div style="margin-bottom:10px;">
-                    <div style="font-size:11px;color:#666;margin-bottom:4px;">Memo (조명/상황)</div>
-                    <input id="pc-label-memo" placeholder="예: 실내 형광등, 그림자 있음"
+                    <div style="font-size:11px;color:#666;margin-bottom:4px;">${t('personalColor.debugPanel.memoLabel') || 'Memo (Lighting/Situation)'}</div>
+                    <input id="pc-label-memo" placeholder="${t('personalColor.debugPanel.memoPlaceholder') || 'e.g., Indoor fluorescent, shadows present'}"
                         style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;box-sizing:border-box;" />
                 </div>
 
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
                     <button onclick="pcSaveExpertLabel()"
                         style="padding:9px 12px;border-radius:8px;border:none;background:#E91E63;color:#fff;font-weight:800;font-size:12px;cursor:pointer;">
-                        라벨 저장
+                        ${t('personalColor.debugPanel.saveLabel') || 'Save Label'}
                     </button>
                     <button onclick="pcExportCSV()"
                         style="padding:9px 12px;border-radius:8px;border:none;background:#2196F3;color:#fff;font-weight:800;font-size:12px;cursor:pointer;">
-                        CSV 내보내기
+                        ${t('personalColor.debugPanel.exportCSV') || 'Export CSV'}
                     </button>
                 </div>
             </div>`;
