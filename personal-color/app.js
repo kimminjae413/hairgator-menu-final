@@ -4878,6 +4878,11 @@
             });
         }
 
+        // ⭐ AI 카메라 함수 전역 노출 (HTML onclick에서 호출 가능하도록)
+        window.startAICamera = startAICamera;
+        window.captureAndAnalyze = captureAndAnalyze;
+        window.retryCapture = retryCapture;
+
         // 촬영된 분석 결과 표시 (새 파이프라인 사용)
         function displayCapturedAnalysis(skinToneData, faceGeometry) {
             if (!skinToneData) {
